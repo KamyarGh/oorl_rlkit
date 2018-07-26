@@ -4,7 +4,7 @@ Run PyTorch Soft Actor Critic on HalfCheetahEnv.
 NOTE: You need PyTorch 0.3 or more (to have torch.distributions)
 """
 import numpy as np
-from gym.envs.mujoco import HalfCheetahEnv
+from gym.envs.mujoco import HalfCheetahEnv, InvertedPendulumEnv
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
@@ -15,7 +15,9 @@ from rlkit.torch.networks import FlattenMlp
 
 
 def experiment(variant):
-    env = NormalizedBoxEnv(HalfCheetahEnv())
+    # env = NormalizedBoxEnv(HalfCheetahEnv())
+    env = NormalizedBoxEnv(InvertedPendulumEnv())
+    
     # Or for a specific version:
     # import gym
     # env = NormalizedBoxEnv(gym.make('HalfCheetah-v1'))
@@ -66,8 +68,10 @@ if __name__ == "__main__":
             policy_lr=3E-4,
             qf_lr=3E-4,
             vf_lr=3E-4,
+
+            render=False,
         ),
         net_size=300,
     )
-    setup_logger('name-of-experiment', variant=variant)
+    setup_logger('pendulum_gravity_3', exp_id=1, variant=variant)
     experiment(variant)

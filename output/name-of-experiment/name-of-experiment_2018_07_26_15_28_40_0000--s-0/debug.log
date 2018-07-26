@@ -1,0 +1,2206 @@
+2018-07-26 15:29:06.549228 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #0 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                         1.00979
+VF Loss                         0.502591
+Policy Loss                     0.506338
+Q Predictions Mean             -0.00183677
+Q Predictions Std               0.00165959
+Q Predictions Max               0.000906457
+Q Predictions Min              -0.00592139
+V Predictions Mean              0.00374102
+V Predictions Std               0.000514637
+V Predictions Max               0.00462962
+V Predictions Min               0.00264779
+Log Pis Mean                   -0.67692
+Log Pis Std                     0.227815
+Log Pis Max                    -0.264412
+Log Pis Min                    -1.12408
+Policy mu Mean                 -0.00148197
+Policy mu Std                   0.000794512
+Policy mu Max                   7.18958e-06
+Policy mu Min                  -0.0030933
+Policy log std Mean             0.00078531
+Policy log std Std              0.00016043
+Policy log std Max              0.00117373
+Policy log std Min              0.0003922
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              14.169
+Test Returns Std                0.871875
+Test Returns Max               16
+Test Returns Min               13
+Test Actions Mean              -0.00860149
+Test Actions Std                0.00744165
+Test Actions Max                0.00774722
+Test Actions Min               -0.0193638
+Num Paths                     174
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean        5.72414
+Exploration Returns Std         3.45476
+Exploration Returns Max        20
+Exploration Returns Min         3
+Exploration Actions Mean        0.0111237
+Exploration Actions Std         0.593795
+Exploration Actions Max         0.992406
+Exploration Actions Min        -0.989732
+AverageReturn                  14.169
+Number of train steps total   873
+Number of env steps total    1000
+Number of rollouts total      174
+Train Time (s)                 23.3539
+(Previous) Eval Time (s)        0
+Sample Time (s)                 0.969662
+Epoch Time (s)                 24.3235
+Total Train Time (s)           25.9422
+Epoch                           0
+---------------------------  --------------
+2018-07-26 15:29:08.166255 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #0 | Epoch Duration: 25.96699619293213
+2018-07-26 15:29:08.166546 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #0 | Started Training: True
+2018-07-26 15:29:36.613848 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #1 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                         0.0537438
+VF Loss                         0.0445761
+Policy Loss                     0.0183161
+Q Predictions Mean              1.597
+Q Predictions Std               0.164965
+Q Predictions Max               1.81391
+Q Predictions Min               1.18791
+V Predictions Mean              2.28989
+V Predictions Std               0.0193152
+V Predictions Max               2.32871
+V Predictions Min               2.24358
+Log Pis Mean                   -0.687849
+Log Pis Std                     0.146207
+Log Pis Max                    -0.358414
+Log Pis Min                    -1.61338
+Policy mu Mean                 -0.0168005
+Policy mu Std                   0.0396934
+Policy mu Max                   0.0438554
+Policy mu Min                  -0.0980977
+Policy log std Mean            -0.108377
+Policy log std Std              0.00944923
+Policy log std Max             -0.0951805
+Policy log std Min             -0.129955
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              39.2692
+Test Returns Std                4.88764
+Test Returns Max               50
+Test Returns Min               32
+Test Actions Mean               0.0185367
+Test Actions Std                0.0187868
+Test Actions Max                0.071099
+Test Actions Min               -0.0207405
+Num Paths                     148
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean        6.75676
+Exploration Returns Std         4.45794
+Exploration Returns Max        32
+Exploration Returns Min         3
+Exploration Actions Mean       -0.00673
+Exploration Actions Std         0.58887
+Exploration Actions Max         0.990904
+Exploration Actions Min        -0.981479
+AverageReturn                  39.2692
+Number of train steps total  1873
+Number of env steps total    2000
+Number of rollouts total      322
+Train Time (s)                 27.388
+(Previous) Eval Time (s)        1.62159
+Sample Time (s)                 1.02911
+Epoch Time (s)                 30.0387
+Total Train Time (s)           56.0132
+Epoch                           1
+---------------------------  -------------
+2018-07-26 15:29:38.261380 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #1 | Epoch Duration: 30.09447431564331
+2018-07-26 15:29:38.261794 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #1 | Started Training: True
+2018-07-26 15:30:07.020374 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #2 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                         0.07899
+VF Loss                         0.0599688
+Policy Loss                    -0.0229641
+Q Predictions Mean              2.511
+Q Predictions Std               0.673905
+Q Predictions Max               2.95546
+Q Predictions Min               0.816834
+V Predictions Mean              3.21839
+V Predictions Std               0.556132
+V Predictions Max               3.70617
+V Predictions Min               1.67965
+Log Pis Mean                   -0.645282
+Log Pis Std                     0.22672
+Log Pis Max                    -0.0874112
+Log Pis Min                    -1.65555
+Policy mu Mean                  0.0222873
+Policy mu Std                   0.171172
+Policy mu Max                   0.308608
+Policy mu Min                  -0.32281
+Policy log std Mean            -0.179221
+Policy log std Std              0.00285553
+Policy log std Max             -0.175525
+Policy log std Min             -0.192038
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              28.1667
+Test Returns Std                1.01379
+Test Returns Max               31
+Test Returns Min               27
+Test Actions Mean               0.0371007
+Test Actions Std                0.0384862
+Test Actions Max                0.118872
+Test Actions Min               -0.0392813
+Num Paths                     113
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean        8.85841
+Exploration Returns Std         5.87008
+Exploration Returns Max        27
+Exploration Returns Min         3
+Exploration Actions Mean       -0.000561722
+Exploration Actions Std         0.602791
+Exploration Actions Max         0.996342
+Exploration Actions Min        -0.983257
+AverageReturn                  28.1667
+Number of train steps total  2873
+Number of env steps total    3000
+Number of rollouts total      435
+Train Time (s)                 27.7813
+(Previous) Eval Time (s)        1.65444
+Sample Time (s)                 0.948706
+Epoch Time (s)                 30.3845
+Total Train Time (s)           86.3402
+Epoch                           2
+---------------------------  --------------
+2018-07-26 15:30:08.613806 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #2 | Epoch Duration: 30.35171103477478
+2018-07-26 15:30:08.614184 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #2 | Started Training: True
+2018-07-26 15:30:38.200155 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #3 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                         0.19065
+VF Loss                         0.0884575
+Policy Loss                     0.00569414
+Q Predictions Mean              3.43146
+Q Predictions Std               1.12272
+Q Predictions Max               4.24746
+Q Predictions Min               0.832819
+V Predictions Mean              4.08886
+V Predictions Std               0.947215
+V Predictions Max               4.79365
+V Predictions Min               1.55105
+Log Pis Mean                   -0.611575
+Log Pis Std                     0.355856
+Log Pis Max                     0.268554
+Log Pis Min                    -1.8091
+Policy mu Mean                 -0.0464408
+Policy mu Std                   0.326115
+Policy mu Max                   0.717495
+Policy mu Min                  -0.814738
+Policy log std Mean            -0.172562
+Policy log std Std              0.0532775
+Policy log std Max             -0.0665139
+Policy log std Min             -0.33254
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              45.7727
+Test Returns Std                1.475
+Test Returns Max               49
+Test Returns Min               43
+Test Actions Mean               0.0302875
+Test Actions Std                0.0261488
+Test Actions Max                0.0841151
+Test Actions Min               -0.0681445
+Num Paths                      71
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean       13.7324
+Exploration Returns Std        10.1925
+Exploration Returns Max        46
+Exploration Returns Min         3
+Exploration Actions Mean       -0.00170613
+Exploration Actions Std         0.593058
+Exploration Actions Max         0.995382
+Exploration Actions Min        -0.991354
+AverageReturn                  45.7727
+Number of train steps total  3873
+Number of env steps total    4000
+Number of rollouts total      506
+Train Time (s)                 28.6396
+(Previous) Eval Time (s)        1.59845
+Sample Time (s)                 0.91573
+Epoch Time (s)                 31.1538
+Total Train Time (s)          117.815
+Epoch                           3
+---------------------------  -------------
+2018-07-26 15:30:40.111664 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #3 | Epoch Duration: 31.497087717056274
+2018-07-26 15:30:40.112032 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #3 | Started Training: True
+2018-07-26 15:31:09.616008 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #4 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                         0.320465
+VF Loss                         0.127434
+Policy Loss                    -0.0735018
+Q Predictions Mean              4.33116
+Q Predictions Std               1.49163
+Q Predictions Max               5.56221
+Q Predictions Min               0.731035
+V Predictions Mean              5.24482
+V Predictions Std               1.27049
+V Predictions Max               6.18982
+V Predictions Min               1.74886
+Log Pis Mean                   -0.36529
+Log Pis Std                     0.553352
+Log Pis Max                     1.19761
+Log Pis Min                    -1.91609
+Policy mu Mean                 -0.0765763
+Policy mu Std                   0.515037
+Policy mu Max                   1.03662
+Policy mu Min                  -1.17423
+Policy log std Mean            -0.316077
+Policy log std Std              0.105039
+Policy log std Max              0.0162774
+Policy log std Min             -0.545212
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              65.6875
+Test Returns Std                2.46776
+Test Returns Max               70
+Test Returns Min               61
+Test Actions Mean               0.0272038
+Test Actions Std                0.0232899
+Test Actions Max                0.0887885
+Test Actions Min               -0.0652107
+Num Paths                      44
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean       23.1591
+Exploration Returns Std        14.9772
+Exploration Returns Max        70
+Exploration Returns Min         3
+Exploration Actions Mean       -0.00958543
+Exploration Actions Std         0.589369
+Exploration Actions Max         0.987594
+Exploration Actions Min        -0.995013
+AverageReturn                  65.6875
+Number of train steps total  4873
+Number of env steps total    5000
+Number of rollouts total      550
+Train Time (s)                 28.5607
+(Previous) Eval Time (s)        1.91838
+Sample Time (s)                 0.914377
+Epoch Time (s)                 31.3935
+Total Train Time (s)          148.937
+Epoch                           4
+---------------------------  -------------
+2018-07-26 15:31:11.258966 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #4 | Epoch Duration: 31.146613597869873
+2018-07-26 15:31:11.259402 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #4 | Started Training: True
+2018-07-26 15:31:43.305557 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #5 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                         0.52821
+VF Loss                         0.185706
+Policy Loss                    -0.00747105
+Q Predictions Mean              5.33916
+Q Predictions Std               1.87892
+Q Predictions Max               6.87966
+Q Predictions Min               0.751039
+V Predictions Mean              6.48945
+V Predictions Std               1.35029
+V Predictions Max               7.53032
+V Predictions Min               1.64484
+Log Pis Mean                   -0.263997
+Log Pis Std                     0.715827
+Log Pis Max                     1.52293
+Log Pis Min                    -2.42526
+Policy mu Mean                 -0.0132796
+Policy mu Std                   0.683361
+Policy mu Max                   1.30796
+Policy mu Min                  -1.4986
+Policy log std Mean            -0.399306
+Policy log std Std              0.117208
+Policy log std Max              0.0323354
+Policy log std Min             -0.676284
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              94.3636
+Test Returns Std                8.49891
+Test Returns Max              112
+Test Returns Min               86
+Test Actions Mean               0.0216715
+Test Actions Std                0.0682684
+Test Actions Max                0.887133
+Test Actions Min               -0.0270361
+Num Paths                      22
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean       45.8636
+Exploration Returns Std        25.955
+Exploration Returns Max       113
+Exploration Returns Min         6
+Exploration Actions Mean        0.0108526
+Exploration Actions Std         0.573812
+Exploration Actions Max         0.994109
+Exploration Actions Min        -0.99171
+AverageReturn                  94.3636
+Number of train steps total  5873
+Number of env steps total    6000
+Number of rollouts total      572
+Train Time (s)                 31.06
+(Previous) Eval Time (s)        1.64824
+Sample Time (s)                 0.955862
+Epoch Time (s)                 33.6641
+Total Train Time (s)          182.583
+Epoch                           5
+---------------------------  -------------
+2018-07-26 15:31:44.927631 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #5 | Epoch Duration: 33.667850732803345
+2018-07-26 15:31:44.927957 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #5 | Started Training: True
+2018-07-26 15:32:18.273155 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #6 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                         0.203196
+VF Loss                         0.263633
+Policy Loss                    -0.0933595
+Q Predictions Mean              6.40491
+Q Predictions Std               2.14343
+Q Predictions Max               8.25649
+Q Predictions Min               0.464467
+V Predictions Mean              7.51183
+V Predictions Std               1.57102
+V Predictions Max               8.7889
+V Predictions Min               1.52251
+Log Pis Mean                   -0.279266
+Log Pis Std                     0.615397
+Log Pis Max                     1.49515
+Log Pis Min                    -2.54497
+Policy mu Mean                  0.0350428
+Policy mu Std                   0.607284
+Policy mu Max                   1.19696
+Policy mu Min                  -1.23744
+Policy log std Mean            -0.484851
+Policy log std Std              0.145319
+Policy log std Max              0.0845556
+Policy log std Min             -0.759392
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean             108.3
+Test Returns Std               12.2233
+Test Returns Max              141
+Test Returns Min               95
+Test Actions Mean               0.0202168
+Test Actions Std                0.0824669
+Test Actions Max                0.90399
+Test Actions Min               -0.030445
+Num Paths                      14
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean       70.2143
+Exploration Returns Std        23.7071
+Exploration Returns Max       122
+Exploration Returns Min        27
+Exploration Actions Mean        0.00536991
+Exploration Actions Std         0.562967
+Exploration Actions Max         0.987641
+Exploration Actions Min        -0.984503
+AverageReturn                 108.3
+Number of train steps total  6873
+Number of env steps total    7000
+Number of rollouts total      586
+Train Time (s)                 32.4563
+(Previous) Eval Time (s)        1.62823
+Sample Time (s)                 0.861281
+Epoch Time (s)                 34.9458
+Total Train Time (s)          217.565
+Epoch                           6
+---------------------------  -------------
+2018-07-26 15:32:19.933414 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #6 | Epoch Duration: 35.00511121749878
+2018-07-26 15:32:19.933707 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #6 | Started Training: True
+2018-07-26 15:32:53.040077 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #7 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                         0.278028
+VF Loss                         0.208187
+Policy Loss                     0.0650001
+Q Predictions Mean              7.87186
+Q Predictions Std               2.256
+Q Predictions Max               9.48194
+Q Predictions Min               0.818041
+V Predictions Mean              8.75155
+V Predictions Std               1.56341
+V Predictions Max               9.70786
+V Predictions Min               1.8064
+Log Pis Mean                   -0.31345
+Log Pis Std                     0.855478
+Log Pis Max                     2.37404
+Log Pis Min                    -4.67877
+Policy mu Mean                  0.0456975
+Policy mu Std                   0.661675
+Policy mu Max                   1.35577
+Policy mu Min                  -1.71865
+Policy log std Mean            -0.541832
+Policy log std Std              0.148917
+Policy log std Max              0.00540782
+Policy log std Min             -0.998325
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              71.2667
+Test Returns Std                2.23507
+Test Returns Max               76
+Test Returns Min               68
+Test Actions Mean               0.0358684
+Test Actions Std                0.113724
+Test Actions Max                0.917942
+Test Actions Min               -0.0232612
+Num Paths                      19
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean       50.4211
+Exploration Returns Std        26.9294
+Exploration Returns Max       127
+Exploration Returns Min        11
+Exploration Actions Mean        0.00835553
+Exploration Actions Std         0.55134
+Exploration Actions Max         0.984588
+Exploration Actions Min        -0.990017
+AverageReturn                  71.2667
+Number of train steps total  7873
+Number of env steps total    8000
+Number of rollouts total      605
+Train Time (s)                 32.1545
+(Previous) Eval Time (s)        1.66566
+Sample Time (s)                 0.923188
+Epoch Time (s)                 34.7434
+Total Train Time (s)          252.447
+Epoch                           7
+---------------------------  -------------
+2018-07-26 15:32:54.840591 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #7 | Epoch Duration: 34.90647268295288
+2018-07-26 15:32:54.841078 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #7 | Started Training: True
+2018-07-26 15:33:26.849354 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #8 | Collecting samples for evaluation
+---------------------------  ------------
+QF Loss                         0.336905
+VF Loss                         0.216968
+Policy Loss                     0.0586577
+Q Predictions Mean              8.89502
+Q Predictions Std               2.55505
+Q Predictions Max              10.7421
+Q Predictions Min               0.375464
+V Predictions Mean             10.1171
+V Predictions Std               1.47682
+V Predictions Max              11.4183
+V Predictions Min               1.77319
+Log Pis Mean                   -0.319214
+Log Pis Std                     0.726412
+Log Pis Max                     2.21809
+Log Pis Min                    -2.71244
+Policy mu Mean                 -0.0549029
+Policy mu Std                   0.599315
+Policy mu Max                   1.48528
+Policy mu Min                  -1.63845
+Policy log std Mean            -0.55478
+Policy log std Std              0.134676
+Policy log std Max             -0.107212
+Policy log std Min             -0.815913
+Test Rewards Mean               1
+Test Rewards Std                0
+Test Rewards Max                1
+Test Rewards Min                1
+Test Returns Mean              78.2308
+Test Returns Std                1.88736
+Test Returns Max               81
+Test Returns Min               74
+Test Actions Mean               0.0361268
+Test Actions Std                0.133533
+Test Actions Max                0.938839
+Test Actions Min               -0.0488864
+Num Paths                      18
+Exploration Rewards Mean        1
+Exploration Rewards Std         0
+Exploration Rewards Max         1
+Exploration Rewards Min         1
+Exploration Returns Mean       56.6111
+Exploration Returns Std        29.9447
+Exploration Returns Max       125
+Exploration Returns Min        11
+Exploration Actions Mean        0.015774
+Exploration Actions Std         0.559514
+Exploration Actions Max         0.994034
+Exploration Actions Min        -0.992949
+AverageReturn                  78.2308
+Number of train steps total  8873
+Number of env steps total    9000
+Number of rollouts total      623
+Train Time (s)                 31.0895
+(Previous) Eval Time (s)        1.80655
+Sample Time (s)                 0.890694
+Epoch Time (s)                 33.7867
+Total Train Time (s)          286.005
+Epoch                           8
+---------------------------  ------------
+2018-07-26 15:33:28.419115 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #8 | Epoch Duration: 33.577608823776245
+2018-07-26 15:33:28.419456 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #8 | Started Training: True
+2018-07-26 15:34:01.265612 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #9 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.368073
+VF Loss                          0.494661
+Policy Loss                      0.087363
+Q Predictions Mean              10.1907
+Q Predictions Std                2.62673
+Q Predictions Max               12.0789
+Q Predictions Min                0.777526
+V Predictions Mean              10.5827
+V Predictions Std                2.17226
+V Predictions Max               12.1881
+V Predictions Min                0.433333
+Log Pis Mean                    -0.361597
+Log Pis Std                      0.763216
+Log Pis Max                      1.45505
+Log Pis Min                     -2.56239
+Policy mu Mean                   0.0164421
+Policy mu Std                    0.656195
+Policy mu Max                    1.50724
+Policy mu Min                   -1.62419
+Policy log std Mean             -0.585159
+Policy log std Std               0.129076
+Policy log std Max              -0.207804
+Policy log std Min              -0.934206
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              311.75
+Test Returns Std               114.65
+Test Returns Max               507
+Test Returns Min               216
+Test Actions Mean               -0.0129823
+Test Actions Std                 0.102244
+Test Actions Max                 0.847637
+Test Actions Min                -0.883824
+Num Paths                       11
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean        88.5455
+Exploration Returns Std         57.7508
+Exploration Returns Max        264
+Exploration Returns Min         49
+Exploration Actions Mean        -0.00518101
+Exploration Actions Std          0.559166
+Exploration Actions Max          0.987315
+Exploration Actions Min         -0.981613
+AverageReturn                  311.75
+Number of train steps total   9873
+Number of env steps total    10000
+Number of rollouts total       634
+Train Time (s)                  31.8871
+(Previous) Eval Time (s)         1.57536
+Sample Time (s)                  0.929111
+Epoch Time (s)                  34.3916
+Total Train Time (s)           320.499
+Epoch                            9
+---------------------------  --------------
+2018-07-26 15:34:02.937214 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #9 | Epoch Duration: 34.517444372177124
+2018-07-26 15:34:02.937483 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #9 | Started Training: True
+2018-07-26 15:34:36.083841 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #10 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.620397
+VF Loss                          0.422501
+Policy Loss                     -0.0741089
+Q Predictions Mean              11.1675
+Q Predictions Std                2.7508
+Q Predictions Max               13.0253
+Q Predictions Min                0.969272
+V Predictions Mean              12.367
+V Predictions Std                2.13725
+V Predictions Max               13.7146
+V Predictions Min                0.748032
+Log Pis Mean                    -0.152946
+Log Pis Std                      0.850575
+Log Pis Max                      2.24719
+Log Pis Min                     -3.16769
+Policy mu Mean                   0.0432939
+Policy mu Std                    0.738766
+Policy mu Max                    1.76948
+Policy mu Min                   -1.73665
+Policy log std Mean             -0.675963
+Policy log std Std               0.110558
+Policy log std Max              -0.290259
+Policy log std Min              -0.946487
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              111.222
+Test Returns Std                 1.93091
+Test Returns Max               114
+Test Returns Min               109
+Test Actions Mean                0.0380218
+Test Actions Std                 0.153637
+Test Actions Max                 0.930041
+Test Actions Min                -0.0435169
+Num Paths                       10
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       105.7
+Exploration Returns Std         49.0389
+Exploration Returns Max        225
+Exploration Returns Min         66
+Exploration Actions Mean         0.00224143
+Exploration Actions Std          0.549573
+Exploration Actions Max          0.979817
+Exploration Actions Min         -0.985563
+AverageReturn                  111.222
+Number of train steps total  10873
+Number of env steps total    11000
+Number of rollouts total       644
+Train Time (s)                  32.2127
+(Previous) Eval Time (s)         1.67834
+Sample Time (s)                  0.905157
+Epoch Time (s)                  34.7962
+Total Train Time (s)           355.321
+Epoch                           10
+---------------------------  --------------
+2018-07-26 15:34:37.787126 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #10 | Epoch Duration: 34.84932732582092
+2018-07-26 15:34:37.787648 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #10 | Started Training: True
+2018-07-26 15:35:10.993568 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #11 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.178192
+VF Loss                          0.329111
+Policy Loss                      0.177033
+Q Predictions Mean              12.2133
+Q Predictions Std                3.31171
+Q Predictions Max               14.6706
+Q Predictions Min                0.904654
+V Predictions Mean              12.9392
+V Predictions Std                1.92063
+V Predictions Max               14.5864
+V Predictions Min                1.9495
+Log Pis Mean                    -0.15432
+Log Pis Std                      0.843584
+Log Pis Max                      2.04659
+Log Pis Min                     -3.17161
+Policy mu Mean                   0.166562
+Policy mu Std                    0.669378
+Policy mu Max                    1.61047
+Policy mu Min                   -1.62001
+Policy log std Mean             -0.675992
+Policy log std Std               0.0924896
+Policy log std Max              -0.283405
+Policy log std Min              -0.889047
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              804.5
+Test Returns Std                31.5
+Test Returns Max               836
+Test Returns Min               773
+Test Actions Mean                0.00604919
+Test Actions Std                 0.0641143
+Test Actions Max                 0.941936
+Test Actions Min                -0.0138267
+Num Paths                        7
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       143.143
+Exploration Returns Std         53.3464
+Exploration Returns Max        221
+Exploration Returns Min         66
+Exploration Actions Mean        -0.00417137
+Exploration Actions Std          0.526082
+Exploration Actions Max          0.994749
+Exploration Actions Min         -0.969155
+AverageReturn                  804.5
+Number of train steps total  11873
+Number of env steps total    12000
+Number of rollouts total       651
+Train Time (s)                  32.294
+(Previous) Eval Time (s)         1.70822
+Sample Time (s)                  0.882371
+Epoch Time (s)                  34.8846
+Total Train Time (s)           390.339
+Epoch                           11
+---------------------------  --------------
+2018-07-26 15:35:12.825156 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #11 | Epoch Duration: 35.0370192527771
+2018-07-26 15:35:12.825460 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #11 | Started Training: True
+2018-07-26 15:35:48.061125 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #12 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          1.32657
+VF Loss                          0.272098
+Policy Loss                     -0.0110099
+Q Predictions Mean              13.2339
+Q Predictions Std                3.38944
+Q Predictions Max               15.3895
+Q Predictions Min               -0.530197
+V Predictions Mean              14.6992
+V Predictions Std                1.95889
+V Predictions Max               16.1724
+V Predictions Min                0.684241
+Log Pis Mean                    -0.205495
+Log Pis Std                      0.753755
+Log Pis Max                      2.00702
+Log Pis Min                     -2.37776
+Policy mu Mean                   0.0946543
+Policy mu Std                    0.623967
+Policy mu Max                    1.82716
+Policy mu Min                   -1.2399
+Policy log std Mean             -0.647977
+Policy log std Std               0.102723
+Policy log std Max              -0.131557
+Policy log std Min              -0.888771
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              720
+Test Returns Std                 1
+Test Returns Max               721
+Test Returns Min               719
+Test Actions Mean               -0.00562647
+Test Actions Std                 0.0608664
+Test Actions Max                 0.0471116
+Test Actions Min                -0.957573
+Num Paths                        9
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean        95.6667
+Exploration Returns Std         43.0555
+Exploration Returns Max        153
+Exploration Returns Min         31
+Exploration Actions Mean        -0.0168623
+Exploration Actions Std          0.526301
+Exploration Actions Max          0.988433
+Exploration Actions Min         -0.9757
+AverageReturn                  720
+Number of train steps total  12873
+Number of env steps total    13000
+Number of rollouts total       660
+Train Time (s)                  34.3056
+(Previous) Eval Time (s)         1.83755
+Sample Time (s)                  0.90277
+Epoch Time (s)                  37.046
+Total Train Time (s)           427.282
+Epoch                           12
+---------------------------  --------------
+2018-07-26 15:35:49.791642 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #12 | Epoch Duration: 36.96585512161255
+2018-07-26 15:35:49.791966 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #12 | Started Training: True
+2018-07-26 15:36:23.999249 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #13 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                          1.35853
+VF Loss                          0.297928
+Policy Loss                      0.127207
+Q Predictions Mean              14.1336
+Q Predictions Std                3.49549
+Q Predictions Max               16.5387
+Q Predictions Min                0.714416
+V Predictions Mean              15.0543
+V Predictions Std                2.77356
+V Predictions Max               16.5636
+V Predictions Min                0.144009
+Log Pis Mean                    -0.137136
+Log Pis Std                      0.824065
+Log Pis Max                      2.66926
+Log Pis Min                     -3.73305
+Policy mu Mean                   0.120913
+Policy mu Std                    0.714285
+Policy mu Max                    1.90437
+Policy mu Min                   -1.87104
+Policy log std Mean             -0.712333
+Policy log std Std               0.0914966
+Policy log std Max              -0.267626
+Policy log std Min              -0.935732
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              463
+Test Returns Std                 1.63299
+Test Returns Max               465
+Test Returns Min               461
+Test Actions Mean                0.0126985
+Test Actions Std                 0.0936969
+Test Actions Max                 0.947592
+Test Actions Min                -0.0593708
+Num Paths                        9
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       121
+Exploration Returns Std         53.5973
+Exploration Returns Max        180
+Exploration Returns Min          6
+Exploration Actions Mean        -0.0198354
+Exploration Actions Std          0.539985
+Exploration Actions Max          0.984719
+Exploration Actions Min         -0.985238
+AverageReturn                  463
+Number of train steps total  13873
+Number of env steps total    14000
+Number of rollouts total       669
+Train Time (s)                  33.0437
+(Previous) Eval Time (s)         1.73538
+Sample Time (s)                  1.13289
+Epoch Time (s)                  35.912
+Total Train Time (s)           463.205
+Epoch                           13
+---------------------------  -------------
+2018-07-26 15:36:25.740693 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #13 | Epoch Duration: 35.948436975479126
+2018-07-26 15:36:25.741079 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #13 | Started Training: True
+2018-07-26 15:36:58.792458 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #14 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          1.12838
+VF Loss                          0.337174
+Policy Loss                     -0.0348555
+Q Predictions Mean              15.3414
+Q Predictions Std                3.85857
+Q Predictions Max               17.8774
+Q Predictions Min                0.280818
+V Predictions Mean              16.3946
+V Predictions Std                3.19198
+V Predictions Max               17.9728
+V Predictions Min               -0.373082
+Log Pis Mean                    -0.0802934
+Log Pis Std                      0.929862
+Log Pis Max                      2.61372
+Log Pis Min                     -4.87467
+Policy mu Mean                  -0.080222
+Policy mu Std                    0.709348
+Policy mu Max                    1.50594
+Policy mu Min                   -2.0573
+Policy log std Mean             -0.737529
+Policy log std Std               0.111399
+Policy log std Max              -0.148033
+Policy log std Min              -0.988839
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              563
+Test Returns Std                84
+Test Returns Max               647
+Test Returns Min               479
+Test Actions Mean                0.0113757
+Test Actions Std                 0.0833054
+Test Actions Max                 0.951385
+Test Actions Min                -0.0579335
+Num Paths                        8
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       124.5
+Exploration Returns Std         41.9583
+Exploration Returns Max        199
+Exploration Returns Min         63
+Exploration Actions Mean        -0.00980273
+Exploration Actions Std          0.541276
+Exploration Actions Max          0.987349
+Exploration Actions Min         -0.982458
+AverageReturn                  563
+Number of train steps total  14873
+Number of env steps total    15000
+Number of rollouts total       677
+Train Time (s)                  32.0858
+(Previous) Eval Time (s)         1.74831
+Sample Time (s)                  0.937097
+Epoch Time (s)                  34.7713
+Total Train Time (s)           497.85
+Epoch                           14
+---------------------------  --------------
+2018-07-26 15:37:00.409123 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #14 | Epoch Duration: 34.667675495147705
+2018-07-26 15:37:00.409533 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #14 | Started Training: True
+2018-07-26 15:37:33.755332 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #15 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.649482
+VF Loss                          0.133479
+Policy Loss                      0.0198708
+Q Predictions Mean              16.9507
+Q Predictions Std                2.88001
+Q Predictions Max               18.9337
+Q Predictions Min                1.3591
+V Predictions Mean              17.95
+V Predictions Std                1.35821
+V Predictions Max               19.043
+V Predictions Min                5.54412
+Log Pis Mean                    -0.164381
+Log Pis Std                      0.661324
+Log Pis Max                      2.32046
+Log Pis Min                     -1.39547
+Policy mu Mean                   0.0387641
+Policy mu Std                    0.623459
+Policy mu Max                    1.79898
+Policy mu Min                   -1.32388
+Policy log std Mean             -0.659824
+Policy log std Std               0.0849234
+Policy log std Max              -0.534889
+Policy log std Min              -0.919194
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              865.5
+Test Returns Std                 5.5
+Test Returns Max               871
+Test Returns Min               860
+Test Actions Mean               -0.00444588
+Test Actions Std                 0.0540247
+Test Actions Max                 0.0301951
+Test Actions Min                -0.954954
+Num Paths                        4
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       248.25
+Exploration Returns Std         35.5624
+Exploration Returns Max        308
+Exploration Returns Min        215
+Exploration Actions Mean         0.00154735
+Exploration Actions Std          0.543123
+Exploration Actions Max          0.991721
+Exploration Actions Min         -0.983881
+AverageReturn                  865.5
+Number of train steps total  15873
+Number of env steps total    16000
+Number of rollouts total       681
+Train Time (s)                  32.4097
+(Previous) Eval Time (s)         1.62174
+Sample Time (s)                  0.906494
+Epoch Time (s)                  34.938
+Total Train Time (s)           533.167
+Epoch                           15
+---------------------------  --------------
+2018-07-26 15:37:35.749498 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #15 | Epoch Duration: 35.33961772918701
+2018-07-26 15:37:35.749803 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #15 | Started Training: True
+2018-07-26 15:38:14.058069 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #16 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                          2.0071
+VF Loss                          0.237312
+Policy Loss                      0.0188609
+Q Predictions Mean              18.1151
+Q Predictions Std                3.25624
+Q Predictions Max               19.9824
+Q Predictions Min               -0.698032
+V Predictions Mean              18.6074
+V Predictions Std                3.1237
+V Predictions Max               20.261
+V Predictions Min               -1.76201
+Log Pis Mean                    -0.368998
+Log Pis Std                      0.762061
+Log Pis Max                      2.17387
+Log Pis Min                     -2.74902
+Policy mu Mean                   0.0667169
+Policy mu Std                    0.61989
+Policy mu Max                    2.00485
+Policy mu Min                   -1.48951
+Policy log std Mean             -0.646422
+Policy log std Std               0.0874063
+Policy log std Max              -0.246867
+Policy log std Min              -0.919259
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              538.5
+Test Returns Std                 1.5
+Test Returns Max               540
+Test Returns Min               537
+Test Actions Mean                0.0107537
+Test Actions Std                 0.087456
+Test Actions Max                 0.964592
+Test Actions Min                -0.0479995
+Num Paths                        6
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       169.167
+Exploration Returns Std         43.6746
+Exploration Returns Max        229
+Exploration Returns Min        100
+Exploration Actions Mean         0.0143332
+Exploration Actions Std          0.532018
+Exploration Actions Max          0.992915
+Exploration Actions Min         -0.981347
+AverageReturn                  538.5
+Number of train steps total  16873
+Number of env steps total    17000
+Number of rollouts total       687
+Train Time (s)                  36.9487
+(Previous) Eval Time (s)         2.00052
+Sample Time (s)                  1.33077
+Epoch Time (s)                  40.2799
+Total Train Time (s)           573.074
+Epoch                           16
+---------------------------  -------------
+2018-07-26 15:38:15.679533 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #16 | Epoch Duration: 39.92945671081543
+2018-07-26 15:38:15.679789 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #16 | Started Training: True
+2018-07-26 15:38:51.939250 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #17 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          4.59968
+VF Loss                          0.376914
+Policy Loss                      0.0959841
+Q Predictions Mean              18.0929
+Q Predictions Std                4.79051
+Q Predictions Max               20.9468
+Q Predictions Min                0.662266
+V Predictions Mean              19.2891
+V Predictions Std                2.84115
+V Predictions Max               20.7884
+V Predictions Min               -0.914923
+Log Pis Mean                    -0.0409608
+Log Pis Std                      0.817523
+Log Pis Max                      1.95751
+Log Pis Min                     -2.20097
+Policy mu Mean                  -0.093686
+Policy mu Std                    0.747889
+Policy mu Max                    2.04634
+Policy mu Min                   -2.21235
+Policy log std Mean             -0.750795
+Policy log std Std               0.0924175
+Policy log std Max              -0.327994
+Policy log std Min              -0.932883
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              616
+Test Returns Std                 2
+Test Returns Max               618
+Test Returns Min               614
+Test Actions Mean               -0.00964399
+Test Actions Std                 0.0805894
+Test Actions Max                 0.0348847
+Test Actions Min                -0.949309
+Num Paths                        6
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       159.5
+Exploration Returns Std         34.3208
+Exploration Returns Max        218
+Exploration Returns Min        130
+Exploration Actions Mean        -0.0308317
+Exploration Actions Std          0.544572
+Exploration Actions Max          0.990352
+Exploration Actions Min         -0.994129
+AverageReturn                  616
+Number of train steps total  17873
+Number of env steps total    18000
+Number of rollouts total       693
+Train Time (s)                  35.166
+(Previous) Eval Time (s)         1.62735
+Sample Time (s)                  1.06539
+Epoch Time (s)                  37.8587
+Total Train Time (s)           611.015
+Epoch                           17
+---------------------------  --------------
+2018-07-26 15:38:53.643590 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #17 | Epoch Duration: 37.96354341506958
+2018-07-26 15:38:53.643896 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #17 | Started Training: True
+2018-07-26 15:39:28.897011 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #18 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                          4.53782
+VF Loss                          0.622147
+Policy Loss                     -0.0514898
+Q Predictions Mean              19.0503
+Q Predictions Std                5.14594
+Q Predictions Max               22.0914
+Q Predictions Min               -0.751978
+V Predictions Mean              20.257
+V Predictions Std                3.21226
+V Predictions Max               22.0117
+V Predictions Min                0.660721
+Log Pis Mean                    -0.123334
+Log Pis Std                      0.888069
+Log Pis Max                      2.61312
+Log Pis Min                     -4.02121
+Policy mu Mean                  -0.0497819
+Policy mu Std                    0.716509
+Policy mu Max                    1.87585
+Policy mu Min                   -1.99361
+Policy log std Mean             -0.683231
+Policy log std Std               0.0988799
+Policy log std Max              -0.37333
+Policy log std Min              -1.02393
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              442
+Test Returns Std                 1.63299
+Test Returns Max               444
+Test Returns Min               440
+Test Actions Mean               -0.0128308
+Test Actions Std                 0.0968517
+Test Actions Max                 0.038395
+Test Actions Min                -0.969426
+Num Paths                        5
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       163
+Exploration Returns Std         40.035
+Exploration Returns Max        234
+Exploration Returns Min        121
+Exploration Actions Mean         0.0127171
+Exploration Actions Std          0.515921
+Exploration Actions Max          0.99476
+Exploration Actions Min         -0.991947
+AverageReturn                  442
+Number of train steps total  18873
+Number of env steps total    19000
+Number of rollouts total       698
+Train Time (s)                  34.2993
+(Previous) Eval Time (s)         1.71023
+Sample Time (s)                  0.924742
+Epoch Time (s)                  36.9343
+Total Train Time (s)           647.965
+Epoch                           18
+---------------------------  -------------
+2018-07-26 15:39:30.623744 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #18 | Epoch Duration: 36.97955131530762
+2018-07-26 15:39:30.624373 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #18 | Started Training: True
+2018-07-26 15:40:07.137892 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #19 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          2.69816
+VF Loss                          1.04738
+Policy Loss                     -0.134106
+Q Predictions Mean              21.0327
+Q Predictions Std                4.04283
+Q Predictions Max               23.4764
+Q Predictions Min               -0.0458303
+V Predictions Mean              21.1827
+V Predictions Std                3.06357
+V Predictions Max               22.7678
+V Predictions Min               -1.14386
+Log Pis Mean                    -0.139989
+Log Pis Std                      0.913722
+Log Pis Max                      3.10837
+Log Pis Min                     -2.90329
+Policy mu Mean                   0.0354301
+Policy mu Std                    0.733975
+Policy mu Max                    2.05572
+Policy mu Min                   -2.08739
+Policy log std Mean             -0.71182
+Policy log std Std               0.0963657
+Policy log std Max              -0.376757
+Policy log std Min              -1.01143
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              668.5
+Test Returns Std                 8.5
+Test Returns Max               677
+Test Returns Min               660
+Test Actions Mean                0.0109241
+Test Actions Std                 0.106438
+Test Actions Max                 0.964164
+Test Actions Min                -0.960196
+Num Paths                        5
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       213
+Exploration Returns Std         75.8103
+Exploration Returns Max        330
+Exploration Returns Min        128
+Exploration Actions Mean         0.00624814
+Exploration Actions Std          0.525329
+Exploration Actions Max          0.989794
+Exploration Actions Min         -0.975383
+AverageReturn                  668.5
+Number of train steps total  19873
+Number of env steps total    20000
+Number of rollouts total       703
+Train Time (s)                  35.5256
+(Previous) Eval Time (s)         1.73239
+Sample Time (s)                  0.958394
+Epoch Time (s)                  38.2164
+Total Train Time (s)           686.484
+Epoch                           19
+---------------------------  --------------
+2018-07-26 15:40:09.161320 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #19 | Epoch Duration: 38.536335468292236
+2018-07-26 15:40:09.161643 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #19 | Started Training: True
+2018-07-26 15:40:44.988461 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #20 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                          5.31384
+VF Loss                          0.377611
+Policy Loss                      0.128696
+Q Predictions Mean              21.4588
+Q Predictions Std                4.42963
+Q Predictions Max               24.2381
+Q Predictions Min               -0.719485
+V Predictions Mean              21.9488
+V Predictions Std                3.53915
+V Predictions Max               23.5452
+V Predictions Min               -2.04024
+Log Pis Mean                    -0.195963
+Log Pis Std                      0.966968
+Log Pis Max                      2.79957
+Log Pis Min                     -2.45087
+Policy mu Mean                   0.136917
+Policy mu Std                    0.729956
+Policy mu Max                    1.77036
+Policy mu Min                   -1.95147
+Policy log std Mean             -0.745189
+Policy log std Std               0.0814378
+Policy log std Max              -0.439436
+Policy log std Min              -1.00129
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              545
+Test Returns Std                 1
+Test Returns Max               546
+Test Returns Min               544
+Test Actions Mean               -0.0150578
+Test Actions Std                 0.104367
+Test Actions Max                 0.0468669
+Test Actions Min                -0.96546
+Num Paths                        5
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       238.4
+Exploration Returns Std         89.7967
+Exploration Returns Max        388
+Exploration Returns Min        110
+Exploration Actions Mean         0.0125875
+Exploration Actions Std          0.530926
+Exploration Actions Max          0.994202
+Exploration Actions Min         -0.990541
+AverageReturn                  545
+Number of train steps total  20873
+Number of env steps total    21000
+Number of rollouts total       708
+Train Time (s)                  34.8467
+(Previous) Eval Time (s)         2.02967
+Sample Time (s)                  0.879503
+Epoch Time (s)                  37.7558
+Total Train Time (s)           723.914
+Epoch                           20
+---------------------------  -------------
+2018-07-26 15:40:46.616164 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #20 | Epoch Duration: 37.45420503616333
+2018-07-26 15:40:46.616608 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #20 | Started Training: True
+2018-07-26 15:41:22.635893 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #21 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          1.67548
+VF Loss                          0.405867
+Policy Loss                      0.114343
+Q Predictions Mean              22.8872
+Q Predictions Std                4.6716
+Q Predictions Max               25.2422
+Q Predictions Min                0.0562837
+V Predictions Mean              23.3051
+V Predictions Std                3.65687
+V Predictions Max               24.8639
+V Predictions Min                0.834374
+Log Pis Mean                    -0.188356
+Log Pis Std                      0.71357
+Log Pis Max                      2.76427
+Log Pis Min                     -2.1696
+Policy mu Mean                  -0.0576406
+Policy mu Std                    0.646845
+Policy mu Max                    1.99638
+Policy mu Min                   -1.57573
+Policy log std Mean             -0.732296
+Policy log std Std               0.104019
+Policy log std Max              -0.20415
+Policy log std Min              -1.00498
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              465.667
+Test Returns Std                32.6224
+Test Returns Max               498
+Test Returns Min               421
+Test Actions Mean                0.0118949
+Test Actions Std                 0.134512
+Test Actions Max                 0.95887
+Test Actions Min                -0.972481
+Num Paths                        6
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       164.333
+Exploration Returns Std         84.5314
+Exploration Returns Max        326
+Exploration Returns Min         73
+Exploration Actions Mean         0.00352805
+Exploration Actions Std          0.526591
+Exploration Actions Max          0.972765
+Exploration Actions Min         -0.976732
+AverageReturn                  465.667
+Number of train steps total  21873
+Number of env steps total    22000
+Number of rollouts total       714
+Train Time (s)                  35.1017
+(Previous) Eval Time (s)         1.70585
+Sample Time (s)                  0.890401
+Epoch Time (s)                  37.6979
+Total Train Time (s)           761.785
+Epoch                           21
+---------------------------  --------------
+2018-07-26 15:41:24.511506 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #21 | Epoch Duration: 37.89449596405029
+2018-07-26 15:41:24.512009 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #21 | Started Training: True
+2018-07-26 15:42:00.384322 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #22 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.288749
+VF Loss                          0.323923
+Policy Loss                     -0.00988082
+Q Predictions Mean              23.9794
+Q Predictions Std                4.33319
+Q Predictions Max               26.1734
+Q Predictions Min               -0.938082
+V Predictions Mean              25.1954
+V Predictions Std                2.93334
+V Predictions Max               26.4541
+V Predictions Min                1.41685
+Log Pis Mean                    -0.214941
+Log Pis Std                      0.80042
+Log Pis Max                      2.38988
+Log Pis Min                     -3.8731
+Policy mu Mean                  -0.0417662
+Policy mu Std                    0.6181
+Policy mu Max                    1.35465
+Policy mu Min                   -1.92471
+Policy log std Mean             -0.736541
+Policy log std Std               0.0944386
+Policy log std Max              -0.430013
+Policy log std Min              -1.00049
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              769.5
+Test Returns Std                 7.5
+Test Returns Max               777
+Test Returns Min               762
+Test Actions Mean               -0.00631573
+Test Actions Std                 0.0673055
+Test Actions Max                 0.0411233
+Test Actions Min                -0.956057
+Num Paths                        4
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       155.25
+Exploration Returns Std         50.6526
+Exploration Returns Max        226
+Exploration Returns Min        101
+Exploration Actions Mean        -0.00502509
+Exploration Actions Std          0.523025
+Exploration Actions Max          0.986375
+Exploration Actions Min         -0.970456
+AverageReturn                  769.5
+Number of train steps total  22873
+Number of env steps total    23000
+Number of rollouts total       718
+Train Time (s)                  34.9427
+(Previous) Eval Time (s)         1.88055
+Sample Time (s)                  0.901797
+Epoch Time (s)                  37.7251
+Total Train Time (s)           799.54
+Epoch                           22
+---------------------------  --------------
+2018-07-26 15:42:02.287088 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #22 | Epoch Duration: 37.774680852890015
+2018-07-26 15:42:02.287361 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #22 | Started Training: True
+2018-07-26 15:42:41.287931 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #23 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.260857
+VF Loss                          0.408894
+Policy Loss                     -0.189466
+Q Predictions Mean              25.1891
+Q Predictions Std                3.42042
+Q Predictions Max               27.1177
+Q Predictions Min                1.0441
+V Predictions Mean              26.2491
+V Predictions Std                2.65068
+V Predictions Max               27.3544
+V Predictions Min                0.904882
+Log Pis Mean                    -0.255531
+Log Pis Std                      0.68167
+Log Pis Max                      1.14372
+Log Pis Min                     -3.64522
+Policy mu Mean                   0.0500407
+Policy mu Std                    0.586467
+Policy mu Max                    1.31241
+Policy mu Min                   -2.14274
+Policy log std Mean             -0.721619
+Policy log std Std               0.0684522
+Policy log std Max              -0.535723
+Policy log std Min              -0.925317
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              994.5
+Test Returns Std                 4.5
+Test Returns Max               999
+Test Returns Min               990
+Test Actions Mean               -0.00324263
+Test Actions Std                 0.0449385
+Test Actions Max                 0.040642
+Test Actions Min                -0.959551
+Num Paths                        4
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       307.5
+Exploration Returns Std        206.84
+Exploration Returns Max        586
+Exploration Returns Min         90
+Exploration Actions Mean         0.00108085
+Exploration Actions Std          0.510674
+Exploration Actions Max          0.995676
+Exploration Actions Min         -0.974724
+AverageReturn                  994.5
+Number of train steps total  23873
+Number of env steps total    24000
+Number of rollouts total       722
+Train Time (s)                  37.6668
+(Previous) Eval Time (s)         1.90811
+Sample Time (s)                  1.30472
+Epoch Time (s)                  40.8796
+Total Train Time (s)           840.482
+Epoch                           23
+---------------------------  --------------
+2018-07-26 15:42:43.251382 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #23 | Epoch Duration: 40.96374273300171
+2018-07-26 15:42:43.251656 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #23 | Started Training: True
+2018-07-26 15:43:22.180338 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #24 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                          2.7644
+VF Loss                          0.157571
+Policy Loss                      0.0239379
+Q Predictions Mean              25.3704
+Q Predictions Std                5.42765
+Q Predictions Max               28.1764
+Q Predictions Min               -1.24385
+V Predictions Mean              26.6782
+V Predictions Std                3.47343
+V Predictions Max               28.111
+V Predictions Min               -2.79939
+Log Pis Mean                    -0.0629737
+Log Pis Std                      0.872584
+Log Pis Max                      3.32607
+Log Pis Min                     -2.28718
+Policy mu Mean                   0.104085
+Policy mu Std                    0.674242
+Policy mu Max                    1.85656
+Policy mu Min                   -2.1975
+Policy log std Mean             -0.724561
+Policy log std Std               0.0907659
+Policy log std Max              -0.42743
+Policy log std Min              -0.981056
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              661.5
+Test Returns Std                52.5
+Test Returns Max               714
+Test Returns Min               609
+Test Actions Mean               -0.0112227
+Test Actions Std                 0.0860055
+Test Actions Max                 0.0520117
+Test Actions Min                -0.967151
+Num Paths                        8
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       144.875
+Exploration Returns Std         80.3997
+Exploration Returns Max        314
+Exploration Returns Min         55
+Exploration Actions Mean        -0.0015121
+Exploration Actions Std          0.526859
+Exploration Actions Max          0.994945
+Exploration Actions Min         -0.986927
+AverageReturn                  661.5
+Number of train steps total  24873
+Number of env steps total    25000
+Number of rollouts total       730
+Train Time (s)                  37.6799
+(Previous) Eval Time (s)         1.97016
+Sample Time (s)                  1.2213
+Epoch Time (s)                  40.8714
+Total Train Time (s)           881.117
+Epoch                           24
+---------------------------  -------------
+2018-07-26 15:43:23.910267 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #24 | Epoch Duration: 40.65833854675293
+2018-07-26 15:43:23.910597 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #24 | Started Training: True
+2018-07-26 15:44:03.243961 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #25 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          1.18323
+VF Loss                          0.67201
+Policy Loss                     -0.22172
+Q Predictions Mean              26.3415
+Q Predictions Std                5.45318
+Q Predictions Max               28.9155
+Q Predictions Min               -1.78272
+V Predictions Mean              27.4765
+V Predictions Std                3.03902
+V Predictions Max               28.859
+V Predictions Min               -1.63956
+Log Pis Mean                    -0.159309
+Log Pis Std                      0.850684
+Log Pis Max                      3.26389
+Log Pis Min                     -4.43086
+Policy mu Mean                   0.0645998
+Policy mu Std                    0.607881
+Policy mu Max                    2.18591
+Policy mu Min                   -1.34839
+Policy log std Mean             -0.768786
+Policy log std Std               0.123745
+Policy log std Max              -0.300633
+Policy log std Min              -1.08815
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              877.5
+Test Returns Std                40.5
+Test Returns Max               918
+Test Returns Min               837
+Test Actions Mean                0.00728093
+Test Actions Std                 0.0922931
+Test Actions Max                 0.980104
+Test Actions Min                -0.92514
+Num Paths                        6
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       168.167
+Exploration Returns Std         71.9222
+Exploration Returns Max        259
+Exploration Returns Min         35
+Exploration Actions Mean        -0.00538706
+Exploration Actions Std          0.534863
+Exploration Actions Max          0.995572
+Exploration Actions Min         -0.966126
+AverageReturn                  877.5
+Number of train steps total  25873
+Number of env steps total    26000
+Number of rollouts total       736
+Train Time (s)                  38.0375
+(Previous) Eval Time (s)         1.73554
+Sample Time (s)                  1.26695
+Epoch Time (s)                  41.04
+Total Train Time (s)           922.299
+Epoch                           25
+---------------------------  --------------
+2018-07-26 15:44:05.113835 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #25 | Epoch Duration: 41.20295977592468
+2018-07-26 15:44:05.114095 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #25 | Started Training: True
+2018-07-26 15:44:43.509048 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #26 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.273146
+VF Loss                          1.08614
+Policy Loss                     -0.228709
+Q Predictions Mean              28.1885
+Q Predictions Std                4.28116
+Q Predictions Max               30.3362
+Q Predictions Min                0.503465
+V Predictions Mean              28.4824
+V Predictions Std                3.46325
+V Predictions Max               29.9892
+V Predictions Min                2.15022
+Log Pis Mean                    -0.211964
+Log Pis Std                      1.08992
+Log Pis Max                      3.60748
+Log Pis Min                     -5.50402
+Policy mu Mean                  -0.00469307
+Policy mu Std                    0.661684
+Policy mu Max                    1.63517
+Policy mu Min                   -2.36235
+Policy log std Mean             -0.775684
+Policy log std Std               0.111289
+Policy log std Max              -0.510843
+Policy log std Min              -1.12665
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              612.5
+Test Returns Std                 7.5
+Test Returns Max               620
+Test Returns Min               605
+Test Actions Mean               -0.00936685
+Test Actions Std                 0.0837758
+Test Actions Max                 0.0427848
+Test Actions Min                -0.971489
+Num Paths                        4
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       162
+Exploration Returns Std         36.8985
+Exploration Returns Max        206
+Exploration Returns Min        124
+Exploration Actions Mean         0.00343141
+Exploration Actions Std          0.531019
+Exploration Actions Max          0.992441
+Exploration Actions Min         -0.979872
+AverageReturn                  612.5
+Number of train steps total  26873
+Number of env steps total    27000
+Number of rollouts total       740
+Train Time (s)                  37.2075
+(Previous) Eval Time (s)         1.87691
+Sample Time (s)                  1.16037
+Epoch Time (s)                  40.2447
+Total Train Time (s)           962.363
+Epoch                           26
+---------------------------  --------------
+2018-07-26 15:44:45.201460 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #26 | Epoch Duration: 40.08711767196655
+2018-07-26 15:44:45.201728 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #26 | Started Training: True
+2018-07-26 15:45:25.770446 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #27 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          1.41714
+VF Loss                          0.790514
+Policy Loss                      0.0276048
+Q Predictions Mean              28.4722
+Q Predictions Std                5.79892
+Q Predictions Max               31.481
+Q Predictions Min               -0.586452
+V Predictions Mean              29.4897
+V Predictions Std                1.93651
+V Predictions Max               30.9953
+V Predictions Min               16.3991
+Log Pis Mean                    -0.0735168
+Log Pis Std                      0.923372
+Log Pis Max                      3.18388
+Log Pis Min                     -3.066
+Policy mu Mean                   0.114799
+Policy mu Std                    0.702955
+Policy mu Max                    2.17132
+Policy mu Min                   -2.04211
+Policy log std Mean             -0.787638
+Policy log std Std               0.121256
+Policy log std Max              -0.520323
+Policy log std Min              -1.04932
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              677
+Test Returns Std                67
+Test Returns Max               744
+Test Returns Min               610
+Test Actions Mean               -0.00972346
+Test Actions Std                 0.0841866
+Test Actions Max                 0.0481732
+Test Actions Min                -0.975857
+Num Paths                        3
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       333.667
+Exploration Returns Std        177.182
+Exploration Returns Max        584
+Exploration Returns Min        199
+Exploration Actions Mean        -0.00548066
+Exploration Actions Std          0.521019
+Exploration Actions Max          0.988973
+Exploration Actions Min         -0.991822
+AverageReturn                  677
+Number of train steps total  27873
+Number of env steps total    28000
+Number of rollouts total       743
+Train Time (s)                  39.1007
+(Previous) Eval Time (s)         1.69734
+Sample Time (s)                  1.4389
+Epoch Time (s)                  42.237
+Total Train Time (s)          1004.82
+Epoch                           27
+---------------------------  --------------
+2018-07-26 15:45:27.678362 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #27 | Epoch Duration: 42.476332902908325
+2018-07-26 15:45:27.678814 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #27 | Started Training: True
+2018-07-26 15:46:08.050343 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #28 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          0.91987
+VF Loss                          0.925409
+Policy Loss                      0.181284
+Q Predictions Mean              29.268
+Q Predictions Std                5.52447
+Q Predictions Max               32.2105
+Q Predictions Min                0.257873
+V Predictions Mean              30.8674
+V Predictions Std                2.09942
+V Predictions Max               32.4236
+V Predictions Min               12.5831
+Log Pis Mean                    -0.122487
+Log Pis Std                      0.779263
+Log Pis Max                      2.02869
+Log Pis Min                     -3.0647
+Policy mu Mean                  -0.0460234
+Policy mu Std                    0.677178
+Policy mu Max                    2.01261
+Policy mu Min                   -1.85041
+Policy log std Mean             -0.847945
+Policy log std Std               0.145598
+Policy log std Max              -0.44017
+Policy log std Min              -1.25388
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              662
+Test Returns Std                66
+Test Returns Max               728
+Test Returns Min               596
+Test Actions Mean               -0.00138338
+Test Actions Std                 0.0833618
+Test Actions Max                 0.449488
+Test Actions Min                -0.967625
+Num Paths                        4
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       289
+Exploration Returns Std         93.3649
+Exploration Returns Max        392
+Exploration Returns Min        190
+Exploration Actions Mean        -0.0258496
+Exploration Actions Std          0.535063
+Exploration Actions Max          0.96508
+Exploration Actions Min         -0.995748
+AverageReturn                  662
+Number of train steps total  28873
+Number of env steps total    29000
+Number of rollouts total       747
+Train Time (s)                  39.052
+(Previous) Eval Time (s)         1.91423
+Sample Time (s)                  1.2917
+Epoch Time (s)                  42.2579
+Total Train Time (s)          1047.12
+Epoch                           28
+---------------------------  --------------
+2018-07-26 15:46:10.010909 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #28 | Epoch Duration: 42.33172798156738
+2018-07-26 15:46:10.011531 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #28 | Started Training: True
+2018-07-26 15:46:48.940050 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #29 | Collecting samples for evaluation
+---------------------------  ---------------
+QF Loss                          3.69948
+VF Loss                          0.62606
+Policy Loss                     -0.173063
+Q Predictions Mean              29.6119
+Q Predictions Std                6.78822
+Q Predictions Max               32.9122
+Q Predictions Min               -5.19727
+V Predictions Mean              30.3236
+V Predictions Std                5.98873
+V Predictions Max               33.0881
+V Predictions Min               -4.74728
+Log Pis Mean                    -0.144438
+Log Pis Std                      0.740969
+Log Pis Max                      2.99682
+Log Pis Min                     -2.30442
+Policy mu Mean                   0.0155339
+Policy mu Std                    0.723347
+Policy mu Max                    2.13224
+Policy mu Min                   -2.05248
+Policy log std Mean             -0.708815
+Policy log std Std               0.126096
+Policy log std Max              -0.477638
+Policy log std Min              -1.03278
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              444.333
+Test Returns Std                58.2199
+Test Returns Max               486
+Test Returns Min               362
+Test Actions Mean               -0.0165619
+Test Actions Std                 0.0977007
+Test Actions Max                 0.0978681
+Test Actions Min                -0.989093
+Num Paths                        6
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       176.833
+Exploration Returns Std         41.9143
+Exploration Returns Max        269
+Exploration Returns Min        148
+Exploration Actions Mean        -0.000500524
+Exploration Actions Std          0.533833
+Exploration Actions Max          0.984428
+Exploration Actions Min         -0.986582
+AverageReturn                  444.333
+Number of train steps total  29873
+Number of env steps total    30000
+Number of rollouts total       753
+Train Time (s)                  37.6703
+(Previous) Eval Time (s)         1.96581
+Sample Time (s)                  1.23011
+Epoch Time (s)                  40.8662
+Total Train Time (s)          1087.76
+Epoch                           29
+---------------------------  ---------------
+2018-07-26 15:46:50.669420 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #29 | Epoch Duration: 40.65753698348999
+2018-07-26 15:46:50.669703 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #29 | Started Training: True
+2018-07-26 15:47:30.186309 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #30 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          1.30463
+VF Loss                          0.773211
+Policy Loss                      0.2004
+Q Predictions Mean              30.8427
+Q Predictions Std                6.40227
+Q Predictions Max               34.0154
+Q Predictions Min                0.390954
+V Predictions Mean              31.8551
+V Predictions Std                4.72732
+V Predictions Max               34.7416
+V Predictions Min                4.45398
+Log Pis Mean                    -0.15273
+Log Pis Std                      0.875381
+Log Pis Max                      2.92173
+Log Pis Min                     -3.41767
+Policy mu Mean                   0.0323516
+Policy mu Std                    0.728835
+Policy mu Max                    1.87276
+Policy mu Min                   -2.46119
+Policy log std Mean             -0.734109
+Policy log std Std               0.116458
+Policy log std Max              -0.385448
+Policy log std Min              -1.07324
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              379
+Test Returns Std                 0
+Test Returns Max               379
+Test Returns Min               379
+Test Actions Mean               -0.0123146
+Test Actions Std                 0.0943759
+Test Actions Max                 0.0651339
+Test Actions Min                -0.972271
+Num Paths                        6
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       176.5
+Exploration Returns Std         70.6582
+Exploration Returns Max        253
+Exploration Returns Min         58
+Exploration Actions Mean        -0.00368856
+Exploration Actions Std          0.529982
+Exploration Actions Max          0.991531
+Exploration Actions Min         -0.975234
+AverageReturn                  379
+Number of train steps total  30873
+Number of env steps total    31000
+Number of rollouts total       759
+Train Time (s)                  38.1678
+(Previous) Eval Time (s)         1.73523
+Sample Time (s)                  1.31885
+Epoch Time (s)                  41.2219
+Total Train Time (s)          1128.88
+Epoch                           30
+---------------------------  --------------
+2018-07-26 15:47:31.811789 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #30 | Epoch Duration: 41.14180064201355
+2018-07-26 15:47:31.812113 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #30 | Started Training: True
+2018-07-26 15:48:12.103998 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #31 | Collecting samples for evaluation
+---------------------------  ---------------
+QF Loss                          2.94932
+VF Loss                          2.45377
+Policy Loss                      0.540557
+Q Predictions Mean              31.9678
+Q Predictions Std                5.34476
+Q Predictions Max               35.4775
+Q Predictions Min                1.24568
+V Predictions Mean              32.6977
+V Predictions Std                3.85457
+V Predictions Max               35.0837
+V Predictions Min               -1.56432
+Log Pis Mean                     0.0125261
+Log Pis Std                      0.988278
+Log Pis Max                      3.6947
+Log Pis Min                     -3.91058
+Policy mu Mean                   0.000694953
+Policy mu Std                    0.729356
+Policy mu Max                    2.22512
+Policy mu Min                   -2.46
+Policy log std Mean             -0.773542
+Policy log std Std               0.154925
+Policy log std Max              -0.342808
+Policy log std Min              -1.17947
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              530
+Test Returns Std                 0
+Test Returns Max               530
+Test Returns Min               530
+Test Actions Mean               -0.0107807
+Test Actions Std                 0.090959
+Test Actions Max                 0.0748059
+Test Actions Min                -0.970593
+Num Paths                        4
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       224.25
+Exploration Returns Std        118.578
+Exploration Returns Max        383
+Exploration Returns Min         91
+Exploration Actions Mean        -0.0152701
+Exploration Actions Std          0.545039
+Exploration Actions Max          0.99241
+Exploration Actions Min         -0.998001
+AverageReturn                  530
+Number of train steps total  31873
+Number of env steps total    32000
+Number of rollouts total       763
+Train Time (s)                  38.9966
+(Previous) Eval Time (s)         1.6331
+Sample Time (s)                  1.26572
+Epoch Time (s)                  41.8954
+Total Train Time (s)          1170.77
+Epoch                           31
+---------------------------  ---------------
+2018-07-26 15:48:13.723420 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #31 | Epoch Duration: 41.91102862358093
+2018-07-26 15:48:13.723678 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #31 | Started Training: True
+2018-07-26 15:48:52.851401 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #32 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                          1.92941
+VF Loss                          0.390854
+Policy Loss                      0.147418
+Q Predictions Mean              32.9202
+Q Predictions Std                6.77195
+Q Predictions Max               36.5647
+Q Predictions Min               -0.665114
+V Predictions Mean              34.3022
+V Predictions Std                5.38246
+V Predictions Max               36.5578
+V Predictions Min               -0.795611
+Log Pis Mean                    -0.1197
+Log Pis Std                      0.774753
+Log Pis Max                      1.95157
+Log Pis Min                     -3.02486
+Policy mu Mean                   0.0264796
+Policy mu Std                    0.647063
+Policy mu Max                    1.69181
+Policy mu Min                   -1.86666
+Policy log std Mean             -0.739772
+Policy log std Std               0.16892
+Policy log std Max               0.035422
+Policy log std Min              -1.08738
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              308.25
+Test Returns Std                 4.08503
+Test Returns Max               315
+Test Returns Min               304
+Test Actions Mean                0.025005
+Test Actions Std                 0.135662
+Test Actions Max                 0.973237
+Test Actions Min                -0.0945834
+Num Paths                        7
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       146.429
+Exploration Returns Std         93.8005
+Exploration Returns Max        316
+Exploration Returns Min         24
+Exploration Actions Mean        -0.0281538
+Exploration Actions Std          0.52655
+Exploration Actions Max          0.952875
+Exploration Actions Min         -0.99727
+AverageReturn                  308.25
+Number of train steps total  32873
+Number of env steps total    33000
+Number of rollouts total       770
+Train Time (s)                  37.808
+(Previous) Eval Time (s)         1.62634
+Sample Time (s)                  1.29226
+Epoch Time (s)                  40.7266
+Total Train Time (s)          1211.6
+Epoch                           32
+---------------------------  -------------
+2018-07-26 15:48:54.581269 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #32 | Epoch Duration: 40.857330560684204
+2018-07-26 15:48:54.581639 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #32 | Started Training: True
+2018-07-26 15:49:33.797701 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #33 | Collecting samples for evaluation
+---------------------------  -------------
+QF Loss                          2.06984
+VF Loss                          1.16583
+Policy Loss                     -0.144284
+Q Predictions Mean              34.1854
+Q Predictions Std                3.94084
+Q Predictions Max               37.2956
+Q Predictions Min                9.99695
+V Predictions Mean              35.8504
+V Predictions Std                2.30613
+V Predictions Max               38.1705
+V Predictions Min               27.2705
+Log Pis Mean                    -0.136526
+Log Pis Std                      0.722977
+Log Pis Max                      2.37004
+Log Pis Min                     -2.2165
+Policy mu Mean                   0.0120858
+Policy mu Std                    0.608796
+Policy mu Max                    1.92622
+Policy mu Min                   -1.766
+Policy log std Mean             -0.73278
+Policy log std Std               0.139528
+Policy log std Max              -0.371095
+Policy log std Min              -1.11871
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              475.333
+Test Returns Std                 3.29983
+Test Returns Max               479
+Test Returns Min               471
+Test Actions Mean                0.0081355
+Test Actions Std                 0.0732605
+Test Actions Max                 0.968254
+Test Actions Min                -0.0417338
+Num Paths                        5
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       193.8
+Exploration Returns Std         87.9873
+Exploration Returns Max        365
+Exploration Returns Min        121
+Exploration Actions Mean         0.014759
+Exploration Actions Std          0.537208
+Exploration Actions Max          0.995026
+Exploration Actions Min         -0.996432
+AverageReturn                  475.333
+Number of train steps total  33873
+Number of env steps total    34000
+Number of rollouts total       775
+Train Time (s)                  37.9569
+(Previous) Eval Time (s)         1.73558
+Sample Time (s)                  1.23136
+Epoch Time (s)                  40.9238
+Total Train Time (s)          1252.54
+Epoch                           33
+---------------------------  -------------
+2018-07-26 15:49:35.539683 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #33 | Epoch Duration: 40.957685232162476
+2018-07-26 15:49:35.540016 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #33 | Started Training: True
+2018-07-26 15:50:15.494278 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #34 | Collecting samples for evaluation
+---------------------------  --------------
+QF Loss                          3.82607
+VF Loss                          1.7228
+Policy Loss                     -0.0337245
+Q Predictions Mean              34.1385
+Q Predictions Std                6.35292
+Q Predictions Max               38.8909
+Q Predictions Min                0.0103684
+V Predictions Mean              35.5884
+V Predictions Std                5.43157
+V Predictions Max               38.9348
+V Predictions Min                2.39915
+Log Pis Mean                    -0.124652
+Log Pis Std                      0.829223
+Log Pis Max                      3.13299
+Log Pis Min                     -3.07828
+Policy mu Mean                  -0.0547326
+Policy mu Std                    0.687635
+Policy mu Max                    1.98453
+Policy mu Min                   -2.14654
+Policy log std Mean             -0.724123
+Policy log std Std               0.162713
+Policy log std Max              -0.324405
+Policy log std Min              -1.08562
+Test Rewards Mean                1
+Test Rewards Std                 0
+Test Rewards Max                 1
+Test Rewards Min                 1
+Test Returns Mean              586
+Test Returns Std                 1
+Test Returns Max               587
+Test Returns Min               585
+Test Actions Mean               -0.00798192
+Test Actions Std                 0.0758971
+Test Actions Max                 0.0923964
+Test Actions Min                -0.95954
+Num Paths                        6
+Exploration Rewards Mean         1
+Exploration Rewards Std          0
+Exploration Rewards Max          1
+Exploration Rewards Min          1
+Exploration Returns Mean       200.333
+Exploration Returns Std        129.447
+Exploration Returns Max        431
+Exploration Returns Min         19
+Exploration Actions Mean        -0.00123757
+Exploration Actions Std          0.543418
+Exploration Actions Max          0.991862
+Exploration Actions Min         -0.99122
+AverageReturn                  586
+Number of train steps total  34873
+Number of env steps total    35000
+Number of rollouts total       781
+Train Time (s)                  38.6047
+(Previous) Eval Time (s)         1.74772
+Sample Time (s)                  1.32191
+Epoch Time (s)                  41.6743
+Total Train Time (s)          1294.2
+Epoch                           34
+---------------------------  --------------
+2018-07-26 15:50:17.227283 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #34 | Epoch Duration: 41.68699264526367
+2018-07-26 15:50:17.227574 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #34 | Started Training: True
+2018-07-26 15:50:54.360796 EDT | [name-of-experiment_2018_07_26_15_28_40_0000--s-0] Iteration #35 | Collecting samples for evaluation
