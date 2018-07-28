@@ -10,7 +10,7 @@ class BaseNeuralProcess(object, metaclass=abc.ABCMeta):
     
 
     @abc.abstractmethod
-    def update_posterior(self, batch, post_init, n_samples=1):
+    def update_posteriors(self, batch, post_init, n_samples=1):
         pass
 
     
