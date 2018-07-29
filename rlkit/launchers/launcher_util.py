@@ -376,3 +376,38 @@ def query_yes_no(question, default="yes"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
+
+def check_exp_spec_format(specs):
+    '''
+        Check that all keys are strings that don't contain '.'
+    '''
+    for k, v in specs.items():
+        if not isinstance(k, basestring): return False
+        if '.' in k: return False
+        if isinstance(v, dict):
+            sub_ok = check_exp_spec_format(v)
+            if not sub_ok: return False
+    return True
+
+
+def flatten_dict(dic):
+    '''
+        Assumes a potentially nested dictionary where all keys
+        are strings that do not contain a '.'
+
+        Returns a flat dict with keys having format:
+        {'key.sub_key.sub_sub_key': ..., etc.} 
+    '''
+    new_dic = {}
+    for k, v in dic.items():
+        if isinstance(v, dict):
+            sub_dict = flatten_dict(v)
+            new_dic.extend(sub_dict)
+
+
+def generate_variants(exp_spec):
+    check_exp_spec_format(exp_spec)
+    variables = exp_spec['variables']
+    constants = exp_spec['constants']
+

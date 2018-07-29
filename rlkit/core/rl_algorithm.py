@@ -1,6 +1,7 @@
 import abc
 import pickle
 import time
+from copy import deepcopy
 
 import gtimer as gt
 import numpy as np
@@ -60,6 +61,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         :param replay_buffer:
         """
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
+        # self.training_env = training_env or deepcopy(env)
         self.exploration_policy = exploration_policy
         self.num_epochs = num_epochs
         self.num_env_steps_per_epoch = num_steps_per_epoch
@@ -184,6 +186,13 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             logger.save_itr_params(epoch, params)
             table_keys = logger.get_table_key_set()
             if self._old_table_keys is not None:
+                print('$$$$$$$$$$$$$$$')
+                print(table_keys)
+                print('\n'*4)
+                print(self._old_table_keys)
+                print('$$$$$$$$$$$$$$$')
+                print(set(table_keys) - set(self._old_table_keys))
+                print(set(self._old_table_keys) - set(table_keys))
                 assert table_keys == self._old_table_keys, (
                     "Table keys cannot change from iteration to iteration."
                 )

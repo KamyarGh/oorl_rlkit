@@ -8,14 +8,15 @@ BASE_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'base_as
 CUSTOM_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'custom_assets')
 
 all_envs = {
-    'meta_gravity_inverted_pendulum': {
-        'base_xml': 'base_meta_gravity_pendulum.txt',
+    'gravity_gear_inverted_pendulum': {
+        'base_xml': 'base_gravity_gear_pendulum.txt',
         'env_class': BaseInvertedPendulumEnv
     }
 }
 
-def get_meta_env(base_env_name, env_specs):
+def get_meta_env(env_specs):
     # read the base xml string and fill the env_specs values
+    base_env_name = env_specs['base_env_name']
     with open(osp.join(BASE_ASSETS_DIR, all_envs[base_env_name]['base_xml']), 'r') as f:
         base_xml = f.read()
     env_xml = base_xml.format(**env_specs)

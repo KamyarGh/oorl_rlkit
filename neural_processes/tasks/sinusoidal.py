@@ -1,5 +1,4 @@
 import torch
-from torch.autograd import Variable
 from numpy.random import uniform
 from numpy import pi
 
@@ -31,6 +30,5 @@ class SinusoidalTask():
         X = torch.rand(N,1)
         X.mul_(self.X_RANGE[1] - self.X_RANGE[0])
         X.sub_(self.X_RANGE[0])
-        X = Variable(X, requires_grad=False)
         Y = self.A * torch.sin(X - self.phase)
         return X, Y
