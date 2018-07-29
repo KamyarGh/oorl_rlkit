@@ -7,6 +7,7 @@ import sys
 import time
 import uuid
 from collections import namedtuple
+from copy import deepcopy
 
 import __main__ as main
 import datetime
@@ -403,11 +404,37 @@ def flatten_dict(dic):
     for k, v in dic.items():
         if isinstance(v, dict):
             sub_dict = flatten_dict(v)
-            new_dic.extend(sub_dict)
+            for sub_k, v in sub_dict:
+                new_dic['.'.join([k, sub_k])] = v
+        else:
+            new_dic[k] = v
+
+    return new_dic
 
 
-def generate_variants(exp_spec):
-    check_exp_spec_format(exp_spec)
+def add_variable_to_constant_specs(constants, flat_variables):
+    new_dict = deepcopy(constants)
+    for k, v in flat_variables:
+        cur_sub_dict = new_dict
+        split_k = k.split('.')
+        for sub_key in split_k[:-1]: cur_sub_dict = cur_sub_dict[sub_key]
+        cur_sub_dict[split_k[-1]] = v
+    return new_dict
+
+
+def build_nested_variant_generator(exp_spec):
+    assert check_exp_spec_format(exp_spec)
+    from rllab.misc.instrument import VariantGenerator
+
     variables = exp_spec['variables']
     constants = exp_spec['constants']
 
+    variables = flatten_dict(variables)
+    vg = VariantGenerator()
+    for k, v in variables: vg.add(k, v)
+    
+    def vg_fn():
+        for flat_variables in vg:
+            yield add_variable_to_constant_specs(constants, flat_variables)
+
+    return vg_fn
