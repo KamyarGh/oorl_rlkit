@@ -384,7 +384,7 @@ def check_exp_spec_format(specs):
         Check that all keys are strings that don't contain '.'
     '''
     for k, v in specs.items():
-        if not isinstance(k, basestring): return False
+        if not isinstance(k, str): return False
         if '.' in k: return False
         if isinstance(v, dict):
             sub_ok = check_exp_spec_format(v)
@@ -404,7 +404,7 @@ def flatten_dict(dic):
     for k, v in dic.items():
         if isinstance(v, dict):
             sub_dict = flatten_dict(v)
-            for sub_k, v in sub_dict:
+            for sub_k, v in sub_dict.items():
                 new_dic['.'.join([k, sub_k])] = v
         else:
             new_dic[k] = v
@@ -414,7 +414,7 @@ def flatten_dict(dic):
 
 def add_variable_to_constant_specs(constants, flat_variables):
     new_dict = deepcopy(constants)
-    for k, v in flat_variables:
+    for k, v in flat_variables.items():
         cur_sub_dict = new_dict
         split_k = k.split('.')
         for sub_key in split_k[:-1]: cur_sub_dict = cur_sub_dict[sub_key]
@@ -431,10 +431,43 @@ def build_nested_variant_generator(exp_spec):
 
     variables = flatten_dict(variables)
     vg = VariantGenerator()
-    for k, v in variables: vg.add(k, v)
+    for k, v in variables.items(): vg.add(k, v)
     
     def vg_fn():
-        for flat_variables in vg:
-            yield add_variable_to_constant_specs(constants, flat_variables)
+        for flat_variables in vg.variants():
+            dict_to_yield = add_variable_to_constant_specs(constants, flat_variables)
+            del dict_to_yield['_hidden_keys']
+            yield dict_to_yield
 
     return vg_fn
+
+
+def test_build_nested_variant_generator():
+    variables = {
+        'hi': {
+            'one': [1,2,3,4],
+            'two': [5678],
+            'three': {
+                'apple': ['yummy', 'sour', 'sweet']
+            }
+        },
+        'bye': ['omg', 'lmfao', 'waddup']
+    }
+
+    constants = {
+        'hi': {
+            'three': {
+                'constant_banana': 'potassium'
+            },
+            'other_constant_stuff': {
+                'idk': 'something funny and cool'
+            }
+        },
+        'yoyoyo': 'I like candy',
+        'wow': 1e8
+    }
+
+    vg_fn = build_nested_variant_generator(dict(constants=constants, variables=variables))
+    for v in vg_fn():
+        print(v)
+        print('\n'*4)
