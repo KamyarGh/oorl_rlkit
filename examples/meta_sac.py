@@ -66,11 +66,11 @@ if __name__ == "__main__":
             num_epochs=100,
             num_steps_per_epoch=1000,
             num_steps_per_eval=1000,
-            num_updates_per_env_step=1,
+            num_updates_per_env_step=4,
             batch_size=128,
             max_path_length=999,
             discount=0.99,
-            reward_scale=100.0,
+            reward_scale=1.0,
 
             soft_target_tau=0.01,
             policy_lr=3E-4,
@@ -90,5 +90,5 @@ if __name__ == "__main__":
             gear=100
         )
     )
-    setup_logger('pendulum_gravity_debug', exp_id=6, variant=variant)
+    setup_logger('pendulum_gravity_debug', exp_id=9, variant=variant)
     experiment(variant)
