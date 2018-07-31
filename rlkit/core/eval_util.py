@@ -4,8 +4,11 @@ Common evaluation utilities.
 
 from collections import OrderedDict
 from numbers import Number
+import os
 
 import numpy as np
+
+from rlkit.core.vistools import plot_returns_on_same_plot 
 
 
 def get_generic_path_information(paths, stat_prefix=''):
@@ -83,3 +86,26 @@ def create_stats_ordered_dict(
         stats[name + ' Max'] = np.max(data)
         stats[name + ' Min'] = np.min(data)
     return stats
+
+
+# I (Kamyar) will be adding my own eval utils here too
+def plot_experiment_returns(exp_path, title, save_path):
+    '''
+        plots the Test Returns Mean of all the
+    '''
+    arr_list = []
+    names = []
+
+    for sub_exp_dir in os.listdir(exp_path):
+        sub_exp_path = os.path.join(exp_path, sub_exp_dir)
+        if not os.path.isdir(sub_exp_path): continue
+        
+        csv_full_path = os.path.join(sub_exp_path, 'progress.csv')
+        try:
+            returns = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)['Test_Returns_Mean']
+            arr_list.append(returns)
+            names.append(sub_exp_dir)
+        except:
+            pass
+
+    plot_returns_on_same_plot(arr_list, names, title, save_path)
