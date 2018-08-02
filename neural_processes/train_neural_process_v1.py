@@ -5,6 +5,7 @@ from torch.autograd import Variable
 from torch import autograd
 from torch.optim import Adam
 
+from numpy import array
 from numpy.random import choice, randint
 
 from generic_map import GenericMap
@@ -16,7 +17,7 @@ from tasks.sinusoidal import SinusoidalTask
 # -----------------------------------------------------------------------------
 N_tasks = 100
 r_dim = 10
-z_dim = 10
+z_dim = 5
 base_map_lr = 1e-3
 encoder_lr = 1e-3
 r_to_z_map_lr = 1e-3
@@ -30,7 +31,7 @@ num_tasks_per_batch = 16
 
 data_sampling_mode = 'random'
 num_per_task_low = 3
-num_per_task_high = 10
+num_per_task_high = 11
 
 aggregator = mean_aggregator
 
@@ -53,6 +54,7 @@ def generate_data_batch(tasks_batch, num_samples_per_task, max_num):
 def generate_mask(num_tasks_per_batch, max_num):
     mask = torch.ones(num_tasks_per_batch.shape[0], max_num, 1)
     for i, num in enumerate(num_tasks_per_batch):
+        if num == max_num: continue
         mask[i,num:] = 0.0
     return Variable(mask)
 
@@ -118,32 +120,50 @@ for iter_num in range(max_iters):
         neural_process.set_mode('eval')
 
         val_tasks = [SinusoidalTask() for _ in range(num_tasks_per_batch)]
+
         num_samples_per_task = randint(
             num_per_task_low,
             high=num_per_task_high,
             size=(num_tasks_per_batch)
         )
-        X, Y = generate_data_batch(val_tasks, num_samples_per_task, max_num)
-        mask = generate_mask(num_samples_per_task, max_num)
-        batch = {
-            'input_batch_list': [X],
-            'output_batch_list': [Y],
-            'mask': mask
+        X_varied, Y_varied = generate_data_batch(val_tasks, num_samples_per_task, max_num)
+        mask_varied = generate_mask(num_samples_per_task, max_num)
+        batch_varied = {
+            'input_batch_list': [X_varied],
+            'output_batch_list': [Y_varied],
+            'mask': mask_varied
         }
+        posts_varied = neural_process.infer_posterior_params(batch_varied)
 
-        posts = neural_process.infer_posterior_params(batch)
-
-        X, Y = generate_data_batch(val_tasks, [max_num for _ in range(num_tasks_per_batch)], max_num)
-        mask = generate_mask(num_samples_per_task, max_num)
-        batch = {
-            'input_batch_list': [X],
-            'output_batch_list': [Y],
-            'mask': mask
+        num_samples_per_task = array([num_per_task_high for _ in range(num_tasks_per_batch)])
+        X_max, Y_max = generate_data_batch(val_tasks, num_samples_per_task, max_num)
+        mask_max = generate_mask(num_samples_per_task, max_num)
+        batch_max = {
+            'input_batch_list': [X_max],
+            'output_batch_list': [Y_max],
+            'mask': mask_max
         }
-        elbo = neural_process.compute_ELBO(posts, batch)
-        test_log_likelihood = neural_process.compute_cond_log_likelihood(posts, batch, mode='eval')
-        print('Iter %d ELBO: %.4f' % (iter_num, elbo))
-        print('Iter %d Test Log Like: %.4f' % (iter_num, test_log_likelihood))
+        posts_max = neural_process.infer_posterior_params(batch_max)
+
+        num_samples_per_task = array([max_num for _ in range(num_tasks_per_batch)])
+        X_test, Y_test = generate_data_batch(val_tasks, num_samples_per_task, max_num)
+        mask_test = generate_mask(num_samples_per_task, max_num)
+        batch_test = {
+            'input_batch_list': [X_test],
+            'output_batch_list': [Y_test],
+            'mask': mask_test
+        }
+        elbo_varied = neural_process.compute_ELBO(posts_varied, batch_test)
+        test_log_likelihood_varied = neural_process.compute_cond_log_likelihood(posts_varied, batch_test, mode='eval')
+        elbo_max = neural_process.compute_ELBO(posts_max, batch_test)
+        test_log_likelihood_max = neural_process.compute_cond_log_likelihood(posts_max, batch_test, mode='eval')
+
+        print('\n--------------------')
+        print('Iter %d ELBO Var: %.4f' % (iter_num, elbo_varied))
+        print('Iter %d Test Log Like Var: %.4f' % (iter_num, test_log_likelihood_varied))
+        print('-----')
+        print('Iter %d ELBO Max: %.4f' % (iter_num, elbo_max))
+        print('Iter %d Test Log Like Max: %.4f' % (iter_num, test_log_likelihood_max))
 
         # inference batch
         # test batch

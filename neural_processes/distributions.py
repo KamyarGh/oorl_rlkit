@@ -6,7 +6,7 @@ def local_repeat(tensor, n):
     tensor = tensor.contiguous()
     tensor = tensor.expand(-1,n,-1)
     tensor = tensor.contiguous()
-    tensor = tensor.view(-1, int(tensor.size(1)))
+    tensor = tensor.view(-1, int(tensor.size(-1)))
     return tensor
     # return tensor.unsqueeze(1).contiguous().expand(-1,n,-1).view(-1, tensor.size(1))
 
@@ -23,6 +23,11 @@ def sample_diag_gaussians(means, diags, n_samples):
     return samples
 
 if __name__ == '__main__':
+    rand_t = torch.rand(3,10)
+    print(rand_t)
+    rep_rand_t = local_repeat(rand_t, 4)
+    print(rep_rand_t)
+
     means = torch.randn(3,5)
     diags = torch.rand(3,5) * 0.02
     samples = sample_diag_gaussians(means, diags, 2)
