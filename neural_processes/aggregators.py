@@ -2,6 +2,7 @@
     the r_tensor is N_tasks x N_samples x r_dim
     the mask is N_tasks x N_samples x 1
 '''
+import torch
 from torch.nn.functional import tanh
 
 def sum_aggregator(r_tensor, mask):

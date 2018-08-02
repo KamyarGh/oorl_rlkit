@@ -5,19 +5,19 @@ class BaseNeuralProcess(object, metaclass=abc.ABCMeta):
     General interface for a neural process
     '''
     @abc.abstractmethod
-    def train_step(self, batch, post_init, n_samples=1):
+    def train_step(self, batch):
         pass
     
 
     @abc.abstractmethod
-    def update_posteriors(self, batch, post_init, n_samples=1):
+    def infer_posterior_params(self, batch):
         pass
 
     
     @abc.abstractmethod
-    def compute_ELBO(self, posteriors, context_set, test_set):
+    def compute_ELBO(self, posteriors, batch):
         pass
 
     @abc.abstractmethod
-    def compute_cond_log_likelihood(self, posteriors, *args):
+    def compute_cond_log_likelihood(self, posteriors, batch):
         pass

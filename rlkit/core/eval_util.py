@@ -20,16 +20,19 @@ def get_generic_path_information(paths, stat_prefix=''):
 
     rewards = np.vstack([path["rewards"] for path in paths])
     statistics.update(create_stats_ordered_dict('Rewards', rewards,
-                                                stat_prefix=stat_prefix))
+                                                stat_prefix=stat_prefix,
+                                                always_show_all_stats=True))
     statistics.update(create_stats_ordered_dict('Returns', returns,
-                                                stat_prefix=stat_prefix))
+                                                stat_prefix=stat_prefix,
+                                                always_show_all_stats=True))
     actions = [path["actions"] for path in paths]
     if len(actions[0].shape) == 1:
         actions = np.hstack([path["actions"] for path in paths])
     else:
         actions = np.vstack([path["actions"] for path in paths])
     statistics.update(create_stats_ordered_dict(
-        'Actions', actions, stat_prefix=stat_prefix
+        'Actions', actions, stat_prefix=stat_prefix,
+        always_show_all_stats=True
     ))
     statistics['Num Paths'] = len(paths)
 
@@ -48,15 +51,18 @@ def create_stats_ordered_dict(
         always_show_all_stats=False,
         exclude_max_min=False,
 ):
+    print('\n<<<< STAT FOR {} {} >>>>'.format(stat_prefix, name))
     if stat_prefix is not None:
         name = "{} {}".format(stat_prefix, name)
     if isinstance(data, Number):
+        print('was a Number')
         return OrderedDict({name: data})
 
     if len(data) == 0:
         return OrderedDict()
 
     if isinstance(data, tuple):
+        print('was a tuple')
         ordered_dict = OrderedDict()
         for number, d in enumerate(data):
             sub_dict = create_stats_ordered_dict(
@@ -76,8 +82,10 @@ def create_stats_ordered_dict(
 
     if (isinstance(data, np.ndarray) and data.size == 1
             and not always_show_all_stats):
+        print('was a numpy array of data.size==1')
         return OrderedDict({name: float(data)})
 
+    print('was a numpy array NOT of data.size==1')
     stats = OrderedDict([
         (name + ' Mean', np.mean(data)),
         (name + ' Std', np.std(data)),

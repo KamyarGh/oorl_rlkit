@@ -1,23 +1,25 @@
 import torch
+from torch.autograd import Variable
 
 def local_repeat(tensor, n):
-    return torch.reshape(
-        tensor.unsqueeze(1).expand(-1,n,-1),
-        (-1, tensor.size(1))
-    )
+    tensor = tensor.unsqueeze(1)
+    tensor = tensor.contiguous()
+    tensor = tensor.expand(-1,n,-1)
+    tensor = tensor.contiguous()
+    tensor = tensor.view(-1, int(tensor.size(1)))
+    return tensor
+    # return tensor.unsqueeze(1).contiguous().expand(-1,n,-1).view(-1, tensor.size(1))
 
 def sample_diag_gaussians(means, diags, n_samples):
     batch_size, dim = means.size(0), means.size(1)
     means = local_repeat(means, n_samples)
     diags = local_repeat(diags, n_samples)
     
-    eps = torch.randn(means.size())
+    eps = Variable(torch.randn(means.size()))
     samples = eps*diags + means
 
-    print(type(batch_size), type(n_samples), type(dim))
-    print((batch_size,n_samples,dim))
-
-    return samples.reshape((batch_size,n_samples,dim))
+    # return samples.view(batch_size,n_samples,dim)
+    return samples
 
 if __name__ == '__main__':
     means = torch.randn(3,5)

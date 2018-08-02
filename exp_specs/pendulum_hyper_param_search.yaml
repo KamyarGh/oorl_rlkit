@@ -1,8 +1,14 @@
 meta_data:
-  exp_name: pendulum_hyper_param_search
+  exp_name: bug_free_pendulum_hyper_param_search
   description: searching over the SAC hyperparameters
   num_workers: 10
+# -----------------------------------------------------------------------------
+variables:
+  algo_params:
+    num_updates_per_env_step: [1, 4, 10]
+    reward_scale: [0.5, 1.0, 5.0, 10.0, 20.0, 50.0, 100.0]
 
+# -----------------------------------------------------------------------------
 constants:
   algo_params:
     num_epochs: 200
@@ -27,8 +33,3 @@ constants:
     base_env_name: 'gravity_gear_inverted_pendulum'
     gravity: -9.81
     gear: 100
-
-variables:
-  algo_params:
-    num_updates_per_env_step: [1, 4, 10]
-    reward_scale: [0.5, 1.0, 5.0, 10.0, 20.0, 50.0, 100.0]

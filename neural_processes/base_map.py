@@ -36,8 +36,7 @@ class BaseMap(GenericMap):
         deterministic=False):
         
         all_input_dims = [z_dim] + input_dims
-        super(BaseMap).__init__(
-            self,
+        super(BaseMap, self).__init__(
             all_input_dims,
             output_dims,
             siamese_input=siamese_input,
@@ -52,7 +51,7 @@ class BaseMap(GenericMap):
             deterministic=deterministic
         )
 
-    def forward(z, inputs):
+    def forward(self, z, inputs):
         '''
             Output is:
                 deterministic: a list
@@ -60,4 +59,4 @@ class BaseMap(GenericMap):
         '''
         all_inputs = [z] + inputs
         
-        return super(BaseMap).forward(all_inputs)
+        return super(BaseMap, self).forward(all_inputs)

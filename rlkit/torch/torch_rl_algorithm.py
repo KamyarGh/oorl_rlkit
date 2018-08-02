@@ -50,6 +50,7 @@ class TorchRLAlgorithm(RLAlgorithm, metaclass=abc.ABCMeta):
         statistics.update(eval_util.get_generic_path_information(
             self._exploration_paths, stat_prefix="Exploration",
         ))
+        print(statistics.keys())
         if hasattr(self.env, "log_diagnostics"):
             self.env.log_diagnostics(test_paths)
 

@@ -99,3 +99,5 @@ batch_runners/ind_grow_size_base_specs
 *.jpg
 *.jpeg
 junk_vis/*
+output/*
+plots/*

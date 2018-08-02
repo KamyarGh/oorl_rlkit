@@ -1,39 +1,65 @@
 import torch
 import torch.nn as nn
-import torch.nn.function as F
+import torch.nn.functional as F
 from torch.autograd import Variable
 from torch import autograd
 
 from numpy import pi
 from numpy import log as np_log
 
-from base_neural_process import BaseNeuralProcess
-from distributions import sample_diag_gaussians, local_repeat
+from .base_neural_process import BaseNeuralProcess
+from .distributions import sample_diag_gaussians, local_repeat
 
 log_2pi = np_log(2*pi)
 
-def compute_spherical_log_prob(preds, true_outputs, n_samples)
+
+def logsumexp(inputs, dim=None, keepdim=False):
+    """Numerically stable logsumexp.
+
+    Args:
+        inputs: A Variable with any shape.
+        dim: An integer.
+        keepdim: A boolean.
+
+    Returns:
+        Equivalent of log(sum(exp(inputs), dim=dim, keepdim=keepdim)).
+    """
+    # For a 1-D array x (any array along a single dimension),
+    # log sum exp(x) = s + log sum exp(x - s)
+    # with s = max(x) being a common choice.
+    if dim is None:
+        inputs = inputs.view(-1)
+        dim = 0
+    s, _ = torch.max(inputs, dim=dim, keepdim=True)
+    outputs = s + (inputs - s).exp().sum(dim=dim, keepdim=True).log()
+    if not keepdim:
+        outputs = outputs.squeeze(dim)
+    return outputs
+
+
+def compute_spherical_log_prob(preds, true_outputs, mask, n_samples):
     '''
         Compute log prob assuming spherical Gaussian with some mean
         Up to additive constant
     '''
-    return -0.5 * torch.sum((preds - true_outputs)**2) / float(n_samples)
+    return -0.5 * torch.sum(mask*(preds - true_outputs)**2) / float(n_samples)
 
 
-def compute_diag_log_prob(preds_mean, preds_log_cov, true_outputs, n_samples):
+def compute_diag_log_prob(preds_mean, preds_log_cov, true_outputs, mask, n_samples):
     '''
         Compute log prob assuming diagonal Gaussian with some mean and log cov
     '''
+    assert False, 'The tests so far have shown this to be unstable'
     preds_cov = torch.exp(preds_log_cov)
 
     log_prob = -0.5 * torch.sum(
-        (preds_mean - repeated_true_outputs)**2 / preds_cov
+        mask*(preds_mean - true_outputs)**2 / preds_cov
     )
 
-    log_det = torch.logsumexp(torch.sum(preds_log_cov, 1))
+    log_det = logsumexp(torch.sum(preds_log_cov, 1))
     log_det += log_2pi
     log_det *= -0.5
-    log_prob += log_det
+    log_prob += torch.sum(mask*log_det)
 
     log_prob /= float(n_samples)
     return log_prob
@@ -56,6 +82,7 @@ class NeuralProcessV1(BaseNeuralProcess):
         encoder_optim,
         aggregator,
         r_to_z_map,
+        r_to_z_map_optim,
         base_map,
         base_map_optim,
         use_nat_grad=True, # whether to use natural gradient for posterior parameter updates
@@ -66,7 +93,19 @@ class NeuralProcessV1(BaseNeuralProcess):
         self.encoder_optim = encoder_optim
         self.aggregator = aggregator
         self.r_to_z_map = r_to_z_map
+        self.r_to_z_map_optim = r_to_z_map_optim
         self.use_nat_grad = use_nat_grad
+        self.set_mode('train')
+    
+
+    def set_mode(self, mode):
+        assert mode in ['train', 'eval']
+        mode = True if mode=='train' else False
+        self.base_map.train(mode)
+        self.encoder.train(mode)
+        self.r_to_z_map.train(mode)
+
+        self.training = mode
 
 
     def infer_posterior_params(self, batch):
@@ -78,16 +117,16 @@ class NeuralProcessV1(BaseNeuralProcess):
                 'mask': ..., # used to condition on varying number of points
             }
         '''
-        input_list = batch['input_list']
+        input_list = batch['input_batch_list']
         N_tasks, N_samples = input_list[0].size(0), input_list[0].size(1)
         reshaped_input_list = [inp.view(-1, inp.size(2)) for inp in input_list]
 
-        r = self.encoder(reshaped_input_list)
+        r = self.encoder(reshaped_input_list)[0]
         r = r.view(N_tasks, N_samples, -1)
-        r_agg = self.aggregator(r)
+        r_agg = self.aggregator(r, batch['mask'])
         
         # post should be a dictionary containing keys 'means' and 'log_covs'
-        post = self.r_to_z_map(r_agg, batch['mask'])
+        post = self.r_to_z_map([r_agg])
         return post
 
 
@@ -96,7 +135,8 @@ class NeuralProcessV1(BaseNeuralProcess):
         self.r_to_z_map.zero_grad()
         self.base_map_optim.zero_grad()
 
-        neg_elbo = -1.0*self.compute_ELBO(batch)
+        posteriors = self.infer_posterior_params(batch)
+        neg_elbo = -1.0*self.compute_ELBO(posteriors, batch)
 
         if self.use_nat_grad:
             raise NotImplementedError
@@ -110,7 +150,7 @@ class NeuralProcessV1(BaseNeuralProcess):
         else:
             neg_elbo.backward()
             self.base_map_optim.step()
-            self.r_to_z_map.step()
+            self.r_to_z_map_optim.step()
             self.encoder_optim.step()
 
 
@@ -125,7 +165,7 @@ class NeuralProcessV1(BaseNeuralProcess):
         return cond_log_likelihood - KL
     
 
-    def compute_cond_log_likelihood(self, posteriors, batch):
+    def compute_cond_log_likelihood(self, posteriors, batch, mode='train'):
         '''
             Computer E[log p(y|x,z)] up to constant additional factors
 
@@ -135,37 +175,41 @@ class NeuralProcessV1(BaseNeuralProcess):
         n_samples = 1
 
         input_batch_list, output_batch_list = batch['input_batch_list'], batch['output_batch_list']
+        mask = batch['mask'].view(-1, 1)
 
-        z_means = posteriors['means']
-        z_log_covs = posteriors['log_covs']
+        z_means = posteriors[0]
+        z_log_covs = posteriors[1]
         z_covs = torch.exp(z_log_covs)
-
-        z_samples = sample_diag_gaussians(z_means, z_covs, n_samples)
+    
+        if mode == 'eval':
+            z_samples = z_means
+        else:
+            z_samples = sample_diag_gaussians(z_means, z_covs, n_samples)
         z_samples = local_repeat(z_samples, input_batch_list[0].size(1))
         input_batch_list = [inp.view(-1,inp.size(2)) for inp in input_batch_list]
         output_batch_list = [out.view(-1,out.size(2)) for out in output_batch_list]
 
         preds = self.base_map(z_samples, input_batch_list)
 
-        if self.base_map.siamese_outputs:
+        if self.base_map.siamese_output:
             log_prob = 0.0
             if self.base_map.deterministic:
-                for pred, output in zip(preds, repeated_true_outputs):
-                    log_prob += compute_spherical_log_prob(pred, output, n_samples)
+                for pred, output in zip(preds, output_batch_list):
+                    log_prob += compute_spherical_log_prob(pred, output, mask, n_samples)
             else:
-                for pred, output in zip(preds, repeated_true_outputs):
+                for pred, output in zip(preds, output_batch_list):
                     log_prob += compute_diag_log_prob(
-                        pred[0], pred[1], output, n_samples
+                        pred[0], pred[1], output, mask, n_samples
                     )
         else:
             if self.base_map.deterministic:
                 log_prob = compute_spherical_log_prob(
-                    preds[0], repeated_true_outputs[0], n_samples
+                    preds[0], output_batch_list[0], mask, n_samples
                 )
             else:
                 preds_mean, preds_log_cov = preds[0][0], preds[0][1]
                 log_prob = compute_diag_log_prob(
-                    preds_mean, preds_log_cov, repeated_true_outputs[0], n_samples
+                    preds_mean, preds_log_cov, output_batch_list[0], mask, n_samples
                 )
 
         return log_prob
@@ -175,8 +219,8 @@ class NeuralProcessV1(BaseNeuralProcess):
         '''
             We always deal with spherical Gaussian prior
         '''
-        z_means = posteriors['means']
-        z_log_covs = posteriors['log_covs']
+        z_means = posteriors[0]
+        z_log_covs = posteriors[1]
         z_covs = torch.exp(z_log_covs)
         KL = 0.5 * torch.sum(
             1.0 + z_log_covs - z_means**2 - z_covs

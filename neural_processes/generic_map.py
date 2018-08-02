@@ -6,24 +6,30 @@ from torch.autograd import Variable
 act_dict = {
     'relu': (F.relu, nn.ReLU),
     'tanh': (F.tanh, nn.Tanh),
-    'None': (lambda x: x, nn.Identity)
 }
 
 
-def make_mlp(input_dim, hidden_dim, num_hidden_layers, act_nn, output_dim=None, output_act_nn=None):
+def make_mlp(input_dim, hidden_dim, num_hidden_layers, act_nn, use_bn=False, output_dim=None, output_act_nn=None):
     '''
         Makes an "tower" MLP
     '''
     assert num_hidden_layers > 0
-    mod_list = nn.ModuleList(nn.Linear(input_dim, hidden_dim), act_nn)
+    bias = not use_bn
+    
+    mod_list = nn.ModuleList([nn.Linear(input_dim, hidden_dim, bias=bias)])
+    if use_bn: mod_list.extend([nn.BatchNorm1d(hidden_dim)])
+    mod_list.extend([act_nn()])
     for _ in range(num_hidden_layers-1):
-        mod_list.extend([nn.Linear(hidden_dim, hidden_dim), act_nn])
+        mod_list.extend([nn.Linear(hidden_dim, hidden_dim, bias=bias)])
+        if use_bn: mod_list.extend([nn.BatchNorm1d(hidden_dim)])
+        mod_list.extend([act_nn()])
+        
     if output_dim is not None:
         mod_list.extend([nn.Linear(hidden_dim, output_dim)])
         if output_act_nn is not None:
-            mod_list.extend([output_act_nn])
+            mod_list.extend([output_act_nn()])
 
-    return nn.Sequential(mod_list)
+    return nn.Sequential(*mod_list)
 
 
 class GenericMap(nn.Module):
@@ -46,9 +52,10 @@ class GenericMap(nn.Module):
         num_siamese_output_layers=1,
         siamese_output_layer_dim=128,
         act='relu',
+        use_bn=False,
         deterministic=False
         ):
-        super(GenericMap).__init__(self)
+        super(GenericMap, self).__init__()
         
         self.siamese_input = siamese_input
         self.siamese_output = siamese_output
@@ -58,14 +65,15 @@ class GenericMap(nn.Module):
         # process the inputs
         if siamese_input:
             assert num_siamese_input_layers > 0
-            self.siamese_input_seqs = []
+            self.siamese_input_seqs = nn.ModuleList()
             for dim in input_dims:
-                self.siamese_input_seqs.append(
+                self.siamese_input_seqs.extend([
                     make_mlp(
                         dim, siamese_input_layer_dim,
-                        num_siamese_input_layers, act_nn
+                        num_siamese_input_layers, act_nn,
+                        use_bn=use_bn
                     )
-                )
+                ])
         
         # pass through common hidden layers
         if siamese_input:
@@ -75,33 +83,36 @@ class GenericMap(nn.Module):
         
         assert num_hidden_layers > 0
         self.hidden_seq = make_mlp(
-            concat_dim, hidden_dim, num_hidden_layers, act_nn
+            concat_dim, hidden_dim, num_hidden_layers, act_nn, use_bn=use_bn
         )
 
         # compute outputs
         if siamese_output:
-            self.siamese_output_seqs = []
+            self.siamese_output_seqs = nn.ModuleList()
             for dim in output_dims:
                 if not deterministic:
                     mean_seq = make_mlp(
                         hidden_dim, siamese_output_layer_dim,
                         num_siamese_output_layers, act_nn,
-                        output_dim=dim, output_act_nn=None
+                        output_dim=dim, output_act_nn=None,
+                        use_bn=use_bn
                     )
                     log_cov_seq = make_mlp(
                         hidden_dim, siamese_output_layer_dim,
                         num_siamese_output_layers, act_nn,
-                        output_dim=dim, output_act_nn=None
+                        output_dim=dim, output_act_nn=None,
+                        use_bn=use_bn
                     )
-                    self.siamese_output_seqs.append((mean_seq, log_cov_seq))
+                    self.siamese_output_seqs.extend([mean_seq, log_cov_seq])
                 else:
-                    self.siamese_output_seqs.append(
+                    self.siamese_output_seqs.extend([
                         make_mlp(
                             hidden_dim, siamese_output_layer_dim,
                             num_siamese_output_layers, act_nn,
-                            output_dim=dim, output_act_nn=None
+                            output_dim=dim, output_act_nn=None,
+                            use_bn=use_bn
                         )
-                    )
+                    ])
         else:
             if deterministic:
                 self.output_seq = nn.Linear(hidden_dim, output_dims[0])
@@ -110,7 +121,7 @@ class GenericMap(nn.Module):
                 self.output_log_cov_seq = nn.Linear(hidden_dim, output_dims[0])
 
 
-    def forward(inputs):
+    def forward(self, inputs):
         '''
             Output is:
                 deterministic: a list
@@ -119,13 +130,13 @@ class GenericMap(nn.Module):
         if self.siamese_input:
             siamese_input_results = list(
                 map(
-                    lambda x, seq: seq(x),
+                    lambda z: z[1](z[0]),
                     zip(inputs, self.siamese_input_seqs)
                 )
             )
             hidden_input = torch.cat(siamese_input_results, dim=1)
         else:
-            hidden_input = torch.cat(inputs, dim=1)=
+            hidden_input = torch.cat(inputs, dim=1)
         
         hidden_output = self.hidden_seq(hidden_input)
 
@@ -136,8 +147,10 @@ class GenericMap(nn.Module):
                 ]
             else:
                 outputs = [
-                    [mean_seq(hidden_output), log_cov_seq(hidden_output)] \
-                    for mean_seq, log_cov_seq in self.siamese_output_seqs
+                    seq(hidden_output) for seq in self.siamese_output_seqs
+                ]
+                outputs = [
+                    [outputs[2*i], outputs[2*i+1]] for i in range(int(len(outputs)/2))
                 ]
         else:
             if self.deterministic:
