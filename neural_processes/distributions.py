@@ -12,8 +12,9 @@ def local_repeat(tensor, n):
 
 def sample_diag_gaussians(means, diags, n_samples):
     batch_size, dim = means.size(0), means.size(1)
-    means = local_repeat(means, n_samples)
-    diags = local_repeat(diags, n_samples)
+    if n_samples > 1:
+        means = local_repeat(means, n_samples)
+        diags = local_repeat(diags, n_samples)
     
     eps = Variable(torch.randn(means.size()))
     samples = eps*diags + means

@@ -156,9 +156,9 @@ class GenericMap(nn.Module):
             if self.deterministic:
                 outputs = [self.output_seq(hidden_output)]
             else:
-                outputs = [
+                outputs = [[
                     self.output_mean_seq(hidden_output),
                     self.output_log_cov_seq(hidden_output)
-                ]
+                ]]
         
         return outputs

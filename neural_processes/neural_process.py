@@ -7,8 +7,8 @@ from torch import autograd
 from numpy import pi
 from numpy import log as np_log
 
-from .base_neural_process import BaseNeuralProcess
-from .distributions import sample_diag_gaussians, local_repeat
+from neural_processes.base_neural_process import BaseNeuralProcess
+from neural_processes.distributions import sample_diag_gaussians, local_repeat
 
 log_2pi = np_log(2*pi)
 
@@ -42,7 +42,9 @@ def compute_spherical_log_prob(preds, true_outputs, mask, n_samples):
         Compute log prob assuming spherical Gaussian with some mean
         Up to additive constant
     '''
-    return -0.5 * torch.sum(mask*(preds - true_outputs)**2) / float(n_samples)
+    log_prob = -0.5 * torch.sum(mask*(preds - true_outputs)**2)
+    if n_samples > 1: log_prob /= float(n_samples)
+    return log_prob
 
 
 def compute_diag_log_prob(preds_mean, preds_log_cov, true_outputs, mask, n_samples):
@@ -56,12 +58,10 @@ def compute_diag_log_prob(preds_mean, preds_log_cov, true_outputs, mask, n_sampl
         mask*(preds_mean - true_outputs)**2 / preds_cov
     )
 
-    log_det = logsumexp(torch.sum(preds_log_cov, 1))
-    log_det += log_2pi
-    log_det *= -0.5
-    log_prob += torch.sum(mask*log_det)
+    log_det_temp = mask*(torch.sum(preds_log_cov, 1) + log_2pi)
+    log_prob += -0.5*torch.sum(log_det_temp)
 
-    log_prob /= float(n_samples)
+    if n_samples > 1: log_prob /= float(n_samples)
     return log_prob
 
 
@@ -125,9 +125,11 @@ class NeuralProcessV1(BaseNeuralProcess):
         r = r.view(N_tasks, N_samples, -1)
         r_agg = self.aggregator(r, batch['mask'])
         
-        # post should be a dictionary containing keys 'means' and 'log_covs'
+        # since r_to_z_map is a generic map, it will output
+        # [[mean, log_cov]] because that is the interface
+        # of the generic map
         post = self.r_to_z_map([r_agg])
-        return post
+        return post[0]
 
 
     def train_step(self, batch):
@@ -222,7 +224,7 @@ class NeuralProcessV1(BaseNeuralProcess):
         z_means = posteriors[0]
         z_log_covs = posteriors[1]
         z_covs = torch.exp(z_log_covs)
-        KL = 0.5 * torch.sum(
+        KL = -0.5 * torch.sum(
             1.0 + z_log_covs - z_means**2 - z_covs
         )
         return KL
