@@ -1,3 +1,6 @@
+import os.path as osp
+from collections import defaultdict
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,6 +8,7 @@ from torch.autograd import Variable
 from torch import autograd
 from torch.optim import Adam
 
+import numpy as np
 from numpy import array
 from numpy.random import choice, randint
 
@@ -14,8 +18,10 @@ from neural_process import NeuralProcessV1
 from aggregators import sum_aggregator, mean_aggregator, tanh_sum_aggregator
 
 from tasks.sinusoidal import SinusoidalTask
+
+from rlkit.core.vistools import save_plot, plot_returns_on_same_plot
 # -----------------------------------------------------------------------------
-use_bn = True
+use_bn = False
 N_tasks = 100
 r_dim = 10
 z_dim = 20
@@ -103,6 +109,8 @@ neural_process = NeuralProcessV1(
 )
 
 # -----------------------------------------------------------------------------
+test_elbos = defaultdict(list)
+test_log_likelihoods = defaultdict(list)
 for iter_num in range(max_iters):
     task_batch_idxs = choice(len(all_tasks), size=num_tasks_per_batch, replace=False)
     if data_sampling_mode == 'random':
@@ -132,9 +140,14 @@ for iter_num in range(max_iters):
         # get test samples
         NUM_TEST_SAMPLES = 30
         val_tasks = [SinusoidalTask() for _ in range(num_tasks_per_batch)]
-        num_samples_per_task = array([NUM_TEST_SAMPLES for _ in range(num_tasks_per_batch)])
-        X_test, Y_test = generate_data_batch(val_tasks, num_samples_per_task, NUM_TEST_SAMPLES)
-        mask_test = generate_mask(num_samples_per_task, NUM_TEST_SAMPLES)
+        X_test = Variable(torch.arange(-5,5,0.1)).view(-1,1)
+        Y_test = [
+            task.A * torch.sin(X_test - task.phase)
+            for task in val_tasks
+        ]
+        Y_test = torch.stack(Y_test)
+        X_test = X_test.unsqueeze(0).expand(len(val_tasks), -1, -1).contiguous()
+        mask_test = generate_mask(array([NUM_TEST_SAMPLES for _ in range(len(val_tasks))]), X_test.size(1))
         batch_test = {
             'input_batch_list': [X_test],
             'output_batch_list': [Y_test],
@@ -153,11 +166,21 @@ for iter_num in range(max_iters):
             }
             posts = neural_process.infer_posterior_params(batch_context)
 
-            elbo = neural_process.compute_ELBO(posts, batch_test)
+            elbo = neural_process.compute_ELBO(posts, batch_test, mode='eval')
             test_log_likelihood = neural_process.compute_cond_log_likelihood(posts, batch_test, mode='eval')
+            test_elbos[num_context].append(elbo.data[0])
+            test_log_likelihoods[num_context].append(test_log_likelihood.data[0])
 
             print('%d Context:' % num_context)
             print('ELBO: %.4f' % elbo)
             print('Test Log Like: %.4f' % test_log_likelihood)
 
         neural_process.set_mode('train')
+
+for num_context in test_elbos:
+    plot_returns_on_same_plot(
+        [np.array(test_elbos[num_context]), np.array(test_log_likelihoods[num_context])],
+        ['elbo', 'log_likelihood'],
+        'Test ELBO and log likelihood during training',
+        osp.join('/u/kamyar/oorl_rlkit/junk_vis/%d_context_normal_sine_np_v1.png' % num_context)
+    )

@@ -22,3 +22,11 @@ def plot_returns_on_same_plot(arr_list, names, title, save_path):
     lgd = ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=False, ncol=3)
     plt.savefig(save_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()
+
+
+def save_plot(x, y, title, save_path, color='cyan'):
+    fig, ax = plt.subplots(1)
+    ax.plot(np.arange(x, y, color=color))
+    ax.set_title(title)
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close()

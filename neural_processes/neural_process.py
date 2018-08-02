@@ -156,13 +156,13 @@ class NeuralProcessV1(BaseNeuralProcess):
             self.encoder_optim.step()
 
 
-    def compute_ELBO(self, posteriors, batch):
+    def compute_ELBO(self, posteriors, batch, mode='train'):
         '''
             n_samples is the number of samples used for
             Monte Carlo estimate of the ELBO
         '''
         posteriors = self.infer_posterior_params(batch)
-        cond_log_likelihood = self.compute_cond_log_likelihood(posteriors, batch)
+        cond_log_likelihood = self.compute_cond_log_likelihood(posteriors, batch, mode)
         KL = self.compute_ELBO_KL(posteriors)
         return cond_log_likelihood - KL
     
