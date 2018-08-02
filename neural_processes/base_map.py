@@ -33,7 +33,9 @@ class BaseMap(GenericMap):
         num_siamese_output_layers=1,
         siamese_output_layer_dim=128,
         act='relu',
-        deterministic=False):
+        deterministic=False,
+        use_bn=False
+    ):
         
         all_input_dims = [z_dim] + input_dims
         super(BaseMap, self).__init__(
@@ -48,7 +50,8 @@ class BaseMap(GenericMap):
             num_siamese_output_layers=num_siamese_output_layers,
             siamese_output_layer_dim=siamese_output_layer_dim,
             act=act,
-            deterministic=deterministic
+            deterministic=deterministic,
+            use_bn=use_bn
         )
 
     def forward(self, z, inputs):

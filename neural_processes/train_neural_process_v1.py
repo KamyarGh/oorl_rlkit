@@ -15,9 +15,10 @@ from aggregators import sum_aggregator, mean_aggregator, tanh_sum_aggregator
 
 from tasks.sinusoidal import SinusoidalTask
 # -----------------------------------------------------------------------------
+use_bn = True
 N_tasks = 100
 r_dim = 10
-z_dim = 5
+z_dim = 20
 base_map_lr = 1e-3
 encoder_lr = 1e-3
 r_to_z_map_lr = 1e-3
@@ -33,7 +34,7 @@ data_sampling_mode = 'random'
 num_per_task_low = 3
 num_per_task_high = 11
 
-aggregator = mean_aggregator
+aggregator = sum_aggregator
 
 freq_val = 100
 
@@ -46,8 +47,12 @@ def generate_data_batch(tasks_batch, num_samples_per_task, max_num):
     for i, (task, num_samples) in enumerate(zip(tasks_batch, num_samples_per_task)):
         num = int(num_samples)
         x, y = task.sample(num)
-        X[i,:num] = x
-        Y[i,:num] = y
+        if num==max_num:
+            X[i,:] = x
+            Y[i,:] = y
+        else:
+            X[i,:num] = x
+            Y[i,:num] = y
 
     return Variable(X), Variable(Y)
 
@@ -63,7 +68,8 @@ encoder = GenericMap(
     [1], [r_dim], siamese_input=False,
     num_hidden_layers=2, hidden_dim=40,
     siamese_output=False, act='relu',
-    deterministic=True
+    deterministic=True,
+    use_bn=use_bn
 )
 encoder_optim = Adam(encoder.parameters(), lr=encoder_lr)
 
@@ -71,7 +77,8 @@ base_map = BaseMap(
     z_dim, [1], [1], siamese_input=False,
     num_hidden_layers=2, hidden_dim=40,
     siamese_output=False, act='relu',
-    deterministic=True
+    deterministic=True,
+    use_bn=use_bn
 )
 base_map_optim = Adam(base_map.parameters(), lr=base_map_lr)
 
@@ -79,7 +86,8 @@ r_to_z_map = GenericMap(
     [r_dim], [z_dim], siamese_input=False,
     num_hidden_layers=2, hidden_dim=40,
     siamese_output=False, act='relu',
-    deterministic=False
+    deterministic=False,
+    use_bn=use_bn
 )
 r_to_z_map_optim = Adam(r_to_z_map.parameters(), lr=r_to_z_map_lr)
 
@@ -117,57 +125,39 @@ for iter_num in range(max_iters):
     neural_process.train_step(batch)
 
     if iter_num % freq_val == 0:
+        print('-'*80)
+        print('Iter %d' % iter_num)
         neural_process.set_mode('eval')
 
+        # get test samples
+        NUM_TEST_SAMPLES = 30
         val_tasks = [SinusoidalTask() for _ in range(num_tasks_per_batch)]
-
-        num_samples_per_task = randint(
-            num_per_task_low,
-            high=num_per_task_high,
-            size=(num_tasks_per_batch)
-        )
-        X_varied, Y_varied = generate_data_batch(val_tasks, num_samples_per_task, max_num)
-        mask_varied = generate_mask(num_samples_per_task, max_num)
-        batch_varied = {
-            'input_batch_list': [X_varied],
-            'output_batch_list': [Y_varied],
-            'mask': mask_varied
-        }
-        posts_varied = neural_process.infer_posterior_params(batch_varied)
-
-        num_samples_per_task = array([num_per_task_high for _ in range(num_tasks_per_batch)])
-        X_max, Y_max = generate_data_batch(val_tasks, num_samples_per_task, max_num)
-        mask_max = generate_mask(num_samples_per_task, max_num)
-        batch_max = {
-            'input_batch_list': [X_max],
-            'output_batch_list': [Y_max],
-            'mask': mask_max
-        }
-        posts_max = neural_process.infer_posterior_params(batch_max)
-
-        num_samples_per_task = array([max_num for _ in range(num_tasks_per_batch)])
-        X_test, Y_test = generate_data_batch(val_tasks, num_samples_per_task, max_num)
-        mask_test = generate_mask(num_samples_per_task, max_num)
+        num_samples_per_task = array([NUM_TEST_SAMPLES for _ in range(num_tasks_per_batch)])
+        X_test, Y_test = generate_data_batch(val_tasks, num_samples_per_task, NUM_TEST_SAMPLES)
+        mask_test = generate_mask(num_samples_per_task, NUM_TEST_SAMPLES)
         batch_test = {
             'input_batch_list': [X_test],
             'output_batch_list': [Y_test],
             'mask': mask_test
         }
-        elbo_varied = neural_process.compute_ELBO(posts_varied, batch_test)
-        test_log_likelihood_varied = neural_process.compute_cond_log_likelihood(posts_varied, batch_test, mode='eval')
-        elbo_max = neural_process.compute_ELBO(posts_max, batch_test)
-        test_log_likelihood_max = neural_process.compute_cond_log_likelihood(posts_max, batch_test, mode='eval')
 
-        print('\n--------------------')
-        print('Iter %d ELBO Var: %.4f' % (iter_num, elbo_varied))
-        print('Iter %d Test Log Like Var: %.4f' % (iter_num, test_log_likelihood_varied))
-        print('-----')
-        print('Iter %d ELBO Max: %.4f' % (iter_num, elbo_max))
-        print('Iter %d Test Log Like Max: %.4f' % (iter_num, test_log_likelihood_max))
+        for num_context in range(1,22,4):
+            print('-'*5)
+            num_samples_per_task = array([num_context for _ in range(num_tasks_per_batch)])
+            X_context, Y_context = generate_data_batch(val_tasks, num_samples_per_task, num_context)
+            mask_context = generate_mask(num_samples_per_task, num_context)
+            batch_context = {
+                'input_batch_list': [X_context],
+                'output_batch_list': [Y_context],
+                'mask': mask_context
+            }
+            posts = neural_process.infer_posterior_params(batch_context)
 
-        # inference batch
-        # test batch
-        # Check performance conditioning on range(1,22,4) number of points
-        # Make the points subsets of one-another to be able to properly evaluate
+            elbo = neural_process.compute_ELBO(posts, batch_test)
+            test_log_likelihood = neural_process.compute_cond_log_likelihood(posts, batch_test, mode='eval')
+
+            print('%d Context:' % num_context)
+            print('ELBO: %.4f' % elbo)
+            print('Test Log Like: %.4f' % test_log_likelihood)
 
         neural_process.set_mode('train')
