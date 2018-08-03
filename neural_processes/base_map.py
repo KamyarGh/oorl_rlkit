@@ -1,4 +1,4 @@
-from generic_map import GenericMap
+from .generic_map import GenericMap
 
 class BaseMap(GenericMap):
     '''

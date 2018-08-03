@@ -28,8 +28,6 @@ z_dim = 20
 base_map_lr = 1e-3
 encoder_lr = 1e-3
 r_to_z_map_lr = 1e-3
-post_mean_lr = 1e-1
-post_log_cov_lr = 1e-1
 max_iters = 10001
 num_tasks_per_batch = 16
 

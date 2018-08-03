@@ -119,7 +119,7 @@ class NeuralProcessV1(BaseNeuralProcess):
         '''
         input_list = batch['input_batch_list']
         N_tasks, N_samples = input_list[0].size(0), input_list[0].size(1)
-        reshaped_input_list = [inp.view(-1, inp.size(2)) for inp in input_list]
+        reshaped_input_list = [inp.contiguous().view(-1, inp.size(2)) for inp in input_list]
 
         r = self.encoder(reshaped_input_list)[0]
         r = r.view(N_tasks, N_samples, -1)
@@ -130,6 +130,26 @@ class NeuralProcessV1(BaseNeuralProcess):
         # of the generic map
         post = self.r_to_z_map([r_agg])
         return post[0]
+    
+
+    def sample_outputs(self, posteriors, input_batch_list, n_samples):
+        z_means = posteriors[0]
+        z_log_covs = posteriors[1]
+        z_covs = torch.exp(z_log_covs)
+        z_samples = sample_diag_gaussians(z_means, z_covs, n_samples)
+        z_samples = local_repeat(z_samples, input_batch_list[0].size(1))
+
+        num_tasks, num_per_task = input_batch_list[0].size(0), input_batch_list[0].size(1)
+        input_batch_list = [inp.contiguous().view(-1,inp.size(2)) for inp in input_batch_list]
+        input_batch_list = [local_repeat(inp, n_samples) for inp in input_batch_list]
+
+        if (not self.base_map.siamese_output) and self.base_map.deterministic:
+            outputs = self.base_map(z_samples, input_batch_list)[0]
+            outputs = outputs.view(num_tasks, n_samples, num_per_task, outputs.size(-1))
+        else:
+            raise NotImplementedError
+
+        return outputs
 
 
     def train_step(self, batch):

@@ -436,6 +436,7 @@ def build_nested_variant_generator(exp_spec):
     def vg_fn():
         for flat_variables in vg.variants():
             dict_to_yield = add_variable_to_constant_specs(constants, flat_variables)
+            dict_to_yield.update(exp_spec['meta_data'])
             del dict_to_yield['_hidden_keys']
             yield dict_to_yield
 

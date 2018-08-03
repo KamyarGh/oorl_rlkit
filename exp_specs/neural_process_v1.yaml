@@ -1,0 +1,27 @@
+meta_data:
+  exp_fn_name: neural_processes_v1
+  exp_dirs: /u/kamyar/oorl_rlkit/output
+  exp_name: neural_processes_v1_hyper_param_search
+  description: searching over the NPv1 hyperparameters
+  num_workers: 7
+# -----------------------------------------------------------------------------
+variables:
+  aggregator : [sum_aggregator, mean_aggregator, tanh_sum_aggregator]
+  lr: [1e-3, 1e-4, 1e-5]
+  use_bn : [true, false]
+  num_each_hidden_layers: [1, 2]
+  hidden_dim: [40, 80]
+  num_tasks_per_batch : [16, 64]
+
+# -----------------------------------------------------------------------------
+constants:
+  N_tasks : 100
+  r_dim : 20
+  z_dim : 20
+  max_iters : 50001
+
+  data_sampling_mode : random
+  num_per_task_low : 3
+  num_per_task_high : 11
+
+  freq_val : 100

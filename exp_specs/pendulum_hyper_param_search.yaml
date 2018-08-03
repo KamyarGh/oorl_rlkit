@@ -1,4 +1,5 @@
 meta_data:
+  exp_dirs: /ais/gobi5/kamyar/oorl_rlkit
   exp_name: bug_free_pendulum_hyper_param_search
   description: searching over the SAC hyperparameters
   num_workers: 10

@@ -24,6 +24,20 @@ def plot_returns_on_same_plot(arr_list, names, title, save_path):
     plt.close()
 
 
+def plot_multiple_plots(plot_list, names, title, save_path):
+    fig, ax = plt.subplots(1)
+    cmap = get_cmap(len(plot_list))
+
+    for i, v in enumerate(zip(plot_list, names)):
+        plot, name = v
+        ax.plot(plot[0], plot[1], color=cmap(i), label=name)
+
+    ax.set_title(title)
+    lgd = ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=False, ncol=3)
+    plt.savefig(save_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    plt.close()
+
+
 def save_plot(x, y, title, save_path, color='cyan'):
     fig, ax = plt.subplots(1)
     ax.plot(np.arange(x, y, color=color))

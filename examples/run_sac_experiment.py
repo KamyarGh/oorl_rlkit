@@ -65,8 +65,11 @@ def experiment(variant):
 
 
 def pool_function(arg):
-    setup_logger(arg[0], exp_id=arg[1], variant=arg[2])
-    return experiment(arg[2])    
+    variant = arg[0]
+    exp_id = arg[1]
+    exp_prefix = variant['meta_data']['exp_name']
+    setup_logger(exp_prefix=exp_prefix=, exp_id=exp_id, variant=variant)
+    return experiment(variant)
 
 
 if __name__ == "__main__":
@@ -84,7 +87,7 @@ if __name__ == "__main__":
     vg_fn = build_nested_variant_generator(exp_specs)
     all_exp_args = []
     for i, variant in enumerate(vg_fn()):
-        all_exp_args.append([exp_specs['meta_data']['exp_name'], i, variant])
+        all_exp_args.append([variant, i])
     
     num_total = len(all_exp_args)
     num_workers = min(exp_specs['meta_data']['num_workers'], num_total)
