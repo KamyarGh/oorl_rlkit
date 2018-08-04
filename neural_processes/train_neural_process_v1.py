@@ -29,16 +29,16 @@ base_map_lr = 1e-3
 encoder_lr = 1e-3
 r_to_z_map_lr = 1e-3
 max_iters = 10001
-num_tasks_per_batch = 16
+num_tasks_per_batch = 64
 
 # data_sampling_mode = 'constant'
 # num_per_task = 10
 
 data_sampling_mode = 'random'
 num_per_task_low = 3
-num_per_task_high = 11
+num_per_task_high = 10
 
-aggregator = sum_aggregator
+aggregator = tanh_sum_aggregator
 
 freq_val = 100
 
@@ -69,7 +69,7 @@ def generate_mask(num_tasks_per_batch, max_num):
 
 # -----------------------------------------------------------------------------
 encoder = GenericMap(
-    [1], [r_dim], siamese_input=False,
+    [1,1], [r_dim], siamese_input=False,
     num_hidden_layers=2, hidden_dim=40,
     siamese_output=False, act='relu',
     deterministic=True,
@@ -119,7 +119,8 @@ for iter_num in range(max_iters):
         )
         max_num = num_per_task_high
     else:
-        raise NotImplementedError
+        num_samples_per_task = array([num_per_task_high for _ in range(num_tasks_per_batch)])
+        max_num = num_per_task_high
     
     X, Y = generate_data_batch([all_tasks[i] for i in task_batch_idxs], num_samples_per_task, max_num)
     mask = generate_mask(num_samples_per_task, max_num)

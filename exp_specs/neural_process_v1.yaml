@@ -1,9 +1,9 @@
 meta_data:
   exp_fn_name: neural_processes_v1
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: neural_processes_v1_hyper_param_search
+  exp_name: debug_multi
   description: searching over the NPv1 hyperparameters
-  num_workers: 7
+  num_workers: 1
 # -----------------------------------------------------------------------------
 variables:
   aggregator : [sum_aggregator, mean_aggregator, tanh_sum_aggregator]

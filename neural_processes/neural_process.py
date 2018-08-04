@@ -118,10 +118,12 @@ class NeuralProcessV1(BaseNeuralProcess):
             }
         '''
         input_list = batch['input_batch_list']
+        output_list = batch['output_batch_list']
         N_tasks, N_samples = input_list[0].size(0), input_list[0].size(1)
         reshaped_input_list = [inp.contiguous().view(-1, inp.size(2)) for inp in input_list]
+        reshaped_output_list = [out.contiguous().view(-1, out.size(2)) for out in output_list]        
 
-        r = self.encoder(reshaped_input_list)[0]
+        r = self.encoder(reshaped_input_list + reshaped_output_list)[0]
         r = r.view(N_tasks, N_samples, -1)
         r_agg = self.aggregator(r, batch['mask'])
         

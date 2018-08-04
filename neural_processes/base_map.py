@@ -1,4 +1,4 @@
-from .generic_map import GenericMap
+from neural_processes.generic_map import GenericMap
 
 class BaseMap(GenericMap):
     '''
