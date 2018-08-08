@@ -8,6 +8,7 @@ class EnvReplayBuffer(SimpleReplayBuffer):
             self,
             max_replay_buffer_size,
             env,
+            extra_obs_dim=0
     ):
         """
         :param max_replay_buffer_size:
@@ -18,7 +19,7 @@ class EnvReplayBuffer(SimpleReplayBuffer):
         self._action_space = env.action_space
         super().__init__(
             max_replay_buffer_size=max_replay_buffer_size,
-            observation_dim=get_dim(self._ob_space),
+            observation_dim=get_dim(self._ob_space) + extra_obs_dim,
             action_dim=get_dim(self._action_space),
         )
 

@@ -1,6 +1,6 @@
 meta_data:
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: bug_free_pendulum_hyper_param_search
+  exp_name: fast_pendulum_hyper_param_search
   description: searching over the SAC hyperparameters
   num_workers: 10
 # -----------------------------------------------------------------------------

@@ -25,11 +25,8 @@ def experiment(variant):
     # env = NormalizedBoxEnv(get_meta_env(variant['env_specs']))
     # training_env = NormalizedBoxEnv(get_meta_env(variant['env_specs']))
 
-    # env = ReacherEnv()
-    # training_env = ReacherEnv()
-
-    env = NormalizedBoxEnv(ReacherEnv())
-    training_env = NormalizedBoxEnv(ReacherEnv())
+    env = ReacherEnv()
+    training_env = ReacherEnv()
     
     # Or for a specific version:
     # import gym
@@ -38,20 +35,24 @@ def experiment(variant):
     obs_dim = int(np.prod(env.observation_space.shape))
     action_dim = int(np.prod(env.action_space.shape))
 
+    total_meta_variable_dim = 0
+    for dims in exp_specs['true_meta_variable_dims']:
+        total_meta_variable_dim += sum(dims)
+
     net_size = variant['net_size']
     qf = FlattenMlp(
         hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + action_dim,
+        input_size=obs_dim + action_dim + total_meta_variable_dim,
         output_size=1,
     )
     vf = FlattenMlp(
         hidden_sizes=[net_size, net_size],
-        input_size=obs_dim,
+        input_size=obs_dim + total_meta_variable_dim,
         output_size=1,
     )
     policy = TanhGaussianPolicy(
         hidden_sizes=[net_size, net_size],
-        obs_dim=obs_dim,
+        obs_dim=obs_dim + total_meta_variable_dim,
         action_dim=action_dim,
     )
     algorithm = SoftActorCritic(

@@ -1,7 +1,7 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: normalized_fast_reacher_hyper_param_search
+  exp_name: fast_reacher_hyper_param_search
   description: searching over the SAC hyperparameters
   num_workers: 14
   cpu_range: [0,13]
@@ -32,6 +32,9 @@ constants:
     save_replay_buffer: true
   
   net_size: 128
+
+  true_meta_variable_names: ['gear', 'friction']
+  true_meta_variable_dims: [[1], [1]]
   
   # env_specs:
   #   base_env_name: 'gravity_gear_inverted_pendulum'

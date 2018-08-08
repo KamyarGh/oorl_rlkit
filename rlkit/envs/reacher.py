@@ -41,3 +41,10 @@ class ReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             self.sim.data.qvel.flat[:2],
             self.get_body_com("fingertip") - self.get_body_com("target")
         ])
+
+
+class MetaReacherEnv(ReacherEnv):
+    def __init__(self, full_xml_path, meta_params):
+        utils.EzPickle.__init__(self)
+        mujoco_env.MujocoEnv.__init__(self, full_xml_path, 2)
+        self.env_meta_params = meta_params
