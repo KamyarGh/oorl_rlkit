@@ -429,6 +429,14 @@ def build_nested_variant_generator(exp_spec):
     variables = exp_spec['variables']
     constants = exp_spec['constants']
 
+    # check if we're effectively just running a single experiment
+    if variables is None:
+        def vg_fn():
+            dict_to_yield = constants
+            dict_to_yield.update(exp_spec['meta_data'])
+            yield dict_to_yield
+        return vg_fn
+
     variables = flatten_dict(variables)
     vg = VariantGenerator()
     for k, v in variables.items(): vg.add(k, v)

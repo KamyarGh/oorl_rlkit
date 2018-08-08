@@ -51,9 +51,6 @@ def exp_fn(all_args):
     max_iters = int(float(exp_specs['max_iters']))
     num_tasks_per_batch = int(float(exp_specs['num_tasks_per_batch']))
 
-    num_each_hidden_layers = int(float(exp_specs['num_each_hidden_layers']))
-    hidden_dim = int(float(exp_specs['hidden_dim']))
-
     data_sampling_mode = exp_specs['data_sampling_mode']
     num_per_task_low = int(float(exp_specs['num_per_task_low']))
     num_per_task_high = int(float(exp_specs['num_per_task_high']))
@@ -89,8 +86,8 @@ def exp_fn(all_args):
 
     # -----------------------------------------------------------------------------
     encoder = GenericMap(
-        [1], [r_dim], siamese_input=False,
-        num_hidden_layers=num_each_hidden_layers, hidden_dim=hidden_dim,
+        [1,1], [r_dim], siamese_input=False,
+        num_hidden_layers=exp_specs['num_enc_hid_layers'], hidden_dim=exp_specs['enc_hid_dim'],
         siamese_output=False, act='relu',
         deterministic=True,
         use_bn=use_bn
@@ -99,7 +96,7 @@ def exp_fn(all_args):
 
     base_map = BaseMap(
         z_dim, [1], [1], siamese_input=False,
-        num_hidden_layers=num_each_hidden_layers, hidden_dim=hidden_dim,
+        num_hidden_layers=exp_specs['num_base_map_hid_layers'], hidden_dim=exp_specs['base_map_hid_dim'],
         siamese_output=False, act='relu',
         deterministic=True,
         use_bn=use_bn
@@ -108,7 +105,7 @@ def exp_fn(all_args):
 
     r_to_z_map = GenericMap(
         [r_dim], [z_dim], siamese_input=False,
-        num_hidden_layers=num_each_hidden_layers, hidden_dim=hidden_dim,
+        num_hidden_layers=exp_specs['num_r_to_z_map_hid_layers'], hidden_dim=exp_specs['r_to_z_map_hid_dim'],
         siamese_output=False, act='relu',
         deterministic=False,
         use_bn=use_bn
@@ -130,7 +127,7 @@ def exp_fn(all_args):
     test_elbos = defaultdict(list)
     test_log_likelihoods = defaultdict(list)
     for iter_num in range(max_iters):
-        task_batch_idxs = choice(len(all_tasks), size=num_tasks_per_batch, replace=False)
+        task_batch_idxs = choice(len(all_tasks), size=num_tasks_per_batch, replace=exp_specs['choice_replace'])
         if data_sampling_mode == 'random':
             num_samples_per_task = randint(
                 num_per_task_low,
@@ -139,7 +136,8 @@ def exp_fn(all_args):
             )
             max_num = num_per_task_high
         else:
-            raise NotImplementedError
+            max_num = num_per_task_high
+            num_samples_per_task = array([max_num for _ in range(num_tasks_per_batch)])
         
         X, Y = generate_data_batch([all_tasks[i] for i in task_batch_idxs], num_samples_per_task, max_num)
         mask = generate_mask(num_samples_per_task, max_num)
@@ -191,10 +189,12 @@ def exp_fn(all_args):
                 test_log_likelihood = neural_process.compute_cond_log_likelihood(posts, batch_test, mode='eval')
                 test_elbos[num_context].append(elbo.data[0])
                 test_log_likelihoods[num_context].append(test_log_likelihood.data[0])
+                mse = test_log_likelihood * (-2) / torch.sum(mask)
 
                 print('%d Context:' % num_context)
                 print('ELBO: %.4f' % elbo)
                 print('Test Log Like: %.4f' % test_log_likelihood)
+                print('Test MSE: %.4f' % mse)
 
             neural_process.set_mode('train')
 

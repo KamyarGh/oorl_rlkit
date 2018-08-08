@@ -27,7 +27,7 @@ from numpy.random import choice
 
 # -----------------------------------------------------------------------------
 N_tasks = 100
-N_val = 5
+N_val = 2
 sample_one_z_per_sample = True
 base_map_lr = encoder_lr = r_to_z_map_lr = 1e-3
 max_iters = 10001
@@ -38,8 +38,7 @@ data_sampling_mode = 'constant'
 num_per_task_high = 10
 
 # -----------------------------------------------------------------------------
-slopes = np.linspace(-1, 1, N_tasks)
-all_tasks = [LinearTask(slope) for slope in slopes]
+all_tasks = [SinusoidalTask() for _ in range(N_tasks)]
 def generate_data_batch(tasks_batch, num_samples_per_task, max_num):
     # Very inefficient will need to fix this
     X = torch.zeros(len(tasks_batch), max_num, 1)
@@ -85,8 +84,8 @@ class R2Z(nn.Module):
             nn.BatchNorm1d(dim),
             nn.ReLU()
         )
-        self.mean_layer = nn.Linear(dim, 40)
-        self.log_cov_layer = nn.Linear(dim, 40)
+        self.mean_layer = nn.Linear(dim, (40+40) + (40*40 + 40) + (40+1))
+        self.log_cov_layer = nn.Linear(dim, (40+40) + (40*40 + 40) + (40+1))
     
     def forward(self, r):
         hid_out = self.hidden(r)
@@ -96,25 +95,39 @@ r_to_z_map = R2Z()
 class BaseMap(nn.Module):
     def __init__(self):
         super(BaseMap, self).__init__()
-        dim = 200
-        self.hidden = nn.Sequential(
-            nn.Linear(41, dim),
-            nn.BatchNorm1d(dim),
-            nn.ReLU(),
-            nn.Linear(dim, dim),
-            nn.BatchNorm1d(dim),
-            nn.ReLU(),
-            nn.Linear(dim, dim),
-            nn.BatchNorm1d(dim),
-            nn.ReLU(),
-            nn.Linear(dim, dim),
-            nn.BatchNorm1d(dim),
-            nn.ReLU(),
-            nn.Linear(dim, 1)
+        lin_mod_list = nn.ModuleList(
+            [
+                nn.Linear(1,40),
+                nn.Linear(40,40),
+                nn.Linear(40,1)
+            ]
         )
+        self.lin_mod_list = lin_mod_list
     
     def forward(self, z, x):
-        return self.hidden(torch.cat([z,x],1))
+        z_w1, z_b1, z_w2, z_b2, z_w3, z_b3 = z[:,:40], z[:,40:80], z[:,80:1680], z[:,1680:1720], z[:,1720:1760], z[:,1760]
+        z_w1 = z_w1.contiguous().view(-1,1,40)
+        z_b1 = z_b1.contiguous().view(-1,1,40)
+        z_w2 = z_w2.contiguous().view(-1,40,40)
+        z_b2 = z_b2.contiguous().view(-1,1,40)
+        z_w3 = z_w3.contiguous().view(-1,40,1)
+        z_b3 = z_b3.contiguous().view(-1,1,1)
+
+        z_weights = [z_w1, z_w2]
+        z_biases = [z_b1, z_b2]
+
+        out = x.view(-1,1,1)
+        for w, b in zip(z_weights, z_biases):
+            out = torch.matmul(out, w)
+            out += b
+            out = F.relu(out)
+        out = torch.matmul(out, z_w3) + z_b3
+        out = out.view(-1,1)
+        return out
+
+        # for lin in self.lin_mod_list():
+        #     out = torch.matmul(out, )
+
 base_map = BaseMap()
 
 encoder_optim = Adam(encoder.parameters(), lr=encoder_lr)
@@ -142,8 +155,8 @@ for iter_num in range(max_iters):
 
     r_dim = r.size(-1)
     r = r.view(N_tasks, N_samples, r_dim)
-    r = torch.mean(r, 1)
-    # r = torch.sum(r, 1)
+    # r = torch.mean(r, 1)
+    r = torch.sum(r, 1)
     mean, log_cov = r_to_z_map(r)
     cov = torch.exp(log_cov)
 
@@ -198,7 +211,7 @@ for iter_num in range(max_iters):
         mean, log_cov = r_to_z_map(r)
         cov = torch.exp(log_cov)
 
-        X_test = Variable(torch.linspace(-1, 1, 100))
+        X_test = Variable(torch.linspace(-5, 5, 100))
         X_test = X_test.repeat(N_val).view(-1,1)
         z = mean # at test time we take the mean
         z = local_repeat(z, 100)
@@ -207,18 +220,18 @@ for iter_num in range(max_iters):
         plots_to_plot = []
         plot_names = []
         for i, idx in enumerate(task_batch_idxs):
-            slope = all_tasks[idx].slope
+            y_true = all_tasks[idx].A * np.sin(np.linspace(-5,5,100) - all_tasks[idx].phase)
             plots_to_plot.append(
                 [
-                    np.linspace(-1,1,100),
-                    slope * np.linspace(-1,1,100)
+                    np.linspace(-5,5,100),
+                    y_true
                 ]
             )
             plot_names.append('true %d' % i)
 
             plots_to_plot.append(
                 [
-                    np.linspace(-1,1,100),
+                    np.linspace(-5,5,100),
                     Y_pred[i*100:(i+1)*100].view(-1).data.numpy()
                 ]
             )

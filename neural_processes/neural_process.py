@@ -186,7 +186,11 @@ class NeuralProcessV1(BaseNeuralProcess):
         posteriors = self.infer_posterior_params(batch)
         cond_log_likelihood = self.compute_cond_log_likelihood(posteriors, batch, mode)
         KL = self.compute_ELBO_KL(posteriors)
-        return cond_log_likelihood - KL
+        
+        elbo = cond_log_likelihood - KL
+        # idk whether to put this or not
+        elbo = elbo / float(batch['input_batch_list'][0].size(0))
+        return elbo
     
 
     def compute_cond_log_likelihood(self, posteriors, batch, mode='train'):

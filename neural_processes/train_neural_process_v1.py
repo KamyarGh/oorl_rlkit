@@ -21,10 +21,10 @@ from tasks.sinusoidal import SinusoidalTask
 
 from rlkit.core.vistools import save_plot, plot_returns_on_same_plot
 # -----------------------------------------------------------------------------
-use_bn = False
+use_bn = True
 N_tasks = 100
-r_dim = 10
-z_dim = 20
+r_dim = 40
+z_dim = 40
 base_map_lr = 1e-3
 encoder_lr = 1e-3
 r_to_z_map_lr = 1e-3

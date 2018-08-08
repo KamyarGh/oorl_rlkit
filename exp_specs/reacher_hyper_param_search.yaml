@@ -1,18 +1,21 @@
 meta_data:
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: bug_free_pendulum_hyper_param_search
+  exp_name: debug_parallel_training_3
   description: searching over the SAC hyperparameters
   num_workers: 10
+  cpu_range: [0,9]
+  num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
-    num_updates_per_env_step: [1, 4, 10]
-    reward_scale: [0.5, 1.0, 5.0, 10.0, 20.0, 50.0, 100.0]
+    num_updates_per_env_step: [1, 4]
+    reward_scale: [25.0, 50.0, 100.0, 1221, 12113, 121212, 3242, 1213, 34535]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
-    num_epochs: 200
+    num_epochs: 10
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
     batch_size: 128
@@ -30,7 +33,7 @@ constants:
   
   net_size: 128
   
-  env_specs:
-    base_env_name: 'gravity_gear_inverted_pendulum'
-    gravity: -9.81
-    gear: 100
+  # env_specs:
+  #   base_env_name: 'gravity_gear_inverted_pendulum'
+  #   gravity: -9.81
+  #   gear: 100
