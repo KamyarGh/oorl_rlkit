@@ -17,7 +17,7 @@ def get_cmap(n, name='hsv'):
     return new_cmap
 
 
-def plot_returns_on_same_plot(arr_list, names, title, save_path):
+def plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=None):
     fig, ax = plt.subplots(1)
     cmap = get_cmap(len(arr_list))
 
@@ -26,6 +26,8 @@ def plot_returns_on_same_plot(arr_list, names, title, save_path):
         ax.plot(np.arange(ret.shape[0]), ret, color=cmap(i), label=name)
 
     ax.set_title(title)
+    if y_axis_lims is not None:
+        ax.set_ylim(y_axis_lims)
     lgd = ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=False, ncol=3)
     plt.savefig(save_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()

@@ -23,8 +23,6 @@ from tasks.linear import LinearTask
 from rlkit.core.vistools import save_plot, plot_returns_on_same_plot, plot_multiple_plots
 from neural_processes.distributions import sample_diag_gaussians, local_repeat
 
-from numpy.random import choice
-
 # -----------------------------------------------------------------------------
 N_tasks = 100
 N_val = 2

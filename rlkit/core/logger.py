@@ -18,6 +18,8 @@ import pickle
 import base64
 import errno
 
+import pickle
+
 from rlkit.core.tabulate import tabulate
 
 

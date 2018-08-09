@@ -6,9 +6,11 @@ from rlkit.data_management.replay_buffer import ReplayBuffer
 class SimpleReplayBuffer(ReplayBuffer):
     def __init__(
             self, max_replay_buffer_size, observation_dim, action_dim,
+            discrete_action_dim=False
     ):
         self._observation_dim = observation_dim
         self._action_dim = action_dim
+        self.discrete_action_dim = discrete_action_dim
         self._max_replay_buffer_size = max_replay_buffer_size
         self._observations = np.zeros((max_replay_buffer_size, observation_dim))
         # It's a bit memory inefficient to save the observations twice,
@@ -26,6 +28,8 @@ class SimpleReplayBuffer(ReplayBuffer):
 
     def add_sample(self, observation, action, reward, terminal,
                    next_observation, **kwargs):
+        if self.discrete_action_dim:
+            action = np.eye(self._action_space.n)[action]
         self._observations[self._top] = observation
         self._actions[self._top] = action
         self._rewards[self._top] = reward
@@ -53,3 +57,36 @@ class SimpleReplayBuffer(ReplayBuffer):
 
     def num_steps_can_sample(self):
         return self._size
+
+    def sample_and_remove(self, batch_size):
+        # This function was made for separating out a validation/test set
+        # sets the top to the new self._size
+        indices = np.random.randint(0, self._size, batch_size)
+        samples = dict(
+            observations=self._observations[indices],
+            actions=self._actions[indices],
+            rewards=self._rewards[indices],
+            terminals=self._terminals[indices],
+            next_observations=self._next_obs[indices],
+        )
+
+        self._observations = np.delete(self._observations, indices, 0)
+        self._actions = np.delete(self._actions, indices, 0)
+        self._rewards = np.delete(self._rewards, indices, 0)
+        self._terminals = np.delete(self._terminals, indices, 0)
+        self._next_obs = np.delete(self._next_obs, indices, 0)
+
+        self._size -= batch_size
+        self._top = self._size % self._max_replay_buffer_size
+
+        return samples
+
+    def set_buffer_from_dict(self, batch_dict):
+        self._max_replay_buffer_size = max(self._max_replay_buffer_size, batch_dict['observations'].shape[0])
+        self._observations = batch_dict['observations']
+        self._next_obs = batch_dict['next_observations']
+        self._actions = batch_dict['actions']
+        self._rewards = batch_dict['rewards']
+        self._terminals = batch_dict['terminals']
+        self._top = batch_dict['observations'].shape[0] % self._max_replay_buffer_size
+        self._size = batch_dict['observations'].shape[0]

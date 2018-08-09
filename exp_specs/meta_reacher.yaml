@@ -1,23 +1,21 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/meta_sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: debug_meta
+  exp_name: meta_reacher_strong_gears
   description: searching over the SAC hyperparameters
-  num_workers: 1
-  cpu_range: [0,1]
+  num_workers: 14
+  cpu_range: [0,13]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  # algo_params:
-  #   num_updates_per_env_step: [1, 4]
-  #   reward_scale: [0.5, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0]
+  algo_params:
+    num_updates_per_env_step: [1, 4]
+    reward_scale: [0.5, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
     concat_env_params_to_obs: true
-    num_updates_per_env_step: 4
-    reward_scale: 25.0
 
     num_epochs: 500
     num_steps_per_epoch: 1000
@@ -39,5 +37,5 @@ constants:
 
   env_specs:
     base_env_name: 'meta_gears_reacher'
-    gear_0: [50, 100, 150, 200]
-    gear_1: [50, 100, 150, 200]
+    gear_0: [150, 200, 250, 300]
+    gear_1: [150, 200, 250, 300]

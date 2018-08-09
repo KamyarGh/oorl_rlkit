@@ -1,0 +1,25 @@
+meta_data:
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/train_transition_regressor.py
+  exp_dirs: /u/kamyar/oorl_rlkit/output
+  exp_name: debug_trans_1234
+  description: searching over the SAC hyperparameters
+  num_workers: 1
+  cpu_range: [28,29]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+# variables:
+
+# -----------------------------------------------------------------------------
+extra_data_path: /u/kamyar/oorl_rlkit/output/debug-1234/debug_1234_2018_08_09_03_58_55_0000--s-0/extra_data.pkl
+
+num_hidden_layers: 4
+hidden_dim: 128
+lr: 1e-3
+
+train_batch_size: 64
+val_batch_size: 64
+
+val_set_size: 100
+
+max_iters: 10000
+freq_val: 100

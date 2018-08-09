@@ -7,10 +7,13 @@ import gtimer as gt
 import numpy as np
 
 from rlkit.core import logger
-from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
+from rlkit.data_management.simple_replay_buffer import SimpleReplayBuffer
+from rlkit.data_management.env_replay_buffer import get_dim as gym_get_dim
 from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
 from rlkit.samplers.in_place import InPlacePathSampler
+
+from gym.spaces import Discrete
 
 
 class MetaRLAlgorithm(metaclass=abc.ABCMeta):
@@ -31,7 +34,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
             render=False,
             save_replay_buffer=False,
             save_algorithm=False,
-            save_environment=True,
+            save_environment=False,
             eval_sampler=None,
             eval_policy=None,
             replay_buffer=None,
@@ -93,17 +96,19 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.eval_policy = eval_policy
         self.eval_sampler = eval_sampler
 
-        # these two are never used anywhere ------------
         self.action_space = env.action_space
         self.obs_space = env.observation_space
-        # ----------------------------------------------
 
         self.env = env
+        obs_space_dim = gym_get_dim(self.obs_space)
+        act_space_dim = gym_get_dim(self.action_space)
+        extra_obs_dim = self.env.env_meta_params.shape[0] if concat_env_params_to_obs else 0
         if replay_buffer is None:
-            replay_buffer = EnvReplayBuffer(
+            replay_buffer = SimpleReplayBuffer(
                 self.replay_buffer_size,
-                self.env,
-                extra_obs_dim=self.env.env_meta_params.shape[0] if concat_env_params_to_obs else 0
+                obs_space_dim + extra_obs_dim,
+                act_space_dim,
+                discrete_action_dim=isinstance(self.action_space, Discrete)
             )
         self.replay_buffer = replay_buffer
 

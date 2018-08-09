@@ -82,9 +82,6 @@ if __name__ == '__main__':
         spec_string = spec_file.read()
         exp_specs = yaml.load(spec_string)
     
-    exp_specs['exp_id'] = 0
-    exp_specs['exp_name'] = 'test'
-
     exp_id = exp_specs['exp_id']
     exp_prefix = exp_specs['exp_name']
     setup_logger(exp_prefix=exp_prefix, exp_id=exp_id, variant=exp_specs)

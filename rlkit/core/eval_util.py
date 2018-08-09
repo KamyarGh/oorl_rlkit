@@ -97,7 +97,7 @@ def create_stats_ordered_dict(
 
 
 # I (Kamyar) will be adding my own eval utils here too
-def plot_experiment_returns(exp_path, title, save_path):
+def plot_experiment_returns(exp_path, title, save_path, y_axis_lims=None):
     '''
         plots the Test Returns Mean of all the
     '''
@@ -116,4 +116,4 @@ def plot_experiment_returns(exp_path, title, save_path):
         except:
             pass
 
-    plot_returns_on_same_plot(arr_list, names, title, save_path)
+    plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)
