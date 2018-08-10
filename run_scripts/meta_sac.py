@@ -4,7 +4,7 @@ from gym.envs.mujoco import HalfCheetahEnv, InvertedPendulumEnv, ReacherEnv
 from rllab.misc.instrument import VariantGenerator
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
-from rlkit.launchers.launcher_util import setup_logger
+from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import TanhGaussianPolicy
 from rlkit.torch.sac.sac import MetaSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
@@ -84,6 +84,8 @@ if __name__ == '__main__':
     
     exp_id = exp_specs['exp_id']
     exp_prefix = exp_specs['exp_name']
+    seed = exp_specs['seed']
+    set_seed(seed)
     setup_logger(exp_prefix=exp_prefix, exp_id=exp_id, variant=exp_specs)
 
     experiment(exp_specs)

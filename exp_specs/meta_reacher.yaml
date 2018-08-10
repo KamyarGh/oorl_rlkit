@@ -1,23 +1,25 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/meta_sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: meta_reacher_strong_gears
+  exp_name: meta_reacher_robustness_check
   description: searching over the SAC hyperparameters
-  num_workers: 14
-  cpu_range: [0,13]
+  num_workers: 30
+  cpu_range: [0,29]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
-    num_updates_per_env_step: [1, 4]
-    reward_scale: [0.5, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0]
+    num_updates_per_env_step: [4]
+    reward_scale: [5.0, 10.0]
+  seed: [9783, 5914, 4865, 2135, 2349]
+  epoch_to_start_training: [16, 32, 50]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
     concat_env_params_to_obs: true
 
-    num_epochs: 500
+    num_epochs: 1050
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
     batch_size: 128

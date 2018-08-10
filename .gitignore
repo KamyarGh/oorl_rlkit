@@ -101,3 +101,4 @@ batch_runners/ind_grow_size_base_specs
 junk_vis/*
 output/*
 plots/*
+rlkit/envs/custom_assets/*

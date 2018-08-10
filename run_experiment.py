@@ -98,7 +98,6 @@ if __name__ == '__main__':
             if ret_code is None:
                 new_running_processes[p] = aff
             else:
-                del new_running_processes[p]
                 affinity_Q.put(aff)
         running_processes = new_running_processes
         

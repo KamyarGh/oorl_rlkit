@@ -38,6 +38,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
             eval_sampler=None,
             eval_policy=None,
             replay_buffer=None,
+            epoch_to_start_training=0
     ):
         """
         Base class for RL Algorithms
@@ -83,6 +84,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.save_replay_buffer = save_replay_buffer
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
+        self.epoch_to_start_training = epoch_to_start_training
         if eval_sampler is None:
             if eval_policy is None:
                 eval_policy = exploration_policy
@@ -178,10 +180,12 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
                     observation = next_ob
 
                 gt.stamp('sample')
-                self._try_to_train()
+                if epoch >= self.epoch_to_start_training:
+                    self._try_to_train()
                 gt.stamp('train')
 
-            self._try_to_eval(epoch)
+            if epoch >= self.epoch_to_start_training:
+                self._try_to_eval(epoch)
             gt.stamp('eval')
             self._end_epoch()
 

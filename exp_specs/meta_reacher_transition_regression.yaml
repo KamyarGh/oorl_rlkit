@@ -1,25 +1,42 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/train_transition_regressor.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: debug_trans_1234
+  exp_name: fixed_hype_search_meta_reacher_trans_regression
   description: searching over the SAC hyperparameters
-  num_workers: 1
-  cpu_range: [28,29]
+  num_workers: 32
+  cpu_range: [0,31]
   num_cpu_per_worker: 1
-# -----------------------------------------------------------------------------
-# variables:
 
 # -----------------------------------------------------------------------------
-extra_data_path: /u/kamyar/oorl_rlkit/output/debug-1234/debug_1234_2018_08_09_03_58_55_0000--s-0/extra_data.pkl
+variables:
+  num_hidden_layers: [2, 4, 6]
+  hidden_dim: [64, 128, 256]
+  train_set_size: [1000, 8000, 16000, 32000]
+  residual: [true, false]
+  train_from_beginning_transitions: [true, false]
 
-num_hidden_layers: 4
-hidden_dim: 128
-lr: 1e-3
+# -----------------------------------------------------------------------------
+constants:
+  extra_data_path: /u/kamyar/oorl_rlkit/output/large-late-start-meta-reacher-strong-gears/large_late_start_meta_reacher_strong_gears_2018_08_09_05_00_46_0005--s-0/extra_data.pkl
+  seed: 97102
 
-train_batch_size: 64
-val_batch_size: 64
+  extra_obs_dim: 2
+  lr: 1e-3
 
-val_set_size: 100
+  train_batch_size: 64
+  val_batch_size: 64
 
-max_iters: 10000
-freq_val: 100
+  val_set_size: 10000
+
+  max_iters: 25000
+  freq_val: 1000
+
+# num_hidden_layers: 4
+# hidden_dim: 128
+# train_set_size: 100
+# residual: true
+# script_path: /u/kamyar/oorl_rlkit/run_scripts/train_transition_regressor.py
+# exp_dirs: /u/kamyar/oorl_rlkit/output
+# exp_name: debug_9999
+# description: searching over the SAC hyperparameters
+# exp_id: 0

@@ -90,3 +90,12 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._terminals = batch_dict['terminals']
         self._top = batch_dict['observations'].shape[0] % self._max_replay_buffer_size
         self._size = batch_dict['observations'].shape[0]
+
+    def change_max_size_to_cur_size(self):
+        self._max_replay_buffer_size = self._size
+        self._observations = self._observations[:self._size]
+        self._next_obs = self._next_obs[:self._size]
+        self._actions = self._actions[:self._size]
+        self._rewards = self._rewards[:self._size]
+        self._terminals = self._terminals[:self._size]
+        self._top = min(self._top, self._size) % self._size

@@ -1,8 +1,9 @@
+import argparse
 from rlkit.core.eval_util import plot_experiment_returns
 
 plot_experiment_returns(
-    '/u/kamyar/oorl_rlkit/output/un-norm-truth-cond-meta-reacher',
-    'truth cond meta reacher hyper param search',
-    '/u/kamyar/oorl_rlkit/plots/un_norm_truth_cond_meta_reacher.png',
+    '/u/kamyar/oorl_rlkit/output/meta-reacher-robustness-check',
+    'meta_reacher_robustness_check',
+    '/u/kamyar/oorl_rlkit/plots/meta-reacher-robustness-check.png',
     y_axis_lims=[-300, 0]
 )
