@@ -65,8 +65,8 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         :param replay_buffer:
         """
         self.env_sampler = env_sampler
-        env, env_name = env_sampler()
-        self.training_env, _ = env_sampler(env_name)
+        env, env_specs = env_sampler()
+        self.training_env, _ = env_sampler(env_specs)
         self.concat_env_params_to_obs = concat_env_params_to_obs
         # self.training_env = training_env or pickle.loads(pickle.dumps(env))
         # self.training_env = training_env or deepcopy(env)
@@ -295,8 +295,8 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
 
     def _start_new_rollout(self):
         self.exploration_policy.reset()
-        self.env, env_name = self.env_sampler()
-        self.training_env, _ = self.env_sampler(env_name)
+        self.env, env_specs = self.env_sampler()
+        self.training_env, _ = self.env_sampler(env_specs)
 
         obs = self.training_env.reset()
         if self.concat_env_params_to_obs:

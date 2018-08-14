@@ -9,7 +9,7 @@ from rlkit.torch.sac.policies import TanhGaussianPolicy
 from rlkit.torch.sac.sac import MetaSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 
-from rlkit.envs import EnvSampler
+from rlkit.envs import OnTheFlyEnvSampler
 
 import yaml
 import argparse
@@ -22,23 +22,7 @@ import argparse
 def experiment(variant):
     # we have to generate the combinations for the env_specs
     env_specs = variant['env_specs']
-    env_specs_vg = VariantGenerator()
-    env_spec_constants = {}
-    for k, v in env_specs.items():
-        if isinstance(v, list):
-            env_specs_vg.add(k, v)
-        else:
-            env_spec_constants[k] = v
-    
-    env_specs_list = []
-    for es in env_specs_vg.variants():
-        del es['_hidden_keys']
-        es.update(env_spec_constants)
-        env_specs_list.append(es)
-    print(env_specs_list)
-    
-    print(env_specs_list[0])
-    env_sampler = EnvSampler(env_specs_list)
+    env_sampler = OnTheFlyEnvSampler(env_specs)
 
     # set up similar to non-meta version
     sample_env, _ = env_sampler()

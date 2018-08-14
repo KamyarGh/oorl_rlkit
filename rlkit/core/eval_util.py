@@ -5,6 +5,7 @@ Common evaluation utilities.
 from collections import OrderedDict
 from numbers import Number
 import os
+import json
 
 import numpy as np
 
@@ -97,7 +98,8 @@ def create_stats_ordered_dict(
 
 
 # I (Kamyar) will be adding my own eval utils here too
-def plot_experiment_returns(exp_path, title, save_path, y_axis_lims=None):
+def plot_experiment_returns(
+    exp_path, title, save_path, column_name='Test_Returns_Mean', y_axis_lims=None, constraints=None):
     '''
         plots the Test Returns Mean of all the
     '''
@@ -107,10 +109,23 @@ def plot_experiment_returns(exp_path, title, save_path, y_axis_lims=None):
     for sub_exp_dir in os.listdir(exp_path):
         sub_exp_path = os.path.join(exp_path, sub_exp_dir)
         if not os.path.isdir(sub_exp_path): continue
+        if constraints is not None:
+            constraints_satisfied = True
+            with open(os.path.join(sub_exp_path, 'variant.json'), 'r') as j:
+                d = json.load(j)
+            for k, v in constraints.items():
+                k = k.split('.')
+                d_v = d[k[0]]
+                for sub_k in k[1:]:
+                    d_v = d_v[sub_k]
+                if d_v != v:
+                    constraints_satisfied = False
+                    break
+            if not constraints_satisfied: continue
         
         csv_full_path = os.path.join(sub_exp_path, 'progress.csv')
         try:
-            returns = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)['Test_Returns_Mean']
+            returns = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)[column_name]
             arr_list.append(returns)
             names.append(sub_exp_dir)
         except:

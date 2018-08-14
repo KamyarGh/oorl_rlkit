@@ -10,7 +10,7 @@ def get_cmap(n, name='hsv'):
     # for some weird reason 0 and 2 look almost identical
     cmap = plt.cm.get_cmap(name, n)
     def new_cmap(n):
-        if n == 2:
+        if n == 1:
             return (0,0,0,1)
         else:
             return cmap(n)

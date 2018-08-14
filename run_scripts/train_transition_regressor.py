@@ -3,6 +3,7 @@
 import argparse
 import joblib
 import yaml
+from time import sleep
 
 # PyTorch
 import torch
@@ -25,9 +26,6 @@ from rlkit.data_management.simple_replay_buffer import SimpleReplayBuffer
 from rlkit.core import logger
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 
-# Vistools
-from rlkit.core.vistools import save_plot, plot_returns_on_same_plot, plot_multiple_plots
-
 def convert_numpy_dict_to_pytorch(np_dict):
     d = {
         k: torch.FloatTensor(v) for k,v in np_dict.items()
@@ -47,6 +45,13 @@ def experiment(exp_specs):
     train_replay_buffer = joblib.load(extra_data_path)['replay_buffer']
     train_replay_buffer.change_max_size_to_cur_size()
     train_replay_buffer._next_obs = train_replay_buffer._next_obs[:,exp_specs['extra_obs_dim']:]
+    if exp_specs['remove_env_info']:
+        train_replay_buffer._observations = train_replay_buffer._observations[:,exp_specs['extra_obs_dim']:]
+    else:
+        if exp_specs['normalize_env_info']:
+            low, high = exp_specs['env_info_range'][0], exp_specs['env_info_range'][1]
+            train_replay_buffer._observations[:,:exp_specs['extra_obs_dim']] -= (low + high)/2.0
+            train_replay_buffer._observations[:,:exp_specs['extra_obs_dim']] /= (high - low)/2.0
 
     print('\nRewards: {} +/- {}'.format(
         np.mean(train_replay_buffer._rewards),
@@ -87,9 +92,13 @@ def experiment(exp_specs):
         )
 
     # Model Definitions -------------------------------------------------------
+    if exp_specs['remove_env_info']:
+        output_dim = [obs_dim + 1]
+    else:
+        output_dim = [obs_dim - exp_specs['extra_obs_dim'] + 1]
     model = GenericMap(
         [obs_dim + act_dim],
-        [obs_dim - exp_specs['extra_obs_dim'] + 1],
+        output_dim,
         siamese_input=False,
         siamese_output=False,
         num_hidden_layers=exp_specs['num_hidden_layers'],
@@ -135,6 +144,11 @@ def experiment(exp_specs):
             val_batch = convert_numpy_dict_to_pytorch(val_batch)
             inputs = Variable(torch.cat([val_batch['observations'], val_batch['actions']], -1))
             outputs = Variable(torch.cat([val_batch['next_observations'], val_batch['rewards']], -1))
+
+            # print(exp_specs['remove_env_info'])
+            # print(inputs)
+            # print(outputs)
+            # sleep(5)
             
             preds = model([inputs])[0]
             if exp_specs['residual']:

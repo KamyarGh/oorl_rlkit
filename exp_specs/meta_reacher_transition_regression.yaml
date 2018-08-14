@@ -1,35 +1,43 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/train_transition_regressor.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: fixed_hype_search_meta_reacher_trans_regression
-  description: searching over the SAC hyperparameters
-  num_workers: 32
-  cpu_range: [0,31]
+  exp_name: 150_300_range_meta_reacher_trans_regr
+  description: we have to be at least beating this what the exp_name says LOL min 1000 samples per env gear setting
+  num_workers: 28
+  cpu_range: [4,31]
   num_cpu_per_worker: 1
 
 # -----------------------------------------------------------------------------
 variables:
-  num_hidden_layers: [2, 4, 6]
-  hidden_dim: [64, 128, 256]
-  train_set_size: [1000, 8000, 16000, 32000]
-  residual: [true, false]
+  remove_env_info: [true, false]
+  normalize_env_info: [true]
+  env_info_range: [[150, 300]]
+
+  train_set_size: [16000, 256000]
+  seed: [9783, 5914]
+  # seed: [9783, 5914, 4865, 2135, 2349]
+  num_hidden_layers: [2, 4, 6, 8]
   train_from_beginning_transitions: [true, false]
 
 # -----------------------------------------------------------------------------
 constants:
-  extra_data_path: /u/kamyar/oorl_rlkit/output/large-late-start-meta-reacher-strong-gears/large_late_start_meta_reacher_strong_gears_2018_08_09_05_00_46_0005--s-0/extra_data.pkl
-  seed: 97102
+  extra_data_path: /u/kamyar/oorl_rlkit/output/meta-reacher-robustness-check/meta_reacher_robustness_check_2018_08_09_16_45_05_0002--s-0/extra_data.pkl
 
   extra_obs_dim: 2
+
+  residual: false
+
+  hidden_dim: 128
   lr: 1e-3
 
   train_batch_size: 64
-  val_batch_size: 64
+  val_batch_size: 1000
 
-  val_set_size: 10000
+  val_set_size: 50000
 
-  max_iters: 25000
+  max_iters: 50000
   freq_val: 1000
+
 
 # num_hidden_layers: 4
 # hidden_dim: 128

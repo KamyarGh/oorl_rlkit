@@ -79,7 +79,7 @@ if __name__ == '__main__':
     args_idx = 0
     command = 'taskset {aff} python {script} -e {specs}'
     while (args_idx < num_variants) or (len(running_processes) > 0):
-        if len(running_processes) < num_workers:
+        if (len(running_processes) < num_workers) and (args_idx < num_variants):
             aff = affinity_Q.get()
             format_dict = {
                 'aff': aff,
@@ -101,4 +101,4 @@ if __name__ == '__main__':
                 affinity_Q.put(aff)
         running_processes = new_running_processes
         
-        sleep(2)
+        sleep(0.5)

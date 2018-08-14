@@ -51,17 +51,17 @@ def experiment(variant):
 
     net_size = variant['net_size']
     qf = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
+        hidden_sizes=[net_size, net_size, net_size, net_size],
         input_size=obs_dim + action_dim + meta_params_dim,
         output_size=1,
     )
     vf = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
+        hidden_sizes=[net_size, net_size, net_size, net_size],
         input_size=obs_dim + meta_params_dim,
         output_size=1,
     )
     policy = TanhGaussianPolicy(
-        hidden_sizes=[net_size, net_size],
+        hidden_sizes=[net_size, net_size, net_size, net_size],
         obs_dim=obs_dim + meta_params_dim,
         action_dim=action_dim,
     )

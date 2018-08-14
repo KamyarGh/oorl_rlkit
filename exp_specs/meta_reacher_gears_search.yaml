@@ -1,25 +1,29 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/on_the_fly_meta_sac.py
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/meta_sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: larger_range_on_the_fly_unnorm_meta_reacher
+  exp_name: safety
   description: searching over the SAC hyperparameters
-  num_workers: 5
-  cpu_range: [14,19]
+  num_workers: 32
+  cpu_range: [0,31]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
     num_updates_per_env_step: [4]
     reward_scale: [5.0]
-  seed: [9783, 5914, 4865, 2135, 2349]
+  env_specs:
+    gear_0: [[50], [100], [150], [200], [250], [300]]
+    gear_1: [[50], [100], [150], [200], [250], [300]]
+  seed: [9783, 5914]
+  # seed: [9783, 5914, 4865, 2135, 2349]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
-    concat_env_params_to_obs: true
-    epoch_to_start_training: 50
+    concat_env_params_to_obs: false
+    epoch_to_start_training: 0
 
-    num_epochs: 1051
+    num_epochs: 1000
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
     batch_size: 128
@@ -38,7 +42,5 @@ constants:
   net_size: 128
 
   env_specs:
-    normalized: false
+    normalized: true
     base_env_name: 'meta_gears_reacher'
-    gear_0: [50.0, 300.0]
-    gear_1: [50.0, 300.0]

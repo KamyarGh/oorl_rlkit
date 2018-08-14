@@ -3,9 +3,11 @@ from os import path as osp
 from random import randrange
 
 from numpy import array
+from numpy.random import uniform
 
 from rlkit.envs.base_inverted_pendulum import BaseInvertedPendulumEnv
 from rlkit.envs.reacher import MetaReacherEnv
+from rlkit.envs.wrappers import NormalizedBoxEnv
 
 
 BASE_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'base_assets')
@@ -39,7 +41,7 @@ def get_meta_env(env_specs):
     # right now only supporting float meta parameters
     meta_params = []
     for k in sorted(env_specs.keys()):
-        if k != 'base_env_name':
+        if k not in ['base_env_name', 'normalized']:
             v = env_specs[k]
             if isinstance(v, int):
                 v = float(v)
@@ -59,13 +61,24 @@ def get_meta_env(env_specs):
             f.flush()
         env = all_envs[base_env_name]['env_class'](fpath, meta_params)
 
+        # remove the file to avoid getting a million spec files
+        try:
+            os.remove(fpath)
+        except:
+            pass
+    
+    if env_specs['normalized']:
+        env = NormalizedBoxEnv(env)
+        print('\n\nNormalized\n\n')
+
     return env, spec_name
 
 
 class EnvSampler():
-    def __init__(self, env_specs_list):
+    def __init__(self, env_specs_list, normalized=False):
         self.envs = {}
         self.env_names = []
+        self.normalized = normalized
         for spec in env_specs_list:
             env, name = get_meta_env(spec)
             self.envs[name] = env
@@ -78,3 +91,32 @@ class EnvSampler():
             i = randrange(self.num_envs)
             return self.envs[self.env_names[i]], self.env_names[i]
         return self.envs[name], name
+
+
+class OnTheFlyEnvSampler():
+    def __init__(self, env_specs, normalized=False):
+        # any env specs that is a list is considered to be a list
+        # containing two floats marking the upper and lower bound
+        # of a range to sample uniformly from
+        self.env_specs = env_specs
+
+
+    def gen_random_specs(self):
+        new_dict = {}
+        for k, v in self.env_specs.items():
+            if not isinstance(v, list):
+                new_dict[k] = v
+            else:
+                low, high = v[0], v[1]
+                value = uniform(low, high)
+                new_dict[k] = value
+        return new_dict
+
+
+    def __call__(self, specs=None):
+        if specs is not None:
+            env, _ = get_meta_env(specs)
+            return env, specs
+        specs = self.gen_random_specs()
+        env, _ = get_meta_env(specs)
+        return env, specs

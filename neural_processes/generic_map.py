@@ -3,29 +3,54 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+from rlkit.torch.pytorch_util import fanin_init
+
 act_dict = {
     'relu': (F.relu, nn.ReLU),
     'tanh': (F.tanh, nn.Tanh),
 }
 
 
-def make_mlp(input_dim, hidden_dim, num_hidden_layers, act_nn, use_bn=False, output_dim=None, output_act_nn=None):
+def make_mlp(
+    input_dim,
+    hidden_dim,
+    num_hidden_layers,
+    act_nn,
+    use_bn=False,
+    output_dim=None,
+    output_act_nn=None,
+    use_rlkit_mlp_hidden_init=False,
+    use_rlkit_b_init=False,
+    use_rlkit_last_fc_init=False,
+    rlkit_last_fc_init_w=3e-3,
+    rlkit_b_init_value=0.1,
+    ):
     '''
         Makes an "tower" MLP
     '''
     assert num_hidden_layers > 0
     bias = not use_bn
     
-    mod_list = nn.ModuleList([nn.Linear(input_dim, hidden_dim, bias=bias)])
+    def get_fc(in_dim, out_dim):
+        fc = nn.Linear(in_dim, out_dim, bias=bias)
+        if use_rlkit_mlp_hidden_init: fanin_init(fc.weight)
+        if bias and use_rlkit_b_init: fc.bias.data.fill_(rlkit_b_init_value)
+        return fc
+
+    mod_list = nn.ModuleList([get_fc(input_dim, hidden_dim)])
     if use_bn: mod_list.extend([nn.BatchNorm1d(hidden_dim)])
     mod_list.extend([act_nn()])
     for _ in range(num_hidden_layers-1):
-        mod_list.extend([nn.Linear(hidden_dim, hidden_dim, bias=bias)])
+        mod_list.extend([get_fc(hidden_dim, hidden_dim)])
         if use_bn: mod_list.extend([nn.BatchNorm1d(hidden_dim)])
         mod_list.extend([act_nn()])
         
     if output_dim is not None:
-        mod_list.extend([nn.Linear(hidden_dim, output_dim)])
+        fc = nn.Linear(hidden_dim, output_dim)
+        if use_rlkit_last_fc_init:
+            fc.weight.data.uniform_(-rlkit_last_fc_init_w, rlkit_last_fc_init_w)
+            fc.bias.data.uniform_(-rlkit_last_fc_init_w, rlkit_last_fc_init_w)
+        mod_list.extend([fc])
         if output_act_nn is not None:
             mod_list.extend([output_act_nn()])
 
@@ -53,7 +78,11 @@ class GenericMap(nn.Module):
         siamese_output_layer_dim=128,
         act='relu',
         use_bn=False,
-        deterministic=False
+        deterministic=False,
+        use_rlkit_mlp_hidden_init=False,
+        use_rlkit_b_init=False,
+        use_rlkit_last_fc_init=False,
+        rlkit_last_fc_init_w=3e-3
         ):
         super(GenericMap, self).__init__()
         
@@ -71,7 +100,10 @@ class GenericMap(nn.Module):
                     make_mlp(
                         dim, siamese_input_layer_dim,
                         num_siamese_input_layers, act_nn,
-                        use_bn=use_bn
+                        use_bn=use_bn,
+                        use_rlkit_mlp_hidden_init=use_rlkit_mlp_hidden_init,
+                        use_rlkit_b_init=use_rlkit_b_init,
+                        use_rlkit_last_fc_init=use_rlkit_last_fc_init,
                     )
                 ])
         
@@ -83,7 +115,10 @@ class GenericMap(nn.Module):
         
         assert num_hidden_layers > 0
         self.hidden_seq = make_mlp(
-            concat_dim, hidden_dim, num_hidden_layers, act_nn, use_bn=use_bn
+            concat_dim, hidden_dim, num_hidden_layers, act_nn, use_bn=use_bn,
+            use_rlkit_mlp_hidden_init=use_rlkit_mlp_hidden_init,
+            use_rlkit_b_init=use_rlkit_b_init,
+            use_rlkit_last_fc_init=use_rlkit_last_fc_init,
         )
 
         # compute outputs
@@ -95,13 +130,19 @@ class GenericMap(nn.Module):
                         hidden_dim, siamese_output_layer_dim,
                         num_siamese_output_layers, act_nn,
                         output_dim=dim, output_act_nn=None,
-                        use_bn=use_bn
+                        use_bn=use_bn,
+                        use_rlkit_mlp_hidden_init=use_rlkit_mlp_hidden_init,
+                        use_rlkit_b_init=use_rlkit_b_init,
+                        use_rlkit_last_fc_init=use_rlkit_last_fc_init,
                     )
                     log_cov_seq = make_mlp(
                         hidden_dim, siamese_output_layer_dim,
                         num_siamese_output_layers, act_nn,
                         output_dim=dim, output_act_nn=None,
-                        use_bn=use_bn
+                        use_bn=use_bn,
+                        use_rlkit_mlp_hidden_init=use_rlkit_mlp_hidden_init,
+                        use_rlkit_b_init=use_rlkit_b_init,
+                        use_rlkit_last_fc_init=use_rlkit_last_fc_init,
                     )
                     self.siamese_output_seqs.extend([mean_seq, log_cov_seq])
                 else:
@@ -110,15 +151,18 @@ class GenericMap(nn.Module):
                             hidden_dim, siamese_output_layer_dim,
                             num_siamese_output_layers, act_nn,
                             output_dim=dim, output_act_nn=None,
-                            use_bn=use_bn
+                            use_bn=use_bn,
+                            use_rlkit_mlp_hidden_init=use_rlkit_mlp_hidden_init,
+                            use_rlkit_b_init=use_rlkit_b_init,
+                            use_rlkit_last_fc_init=use_rlkit_last_fc_init,
                         )
                     ])
         else:
             if deterministic:
-                self.output_seq = nn.Linear(hidden_dim, output_dims[0])
+                self.output_seq = nn.Linear(hidden_dim, sum(output_dims))
             else:
-                self.output_mean_seq = nn.Linear(hidden_dim, output_dims[0])
-                self.output_log_cov_seq = nn.Linear(hidden_dim, output_dims[0])
+                self.output_mean_seq = nn.Linear(hidden_dim, sum(output_dims))
+                self.output_log_cov_seq = nn.Linear(hidden_dim, sum(output_dims))
 
 
     def forward(self, inputs):
