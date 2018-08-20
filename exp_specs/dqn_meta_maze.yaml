@@ -1,0 +1,47 @@
+meta_data:
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/dqn.py
+  exp_dirs: /u/kamyar/oorl_rlkit/output
+  exp_name: dqn_one_hot_5x5_2_obj_meta_maze
+  description: searching over the DQN hyperparameters
+  num_workers: 16
+  cpu_range: [0,16]
+  num_cpu_per_worker: 1
+
+# -----------------------------------------------------------------------------
+variables:
+  algo_params:
+    num_updates_per_env_step: [1, 4]
+    learning_rate: [0.001, 0.0003]
+    tau: [0.001, 0.005]
+  
+  # seed: [9783, 5914, 4865, 2135, 2349]
+  seed: [9783, 5914]
+
+# -----------------------------------------------------------------------------
+constants:
+  algo_params:
+    num_epochs: 101
+    num_steps_per_epoch: 1000
+    num_steps_per_eval: 1000
+    batch_size: 128
+    max_path_length: 50
+    discount: 0.99
+
+    render: false
+
+    save_replay_buffer: true
+
+  net_size: 128
+
+  env_specs:
+    base_env_name: 'meta_maze'
+    flat_repr: true
+    one_hot_repr: true
+    num_object_types: 2
+    num_per_object: 3
+    maze_h: 5
+    maze_w: 5
+    reward_values: [1, -1]
+    shuffle: false
+    scale: 1
+    seed: 1082

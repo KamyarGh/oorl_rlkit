@@ -29,7 +29,8 @@ class SimpleReplayBuffer(ReplayBuffer):
     def add_sample(self, observation, action, reward, terminal,
                    next_observation, **kwargs):
         if self.discrete_action_dim:
-            action = np.eye(self._action_space.n)[action]
+            action = np.eye(self._action_dim)[action]            
+            # action = np.eye(self._action_space.n)[action]
         self._observations[self._top] = observation
         self._actions[self._top] = action
         self._rewards[self._top] = reward

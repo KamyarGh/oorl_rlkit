@@ -1,24 +1,25 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/meta_sac.py
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/np_meta_sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: new_sac_hyper_search_hopper
+  exp_name: 1234_pretrained_np_meta_reacher_sac_concat_samples
   description: searching over the SAC hyperparameters
-  num_workers: 8
-  cpu_range: [0,7]
+  num_workers: 4
+  cpu_range: [26,29]
   num_cpu_per_worker: 1
 
 # -----------------------------------------------------------------------------
 variables:
-  use_new_sac: [true]
+  on_the_fly: [true]
+  use_new_sac: [false]
   algo_params:
-    epoch_to_start_training: [0]
-    concat_env_params_to_obs: [false]
-    normalize_env_params: [false]
+    latent_repr_mode: [concat_samples]
+    num_latent_samples: [2, 5]
+    epoch_to_start_training: [50]
     # batch_size: [128, 256]
     batch_size: [128]
-    num_updates_per_env_step: [1, 4]
+    num_updates_per_env_step: [4]
     # num_updates_per_env_step: [1]
-    reward_scale: [1.0, 5.0]
+    reward_scale: [5.0]
     # reward_scale: [5.0]
     # soft_target_tau: [0.01, 0.005]
     soft_target_tau: [0.005]
@@ -30,8 +31,10 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
+  neural_process_load_path: output/more-fixed-train-modified-npv3/more_fixed_train_modified_npv3_2018_08_17_04_36_53_0028--s-0/params.pkl
+  train_neural_process: false
   algo_params:
-    num_epochs: 501
+    num_epochs: 1051
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
     max_path_length: 999
@@ -48,7 +51,6 @@ constants:
 
   env_specs:
     normalized: false
-    base_env_name: 'meta_gears_hopper'
-    gear_0: [200]
-    gear_1: [200]
-    gear_2: [200]
+    base_env_name: 'meta_gears_reacher'
+    gear_0: [50, 300]
+    gear_1: [50, 300]

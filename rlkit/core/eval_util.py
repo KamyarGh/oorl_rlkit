@@ -9,7 +9,7 @@ import json
 
 import numpy as np
 
-from rlkit.core.vistools import plot_returns_on_same_plot 
+from rlkit.core.vistools import plot_returns_on_same_plot, save_plot
 
 
 def get_generic_path_information(paths, stat_prefix=''):
@@ -99,7 +99,8 @@ def create_stats_ordered_dict(
 
 # I (Kamyar) will be adding my own eval utils here too
 def plot_experiment_returns(
-    exp_path, title, save_path, column_name='Test_Returns_Mean', y_axis_lims=None, constraints=None):
+    exp_path, title, save_path, column_name='Test_Returns_Mean',
+    y_axis_lims=None, constraints=None, plot_mean=False):
     '''
         plots the Test Returns Mean of all the
     '''
@@ -121,7 +122,13 @@ def plot_experiment_returns(
                 if d_v != v:
                     constraints_satisfied = False
                     break
-            if not constraints_satisfied: continue
+            if not constraints_satisfied:
+                # for debugging
+                # print('\nconstraints')
+                # print(constraints)
+                # print('\nthis dict')
+                # print(d)
+                continue
         
         csv_full_path = os.path.join(sub_exp_path, 'progress.csv')
         try:
@@ -131,4 +138,14 @@ def plot_experiment_returns(
         except:
             pass
 
-    plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)
+    if plot_mean:    
+        min_len = min(map(lambda a: a.shape[0], arr_list))
+        arr_list = list(map(lambda a: a[:min_len], arr_list))
+        returns = np.stack(arr_list)
+        mean = np.mean(returns, 0)
+        # std = np.std(returns, 0)
+        x = np.arange(min_len)
+        save_plot(x, mean, title, save_path, color='cyan')
+    else:
+        if len(arr_list) == 0: print(0)
+        plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)

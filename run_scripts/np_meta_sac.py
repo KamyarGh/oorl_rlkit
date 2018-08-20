@@ -6,10 +6,12 @@ import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import TanhGaussianPolicy
-from rlkit.torch.sac.sac import MetaSoftActorCritic, NewMetaSoftActorCritic
+from rlkit.torch.sac.sac import NPMetaSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 
-from rlkit.envs import OnTheFlyEnvSampler
+from neural_processes.npv3 import NeuralProcessV3
+
+from rlkit.envs import EnvSampler, OnTheFlyEnvSampler
 
 import yaml
 import argparse
@@ -17,66 +19,77 @@ import importlib
 import psutil
 import os
 import argparse
+import joblib
 
 
 def experiment(variant):
     # we have to generate the combinations for the env_specs
-    env_specs = variant['env_specs']
-    env_sampler = OnTheFlyEnvSampler(env_specs)
+    if variant['on_the_fly']:
+        # we have to generate the combinations for the env_specs
+        env_specs = variant['env_specs']
+        env_sampler = OnTheFlyEnvSampler(env_specs)
+    else:
+        env_specs = variant['env_specs']
+        env_specs_vg = VariantGenerator()
+        env_spec_constants = {}
+        env_spec_ranges = {}
+        for k, v in env_specs.items():
+            if isinstance(v, list):
+                env_specs_vg.add(k, v)
+                env_spec_ranges[k] = v
+            else:
+                env_spec_constants[k] = v
+        
+        env_specs_list = []
+        for es in env_specs_vg.variants():
+            del es['_hidden_keys']
+            es.update(env_spec_constants)
+            env_specs_list.append(es)
+        
+        env_sampler = EnvSampler(env_specs_list)
 
-    # Build the normalizer for the env params
-    env_spec_ranges = {}
-    for k, v in env_specs.items():
-        if isinstance(v, list):
-            env_spec_ranges[k] = v
-    
-    mean = []
-    half_diff = []
-    for k in sorted(env_spec_ranges.keys()):
-        r = env_spec_ranges[k]
-        mean.append((r[0]+r[1]) / 2.0)
-        half_diff.append((r[1]-r[0]) / 2.0)
-    mean = np.array(mean)
-    half_diff = np.array(half_diff)
-
-    def env_params_normalizer(params):
-        return (params - mean) / half_diff
-    
-    variant['algo_params']['env_params_normalizer'] = env_params_normalizer
+    # set up the neural process
+    np_path = exp_specs['neural_process_load_path']
+    if np_path == '':
+        raise NotImplementedError()
+    else:
+        neural_process = joblib.load(np_path)['neural_process']
 
     # set up similar to non-meta version
     sample_env, _ = env_sampler()
-    if variant['algo_params']['concat_env_params_to_obs']:
-        meta_params_dim = sample_env.env_meta_params.shape[0]
-    else:
-        meta_params_dim = 0
     obs_dim = int(np.prod(sample_env.observation_space.shape))
     action_dim = int(np.prod(sample_env.action_space.shape))
 
+    if variant['algo_params']['latent_repr_mode'] == 'concat_params':
+        extra_obs_dim = 2 * neural_process.z_dim
+    else: # concat samples
+        extra_obs_dim = variant['algo_params']['num_latent_samples'] * neural_process.z_dim
+
     net_size = variant['net_size']
-    qf = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + action_dim + meta_params_dim,
-        output_size=1,
-    )
     vf = FlattenMlp(
         hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + meta_params_dim,
+        input_size=obs_dim + extra_obs_dim,
         output_size=1,
     )
     policy = TanhGaussianPolicy(
         hidden_sizes=[net_size, net_size],
-        obs_dim=obs_dim + meta_params_dim,
+        obs_dim=obs_dim + extra_obs_dim,
         action_dim=action_dim,
     )
-    algorithm = MetaSoftActorCritic(
+    qf = FlattenMlp(
+        hidden_sizes=[net_size, net_size],
+        input_size=obs_dim + action_dim + extra_obs_dim,
+        output_size=1,
+    )
+    algorithm = NPMetaSoftActorCritic(
         env_sampler=env_sampler,
+        neural_process=neural_process,
         policy=policy,
         qf=qf,
         vf=vf,
         **variant['algo_params']
     )
-    # assert False, "Have not added new sac yet!"
+
     if ptu.gpu_enabled():
         algorithm.cuda()
     algorithm.train()

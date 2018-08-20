@@ -20,9 +20,11 @@ def get_cmap(n, name='hsv'):
 def plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=None):
     fig, ax = plt.subplots(1)
     cmap = get_cmap(len(arr_list))
+    for i in range(len(arr_list)): cmap(i)
 
     for i, v in enumerate(zip(arr_list, names)):
         ret, name = v
+        if ret.size <= 1: continue
         ax.plot(np.arange(ret.shape[0]), ret, color=cmap(i), label=name)
 
     ax.set_title(title)
@@ -49,7 +51,7 @@ def plot_multiple_plots(plot_list, names, title, save_path):
 
 def save_plot(x, y, title, save_path, color='cyan'):
     fig, ax = plt.subplots(1)
-    ax.plot(np.arange(x, y, color=color))
+    ax.plot(x, y, color=color)
     ax.set_title(title)
     plt.savefig(save_path, bbox_inches='tight')
     plt.close()

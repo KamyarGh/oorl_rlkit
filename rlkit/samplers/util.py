@@ -1,7 +1,9 @@
 import numpy as np
 
 
-def rollout(env, agent, max_path_length=np.inf, animated=False, concat_env_params_to_obs=False):
+def rollout(env, agent, max_path_length=np.inf, animated=False,
+    concat_env_params_to_obs=False, normalize_env_params=False, env_params_normalizer=None,
+    neural_process=None, latent_repr_fn=None, reward_scale=1):
     """
     The following value for the following keys will be a 2D array, with the
     first dimension corresponding to the time dimension.
@@ -22,6 +24,8 @@ def rollout(env, agent, max_path_length=np.inf, animated=False, concat_env_param
     :param animated:
     :return:
     """
+    if neural_process is not None:
+        assert reward_scale != 1, 'Are you sure?! This might be a bug!!'
     observations = []
     actions = []
     rewards = []
@@ -29,8 +33,16 @@ def rollout(env, agent, max_path_length=np.inf, animated=False, concat_env_param
     agent_infos = []
     env_infos = []
     o = env.reset()
-    if concat_env_params_to_obs:
-        o = np.concatenate([env.env_meta_params, o])
+    if neural_process is not None:
+        posterior_state = neural_process.reset_posterior_state()
+        latent_repr = latent_repr_fn(posterior_state)
+        o = np.concatenate([latent_repr, o])
+        extra_obs_dim = latent_repr.shape[0]
+    elif concat_env_params_to_obs:
+        params_to_concat = env.env_meta_params
+        if normalize_env_params:
+            params_to_concat = env_params_normalizer(params_to_concat)
+        o = np.concatenate([params_to_concat, o])
     next_o = None
     path_length = 0
     if animated:
@@ -38,8 +50,21 @@ def rollout(env, agent, max_path_length=np.inf, animated=False, concat_env_param
     while path_length < max_path_length:
         a, agent_info = agent.get_action(o)
         next_o, r, d, env_info = env.step(a)
-        if concat_env_params_to_obs:
-            next_o = np.concatenate([env.env_meta_params, next_o])
+        if neural_process is not None:
+            posterior_state = neural_process.update_posterior_state(
+                posterior_state,
+                o[extra_obs_dim:],
+                a,
+                r * reward_scale,
+                next_o
+            )
+            latent_repr = latent_repr_fn(posterior_state)
+            next_o = np.concatenate([latent_repr, next_o])
+        elif concat_env_params_to_obs:
+            params_to_concat = env.env_meta_params
+            if normalize_env_params:
+                params_to_concat = env_params_normalizer(params_to_concat)
+            next_o = np.concatenate([params_to_concat, next_o])
         observations.append(o)
         rewards.append(r)
         terminals.append(d)

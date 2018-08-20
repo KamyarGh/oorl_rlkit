@@ -86,30 +86,28 @@ def experiment(exp_specs):
     )
     r_to_z_map_optim = Adam(r_to_z_map.parameters(), lr=r_to_z_map_lr)
 
-    aggregator = {
-        'sum_aggregator': sum_aggregator,
-        'mean_aggregator': mean_aggregator,
-        'tanh_sum_aggregator': tanh_sum_aggregator
-    }[exp_specs['aggregator']]
-
     if exp_specs['neural_process_version'] == 1:
+        raise Exception()
         model_class = NeuralProcessV1
     elif exp_specs['neural_process_version'] == 2:
+        raise Exception()
         model_class = NeuralProcessV2
     elif exp_specs['neural_process_version'] == 3:
         model_class = NeuralProcessV3    
+        neural_process = model_class(
+            encoder,
+            encoder_optim,
+            exp_specs['aggregator_mode'],
+            r_to_z_map,
+            r_to_z_map_optim,
+            base_map,
+            base_map_optim,
+            exp_specs['r_dim'],
+            exp_specs['z_dim'],
+            use_nat_grad=False
+        )
     else:
         raise Exception()
-    neural_process = model_class(
-        encoder,
-        encoder_optim,
-        aggregator,
-        r_to_z_map,
-        r_to_z_map_optim,
-        base_map,
-        base_map_optim,
-        use_nat_grad=False
-    )
 
     # -----------------------------------------------------------------------------
     for iter_num in range(exp_specs['max_iters']):
@@ -148,8 +146,20 @@ def experiment(exp_specs):
             print('Iter %d' % iter_num)
             neural_process.set_mode('eval')
 
+            # DEBUGGING
+            # print('\n'*10)
+            # post_state = neural_process.reset_posterior_state()
+            # print(post_state)
+            # for i in range(5):
+            #     post_state = neural_process.update_posterior_state(post_state, np.ones(obs_dim), np.ones(act_dim), np.ones(1), np.ones(obs_dim))
+            #     print(post_state)
+            # print(neural_process.get_posterior_params(post_state))
+            # print('\n'*10)
+
+
+
             for val_context_size in exp_specs['val_context_sizes']:
-                X_context, Y_context, mask_context, X_test, Y_test, mask_test = train_sampler.sample_batch(
+                X_context, Y_context, mask_context, X_test, Y_test, mask_test = val_sampler.sample_batch(
                     exp_specs['val_batch_size'], [val_context_size, val_context_size+1],
                     test_is_context=False, test_size=exp_specs['val_test_size']
                 )            
@@ -215,6 +225,10 @@ def experiment(exp_specs):
 
             logger.dump_tabular(with_prefix=False, with_timestamp=False)
             neural_process.set_mode('train')
+        
+        if iter_num % exp_specs['freq_save'] == 0:
+            dict_to_save = {'neural_process': neural_process}
+            logger.save_itr_params(iter_num, dict_to_save)
 
 
 if __name__ == '__main__':

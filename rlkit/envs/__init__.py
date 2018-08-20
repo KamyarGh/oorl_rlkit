@@ -5,8 +5,11 @@ from random import randrange
 from numpy import array
 from numpy.random import uniform
 
+import gym
+
 from rlkit.envs.base_inverted_pendulum import BaseInvertedPendulumEnv
 from rlkit.envs.reacher import MetaReacherEnv
+from rlkit.envs.hopper import MetaHopperEnv
 from rlkit.envs.wrappers import NormalizedBoxEnv
 
 
@@ -21,7 +24,15 @@ all_envs = {
     'meta_gears_reacher': {
         'base_xml': 'base_reacher.txt',
         'env_class': MetaReacherEnv
-    }
+    },
+    'meta_gears_hopper': {
+        'base_xml': 'base_hopper.txt',
+        'env_class': MetaHopperEnv
+    },
+}
+
+fixed_envs = {
+    'ant_v1': lambda: gym.envs.make('Ant-v2')
 }
 
 
@@ -49,24 +60,27 @@ def get_meta_env(env_specs):
             meta_params.append(v)
     meta_params = array(meta_params)
 
-    try:
-        env = all_envs[base_env_name]['env_class'](fpath, meta_params)
-    except:
-        # read the base xml string and fill the env_specs values
-        with open(osp.join(BASE_ASSETS_DIR, all_envs[base_env_name]['base_xml']), 'r') as f:
-            base_xml = f.read()
-        env_xml = base_xml.format(**env_specs)
-        with open(fpath, 'w') as f:
-            f.write(env_xml)
-            f.flush()
-        env = all_envs[base_env_name]['env_class'](fpath, meta_params)
-
-        # remove the file to avoid getting a million spec files
+    if base_env_name in fixed_envs:
+        env = fixed_envs[base_env_name]()
+    else:
         try:
-            os.remove(fpath)
+            env = all_envs[base_env_name]['env_class'](fpath, meta_params)
         except:
-            pass
-    
+            # read the base xml string and fill the env_specs values
+            with open(osp.join(BASE_ASSETS_DIR, all_envs[base_env_name]['base_xml']), 'r') as f:
+                base_xml = f.read()
+            env_xml = base_xml.format(**env_specs)
+            with open(fpath, 'w') as f:
+                f.write(env_xml)
+                f.flush()
+            env = all_envs[base_env_name]['env_class'](fpath, meta_params)
+
+            # remove the file to avoid getting a million spec files
+            try:
+                os.remove(fpath)
+            except:
+                pass
+        
     if env_specs['normalized']:
         env = NormalizedBoxEnv(env)
         print('\n\nNormalized\n\n')

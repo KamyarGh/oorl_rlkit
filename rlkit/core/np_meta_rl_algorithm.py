@@ -15,14 +15,15 @@ from rlkit.samplers.in_place import InPlacePathSampler
 
 from gym.spaces import Discrete
 
-class MetaRLAlgorithm(metaclass=abc.ABCMeta):
+class NPMetaRLAlgorithm(metaclass=abc.ABCMeta):
     def __init__(
             self,
             env_sampler,
             exploration_policy: ExplorationPolicy,
-            concat_env_params_to_obs=False,
-            normalize_env_params=False,
-            env_params_normalizer=None,
+            neural_process,
+            train_neural_process=False,
+            latent_repr_mode='concat_params', # OR concat_samples
+            num_latent_samples=5,
             num_epochs=100,
             num_steps_per_epoch=10000,
             num_steps_per_eval=1000,
@@ -65,12 +66,14 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         :param eval_policy: Policy to evaluate with.
         :param replay_buffer:
         """
+        assert not train_neural_process, 'Have not implemented it yet! Remember to set it to train mode when training'
+        self.neural_process = neural_process
+        self.neural_process.set_mode('eval')
+        self.latent_repr_mode = latent_repr_mode
+        self.num_latent_samples = num_latent_samples
         self.env_sampler = env_sampler
         env, env_specs = env_sampler()
         self.training_env, _ = env_sampler(env_specs)
-        self.concat_env_params_to_obs = concat_env_params_to_obs
-        self.normalize_env_params = normalize_env_params
-        self.env_params_normalizer = env_params_normalizer
         # self.training_env = training_env or pickle.loads(pickle.dumps(env))
         # self.training_env = training_env or deepcopy(env)
         self.exploration_policy = exploration_policy
@@ -88,6 +91,21 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
         self.epoch_to_start_training = epoch_to_start_training
+        
+        if self.latent_repr_mode == 'concat_params':
+            def get_latent_repr(posterior_state):
+                z_mean, z_cov = self.neural_process.get_posterior_params(posterior_state)
+                return np.concatenate([z_mean, z_cov])
+            self.extra_obs_dim = 2 * self.neural_process.z_dim
+        else:
+            def get_latent_repr(posterior_state):
+                z_mean, z_cov = self.neural_process.get_posterior_params(posterior_state)
+                samples = np.random.multivariate_normal(z_mean, np.diag(z_cov), self.num_latent_samples)
+                samples = samples.flatten()
+                return samples
+            self.extra_obs_dim = self.num_latent_samples * self.neural_process.z_dim
+        self.get_latent_repr = get_latent_repr
+        
         if eval_sampler is None:
             if eval_policy is None:
                 eval_policy = exploration_policy
@@ -96,9 +114,9 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
                 policy=eval_policy,
                 max_samples=self.num_steps_per_eval + self.max_path_length,
                 max_path_length=self.max_path_length,
-                concat_env_params_to_obs=concat_env_params_to_obs,
-                normalize_env_params=normalize_env_params,
-                env_params_normalizer=env_params_normalizer
+                neural_process=neural_process,
+                latent_repr_fn=get_latent_repr,
+                reward_scale=reward_scale
             )
         self.eval_policy = eval_policy
         self.eval_sampler = eval_sampler
@@ -109,14 +127,10 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.env = env
         obs_space_dim = gym_get_dim(self.obs_space)
         act_space_dim = gym_get_dim(self.action_space)
-        if concat_env_params_to_obs:
-            extra_obs_dim = self.env.env_meta_params.shape[0]
-        else:
-            extra_obs_dim = 0
         if replay_buffer is None:
             replay_buffer = SimpleReplayBuffer(
                 self.replay_buffer_size,
-                obs_space_dim + extra_obs_dim,
+                obs_space_dim + self.extra_obs_dim,
                 act_space_dim,
                 discrete_action_dim=isinstance(self.action_space, Discrete)
             )
@@ -131,6 +145,8 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self._old_table_keys = None
         self._current_path_builder = PathBuilder()
         self._exploration_paths = []
+
+
 
     def train(self, start_epoch=0):
         self.pretrain()
@@ -166,16 +182,20 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
                 next_ob, raw_reward, terminal, env_info = (
                     self.training_env.step(action)
                 )
-                if self.concat_env_params_to_obs:
-                    params_to_concat = self.training_env.env_meta_params
-                    if self.normalize_env_params:
-                        params_to_concat = self.env_params_normalizer(params_to_concat)
-                    next_ob = np.concatenate([params_to_concat, next_ob])
-                    # print(next_ob)
                 self._n_env_steps_total += 1
                 reward = raw_reward * self.reward_scale
                 terminal = np.array([terminal])
                 reward = np.array([reward])
+
+                self.posterior_state = self.neural_process.update_posterior_state(
+                    self.posterior_state,
+                    observation[self.extra_obs_dim:],
+                    action,
+                    reward,
+                    next_ob
+                )
+                next_ob = np.concatenate([self.get_latent_repr(self.posterior_state), next_ob])
+                
                 self._handle_step(
                     observation,
                     action,
@@ -311,11 +331,11 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.training_env, _ = self.env_sampler(env_specs)
 
         obs = self.training_env.reset()
-        if self.concat_env_params_to_obs:
-            params_to_concat = self.training_env.env_meta_params
-            if self.normalize_env_params:
-                params_to_concat = self.env_params_normalizer(params_to_concat)
-            obs = np.concatenate([params_to_concat, obs])
+
+        self.posterior_state = self.neural_process.reset_posterior_state()
+        latent_repr = self.get_latent_repr(self.posterior_state)
+
+        obs = np.concatenate([latent_repr, obs])
         return obs
 
     def _handle_path(self, path):

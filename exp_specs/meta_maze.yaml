@@ -1,40 +1,35 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/meta_sac.py
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/discrete_on_the_fly_meta_sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: new_sac_hyper_search_hopper
+  exp_name: one_hot_3x3_1_obj_sac_meta_maze
   description: searching over the SAC hyperparameters
-  num_workers: 8
-  cpu_range: [0,7]
+  num_workers: 32
+  cpu_range: [0,31]
   num_cpu_per_worker: 1
 
 # -----------------------------------------------------------------------------
 variables:
-  use_new_sac: [true]
+  use_new_sac: [false]
   algo_params:
     epoch_to_start_training: [0]
     concat_env_params_to_obs: [false]
     normalize_env_params: [false]
-    # batch_size: [128, 256]
-    batch_size: [128]
     num_updates_per_env_step: [1, 4]
-    # num_updates_per_env_step: [1]
-    reward_scale: [1.0, 5.0]
-    # reward_scale: [5.0]
-    # soft_target_tau: [0.01, 0.005]
-    soft_target_tau: [0.005]
-  # net_size: [128, 256]
-  # net_size: [256]
-  net_size: [128]
+    reward_scale: [0.5, 1, 5, 10]
+    soft_target_tau: [0.005, 0.01]
+  
   # seed: [9783, 5914, 4865, 2135, 2349]
   seed: [9783, 5914]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
-    num_epochs: 501
+    discrete_policy: true
+    num_epochs: 101
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
-    max_path_length: 999
+    batch_size: 128
+    max_path_length: 10
     discount: 0.99
 
     policy_lr: 0.0003
@@ -45,10 +40,17 @@ constants:
 
     save_replay_buffer: true
 
+  net_size: 128
 
   env_specs:
-    normalized: false
-    base_env_name: 'meta_gears_hopper'
-    gear_0: [200]
-    gear_1: [200]
-    gear_2: [200]
+    base_env_name: 'meta_maze'
+    flat_repr: true
+    one_hot_repr: true
+    num_object_types: 1
+    num_per_object: 3
+    maze_h: 3
+    maze_w: 3
+    reward_values: [1]
+    shuffle: false
+    scale: 1
+    seed: 1082

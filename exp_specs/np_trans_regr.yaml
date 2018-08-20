@@ -1,0 +1,51 @@
+meta_data:
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/train_np_trans_regr.py
+  exp_dirs: /u/kamyar/oorl_rlkit/output
+  exp_name: more_fixed_train_modified_npv3
+  description: a descriptive description
+  num_workers: 32
+  cpu_range: [0,31]
+  num_cpu_per_worker: 1
+
+# -----------------------------------------------------------------------------
+variables:
+  aggregator_mode: [sum_aggregator, mean_aggregator, tanh_sum_aggregator]
+  train_batch_size: [16]
+  # context_size_range: [[1, 101], [1, 251], [1, 501]]
+  context_size_range: [[1, 101], [1, 251]]
+  num_encoder_hidden_layers: [2]
+  r_dim : [20]
+  z_dim : [2, 5, 10, 20]
+  # seed: [208374, 1802]
+  seed: [208374, 1802]
+  data_prep_specs:
+    num_train: [50]
+# -----------------------------------------------------------------------------
+constants:
+  neural_process_version: 3
+  use_bn: true
+
+  encoder_lr: 1e-3
+  base_map_lr: 1e-3
+  r_to_z_map_lr: 1e-3
+
+  num_base_map_hidden_layers: 2
+  num_r_to_z_map_hidden_layers: 2
+
+  val_batch_size: 64
+
+  train_test_size: 100
+  val_test_size: 100
+  val_context_sizes: [1, 10, 25, 50, 100, 250, 300, 400, 500, 750, 890]
+
+  max_iters : 50001
+  freq_val : 1000
+  freq_save: 10000
+
+  data_prep_specs:
+    # extra_data_path: /u/kamyar/oorl_rlkit/output/meta-reacher-robustness-check/meta_reacher_robustness_check_2018_08_09_16_45_05_0002--s-0/extra_data.pkl
+    extra_data_path: '/u/kamyar/oorl_rlkit/output/larger-range-on-the-fly-unnorm-meta-reacher/larger_range_on_the_fly_unnorm_meta_reacher_2018_08_12_23_40_18_0003--s-0/extra_data.pkl'
+    seed: 1239
+    num_val: 100
+    env_timestep_limit: 1000
+    extra_obs_dim: 2

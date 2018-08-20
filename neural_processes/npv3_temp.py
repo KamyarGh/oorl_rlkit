@@ -60,7 +60,6 @@ def compute_diag_log_prob(preds_mean, preds_log_cov, true_outputs, mask, n_sampl
         mask*(preds_mean - true_outputs)**2 / preds_cov
     )
 
-    assert False, 'Are you sure this is right?'
     log_det_temp = mask*(torch.sum(preds_log_cov, 1) + log_2pi)
     log_prob += -0.5*torch.sum(log_det_temp)
 
@@ -138,25 +137,25 @@ class NeuralProcessV3(BaseNeuralProcess):
 
         if self.aggregator_mode in ['sum_aggregator', 'tanh_sum_aggregator']:
             r = posterior_state['pre_r'] + new_r
-            return {'pre_r': r}
+            return {'r': r}
         else:
             r = posterior_state['pre_r'] + new_r
             N = posterior_state['N']
-            return {'pre_r': r, 'N': N+1}
+            return {'r': r, 'N': N+1}
     
 
     def get_posterior_params(self, posterior_state):
-        if self.aggregator_mode == 'sum_aggregator':
+        if self.aggregator_mode == 'sum_aggregator'
             pre_r = posterior_state['pre_r']
-            post = self.r_to_z_map([pre_r])[0]
+            post = self.r_to_z_map([pre_r])
         elif self.aggregator_mode == 'tanh_sum_aggregator':
             pre_r = posterior_state['pre_r']
-            post = self.r_to_z_map([F.tanh(pre_r)])[0]
+            post = self.r_to_z_map([F.tanh(pre_r)])
         elif self.aggregator_mode == 'mean_aggregator':
             pre_r = posterior_state['pre_r']
             N = posterior_state['N']
-            post = self.r_to_z_map([pre_r / N])[0]
-        z_mean, z_log_cov = torch.squeeze(post[0], 0), torch.squeeze(post[1], 0)
+            post = self.r_to_z_map([pre_r / N])
+        z_mean, z_log_cov = torch.unsqueeze(post[0]), torch.unsqueeze(post[1])
         z_cov = torch.exp(z_log_cov)
         return z_mean.data.numpy(), z_cov.data.numpy()
 

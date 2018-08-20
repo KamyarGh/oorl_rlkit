@@ -5,8 +5,8 @@ from rllab.misc.instrument import VariantGenerator
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
-from rlkit.torch.sac.policies import TanhGaussianPolicy
-from rlkit.torch.sac.sac import MetaSoftActorCritic
+from rlkit.torch.sac.policies import TanhGaussianPolicy, ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.sac.sac import MetaSoftActorCritic, NewMetaSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 
 from rlkit.envs import EnvSampler
@@ -24,9 +24,11 @@ def experiment(variant):
     env_specs = variant['env_specs']
     env_specs_vg = VariantGenerator()
     env_spec_constants = {}
+    env_spec_ranges = {}
     for k, v in env_specs.items():
         if isinstance(v, list):
             env_specs_vg.add(k, v)
+            env_spec_ranges[k] = v
         else:
             env_spec_constants[k] = v
     
@@ -35,10 +37,27 @@ def experiment(variant):
         del es['_hidden_keys']
         es.update(env_spec_constants)
         env_specs_list.append(es)
-    print(env_specs_list)
     
-    print(env_specs_list[0])
     env_sampler = EnvSampler(env_specs_list)
+
+    # make the normalizer function for the env_params
+    mean = []
+    half_diff = []
+    for k in sorted(env_spec_ranges.keys()):
+        r = env_spec_ranges[k]
+        if len(r) == 1:
+            mean.append(0)
+            half_diff.append(r[0])
+        else:
+            mean.append((r[0]+r[1]) / 2.0)
+            half_diff.append((r[1]-r[0]) / 2.0)
+    mean = np.array(mean)
+    half_diff = np.array(half_diff)
+
+    def env_params_normalizer(params):
+        return (params - mean) / half_diff
+    
+    variant['algo_params']['env_params_normalizer'] = env_params_normalizer
 
     # set up similar to non-meta version
     sample_env, _ = env_sampler()
@@ -50,28 +69,54 @@ def experiment(variant):
     action_dim = int(np.prod(sample_env.action_space.shape))
 
     net_size = variant['net_size']
-    qf = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + action_dim + meta_params_dim,
-        output_size=1,
-    )
     vf = FlattenMlp(
         hidden_sizes=[net_size, net_size],
         input_size=obs_dim + meta_params_dim,
         output_size=1,
     )
-    policy = TanhGaussianPolicy(
-        hidden_sizes=[net_size, net_size],
-        obs_dim=obs_dim + meta_params_dim,
-        action_dim=action_dim,
-    )
-    algorithm = MetaSoftActorCritic(
-        env_sampler=env_sampler,
-        policy=policy,
-        qf=qf,
-        vf=vf,
-        **variant['algo_params']
-    )
+    if exp_specs['use_new_sac']:
+        qf1 = FlattenMlp(
+            hidden_sizes=[net_size, net_size],
+            input_size=obs_dim + action_dim + meta_params_dim,
+            output_size=1,
+        )
+        qf2 = FlattenMlp(
+            hidden_sizes=[net_size, net_size],
+            input_size=obs_dim + action_dim + meta_params_dim,
+            output_size=1,
+        )
+        policy = ReparamTanhMultivariateGaussianPolicy(
+            hidden_sizes=[net_size, net_size],
+            obs_dim=obs_dim + meta_params_dim,
+            action_dim=action_dim,
+        )
+        algorithm = NewMetaSoftActorCritic(
+            env_sampler=env_sampler,
+            policy=policy,
+            qf1=qf1,
+            qf2=qf2,
+            vf=vf,
+            **variant['algo_params']
+        )
+    else:
+        policy = TanhGaussianPolicy(
+            hidden_sizes=[net_size, net_size],
+            obs_dim=obs_dim + meta_params_dim,
+            action_dim=action_dim,
+        )
+        qf = FlattenMlp(
+            hidden_sizes=[net_size, net_size],
+            input_size=obs_dim + action_dim + meta_params_dim,
+            output_size=1,
+        )
+        algorithm = MetaSoftActorCritic(
+            env_sampler=env_sampler,
+            policy=policy,
+            qf=qf,
+            vf=vf,
+            **variant['algo_params']
+        )
+    
     if ptu.gpu_enabled():
         algorithm.cuda()
     algorithm.train()

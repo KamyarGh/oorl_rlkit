@@ -1,27 +1,27 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/train_transition_regressor.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: 150_300_range_meta_reacher_trans_regr
+  exp_name: on_the_fly_trans_regression
   description: we have to be at least beating this what the exp_name says LOL min 1000 samples per env gear setting
-  num_workers: 28
-  cpu_range: [4,31]
+  num_workers: 16
+  cpu_range: [0,15]
   num_cpu_per_worker: 1
 
 # -----------------------------------------------------------------------------
 variables:
   remove_env_info: [true, false]
   normalize_env_info: [true]
-  env_info_range: [[150, 300]]
+  env_info_range: [[50, 300]]
 
-  train_set_size: [16000, 256000]
+  train_set_size: [50000]
   seed: [9783, 5914]
   # seed: [9783, 5914, 4865, 2135, 2349]
-  num_hidden_layers: [2, 4, 6, 8]
+  num_hidden_layers: [2, 4]
   train_from_beginning_transitions: [true, false]
 
 # -----------------------------------------------------------------------------
 constants:
-  extra_data_path: /u/kamyar/oorl_rlkit/output/meta-reacher-robustness-check/meta_reacher_robustness_check_2018_08_09_16_45_05_0002--s-0/extra_data.pkl
+  extra_data_path: /u/kamyar/oorl_rlkit/output/larger-range-on-the-fly-unnorm-meta-reacher/larger_range_on_the_fly_unnorm_meta_reacher_2018_08_12_23_40_18_0003--s-0/extra_data.pkl
 
   extra_obs_dim: 2
 
@@ -33,7 +33,7 @@ constants:
   train_batch_size: 64
   val_batch_size: 1000
 
-  val_set_size: 50000
+  val_set_size: 100000
 
   max_iters: 50000
   freq_val: 1000
