@@ -2,6 +2,26 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+
+def save_pytorch_tensor_as_img(tensor, save_path):
+    fig, ax = plt.subplots(1)
+    ax.imshow(np.transpose(tensor.numpy(), (1,2,0)))
+    plt.savefig(save_path)
+    plt.close()
+
+
+def generate_gif(list_of_img_list, names, save_path):
+    fig, axarr = plt.subplots(len(list_of_img_list))
+    def update(t):
+        for j in range(len(list_of_img_list)):
+            axarr[j].imshow(list_of_img_list[j][t])
+            axarr[j].set_title(names[j])
+        return axarr
+    anim = FuncAnimation(fig, update, frames=np.arange(len(list_of_img_list[0])), interval=2000)
+    anim.save(save_path, dpi=80, writer='imagemagick')
+    plt.close()
 
 
 def get_cmap(n, name='hsv'):

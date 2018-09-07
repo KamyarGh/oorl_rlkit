@@ -14,12 +14,13 @@ class EnvReplayBuffer(SimpleReplayBuffer):
         :param max_replay_buffer_size:
         :param env:
         """
+        assert extra_obs_dim == 0, "I removed the extra_obs_dim thing"
         self.env = env
         self._ob_space = env.observation_space
         self._action_space = env.action_space
         super().__init__(
             max_replay_buffer_size=max_replay_buffer_size,
-            observation_dim=get_dim(self._ob_space) + extra_obs_dim,
+            observation_dim=get_dim(self._ob_space),
             action_dim=get_dim(self._action_space),
         )
 

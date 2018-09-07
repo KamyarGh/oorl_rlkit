@@ -39,7 +39,8 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
             eval_sampler=None,
             eval_policy=None,
             replay_buffer=None,
-            epoch_to_start_training=0
+            epoch_to_start_training=0,
+            animated_eval=False
     ):
         """
         Base class for RL Algorithms
@@ -66,6 +67,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         :param replay_buffer:
         """
         self.env_sampler = env_sampler
+        print(env_sampler)
         env, env_specs = env_sampler()
         self.training_env, _ = env_sampler(env_specs)
         self.concat_env_params_to_obs = concat_env_params_to_obs
@@ -98,7 +100,9 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
                 max_path_length=self.max_path_length,
                 concat_env_params_to_obs=concat_env_params_to_obs,
                 normalize_env_params=normalize_env_params,
-                env_params_normalizer=env_params_normalizer
+                env_params_normalizer=env_params_normalizer,
+                animated=animated_eval,
+                env_sampler=env_sampler
             )
         self.eval_policy = eval_policy
         self.eval_sampler = eval_sampler
@@ -114,12 +118,21 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         else:
             extra_obs_dim = 0
         if replay_buffer is None:
-            replay_buffer = SimpleReplayBuffer(
-                self.replay_buffer_size,
-                obs_space_dim + extra_obs_dim,
-                act_space_dim,
-                discrete_action_dim=isinstance(self.action_space, Discrete)
-            )
+            obs_shape = self.obs_space.shape
+            if len(obs_shape) == 3:
+                replay_buffer = SimpleReplayBuffer(
+                    self.replay_buffer_size,
+                    obs_shape,
+                    act_space_dim,
+                    discrete_action_dim=isinstance(self.action_space, Discrete)
+                )
+            else:
+                replay_buffer = SimpleReplayBuffer(
+                    self.replay_buffer_size,
+                    obs_space_dim + extra_obs_dim,
+                    act_space_dim,
+                    discrete_action_dim=isinstance(self.action_space, Discrete)
+                )
         self.replay_buffer = replay_buffer
 
         self._n_env_steps_total = 0

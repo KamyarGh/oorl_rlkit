@@ -35,6 +35,10 @@ def get_generic_path_information(paths, stat_prefix=''):
         'Actions', actions, stat_prefix=stat_prefix,
         always_show_all_stats=True
     ))
+    statistics.update(create_stats_ordered_dict(
+        'Ep. Len.', np.array([path["terminals"].shape[0] for path in paths]), stat_prefix=stat_prefix,
+        always_show_all_stats=True
+    ))
     statistics['Num Paths'] = len(paths)
 
     return statistics

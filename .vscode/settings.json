@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "/home/kamyar/anaconda3/envs/rlkit/bin/python",
+    "python.pythonPath": "/Users/kamyar/anaconda3/envs/rlkit/bin/python",
     "python.linting.pylintEnabled": false
 }

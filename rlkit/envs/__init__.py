@@ -10,6 +10,7 @@ import gym
 from rlkit.envs.base_inverted_pendulum import BaseInvertedPendulumEnv
 from rlkit.envs.reacher import MetaReacherEnv
 from rlkit.envs.hopper import MetaHopperEnv
+from rlkit.envs.meta_ant import MetaAntEnv
 from rlkit.envs.wrappers import NormalizedBoxEnv
 
 
@@ -29,10 +30,15 @@ all_envs = {
         'base_xml': 'base_hopper.txt',
         'env_class': MetaHopperEnv
     },
+    'meta_gears_ant': {
+        'base_xml': 'base_ant.txt',
+        'env_class': MetaAntEnv
+    },
 }
 
 fixed_envs = {
-    'ant_v1': lambda: gym.envs.make('Ant-v2')
+    'ant_v1': lambda: gym.envs.make('Ant-v2'),
+    'hopper_v2': lambda: gym.envs.make('Hopper-v2')    
 }
 
 
@@ -45,6 +51,8 @@ def get_meta_env(env_specs):
         )
     )
     spec_name = base_env_name + spec_name
+    # spec_names can get too long, this will work almost always :P
+    if len(spec_name) > 128: spec_name = spec_name[:128]
     fname = spec_name + '.xml'
     fpath = osp.join(CUSTOM_ASSETS_DIR, fname)
 
@@ -89,10 +97,9 @@ def get_meta_env(env_specs):
 
 
 class EnvSampler():
-    def __init__(self, env_specs_list, normalized=False):
+    def __init__(self, env_specs_list):
         self.envs = {}
         self.env_names = []
-        self.normalized = normalized
         for spec in env_specs_list:
             env, name = get_meta_env(spec)
             self.envs[name] = env
@@ -108,7 +115,7 @@ class EnvSampler():
 
 
 class OnTheFlyEnvSampler():
-    def __init__(self, env_specs, normalized=False):
+    def __init__(self, env_specs):
         # any env specs that is a list is considered to be a list
         # containing two floats marking the upper and lower bound
         # of a range to sample uniformly from

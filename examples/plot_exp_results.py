@@ -1,6 +1,111 @@
 import argparse
+import os
+import yaml
+from itertools import product
+
 from rlkit.core.eval_util import plot_experiment_returns
 
+
+
+
+def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=None):
+    output_dir = '/u/kamyar/oorl_rlkit/output'
+    plots_dir = '/u/kamyar/oorl_rlkit/plots'
+    variant_dir = os.path.join(output_dir, exp_name.replace('-', '_'))
+    sub_dir_name = os.listdir(variant_dir)[0]
+    variant_file_path = os.path.join(variant_dir, sub_dir_name, 'exp_spec_definition.yaml')
+    with open(variant_file_path, 'r') as spec_file:
+        spec_string = spec_file.read()
+        all_exp_specs = yaml.load(spec_string)
+    
+    exp_plot_dir = os.path.join(plots_dir, exp_name)
+    os.makedirs(exp_plot_dir, exist_ok=True)
+
+    split_var_names = [s.split('.') for s in variables_to_permute]
+    format_names = [s[-1] for s in split_var_names]
+    name_to_format = '_'.join(s + '_{}' for s in format_names)
+
+    all_variable_values = []
+    for path in split_var_names:
+        v = all_exp_specs['variables']
+        for k in path: v = v[k]
+        all_variable_values.append(v)
+    
+    for p in product(*all_variable_values):
+        constraints = {
+            k:v for k,v in zip(variables_to_permute, p)
+        }
+        name = name_to_format.format(*p)
+        try:
+            plot_experiment_returns(
+                os.path.join(output_dir, exp_name),
+                name,
+                os.path.join(exp_plot_dir, '{}.png'.format(name)),
+                y_axis_lims=y_axis_lims,
+                plot_mean=plot_mean,
+                constraints=constraints
+            )
+        except Exception as e:
+            # raise(e)
+            print('failed ')
+    
+
+# plot_results(
+#     'one-hot-5x5-1-obj-sac-meta-maze',
+#     [
+#         'algo_params.num_updates_per_env_step',
+#         'algo_params.reward_scale',
+#         'algo_params.soft_target_tau',
+#     ],
+#     plot_mean=False,
+#     y_axis_lims=[-3,3]
+# )
+
+
+# plot_results(
+#     'fixing-sac-meta-maze',
+#     [
+#         'algo_params.reward_scale',
+#         'algo_params.soft_target_tau',
+#         'env_specs.timestep_cost'
+#     ],
+#     plot_mean=False,
+#     # y_axis_lims=[-3,3]
+# )
+
+
+plot_results(
+    'on-the-fly-new-sac-ant',
+    [
+        'algo_params.epoch_to_start_training',
+        'algo_params.soft_target_tau',
+        'env_specs.normalized'
+    ],
+    plot_mean=False,
+    y_axis_lims=[0,4000]
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
 # for reward_scale in [5.0]:
 #     for epoch_to_start in [50]:
 #         for seed in [9783, 5914, 4865, 2135, 2349]:
@@ -233,13 +338,59 @@ from rlkit.core.eval_util import plot_experiment_returns
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# for num_updates in [1,4]:
+#     for reward_scale in [1,5]:
+#         for soft in [0.005, 0.01]:
+#             for normalized in [True, False]:
+#                 constraints = {
+#                     'algo_params.num_updates_per_env_step': num_updates,
+#                     'algo_params.reward_scale': reward_scale,
+#                     'algo_params.soft_target_tau': soft,
+#                     'env_specs.normalized': normalized,
+#                 }
+#                 name = '_'.join(
+#                     [
+#                         '{}_{}'.format(k, constraints[k]) for
+#                         k in sorted(constraints)
+#                     ]
+#                 )
+#                 try:
+#                     plot_experiment_returns(
+#                         '/u/kamyar/oorl_rlkit/output/new-sac-ant',
+#                         name,
+#                         '/u/kamyar/oorl_rlkit/plots/new-sac-ant/{}.png'.format(name),
+#                         y_axis_lims=[0, 3000],
+#                         plot_mean=False,
+#                         constraints=constraints
+#                     )
+#                 except Exception as e:
+#                     # raise(e)
+#                     print('failed ')
+
+
+
+
 # # PLOT EVERYTHING
 # try:
 #     plot_experiment_returns(
-#         '/u/kamyar/oorl_rlkit/output/pretrained-np-meta-reacher-sac-concat-params',
-#         'meta reacher on top of pretrained neural process concat params',
-#         '/u/kamyar/oorl_rlkit/plots/pretrained-np-meta-reacher-sac-concat-params.png',
-#         y_axis_lims=[-300, 0],
+#         '/u/kamyar/oorl_rlkit/output/new-sac-ant',
+#         'new-sac-ant',
+#         '/u/kamyar/oorl_rlkit/plots/new-sac-ant.png',
+#         # y_axis_lims=[0, 3000],
 #         plot_mean=False,
 #         # constraints=constraints
 #     )
@@ -249,27 +400,27 @@ from rlkit.core.eval_util import plot_experiment_returns
 
 
 # Hopper gears
-for gear_0 in [[50.], [100.], [200.]]:
-    for gear_1 in [[50.], [100.], [200.]]:
-        for gear_2 in [[50.], [100.], [200.]]:
-            constraints = {
-                'env_specs.gear_0': gear_0,
-                'env_specs.gear_1': gear_1,
-                'env_specs.gear_2': gear_2,
-            }
-            name = 'gear_0_{}_gear_1_{}_gear_2_{}'.format(gear_0, gear_1, gear_2)
-            try:
-                plot_experiment_returns(
-                    '/u/kamyar/oorl_rlkit/output/new-norm-meta-hopper-gear-search',
-                    'hopper ' + name,
-                    '/u/kamyar/oorl_rlkit/plots/new_norm_meta_hopper_gears_search/mea_{}.png'.format(name),
-                    y_axis_lims=[0, 3000],
-                    plot_mean=True,
-                    constraints=constraints
-                )
-            except Exception as e:
-                # raise(e)
-                print('failed ')
+# for gear_0 in [[50.], [100.], [200.]]:
+#     for gear_1 in [[50.], [100.], [200.]]:
+#         for gear_2 in [[50.], [100.], [200.]]:
+#             constraints = {
+#                 'env_specs.gear_0': gear_0,
+#                 'env_specs.gear_1': gear_1,
+#                 'env_specs.gear_2': gear_2,
+#             }
+#             name = 'gear_0_{}_gear_1_{}_gear_2_{}'.format(gear_0, gear_1, gear_2)
+#             try:
+#                 plot_experiment_returns(
+#                     '/u/kamyar/oorl_rlkit/output/new-norm-meta-hopper-gear-search',
+#                     'hopper ' + name,
+#                     '/u/kamyar/oorl_rlkit/plots/new_norm_meta_hopper_gears_search/mea_{}.png'.format(name),
+#                     y_axis_lims=[0, 3000],
+#                     plot_mean=True,
+#                     constraints=constraints
+#                 )
+#             except Exception as e:
+#                 # raise(e)
+#                 print('failed ')
 
 
 # for concat in [True, False]:
@@ -291,3 +442,25 @@ for gear_0 in [[50.], [100.], [200.]]:
 #         except Exception as e:
 #             # raise(e)
 #             print('failed ')
+
+
+
+
+# MAZE
+# for reward_scale in [0.5, 1, 5, 10]:
+#     constraints = {
+#         'algo_params.reward_scale': reward_scale
+#     }
+#     name = 'rew_{}'.format(reward_scale)
+#     try:
+#         plot_experiment_returns(
+#             '/u/kamyar/oorl_rlkit/output/3x3-1-obj-sac-meta-maze',
+#             '{}'.format(name),
+#             '/u/kamyar/oorl_rlkit/plots/3x3-1-obj-sac-meta-maze/{}.png'.format(name),
+#             y_axis_lims=[0, 3],
+#             plot_mean=False,
+#             constraints=constraints
+#         )
+#     except Exception as e:
+#         raise(e)
+#         print('failed ')

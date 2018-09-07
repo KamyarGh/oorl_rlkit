@@ -200,7 +200,9 @@ class DiscretePolicy(Mlp, ExplorationPolicy):
             # print(log_prob)
 
             return (idx, log_prob)
-
+    
+    def get_log_pis(self, obs):
+        return super().forward(obs)
 
 
 class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):

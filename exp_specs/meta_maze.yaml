@@ -1,10 +1,10 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/discrete_on_the_fly_meta_sac.py
   exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: one_hot_3x3_1_obj_sac_meta_maze
+  exp_name: debug_sac_meta_maze
   description: searching over the SAC hyperparameters
-  num_workers: 32
-  cpu_range: [0,31]
+  num_workers: 1
+  cpu_range: [0,23]
   num_cpu_per_worker: 1
 
 # -----------------------------------------------------------------------------
@@ -14,22 +14,25 @@ variables:
     epoch_to_start_training: [0]
     concat_env_params_to_obs: [false]
     normalize_env_params: [false]
-    num_updates_per_env_step: [1, 4]
-    reward_scale: [0.5, 1, 5, 10]
-    soft_target_tau: [0.005, 0.01]
+    num_updates_per_env_step: [1]
+    reward_scale: [100]
+    soft_target_tau: [0.005]
+  
+  env_specs:
+    timestep_cost: [0.02]
   
   # seed: [9783, 5914, 4865, 2135, 2349]
-  seed: [9783, 5914]
+  seed: [9783]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
     discrete_policy: true
-    num_epochs: 101
+    num_epochs: 51
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
+    max_path_length: 100
     batch_size: 128
-    max_path_length: 10
     discount: 0.99
 
     policy_lr: 0.0003
@@ -47,10 +50,9 @@ constants:
     flat_repr: true
     one_hot_repr: true
     num_object_types: 1
-    num_per_object: 3
-    maze_h: 3
-    maze_w: 3
-    reward_values: [1]
+    num_per_object: 10
+    maze_h: 5
+    maze_w: 5
+    possible_reward_values: [1]
     shuffle: false
     scale: 1
-    seed: 1082
