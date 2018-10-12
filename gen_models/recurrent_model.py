@@ -65,15 +65,15 @@ class RecurrentModel(nn.Module):
             ae_dim, lstm_dim, bias=True
         )
         self.fc_decoder = nn.Sequential(
-            nn.Linear(lstm_dim + act_dim, 2*flat_inter_img_dim, bias=False),
-            nn.BatchNorm1d(2*flat_inter_img_dim),
+            nn.Linear(lstm_dim + act_dim, flat_inter_img_dim, bias=False),
+            nn.BatchNorm1d(flat_inter_img_dim),
             nn.ReLU(),
-            # nn.Linear(flat_inter_img_dim, flat_inter_img_dim, bias=False),
-            # nn.BatchNorm1d(flat_inter_img_dim),
+            # nn.Linear(ae_dim, ae_dim, bias=False),
+            # nn.BatchNorm1d(ae_dim),
             # nn.ReLU(),
-            # nn.Linear(flat_inter_img_dim, flat_inter_img_dim, bias=False),
-            # nn.BatchNorm1d(flat_inter_img_dim),
-            # nn.ReLU(),
+            # # nn.Linear(ae_dim, ae_dim, bias=False),
+            # # nn.BatchNorm1d(ae_dim),
+            # # nn.ReLU(),
             # # nn.Linear(ae_dim, ae_dim, bias=False),
             # # nn.BatchNorm1d(ae_dim),
             # # nn.ReLU(),
@@ -82,28 +82,25 @@ class RecurrentModel(nn.Module):
             # nn.ReLU(),
         )
         self.conv_decoder = nn.Sequential(
-            # nn.Conv2d(conv_channels, conv_channels, 1, stride=1, padding=0, bias=False),
-            # nn.BatchNorm2d(conv_channels),
-            # nn.ReLU(),
-            nn.ConvTranspose2d(64, 64, 4, stride=2, padding=1, output_padding=0, bias=False),
-            nn.BatchNorm2d(64),
+            nn.ConvTranspose2d(conv_channels, conv_channels, 4, stride=2, padding=1, output_padding=0, bias=False),
+            nn.BatchNorm2d(conv_channels),
             nn.ReLU(),
             # nn.Conv2d(conv_channels, conv_channels, 1, stride=1, padding=0, bias=False),
             # nn.BatchNorm2d(conv_channels),
             # nn.ReLU(),
-            nn.ConvTranspose2d(64, 64, 4, stride=2, padding=1, output_padding=0, bias=False),
-            nn.BatchNorm2d(64),
+            nn.ConvTranspose2d(conv_channels, conv_channels, 4, stride=2, padding=1, output_padding=0, bias=False),
+            nn.BatchNorm2d(conv_channels),
             nn.ReLU(),
             # nn.Conv2d(conv_channels, conv_channels, 1, stride=1, padding=0, bias=False),
             # nn.BatchNorm2d(conv_channels),
             # nn.ReLU(),
         )
         self.mean_decoder = nn.Sequential(
-            nn.Conv2d(64, 3, 1, stride=1, padding=0, bias=True),
+            nn.Conv2d(conv_channels, 3, 1, stride=1, padding=0, bias=True),
             nn.Sigmoid()
         )
         self.log_cov_decoder = nn.Sequential(
-            nn.Conv2d(64, 3, 1, stride=1, padding=0, bias=True),
+            nn.Conv2d(conv_channels, 3, 1, stride=1, padding=0, bias=True),
         )
     
     
@@ -125,7 +122,7 @@ class RecurrentModel(nn.Module):
         # hidden = prev_h_batch
 
         hidden = torch.cat([hidden, recon_act_proc], 1)
-        hidden = self.fc_decoder(hidden).view(obs_batch.size(0), 64, self.img_h, self.img_h)
+        hidden = self.fc_decoder(hidden).view(obs_batch.size(0), self.conv_channels, self.img_h, self.img_h)
         hidden = self.conv_decoder(hidden)
         recon = self.mean_decoder(hidden)
         log_cov = self.log_cov_decoder(hidden)

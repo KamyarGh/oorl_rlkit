@@ -1,39 +1,46 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/sac.py
-  exp_dirs: /u/kamyar/oorl_rlkit/output
-  exp_name: normalized_fast_reacher_hyper_param_search
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/on_the_fly_meta_sac.py
+  exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
+  exp_name: reacher_hyper_param_search
   description: searching over the SAC hyperparameters
-  num_workers: 14
-  cpu_range: [0,13]
+  num_workers: 24
+  cpu_range: [0,24]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
-    num_updates_per_env_step: [1, 4]
-    reward_scale: [0.5, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0]
+    concat_env_params_to_obs: [false]
+    num_updates_per_env_step: [1]
+    reward_scale: [1.0, 5.0]
+    soft_target_tau: [0.005, 0.01]
+  
+  env_specs:
+    normalized: [true, false]
+  
+  # seed: [9783, 5914, 4865, 2135, 2349]
+  seed: [9783, 5914, 4865]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
-    num_epochs: 500
+    num_epochs: 1000
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
-    batch_size: 128
-    max_path_length: 999
+    batch_size: 256
+    max_path_length: 1000
     discount: 0.99
 
-    soft_target_tau: 0.01
     policy_lr: 0.0003
     qf_lr: 0.0003
     vf_lr: 0.0003
+    policy_mean_reg_weight: 0.001
+    policy_std_reg_weight: 0.001
 
     render: false
 
     save_replay_buffer: true
   
-  net_size: 128
+  net_size: 256
   
-  # env_specs:
-  #   base_env_name: 'gravity_gear_inverted_pendulum'
-  #   gravity: -9.81
-  #   gear: 100
+  env_specs:
+    base_env_name: 'reacher_v2'

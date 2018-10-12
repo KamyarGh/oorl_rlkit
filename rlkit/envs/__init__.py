@@ -37,8 +37,9 @@ all_envs = {
 }
 
 fixed_envs = {
-    'ant_v1': lambda: gym.envs.make('Ant-v2'),
-    'hopper_v2': lambda: gym.envs.make('Hopper-v2')    
+    'ant_v2': lambda: gym.envs.make('Ant-v2'),
+    'hopper_v2': lambda: gym.envs.make('Hopper-v2'),
+    'reacher_v2': lambda: gym.envs.make('Reacher-v2'),
 }
 
 

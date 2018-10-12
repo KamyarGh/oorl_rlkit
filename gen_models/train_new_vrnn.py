@@ -109,6 +109,14 @@ def experiment(exp_specs):
         elbo, KL = model.compute_ELBO(prior_mean, prior_log_cov, post_mean, post_log_cov, recon_mean, recon_log_cov, obs_batch, average_over_batch=True)
         mse = ((recon_mean - obs_batch)**2).mean()
 
+        # # Trying something with the prior
+        # eps = Variable(torch.randn(prior_mean.size()))
+        # if prior_mean.is_cuda: eps = eps.cuda()
+        # prior_z_sample = prior_mean + eps*torch.exp(0.5 * prior_log_cov)
+        # prior_recon_mean, _ = model.get_obs_recon_dist(prior_z_sample, act_batch)
+        # prior_recon_log_prob = -0.5 * torch.sum((prior_recon_mean - obs_batch)**2) / float(obs_batch.size(0))
+        # elbo = elbo + prior_recon_log_prob
+
         # save_pytorch_tensor_as_img(obs_batch[0].data.cpu(), 'junk_vis/tiny_vrnn_larger_cov_range_1_KL/obs_%d.png' % iter_num)
 
         MSE_losses.append('%.4f' % mse)
@@ -201,7 +209,7 @@ def experiment(exp_specs):
                 generate_gif(
                     [post_sample_imgs, prior_imgs, post_imgs, obs_imgs],
                     ['Posterior Sample', 'Prior', 'Posterior', 'True Obs'],
-                    'junk_vis/debug_sample_latent_1/%d.gif' % iter_num
+                    'junk_vis/vrnn_kl_0/%d.gif' % iter_num
                 )
                 
                 model.train()

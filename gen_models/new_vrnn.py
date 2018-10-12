@@ -135,8 +135,6 @@ class NewVRNN(nn.Module):
         prior_log_cov = self.prior_log_cov_seq(hidden)
         prior_log_cov = torch.clamp(prior_log_cov, LOG_COV_MIN, LOG_COV_MAX)
 
-
-
         # compute posterior
         x_enc = self.x_encoder(obs_batch).view(obs_batch.size(0), -1)
         hidden = torch.cat([x_enc, post_act_batch], 1)
@@ -193,7 +191,6 @@ class NewVRNN(nn.Module):
 
         log_prob = -0.5 * torch.sum((recon_mean - obs_batch)**2)
 
-        print(0)
         elbo = log_prob - 0.0 * KL
         if average_over_batch: elbo = elbo / float(obs_batch.size(0))
 

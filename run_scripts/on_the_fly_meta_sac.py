@@ -6,7 +6,7 @@ import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import TanhGaussianPolicy
-from rlkit.torch.sac.sac import MetaSoftActorCritic, NewMetaSoftActorCritic
+from rlkit.torch.sac.sac import NewMetaSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 
 from rlkit.envs import OnTheFlyEnvSampler
@@ -54,7 +54,12 @@ def experiment(variant):
     action_dim = int(np.prod(sample_env.action_space.shape))
 
     net_size = variant['net_size']
-    qf = FlattenMlp(
+    qf1 = FlattenMlp(
+        hidden_sizes=[net_size, net_size],
+        input_size=obs_dim + action_dim + meta_params_dim,
+        output_size=1,
+    )
+    qf2 = FlattenMlp(
         hidden_sizes=[net_size, net_size],
         input_size=obs_dim + action_dim + meta_params_dim,
         output_size=1,
@@ -69,10 +74,11 @@ def experiment(variant):
         obs_dim=obs_dim + meta_params_dim,
         action_dim=action_dim,
     )
-    algorithm = MetaSoftActorCritic(
+    algorithm = NewMetaSoftActorCritic(
         env_sampler=env_sampler,
         policy=policy,
-        qf=qf,
+        qf1=qf1,
+        qf2=qf2,
         vf=vf,
         **variant['algo_params']
     )

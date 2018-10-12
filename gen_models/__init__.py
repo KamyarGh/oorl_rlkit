@@ -30,6 +30,7 @@ def make_upconv_net(in_channels, in_h, upconv_specs):
 
         in_ch = ch
         in_h = (in_h - 1)*s - 2*p + k + op
+        print('--> %dx%dx%d' % (in_ch, in_h, in_h))
     upconv_seq = nn.Sequential(*upconv_list)
     return upconv_seq, in_ch, in_h
 
@@ -53,6 +54,7 @@ def make_conv_net(in_channels, in_h, conv_specs):
         in_h = int(math.floor(
             1 + (in_h + 2*p - k)/s
         ))
+        print('--> %dx%dx%d' % (in_ch, in_h, in_h))
     conv_seq = nn.Sequential(*conv_list)
 
     return conv_seq, in_ch, in_h

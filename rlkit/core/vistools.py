@@ -6,6 +6,7 @@ from matplotlib.animation import FuncAnimation
 
 
 def save_pytorch_tensor_as_img(tensor, save_path):
+    if tensor.size(0) == 1: tensor = tensor.repeat(3, 1, 1)
     fig, ax = plt.subplots(1)
     ax.imshow(np.transpose(tensor.numpy(), (1,2,0)))
     plt.savefig(save_path)
