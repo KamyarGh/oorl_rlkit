@@ -5,7 +5,7 @@ from rllab.misc.instrument import VariantGenerator
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
-from rlkit.torch.sac.policies import TanhGaussianPolicy
+from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.sac.sac import NewMetaSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 
@@ -69,7 +69,7 @@ def experiment(variant):
         input_size=obs_dim + meta_params_dim,
         output_size=1,
     )
-    policy = TanhGaussianPolicy(
+    policy = ReparamTanhMultivariateGaussianPolicy(
         hidden_sizes=[net_size, net_size],
         obs_dim=obs_dim + meta_params_dim,
         action_dim=action_dim,

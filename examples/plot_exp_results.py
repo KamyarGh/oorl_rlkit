@@ -9,7 +9,7 @@ from rlkit.core.eval_util import plot_experiment_returns
 
 
 def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=None):
-    output_dir = '/u/kamyar/oorl_rlkit/output'
+    output_dir = '/ais/gobi6/kamyar/oorl_rlkit/output'
     plots_dir = '/u/kamyar/oorl_rlkit/plots'
     variant_dir = os.path.join(output_dir, exp_name.replace('-', '_'))
     sub_dir_name = os.listdir(variant_dir)[0]
@@ -50,6 +50,28 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
             print('failed ')
     
 
+
+
+# for r in [1.0, 5.0]:
+#     for soft_t in [0.005, 0.01]:
+#         for normalized in [True, False]:
+            # constraints = {
+            #     'algo_params.reward_scale': r,
+            #     'algo_params.soft_target_tau': soft_t,
+            #     'env_specs.normalized': normalized
+            # }
+plot_experiment_returns(
+    '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search',
+    'new_sac_pendulum_hyper_search',
+    '/u/kamyar/oorl_rlkit/plots/new_sac_pendulum_hyper_search.png',
+    # y_axis_lims=[-100, 0],
+    plot_mean=False,
+    # constraints=constraints
+)
+
+
+
+
 # plot_results(
 #     'one-hot-5x5-1-obj-sac-meta-maze',
 #     [
@@ -74,16 +96,16 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 # )
 
 
-plot_results(
-    'on-the-fly-new-sac-ant',
-    [
-        'algo_params.epoch_to_start_training',
-        'algo_params.soft_target_tau',
-        'env_specs.normalized'
-    ],
-    plot_mean=False,
-    y_axis_lims=[0,4000]
-)
+# plot_results(
+#     'on-the-fly-new-sac-ant',
+#     [
+#         'algo_params.epoch_to_start_training',
+#         'algo_params.soft_target_tau',
+#         'env_specs.normalized'
+#     ],
+#     plot_mean=False,
+#     y_axis_lims=[0,4000]
+# )
 
 
 

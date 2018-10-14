@@ -25,7 +25,9 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
     def __init__(
             self,
             env,
+            expert_replay_buffer,
             exploration_policy: ExplorationPolicy,
+            policy_optimizer,
             training_env=None,
             num_epochs=100,
             num_steps_per_epoch=10000,
@@ -37,7 +39,6 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             max_path_length=1000,
             discount=0.99,
             replay_buffer_size=10000,
-            reward_scale=1,
             render=False,
             save_replay_buffer=False,
             save_algorithm=False,
@@ -61,7 +62,6 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         :param max_path_length:
         :param discount:
         :param replay_buffer_size:
-        :param reward_scale:
         :param render:
         :param save_replay_buffer:
         :param save_algorithm:
@@ -73,6 +73,8 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
         # self.training_env = training_env or deepcopy(env)
         self.exploration_policy = exploration_policy
+        self.policy_optimizer = policy_optimizer
+        self.expert_replay_buffer = expert_replay_buffer
         self.num_epochs = num_epochs
         self.num_env_steps_per_epoch = num_steps_per_epoch
         self.num_steps_per_eval = num_steps_per_eval
@@ -83,7 +85,6 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         self.max_path_length = max_path_length
         self.discount = discount
         self.replay_buffer_size = replay_buffer_size
-        self.reward_scale = reward_scale
         self.render = render
         self.save_replay_buffer = save_replay_buffer
         self.save_algorithm = save_algorithm
@@ -158,7 +159,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                         self.training_env.step(action)
                     )
                     self._n_env_steps_total += 1
-                    reward = raw_reward * self.reward_scale
+                    reward = raw_reward
                     terminal = np.array([terminal])
                     reward = np.array([reward])
                     self._handle_step(
@@ -267,11 +268,11 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         """
         return (
             len(self._exploration_paths) > 0
-            and self.replay_buffer.num_steps_can_sample() >= self.batch_size
+            and self.replay_buffer.num_steps_can_sample() >= self.min_steps_before_training
         )
 
     def _can_train(self):
-        return self.replay_buffer.num_steps_can_sample() >= self.batch_size
+        return self.replay_buffer.num_steps_can_sample() >= self.min_steps_before_training
 
     def _get_action_and_info(self, observation):
         """

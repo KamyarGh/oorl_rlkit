@@ -1,0 +1,20 @@
+- Fix batches for AIRL
+- Keep track of the discriminator classification accuracy too and plot it
+- Debug AIRL script
+- Run some experiments
+
+- Right now batches are being sampled reandomly from the buffer, not contiguosly so that they are
+    from the same episode. Maybe a hybrid might even be better where you take random contigous segments?
+
+- also store the pretanh values so you don't get numerical problems
+- play with how many D vs. G
+- right now keeping replay buffer the same size as batch size, try making it a multiple
+    the batch size so that you are sampling from the past few version of the policy
+- GAIL and AIRL all use TRPO which keeps to policy from changing too much per iteration, maybe
+    you need a regularizer like that too for SAC
+- play with using gradient penalty
+- play with dropout no dropout
+- play with batch size, number of updates
+- play with hid_dim for the reward model
+- Think about regularizing the reward function so it doesn't get too big or too small
+- play with reward scale for SAC if necessary

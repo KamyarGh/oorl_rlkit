@@ -306,3 +306,20 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             action, mean, log_std, log_prob, expected_log_prob, std,
             mean_action_log_prob, pre_tanh_value,
         )
+
+    def get_log_prob(self, obs, acts):
+        h = obs
+        for i, fc in enumerate(self.fcs):
+            h = self.hidden_activation(fc(h))
+        mean = self.last_fc(h)
+        if self.std is None:
+            log_std = self.last_fc_log_std(h)
+            log_std = torch.clamp(log_std, LOG_SIG_MIN, LOG_SIG_MAX)
+            std = torch.exp(log_std)
+        else:
+            std = self.std
+            log_std = self.log_std
+        
+        tanh_normal = ReparamTanhMultivariateNormal(mean, log_std)
+        log_prob = tanh_normal.log_prob(acts)
+        return log_prob

@@ -15,13 +15,10 @@ from rlkit.core import logger, eval_util
 class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
     def __init__(self, *args, render_eval_paths=False, plotter=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.eval_statistics = None
+        self.rewardf_eval_statistics = None
+        self.policy_eval_statistics = None
         self.render_eval_paths = render_eval_paths
         self.plotter = plotter
-
-    def get_batch(self):
-        batch = self.replay_buffer.random_batch(self.batch_size)
-        return np_to_pytorch_batch(batch)
 
     @property
     @abc.abstractmethod
@@ -38,8 +35,10 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
 
     def evaluate(self, epoch):
         statistics = OrderedDict()
-        statistics.update(self.eval_statistics)
-        self.eval_statistics = None
+        statistics.update(self.rewardf_eval_statistics)
+        statistics.update(self.policy_optimizer.eval_statistics)
+        self.rewardf_eval_statistics = None
+        self.policy_optimizer.eval_statistics = None
 
         logger.log("Collecting samples for evaluation")
         test_paths = self.eval_sampler.obtain_samples()

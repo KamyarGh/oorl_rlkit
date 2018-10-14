@@ -193,10 +193,10 @@ class ReparamTanhMultivariateNormal():
         :return:
         """
         if pre_tanh_value is None:
-            assert False, 'Not handling this'
-            # pre_tanh_value = torch.log(
-            #     (1+value) / (1-value)
-            # ) / 2
+            # assert False, 'Not handling this'
+            pre_tanh_value = torch.log(
+                (1+value) / (1-value)
+            ) / 2
         normal_log_prob = self.normal.log_prob(pre_tanh_value)
         jacobi_term = torch.sum(
             torch.log(

@@ -40,10 +40,11 @@ fixed_envs = {
     'ant_v2': lambda: gym.envs.make('Ant-v2'),
     'hopper_v2': lambda: gym.envs.make('Hopper-v2'),
     'reacher_v2': lambda: gym.envs.make('Reacher-v2'),
+    'pendulum_v0': lambda: gym.envs.make('Pendulum-v0'),
 }
 
 
-def get_meta_env(env_specs):
+def get_env(env_specs):
     base_env_name = env_specs['base_env_name']
     spec_name = '_'.join(
         map(
@@ -102,7 +103,7 @@ class EnvSampler():
         self.envs = {}
         self.env_names = []
         for spec in env_specs_list:
-            env, name = get_meta_env(spec)
+            env, name = get_env(spec)
             self.envs[name] = env
             self.env_names.append(name)
         self.num_envs = len(self.env_names)
@@ -137,8 +138,8 @@ class OnTheFlyEnvSampler():
 
     def __call__(self, specs=None):
         if specs is not None:
-            env, _ = get_meta_env(specs)
+            env, _ = get_env(specs)
             return env, specs
         specs = self.gen_random_specs()
-        env, _ = get_meta_env(specs)
+        env, _ = get_env(specs)
         return env, specs
