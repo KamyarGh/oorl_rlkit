@@ -6,6 +6,7 @@
 - Right now batches are being sampled reandomly from the buffer, not contiguosly so that they are
     from the same episode. Maybe a hybrid might even be better where you take random contigous segments?
 
+- play with capacity of the reward model
 - also store the pretanh values so you don't get numerical problems
 - play with how many D vs. G
 - right now keeping replay buffer the same size as batch size, try making it a multiple
