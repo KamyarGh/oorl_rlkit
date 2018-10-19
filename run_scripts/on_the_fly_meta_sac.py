@@ -20,6 +20,7 @@ import argparse
 
 
 def experiment(variant):
+    print('RUNNING')
     # we have to generate the combinations for the env_specs
     env_specs = variant['env_specs']
     env_sampler = OnTheFlyEnvSampler(env_specs)
@@ -91,6 +92,7 @@ def experiment(variant):
 
 
 if __name__ == '__main__':
+    print('fucker')
     # Arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--experiment', help='experiment specification file')

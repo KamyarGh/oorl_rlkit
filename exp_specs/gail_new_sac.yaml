@@ -1,10 +1,10 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/airl_exp_script.py
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: airl_pendulum_grad_pen_using_log_prob_f_hid_32_direct_f
+  exp_name: gail_pendulum_tanh_rew_1_disc
   description: searching over the SAC hyperparameters
   num_workers: 1
-  cpu_range: [3,4]
+  cpu_range: [1,2]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
@@ -26,7 +26,7 @@ constants:
   expert_save_dict: '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search/final_pendulum_new_sac_hyper_param_search_2018_10_12_19_11_09_0000--s-0/extra_data.pkl'
   last_k_expert_steps: 500
   
-  airl_params:
+  gail_params:
     num_epochs: 501
     num_steps_per_epoch: 10000
     num_steps_per_eval: 10000
@@ -34,7 +34,7 @@ constants:
 
     num_reward_updates: 3
     num_policy_updates: 32
-    rewardf_optim_batch_size: 1000
+    disc_optim_batch_size: 1000
     policy_optim_batch_size: 32
 
     # the interaction between these two numbers matters
@@ -45,15 +45,10 @@ constants:
     save_replay_buffer: true
     render: false
 
-    rewardf_lr: 0.0003
+    disc_lr: 0.0003
     use_grad_pen: true
-    grad_pen_weight: 10.0
+    grad_pen_weight: 10
   
-  # rewardf_model_name: generic_reward_f
-  # rewardf_model_specs:
-    # hid_dim: 32
-    # num_layers: 2
-
   policy_net_size: 256
   policy_params:
     # policy always has 2 hidden layers

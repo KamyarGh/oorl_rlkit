@@ -1,10 +1,57 @@
-- Fix batches for AIRL
-- Keep track of the discriminator classification accuracy too and plot it
-- Debug AIRL script
+- Making things work with deepmind control suite
+    - (done) wrapper for non pixel version
+    - (done) make the wrapper be able to give both a pixel obervation AND the concatenated vector
+    - (done) make rlkit work with a dictionary of observations
+    - (done) make rl algorithms take pixels and obs or just pixels or just obs
+    - (done) make irl algorithms take pixels and obs or just pixels or just obs
+    - Debug
+    - Test GAIL on reacher with DCS
+        - Run reacher and save one eval trajectory per eval cycle
+        - Tune hyperparameters for the GAIL reacher and make sure it's working
+
+- Try training GAIL from images
+
+- (done_ Fix batches for AIRL
+- (done) Debug AIRL script
+- (done) Keep track of the discriminator classification accuracy too and plot it
+
+- (done) Implement GAIL
+    - (done) Do the basic GAIL implementation stuff
+    - (done) Figure out batch size, how many trajs, etc.
+    - (done) Reduce the number of expert trajs
+    - (done) Implement a discriminator with Tanh 2 layers 100 hid size and no dropout
+    - (done) I added the WGAN-GP version Add one of the two types of gradient penalty
+    - (done) Make the gail run_script
+    - (done) Figure out the learning rates and stuff
+    - (done) Try training it
+    - (done) Try making discriminator stronger to see if it reduces policy variance
+    - (done) Make it off-policy by increasing the replay buffer size
+- (done) used WGAN-GP, play with using gradient penalty (DRAGAN penalty vs. WGAN-GP penalty)
+- (done) ReLU + scale 5 works well: need to also play with reward scale for SAC
+
+- Make AIRL work for pendulum:
+    - (done) update the AIRL script
+    - (done) compute disc accuracy, reward mean and std
+    - (done) add gradient penalty
+    - (done) READ THROUGH AIRL AND MAKE SURE THE OBJECTIVE IS CORRECT
+    - Play with the batch sizes to figure out what is happening
+    - compare gradient penalty on the reward function, exp of the reward, or discriminator output
+    - compute the integral of the reward function for pendulum
+
+Other things to try for GAIL:
+    - How much does the log(D) - log(1-D) improve things compared to log(D) or -log(1-D)
+    - Think about how to regularize policy optimization for SAC, maybe some trust region method or KFAC
+
+- For making AIRL work, first use the expert policy Advantage as the reward function (don't learn the reward),
+    and use a lot of expert samples
+- Keep track of the integral of the reward function. To approximate it use importance sampling with
+    the policy output distribution
 - Run some experiments
 
+- Maybe first try to get GAIL working with SAC?
 - Right now batches are being sampled reandomly from the buffer, not contiguosly so that they are
-    from the same episode. Maybe a hybrid might even be better where you take random contigous segments?
+    from the same episode. Try contigous.
+- Maybe a hybrid might even be better where you take random contigous segments?
 
 - play with capacity of the reward model
 - also store the pretanh values so you don't get numerical problems
@@ -13,9 +60,12 @@
     the batch size so that you are sampling from the past few version of the policy
 - GAIL and AIRL all use TRPO which keeps to policy from changing too much per iteration, maybe
     you need a regularizer like that too for SAC
-- play with using gradient penalty
 - play with dropout no dropout
 - play with batch size, number of updates
 - play with hid_dim for the reward model
 - Think about regularizing the reward function so it doesn't get too big or too small
 - play with reward scale for SAC if necessary
+
+
+THINGS TO TRY AGAIN IN HARDER TASKS:
+- Make it off-policy by increasing the replay buffer size

@@ -2,8 +2,9 @@ from collections import OrderedDict
 
 import numpy as np
 import torch.optim as optim
-from torch import nn as nn
 import torch
+from torch import nn as nn
+from torch import autograd
 from torch.autograd import Variable
 import torch.nn.functional as F
 
@@ -12,6 +13,7 @@ from rlkit.core.eval_util import create_stats_ordered_dict
 from rlkit.torch.torch_irl_algorithm import TorchIRLAlgorithm
 from rlkit.torch.sac.policies import MakeDeterministic
 
+log_0p5 = np.log(0.5)
 
 class AIRL(TorchIRLAlgorithm):
     def __init__(
@@ -28,6 +30,9 @@ class AIRL(TorchIRLAlgorithm):
 
             rewardf_lr=1e-3,
             rewardf_optimizer_class=optim.Adam,
+
+            use_grad_pen=True,
+            grad_pen_weight=10,
 
             plotter=None,
             render_eval_paths=False,
@@ -47,7 +52,6 @@ class AIRL(TorchIRLAlgorithm):
             policy_optimizer=policy_optimizer,
             **kwargs
         )
-        self.policy = policy
         # this is the f function in AIRL
         self.rewardf = rewardf
 
@@ -59,11 +63,13 @@ class AIRL(TorchIRLAlgorithm):
             lr=rewardf_lr,
         )
 
-        self.expert_replay_buffer = expert_replay_buffer
         self.rewardf_optim_batch_size = rewardf_optim_batch_size
         self.policy_optim_batch_size = policy_optim_batch_size
 
         self.rewardf_eval_statistics = None
+
+        self.use_grad_pen = use_grad_pen
+        self.grad_pen_weight = grad_pen_weight
 
 
     def get_expert_batch(self, batch_size):
@@ -80,31 +86,70 @@ class AIRL(TorchIRLAlgorithm):
         '''
             Train the discriminator
         '''
+        self.rewardf_optimizer.zero_grad()
+
         expert_batch = self.get_expert_batch(self.rewardf_optim_batch_size)
         expert_obs = expert_batch['observations']
         expert_actions = expert_batch['actions']
 
-        exp_f_for_exp_s_a = self.rewardf(expert_obs, expert_actions)
-        policy_log_prob_for_exp_s_a = self.policy.get_log_prob(expert_obs, expert_actions).detach()
+        f_for_exp_s_a = self.rewardf(expert_obs, expert_actions)
+        policy_log_prob_for_exp_s_a = self.exploration_policy.get_log_prob(expert_obs, expert_actions).detach()
 
         policy_batch = self.get_policy_batch(self.rewardf_optim_batch_size)
         policy_obs = policy_batch['observations']
         policy_actions = policy_batch['actions']
+        # policy_obs = expert_obs
+        # policy_actions = expert_actions
 
-        exp_f_for_policy_s_a = self.rewardf(policy_obs, policy_actions)
-        policy_log_prob_for_policy_s_a = self.policy.get_log_prob(policy_obs, policy_actions).detach()
+        f_for_policy_s_a = self.rewardf(policy_obs, policy_actions)
+        policy_log_prob_for_policy_s_a = self.exploration_policy.get_log_prob(policy_obs, policy_actions).detach()
+
+        abs_f_for_exp = torch.abs(f_for_exp_s_a.detach()).mean()
+        abs_f_for_policy = torch.abs(f_for_policy_s_a.detach()).mean()
+        std_f_for_exp = f_for_exp_s_a.detach().std()
+        std_f_for_policy = f_for_policy_s_a.detach().std()
+        # print(exp_f_for_exp_s_a.mean())
 
         """
         Discriminator Loss
         """
-        exp_s_a_loss = exp_f_for_exp_s_a - log_sum_exp(exp_f_for_exp_s_a + policy_log_prob_for_exp_s_a, dim=1, keepdim=True)
-        policy_s_a_loss = policy_log_prob_for_policy_s_a - log_sum_exp(exp_f_for_policy_s_a + policy_log_prob_for_policy_s_a, dim=1, keepdim=True)
-        rewardf_loss = -1.0 * (exp_s_a_loss.mean() + policy_s_a_loss.mean())
+        exp_s_a_log_prob = f_for_exp_s_a - log_sum_exp(f_for_exp_s_a + policy_log_prob_for_exp_s_a, dim=1, keepdim=True)
+        policy_s_a_log_prob = policy_log_prob_for_policy_s_a - log_sum_exp(f_for_policy_s_a + policy_log_prob_for_policy_s_a, dim=1, keepdim=True)
+        rewardf_loss = -0.5 * (exp_s_a_log_prob + policy_s_a_log_prob).mean()
+
+        exp_acc = (exp_s_a_log_prob > log_0p5).type(torch.FloatTensor).mean()
+        policy_acc = (policy_s_a_log_prob > log_0p5).type(torch.FloatTensor).mean()
+        total_acc = (exp_acc + policy_acc)/2.0
+
+        if self.use_grad_pen:
+            eps = Variable(torch.rand(self.rewardf_optim_batch_size, 1))
+            if ptu.gpu_enabled(): eps = eps.cuda()
+            
+            interp_obs = eps*expert_obs + (1-eps)*policy_obs
+            interp_obs.detach()
+            interp_obs.requires_grad = True
+            interp_actions = eps*expert_actions + (1-eps)*policy_actions
+            interp_actions.detach()
+            interp_actions.requires_grad = True
+
+            f_for_interp = self.rewardf(interp_obs, interp_actions)
+            policy_log_prob_for_interp = self.exploration_policy.get_log_prob(interp_obs, interp_actions).detach()
+            log_prob_for_interp = f_for_interp - log_sum_exp(f_for_interp + policy_log_prob_for_interp, dim=1, keepdim=True)
+
+            gradients = autograd.grad(
+                outputs=log_prob_for_interp.sum(),
+                inputs=[interp_obs, interp_actions],
+                # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                create_graph=True, retain_graph=True, only_inputs=True
+            )
+            total_grad = torch.cat([gradients[0], gradients[1]], dim=1)
+            gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
+
+            rewardf_loss = rewardf_loss + gradient_penalty * self.grad_pen_weight
 
         """
         Update networks
         """
-        self.rewardf_optimizer.zero_grad()
         rewardf_loss.backward()
         self.rewardf_optimizer.step()
 
@@ -118,11 +163,25 @@ class AIRL(TorchIRLAlgorithm):
             """
             self.rewardf_eval_statistics = OrderedDict()
             self.rewardf_eval_statistics['Disc Neg LogProb'] = np.mean(ptu.get_numpy(rewardf_loss))
+            self.rewardf_eval_statistics['Disc Accuracy'] = np.mean(ptu.get_numpy(total_acc))
+            self.rewardf_eval_statistics['Disc Expert Acc'] = np.mean(ptu.get_numpy(exp_acc))
+            self.rewardf_eval_statistics['Disc Policy Acc'] = np.mean(ptu.get_numpy(policy_acc))
+            self.rewardf_eval_statistics['f Abs'] = np.mean(ptu.get_numpy((abs_f_for_exp + abs_f_for_policy)/2.0))
+            self.rewardf_eval_statistics['f Abs for Exp'] = np.mean(ptu.get_numpy(abs_f_for_exp))
+            self.rewardf_eval_statistics['f Abs for Policy'] = np.mean(ptu.get_numpy(abs_f_for_policy))
+            self.rewardf_eval_statistics['f Std for Exp'] = np.mean(ptu.get_numpy(std_f_for_exp))
+            self.rewardf_eval_statistics['f Std for Policy'] = np.mean(ptu.get_numpy(std_f_for_policy))
 
 
     def _do_policy_training(self):
         policy_batch = self.get_policy_batch(self.policy_optim_batch_size)
-        policy_batch['rewards'] = self.rewardf(policy_batch['observations'], policy_batch['actions'])
+        obs = policy_batch['observations']
+        actions = policy_batch['actions']
+        f_for_s_a = self.rewardf(obs, actions).detach()
+        # policy_log_prob_for_s_a = self.exploration_policy.get_log_prob(obs, actions).detach()
+        # policy_batch['rewards'] = f_for_s_a - policy_log_prob_for_s_a
+        # --------
+        policy_batch['rewards'] = f_for_s_a
         self.policy_optimizer.train_step(policy_batch)
 
 

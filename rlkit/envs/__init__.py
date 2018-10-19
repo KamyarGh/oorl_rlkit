@@ -6,13 +6,17 @@ from numpy import array
 from numpy.random import uniform
 
 import gym
+from dm_control import suite
 
 from rlkit.envs.base_inverted_pendulum import BaseInvertedPendulumEnv
 from rlkit.envs.reacher import MetaReacherEnv
 from rlkit.envs.hopper import MetaHopperEnv
 from rlkit.envs.meta_ant import MetaAntEnv
 from rlkit.envs.wrappers import NormalizedBoxEnv
+from rlkit.envs.dmcs_wrapper import DmControlWrapper
+from rlkit.envs.dmcs_envs.simple_reacher import build_simple_reacher as build_dmcv_simple_reacher
 
+from dm_control.suite.wrappers import pixels
 
 BASE_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'base_assets')
 CUSTOM_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'custom_assets')
@@ -41,6 +45,17 @@ fixed_envs = {
     'hopper_v2': lambda: gym.envs.make('Hopper-v2'),
     'reacher_v2': lambda: gym.envs.make('Reacher-v2'),
     'pendulum_v0': lambda: gym.envs.make('Pendulum-v0'),
+    'dmcs_reacher_hard': lambda: DmControlWrapper(suite.load(domain_name='reacher', task_name='hard')),
+    'dmcs_reacher_easy': lambda: DmControlWrapper(suite.load(domain_name='reacher', task_name='easy')),
+    'dmcs_simple_reacher': lambda: DmControlWrapper(build_dmcv_simple_reacher()),
+    # in render_kwargs can specify: height, width, depth, camera_id
+    'dmcs_simple_reacher_with_pixels': lambda: DmControlWrapper(
+        pixels.Wrapper(
+            build_dmcv_simple_reacher(),
+            pixels_only=False,
+            render_kwargs={'height':80, 'width':80, 'camera_id':0}
+        )
+    ),
 }
 
 

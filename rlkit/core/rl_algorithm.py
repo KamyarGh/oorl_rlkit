@@ -12,6 +12,8 @@ from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
 from rlkit.samplers.in_place import InPlacePathSampler
 
+from gym.spaces import Dict
+
 
 class RLAlgorithm(metaclass=abc.ABCMeta):
     def __init__(
@@ -35,6 +37,9 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             eval_sampler=None,
             eval_policy=None,
             replay_buffer=None,
+            # for compatibility with deepmind control suite
+            policy_uses_pixels=False,
+            freq_saving=1
     ):
         """
         Base class for RL Algorithms
@@ -76,6 +81,8 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         self.save_replay_buffer = save_replay_buffer
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
+        self.policy_uses_pixels = policy_uses_pixels
+        self.freq_saving = freq_saving
         if eval_sampler is None:
             if eval_policy is None:
                 eval_policy = exploration_policy
@@ -95,6 +102,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             replay_buffer = EnvReplayBuffer(
                 self.replay_buffer_size,
                 self.env,
+                policy_uses_pixels=self.policy_uses_pixels
             )
         self.replay_buffer = replay_buffer
 
@@ -134,8 +142,15 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         ):
             self._start_epoch(epoch)
             for _ in range(self.num_env_steps_per_epoch):
+                if isinstance(self.obs_space, Dict):
+                    if self.policy_uses_pixels:
+                        agent_obs = observation['pixels']
+                    else:
+                        agent_obs = observation['obs']
+                else:
+                    agent_obs = observation
                 action, agent_info = self._get_action_and_info(
-                    observation,
+                    agent_obs,
                 )
                 if self.render:
                     self.training_env.render()
@@ -178,7 +193,8 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             self.training_mode(False)
 
     def _try_to_eval(self, epoch):
-        logger.save_extra_data(self.get_extra_data_to_save(epoch))
+        if epoch % self.freq_saving == 0:
+            logger.save_extra_data(self.get_extra_data_to_save(epoch))
         if self._can_evaluate():
             self.evaluate(epoch)
 

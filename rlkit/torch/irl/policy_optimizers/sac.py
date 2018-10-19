@@ -21,6 +21,7 @@ class NewSoftActorCritic():
             qf2,
             vf,
 
+            reward_scale=1.0,
             discount=0.99,
             policy_lr=1e-3,
             qf_lr=1e-3,
@@ -51,6 +52,7 @@ class NewSoftActorCritic():
         self.qf_criterion = nn.MSELoss()
         self.vf_criterion = nn.MSELoss()
         self.eval_statistics = None
+        self.reward_scale = reward_scale
         self.discount = discount
 
         self.policy_optimizer = optimizer_class(
@@ -71,7 +73,7 @@ class NewSoftActorCritic():
         )
 
     def train_step(self, batch):
-        rewards = batch['rewards']
+        rewards = batch['rewards'] * self.reward_scale
         terminals = batch['terminals']
         obs = batch['observations']
         actions = batch['actions']

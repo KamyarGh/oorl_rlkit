@@ -90,6 +90,8 @@ if __name__ == '__main__':
             }
             command_to_run = command.format(**format_dict)
             command_to_run = command_to_run.split()
+            print('POPENING')
+            print(command_to_run)
             p = Popen(command_to_run)
             args_idx += 1
             running_processes[p] = aff

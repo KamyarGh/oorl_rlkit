@@ -7,10 +7,9 @@ from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
-from rlkit.torch.irl.airl import AIRL
+from rlkit.torch.irl.gail import GAIL
 from rlkit.torch.networks import FlattenMlp
-# from rlkit.torch.irl.rewardf_models.heavy_drop import Model as RewardFModel
-from rlkit.torch.irl.rewardf_models.generic_reward_f import Model as RewardFModel
+from rlkit.torch.irl.disc_models.gail_disc import Model as GAILDiscModel
 
 from rlkit.envs import get_env 
 
@@ -21,16 +20,6 @@ import psutil
 import os
 import argparse
 import joblib
-
-
-# def get_rewardf(rewardf_model_name, rewardf_specs, input_dim):
-#     # # temp = __import__()
-#     # module = __import__('rlkit.torch.airl.rewardf_models')
-#     # print(module)
-#     # model_spec_module = getattr(module, rewardf_model_name)
-#     # rewardf = getattr(model_spec_module, 'Model')(input_dim, **rewardf_specs)
-#     # rewardf = RewardFModel(input_dim, **rewardf_specs)
-#     return rewardf
 
 
 def experiment(variant):
@@ -64,12 +53,19 @@ def experiment(variant):
     expert_replay_buffer._top = 0
     expert_replay_buffer._size = K
 
-
     # we have to generate the combinations for the env_specs
     env_specs = variant['env_specs']
     env, _ = get_env(env_specs)
 
-    obs_dim = int(np.prod(env.observation_space.shape))
+    print(env.observation_space)
+
+    if isinstance(env.observation_space, Dict):
+        if not variant['algo_params']['policy_uses_pixels']:
+            obs_dim = int(np.prod(env.observation_space.spaces['obs'].shape))
+        else:
+            raise NotImplementedError()
+    else:
+        obs_dim = int(np.prod(env.observation_space.shape))
     action_dim = int(np.prod(env.action_space.shape))
 
     policy_net_size = variant['policy_net_size']
@@ -93,12 +89,7 @@ def experiment(variant):
         obs_dim=obs_dim,
         action_dim=action_dim,
     )
-    # rewardf = get_rewardf(
-    #     variant['rewardf_model_name'],
-    #     variant['rewardf_model_specs'],
-    #     obs_dim + action_dim
-    # )
-    rewardf = RewardFModel(obs_dim + action_dim)
+    disc_model = GAILDiscModel(obs_dim + action_dim)
 
     policy_optimizer = NewSoftActorCritic(
         policy=policy,
@@ -107,13 +98,13 @@ def experiment(variant):
         vf=vf,
         **variant['policy_params']
     )
-    algorithm = AIRL(
+    algorithm = GAIL(
         env,
         policy,
-        rewardf,
+        disc_model,
         policy_optimizer,
         expert_replay_buffer,
-        **variant['airl_params']
+        **variant['gail_params']
     )
     # assert False, "Have not added new sac yet!"
     if ptu.gpu_enabled():

@@ -3,7 +3,7 @@ import numpy as np
 
 def rollout(env, agent, max_path_length=np.inf, animated=False,
     concat_env_params_to_obs=False, normalize_env_params=False, env_params_normalizer=None,
-    neural_process=None, latent_repr_fn=None, reward_scale=1):
+    neural_process=None, latent_repr_fn=None, reward_scale=1, policy_uses_pixels=False):
     """
     The following value for the following keys will be a 2D array, with the
     first dimension corresponding to the time dimension.
@@ -47,9 +47,17 @@ def rollout(env, agent, max_path_length=np.inf, animated=False,
     path_length = 0
     if animated:
         env.render()
+    if policy_uses_pixels:
+        o = o['pixels']
+    elif isinstance(o, dict):
+        o = o['obs']
     while path_length < max_path_length:
         a, agent_info = agent.get_action(o)
         next_o, r, d, env_info = env.step(a)
+        if policy_uses_pixels:
+            next_o = next_o['pixels']
+        elif isinstance(next_o, dict):
+            next_o = next_o['obs']
         if neural_process is not None:
             posterior_state = neural_process.update_posterior_state(
                 posterior_state,
@@ -81,16 +89,17 @@ def rollout(env, agent, max_path_length=np.inf, animated=False,
     actions = np.array(actions)
     if len(actions.shape) == 1:
         actions = np.expand_dims(actions, 1)
-    observations = np.array(observations)
-    if len(observations.shape) == 1:
-        observations = np.expand_dims(observations, 1)
-        next_o = np.array([next_o])
-    next_observations = np.vstack(
-        (
-            observations[1:, :],
-            np.expand_dims(next_o, 0)
+    if not isinstance(observations[0], dict):
+        observations = np.array(observations)
+        if len(observations.shape) == 1:
+            observations = np.expand_dims(observations, 1)
+            next_o = np.array([next_o])
+        next_observations = np.vstack(
+            (
+                observations[1:, :],
+                np.expand_dims(next_o, 0)
+            )
         )
-    )
     return dict(
         observations=observations,
         actions=actions,

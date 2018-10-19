@@ -6,18 +6,36 @@ from rlkit.data_management.replay_buffer import ReplayBuffer
 class SimpleReplayBuffer(ReplayBuffer):
     def __init__(
             self, max_replay_buffer_size, observation_dim, action_dim,
-            discrete_action_dim=False
+            discrete_action_dim=False, policy_uses_pixels=False
     ):
         self._observation_dim = observation_dim
         self._action_dim = action_dim
         self.discrete_action_dim = discrete_action_dim
         self._max_replay_buffer_size = max_replay_buffer_size
+        self.policy_uses_pixels = policy_uses_pixels
         if isinstance(observation_dim, tuple):
             dims = [d for d in observation_dim]
             dims = [max_replay_buffer_size] + dims
             dims = tuple(dims)
             self._observations = np.zeros(dims)
-            self._next_obs = np.zeros(dims)            
+            self._next_obs = np.zeros(dims)
+        elif isinstance(observation_dim, dict):
+            # assuming that this is a one-level dictionary
+            self._observations = {}
+            self._next_obs = {}
+
+            for key, dims in observation_dim.items():
+                if isinstance(dims, tuple):
+                    dims = tuple([max_replay_buffer_size] + list(dims))
+                else:
+                    dims = (max_replay_buffer_size, dims)
+                self._observations[key] = np.zeros(dims)
+                self._next_obs[key] = np.zeros(dims)
+            
+            if self.policy_uses_pixels:
+                self.batching_keys = list(self._observations.keys())
+            else:
+                self.batching_keys = [k for k in self._observations.keys() if k != 'pixels']
         else:
             self._observations = np.zeros((max_replay_buffer_size, observation_dim))
             self._next_obs = np.zeros((max_replay_buffer_size, observation_dim))
@@ -38,11 +56,18 @@ class SimpleReplayBuffer(ReplayBuffer):
         if self.discrete_action_dim:
             action = np.eye(self._action_dim)[action]            
             # action = np.eye(self._action_space.n)[action]
-        self._observations[self._top] = observation
         self._actions[self._top] = action
         self._rewards[self._top] = reward
         self._terminals[self._top] = terminal
-        self._next_obs[self._top] = next_observation
+
+        if isinstance(self._observations, dict):
+            for key, obs in observation.items():
+                self._observations[key][self._top] = obs
+            for key, obs in next_observation.items():
+                self._next_obs[key][self._top] = obs
+        else:
+            self._observations[self._top] = observation
+            self._next_obs[self._top] = next_observation
         self._advance()
 
     def terminate_episode(self):
@@ -55,18 +80,35 @@ class SimpleReplayBuffer(ReplayBuffer):
 
     def random_batch(self, batch_size):
         indices = np.random.randint(0, self._size, batch_size)
+        if isinstance(self._observations, dict):
+            if len(self.batching_keys) > 1:
+                obs_to_return = {
+                    k: self._observations[k][indices] for k in self.batching_keys
+                }
+                next_obs_to_return = {
+                    k: self._observations[k][indices] for k in self.batching_keys
+                }
+            else:
+                k = self.batching_keys[0]
+                obs_to_return = self._observations[k][indices]
+                next_obs_to_return = self._next_obs[k][indices]
+        else:
+            obs_to_return = self._observations[indices]
+            next_obs_to_return = self._next_obs[indices]
+
         return dict(
-            observations=self._observations[indices],
+            observations=obs_to_return,
             actions=self._actions[indices],
             rewards=self._rewards[indices],
             terminals=self._terminals[indices],
-            next_observations=self._next_obs[indices],
+            next_observations=next_obs_to_return,
         )
 
     def num_steps_can_sample(self):
         return self._size
 
     def sample_and_remove(self, batch_size):
+        assert not isinstance(self._observations, dict), 'not implemented'
         # This function was made for separating out a validation/test set
         # sets the top to the new self._size
         indices = np.random.randint(0, self._size, batch_size)
@@ -90,6 +132,7 @@ class SimpleReplayBuffer(ReplayBuffer):
         return samples
 
     def set_buffer_from_dict(self, batch_dict):
+        assert not isinstance(self._observations, dict), 'not implemented'
         self._max_replay_buffer_size = max(self._max_replay_buffer_size, batch_dict['observations'].shape[0])
         self._observations = batch_dict['observations']
         self._next_obs = batch_dict['next_observations']
@@ -100,6 +143,7 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._size = batch_dict['observations'].shape[0]
 
     def change_max_size_to_cur_size(self):
+        assert not isinstance(self._observations, dict), 'not implemented'
         self._max_replay_buffer_size = self._size
         self._observations = self._observations[:self._size]
         self._next_obs = self._next_obs[:self._size]

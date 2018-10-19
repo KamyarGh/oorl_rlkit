@@ -1,33 +1,35 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/on_the_fly_meta_sac.py
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/sac.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: reacher_hyper_param_search
+  exp_name: dmcs_reacher_new_sac_test
   description: searching over the SAC hyperparameters
-  num_workers: 24
-  cpu_range: [0,24]
+  num_workers: 5
+  cpu_range: [6,11]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
-    concat_env_params_to_obs: [false]
+    # concat_env_params_to_obs: [false]
     num_updates_per_env_step: [1]
-    reward_scale: [1.0, 5.0]
-    soft_target_tau: [0.005, 0.01]
+    reward_scale: [5.0]
+    soft_target_tau: [0.005]
   
   env_specs:
-    normalized: [true, false]
+    normalized: [false]
   
-  # seed: [9783, 5914, 4865, 2135, 2349]
-  seed: [9783, 5914, 4865]
+  seed: [9783, 5914, 4865, 2135, 2349]
+  # seed: [9783]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
-    num_epochs: 1000
+    replay_buffer_size: 10000
+
+    num_epochs: 101
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
     batch_size: 256
-    max_path_length: 1000
+    max_path_length: 100
     discount: 0.99
 
     policy_lr: 0.0003
@@ -36,11 +38,15 @@ constants:
     policy_mean_reg_weight: 0.001
     policy_std_reg_weight: 0.001
 
+    policy_uses_pixels: false
+
     render: false
 
     save_replay_buffer: true
+    save_environment: false
+    freq_saving: 10
   
   net_size: 256
   
   env_specs:
-    base_env_name: 'reacher_v2'
+    base_env_name: 'dmcs_simple_reacher_with_pixels'

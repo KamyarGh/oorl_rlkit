@@ -1,6 +1,6 @@
 import numpy as np
 from rlkit.data_management.simple_replay_buffer import SimpleReplayBuffer
-from gym.spaces import Box, Discrete, Tuple
+from gym.spaces import Box, Discrete, Tuple, Dict
 
 
 class EnvReplayBuffer(SimpleReplayBuffer):
@@ -8,20 +8,22 @@ class EnvReplayBuffer(SimpleReplayBuffer):
             self,
             max_replay_buffer_size,
             env,
-            extra_obs_dim=0
+            extra_obs_dim=0,
+            policy_uses_pixels=False
     ):
         """
         :param max_replay_buffer_size:
         :param env:
         """
         assert extra_obs_dim == 0, "I removed the extra_obs_dim thing"
-        self.env = env
+        # self.env = env
         self._ob_space = env.observation_space
         self._action_space = env.action_space
         super().__init__(
             max_replay_buffer_size=max_replay_buffer_size,
             observation_dim=get_dim(self._ob_space),
             action_dim=get_dim(self._action_space),
+            policy_uses_pixels=False
         )
 
     def add_sample(self, observation, action, reward, terminal,
@@ -36,11 +38,15 @@ class EnvReplayBuffer(SimpleReplayBuffer):
 
 def get_dim(space):
     if isinstance(space, Box):
+        if len(space.low.shape) > 1:
+            return space.low.shape
         return space.low.size
     elif isinstance(space, Discrete):
         return space.n
     elif isinstance(space, Tuple):
         return sum(get_dim(subspace) for subspace in space.spaces)
+    elif isinstance(space, Dict):
+        return {k: get_dim(v) for k,v in space.spaces.items()}
     elif hasattr(space, 'flat_dim'):
         return space.flat_dim
     else:

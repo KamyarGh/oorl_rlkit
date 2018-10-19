@@ -61,10 +61,10 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
             #     'env_specs.normalized': normalized
             # }
 plot_experiment_returns(
-    '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search',
-    'new_sac_pendulum_hyper_search',
-    '/u/kamyar/oorl_rlkit/plots/new_sac_pendulum_hyper_search.png',
-    # y_axis_lims=[-100, 0],
+    '/ais/gobi6/kamyar/oorl_rlkit/output/dmcs-reacher-new-sac-rew-scale-10',
+    'DMCS reacher scale 10',
+    '/u/kamyar/oorl_rlkit/plots/dmcs_reacher_scale_10.png',
+    y_axis_lims=[-25, 0],
     plot_mean=False,
     # constraints=constraints
 )

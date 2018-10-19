@@ -1,14 +1,15 @@
 import numpy as np
 from gym.envs.mujoco import HalfCheetahEnv, InvertedPendulumEnv, ReacherEnv
+from gym.spaces import Dict
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, build_nested_variant_generator
-from rlkit.torch.sac.policies import TanhGaussianPolicy
-from rlkit.torch.sac.sac import SoftActorCritic
+from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.sac.sac import NewSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 
-from rlkit.envs import get_meta_env
+from rlkit.envs import get_env
 
 import yaml
 import argparse
@@ -28,18 +29,36 @@ def experiment(variant):
     # env = ReacherEnv()
     # training_env = ReacherEnv()
 
-    env = NormalizedBoxEnv(ReacherEnv())
-    training_env = NormalizedBoxEnv(ReacherEnv())
+    # env = NormalizedBoxEnv(ReacherEnv())
+    # training_env = NormalizedBoxEnv(ReacherEnv())
     
     # Or for a specific version:
     # import gym
     # env = NormalizedBoxEnv(gym.make('HalfCheetah-v1'))
 
-    obs_dim = int(np.prod(env.observation_space.shape))
+    # we have to generate the combinations for the env_specs
+    env_specs = variant['env_specs']
+    env, _ = get_env(env_specs)
+    training_env, _ = get_env(env_specs)
+
+    print(env.observation_space)
+
+    if isinstance(env.observation_space, Dict):
+        if not variant['algo_params']['policy_uses_pixels']:
+            obs_dim = int(np.prod(env.observation_space.spaces['obs'].shape))
+        else:
+            raise NotImplementedError()
+    else:
+        obs_dim = int(np.prod(env.observation_space.shape))
     action_dim = int(np.prod(env.action_space.shape))
 
     net_size = variant['net_size']
-    qf = FlattenMlp(
+    qf1 = FlattenMlp(
+        hidden_sizes=[net_size, net_size],
+        input_size=obs_dim + action_dim,
+        output_size=1,
+    )
+    qf2 = FlattenMlp(
         hidden_sizes=[net_size, net_size],
         input_size=obs_dim + action_dim,
         output_size=1,
@@ -49,16 +68,17 @@ def experiment(variant):
         input_size=obs_dim,
         output_size=1,
     )
-    policy = TanhGaussianPolicy(
+    policy = ReparamTanhMultivariateGaussianPolicy(
         hidden_sizes=[net_size, net_size],
         obs_dim=obs_dim,
         action_dim=action_dim,
     )
-    algorithm = SoftActorCritic(
+    algorithm = NewSoftActorCritic(
         env=env,
         training_env=training_env,
         policy=policy,
-        qf=qf,
+        qf1=qf1,
+        qf2=qf2,
         vf=vf,
         **variant['algo_params']
     )

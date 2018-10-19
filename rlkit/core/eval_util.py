@@ -56,18 +56,18 @@ def create_stats_ordered_dict(
         always_show_all_stats=False,
         exclude_max_min=False,
 ):
-    print('\n<<<< STAT FOR {} {} >>>>'.format(stat_prefix, name))
+    # print('\n<<<< STAT FOR {} {} >>>>'.format(stat_prefix, name))
     if stat_prefix is not None:
         name = "{} {}".format(stat_prefix, name)
     if isinstance(data, Number):
-        print('was a Number')
+        # print('was a Number')
         return OrderedDict({name: data})
 
     if len(data) == 0:
         return OrderedDict()
 
     if isinstance(data, tuple):
-        print('was a tuple')
+        # print('was a tuple')
         ordered_dict = OrderedDict()
         for number, d in enumerate(data):
             sub_dict = create_stats_ordered_dict(
@@ -87,10 +87,10 @@ def create_stats_ordered_dict(
 
     if (isinstance(data, np.ndarray) and data.size == 1
             and not always_show_all_stats):
-        print('was a numpy array of data.size==1')
+        # print('was a numpy array of data.size==1')
         return OrderedDict({name: float(data)})
 
-    print('was a numpy array NOT of data.size==1')
+    # print('was a numpy array NOT of data.size==1')
     stats = OrderedDict([
         (name + ' Mean', np.mean(data)),
         (name + ' Std', np.std(data)),

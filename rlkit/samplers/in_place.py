@@ -14,7 +14,8 @@ class InPlacePathSampler(object):
     """
     def __init__(self, env, policy, max_samples, max_path_length,
             concat_env_params_to_obs=False, normalize_env_params=False, env_params_normalizer=None,
-            neural_process=None, latent_repr_fn=None, reward_scale=1, animated=False, env_sampler=None
+            neural_process=None, latent_repr_fn=None, reward_scale=1, animated=False, env_sampler=None,
+            policy_uses_pixels=False
         ):
         self.env = env
         self.env_sampler = env_sampler
@@ -32,6 +33,7 @@ class InPlacePathSampler(object):
         self.latent_repr_fn = latent_repr_fn
         self.reward_scale = reward_scale
         self.animated = animated
+        self.policy_uses_pixels = policy_uses_pixels
 
     def start_worker(self):
         pass
@@ -56,7 +58,8 @@ class InPlacePathSampler(object):
                 neural_process=self.neural_process,
                 latent_repr_fn=self.latent_repr_fn,
                 reward_scale=self.reward_scale,
-                animated=animate_this
+                animated=animate_this,
+                policy_uses_pixels=self.policy_uses_pixels
             )
             paths.append(path)
             n_steps_total += len(path['observations'])
