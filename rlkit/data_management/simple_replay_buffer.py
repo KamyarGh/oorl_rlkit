@@ -6,13 +6,16 @@ from rlkit.data_management.replay_buffer import ReplayBuffer
 class SimpleReplayBuffer(ReplayBuffer):
     def __init__(
             self, max_replay_buffer_size, observation_dim, action_dim,
-            discrete_action_dim=False, policy_uses_pixels=False
+            discrete_action_dim=False, policy_uses_pixels=False,
+            policy_uses_task_params=False, concat_task_params_to_policy_obs=False
     ):
         self._observation_dim = observation_dim
         self._action_dim = action_dim
         self.discrete_action_dim = discrete_action_dim
         self._max_replay_buffer_size = max_replay_buffer_size
         self.policy_uses_pixels = policy_uses_pixels
+        self.policy_uses_task_params = policy_uses_task_params
+        self.concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
         if isinstance(observation_dim, tuple):
             dims = [d for d in observation_dim]
             dims = [max_replay_buffer_size] + dims
@@ -32,10 +35,13 @@ class SimpleReplayBuffer(ReplayBuffer):
                 self._observations[key] = np.zeros(dims)
                 self._next_obs[key] = np.zeros(dims)
             
+            # DO NOT USE THEM SORTED
+            # HOWEVER YOU USE THEM SHOULD MATCH HOWEVER IT IS USED IN RL_ALGORITHM TO PASS TO THE POLICY
+            self.batching_keys = [k for k in sorted(self._observations.keys()) if k not in ['pixels', 'obs_task_params']]
             if self.policy_uses_pixels:
-                self.batching_keys = list(self._observations.keys())
-            else:
-                self.batching_keys = [k for k in self._observations.keys() if k != 'pixels']
+                self.batching_keys.append('pixels')
+            if self.policy_uses_task_params:
+                self.batching_keys.append('obs_task_params')
         else:
             self._observations = np.zeros((max_replay_buffer_size, observation_dim))
             self._next_obs = np.zeros((max_replay_buffer_size, observation_dim))
@@ -81,17 +87,10 @@ class SimpleReplayBuffer(ReplayBuffer):
     def random_batch(self, batch_size):
         indices = np.random.randint(0, self._size, batch_size)
         if isinstance(self._observations, dict):
-            if len(self.batching_keys) > 1:
-                obs_to_return = {
-                    k: self._observations[k][indices] for k in self.batching_keys
-                }
-                next_obs_to_return = {
-                    k: self._observations[k][indices] for k in self.batching_keys
-                }
-            else:
-                k = self.batching_keys[0]
-                obs_to_return = self._observations[k][indices]
-                next_obs_to_return = self._next_obs[k][indices]
+            if self.policy_uses_task_params and not self.concat_task_params_to_policy_obs:
+                raise NotImplementedError()
+            obs_to_return = np.concatenate((self._observations['obs'][indices], self._observations['obs_task_params'][indices]), -1)
+            next_obs_to_return = np.concatenate((self._next_obs['obs'][indices], self._next_obs['obs_task_params'][indices]), -1)
         else:
             obs_to_return = self._observations[indices]
             next_obs_to_return = self._next_obs[indices]

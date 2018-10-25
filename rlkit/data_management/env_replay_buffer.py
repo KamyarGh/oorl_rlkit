@@ -9,7 +9,10 @@ class EnvReplayBuffer(SimpleReplayBuffer):
             max_replay_buffer_size,
             env,
             extra_obs_dim=0,
-            policy_uses_pixels=False
+            policy_uses_pixels=False,
+            policy_uses_task_params=False,
+            concat_task_params_to_policy_obs=False,
+
     ):
         """
         :param max_replay_buffer_size:
@@ -23,7 +26,9 @@ class EnvReplayBuffer(SimpleReplayBuffer):
             max_replay_buffer_size=max_replay_buffer_size,
             observation_dim=get_dim(self._ob_space),
             action_dim=get_dim(self._action_space),
-            policy_uses_pixels=False
+            policy_uses_pixels=policy_uses_pixels,
+            policy_uses_task_params=policy_uses_task_params,
+            concat_task_params_to_policy_obs=concat_task_params_to_policy_obs
         )
 
     def add_sample(self, observation, action, reward, terminal,

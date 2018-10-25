@@ -52,22 +52,31 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 
 
 
-# for r in [1.0, 5.0]:
-#     for soft_t in [0.005, 0.01]:
-#         for normalized in [True, False]:
-            # constraints = {
-            #     'algo_params.reward_scale': r,
-            #     'algo_params.soft_target_tau': soft_t,
-            #     'env_specs.normalized': normalized
-            # }
-plot_experiment_returns(
-    '/ais/gobi6/kamyar/oorl_rlkit/output/dmcs-reacher-new-sac-rew-scale-10',
-    'DMCS reacher scale 10',
-    '/u/kamyar/oorl_rlkit/plots/dmcs_reacher_scale_10.png',
-    y_axis_lims=[-25, 0],
-    plot_mean=False,
-    # constraints=constraints
-)
+for r in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+    # for soft_t in [0.005, 0.01]:
+    # for normalized in [True, False]:
+    constraints = {
+        'algo_params.reward_scale': r,
+        # 'algo_params.soft_target_tau': soft_t,
+        # 'env_specs.normalized': normalized
+    }
+    plot_experiment_returns(
+        '/ais/gobi6/kamyar/oorl_rlkit/output/simple-meta-reacher-hype-search',
+        'simple_meta_reacher_hype_search_rew_scale_{}'.format(r),
+        '/u/kamyar/oorl_rlkit/plots/simple_meta_reacher_hype_search_rew_scale_{}.png'.format(r),
+        y_axis_lims=[0, 70],
+        plot_mean=False,
+        constraints=constraints
+    )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/simple-meta-reacher-hype-search',
+#     'simple_meta_reacher_hype_search',
+#     '/u/kamyar/oorl_rlkit/plots/simple_meta_reacher_hype_search.png',
+#     # y_axis_lims=[-25, 0],
+#     plot_mean=False,
+#     # constraints=constraints
+# )
 
 
 

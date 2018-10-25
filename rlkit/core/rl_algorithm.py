@@ -38,8 +38,16 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             eval_policy=None,
             replay_buffer=None,
             # for compatibility with deepmind control suite
+            # Right now the semantics is that if observations is not a dictionary
+            # then it means the policy just uses that. If it's a dictionary, it
+            # checks whether policy_uses_pixels to see if it's true or false and
+            # based on that it decides whether the policy takes 'pixels' or 'obs'
+            # from the dictionary
             policy_uses_pixels=False,
-            freq_saving=1
+            freq_saving=1,
+            # for meta-learning
+            policy_uses_task_params=False, # whether the policy uses the task parameters
+            concat_task_params_to_policy_obs=True # how the policy sees the task parameters
     ):
         """
         Base class for RL Algorithms
@@ -82,6 +90,8 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
         self.policy_uses_pixels = policy_uses_pixels
+        self.policy_uses_task_params = policy_uses_task_params
+        self.concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
         self.freq_saving = freq_saving
         if eval_sampler is None:
             if eval_policy is None:
@@ -90,7 +100,9 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
                 env=env,
                 policy=eval_policy,
                 max_samples=self.num_steps_per_eval + self.max_path_length,
-                max_path_length=self.max_path_length,
+                max_path_length=self.max_path_length, policy_uses_pixels=policy_uses_pixels,
+                policy_uses_task_params=policy_uses_task_params,
+                concat_task_params_to_policy_obs=concat_task_params_to_policy_obs
             )
         self.eval_policy = eval_policy
         self.eval_sampler = eval_sampler
@@ -102,7 +114,9 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             replay_buffer = EnvReplayBuffer(
                 self.replay_buffer_size,
                 self.env,
-                policy_uses_pixels=self.policy_uses_pixels
+                policy_uses_pixels=self.policy_uses_pixels,
+                policy_uses_task_params=self.policy_uses_task_params,
+                concat_task_params_to_policy_obs=self.concat_task_params_to_policy_obs
             )
         self.replay_buffer = replay_buffer
 
@@ -142,6 +156,8 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         ):
             self._start_epoch(epoch)
             for _ in range(self.num_env_steps_per_epoch):
+                # we are assuming that if it's a dict then it has
+                # pixels and obs, and maybe obs_task_params
                 if isinstance(self.obs_space, Dict):
                     if self.policy_uses_pixels:
                         agent_obs = observation['pixels']
@@ -149,6 +165,12 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
                         agent_obs = observation['obs']
                 else:
                     agent_obs = observation
+                if self.policy_uses_task_params:
+                    task_params = observation['obs_task_params']
+                    if self.concat_task_params_to_policy_obs:
+                        agent_obs = np.concatenate((agent_obs, task_params), -1)
+                    else:
+                        agent_obs = {'obs': agent_obs, 'obs_task_params': task_params}
                 action, agent_info = self._get_action_and_info(
                     agent_obs,
                 )
@@ -198,8 +220,9 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         if self._can_evaluate():
             self.evaluate(epoch)
 
-            params = self.get_epoch_snapshot(epoch)
-            logger.save_itr_params(epoch, params)
+            if epoch % self.freq_saving == 0:
+                params = self.get_epoch_snapshot(epoch)
+                logger.save_itr_params(epoch, params)
             table_keys = logger.get_table_key_set()
             if self._old_table_keys is not None:
                 print('$$$$$$$$$$$$$$$')

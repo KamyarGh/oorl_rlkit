@@ -15,6 +15,7 @@ from rlkit.envs.meta_ant import MetaAntEnv
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.envs.dmcs_wrapper import DmControlWrapper
 from rlkit.envs.dmcs_envs.simple_reacher import build_simple_reacher as build_dmcv_simple_reacher
+from rlkit.envs.dmcs_envs.simple_meta_reacher import build_simple_meta_reacher
 
 from dm_control.suite.wrappers import pixels
 
@@ -56,6 +57,7 @@ fixed_envs = {
             render_kwargs={'height':80, 'width':80, 'camera_id':0}
         )
     ),
+    'dmcs_simple_meta_reacher': lambda: DmControlWrapper(build_simple_meta_reacher())
 }
 
 
@@ -69,6 +71,7 @@ def get_env(env_specs):
     )
     spec_name = base_env_name + spec_name
     # spec_names can get too long, this will work almost always :P
+
     if len(spec_name) > 128: spec_name = spec_name[:128]
     fname = spec_name + '.xml'
     fpath = osp.join(CUSTOM_ASSETS_DIR, fname)

@@ -1,17 +1,17 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/sac.py
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/meta_sac.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: dmcs_reacher_hype_search_large_buffer
+  exp_name: simple_meta_reacher_hype_search
   description: searching over the SAC hyperparameters
-  num_workers: 8
-  cpu_range: [9,17]
+  num_workers: 12
+  cpu_range: [19,31]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
     # concat_env_params_to_obs: [false]
     num_updates_per_env_step: [1]
-    reward_scale: [1.0, 5.0, 10.0, 20.0]
+    reward_scale: [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]
     soft_target_tau: [0.005]
   
   env_specs:
@@ -39,6 +39,8 @@ constants:
     policy_std_reg_weight: 0.001
 
     policy_uses_pixels: false
+    policy_uses_task_params: true
+    concat_task_params_to_policy_obs: true
 
     render: false
 
@@ -49,4 +51,4 @@ constants:
   net_size: 256
   
   env_specs:
-    base_env_name: 'dmcs_simple_reacher_with_pixels'
+    base_env_name: 'dmcs_simple_meta_reacher'

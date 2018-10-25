@@ -1,4 +1,4 @@
-"""My Reacher domain."""
+"""My Simple MetaReacher domain."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -6,7 +6,8 @@ from __future__ import print_function
 
 import collections
 
-from rlkit.envs.dmcs_envs.meta_env import MetaEnvironment, MetaTask
+from rlkit.envs.dmcs_envs.meta_env import MetaEnvironment
+from rlkit.envs.dmcs_envs.meta_task import MetaTask
 
 # Internal dependencies.
 
@@ -32,13 +33,27 @@ def get_model_and_assets():
   return xml_data, common.ASSETS
 
 
-def build_simple_reacher(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None):
+def build_simple_meta_reacher(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None):
   """Returns reacher with sparse reward with 5e-2 tol and randomized target."""
   physics = Physics.from_xml_string(*get_model_and_assets())
-  task = Reacher(random=random)
+  task = SimpleMetaReacher(random=random)
+  task_params_sampler = SimpleMetaReacherTaskParamsSampler(random=random)
   environment_kwargs = environment_kwargs or {}
-  return control.Environment(
-      physics, task, time_limit=time_limit, **environment_kwargs)
+  return MetaEnvironment(
+      physics, task, task_params_sampler, concat_task_params_to_obs=True,
+      time_limit=time_limit, **environment_kwargs)
+
+
+class SimpleMetaReacherTaskParamsSampler():
+    def __init__(self, random=None):
+        if not isinstance(random, np.random.RandomState):
+          random = np.random.RandomState(random)
+        self._random = random
+    
+    def sample(self):
+        angle = self._random.uniform(0, 2 * np.pi)
+        x, y = 0.20 * np.sin(angle), 0.20 * np.cos(angle)
+        return {'x': x, 'y': y}, np.array([x,y])
 
 
 class Physics(mujoco.Physics):
@@ -54,8 +69,11 @@ class Physics(mujoco.Physics):
     return np.linalg.norm(self.finger_to_target())
 
 
-class Reacher(MetaTask):
-  """A reacher `Task` to reach the target."""
+class SimpleMetaReacher(MetaTask):
+  """A reacher `Task` to reach the target.
+  It has a shaped version of the reward function provided by Deepmind Control Suite
+
+  """
 
   def __init__(self, random=None):
     """Initialize an instance of `Reacher`.
@@ -67,28 +85,43 @@ class Reacher(MetaTask):
         integer seed for creating a new `RandomState`, or None to select a seed
         automatically (default).
     """
-    super(Reacher, self).__init__(random=random)
+    super(SimpleMetaReacher, self).__init__(random=random)
 
-  def initialize_episode(self, physics):
+  def initialize_episode(self, physics, task_params):
     """Sets the state of the environment at the start of each episode."""
     physics.named.model.geom_size['target', 0] = _TARGET_SIZE
     randomizers.randomize_limited_and_rotational_joints(physics, self.random)
 
     # randomize target position
-    angle = self.random.uniform(0, 2 * np.pi)
-    radius = self.random.uniform(.05, .20)
-    physics.named.model.geom_pos['target', 'x'] = radius * np.sin(angle)
-    physics.named.model.geom_pos['target', 'y'] = radius * np.cos(angle)
+    x, y = task_params['x'], task_params['y']
+    physics.named.model.geom_pos['target', 'x'] = x
+    physics.named.model.geom_pos['target', 'y'] = y
+
+    self.prev_dist = physics.finger_to_target_dist()
+    self.shaping_rew = 0.0
+
+  def after_step(self, physics):
+    super().after_step(physics)
+    new_dist = physics.finger_to_target_dist()
+    self.shaping_rew = self.prev_dist - new_dist
+    # print(self.prev_dist, new_dist, self.shaping_rew)
+    self.prev_dist = new_dist
 
   def get_observation(self, physics):
     """Returns an observation of the state and the target position."""
     obs = collections.OrderedDict()
     obs['position'] = physics.position()
-    obs['to_target'] = physics.finger_to_target()
+    # obs['to_target'] = physics.finger_to_target()
     obs['velocity'] = physics.velocity()
     return obs
 
   def get_reward(self, physics):
-    d_rew = physics.finger_to_target_dist()
-    c_rew = np.square(physics.control()).sum()
-    return -1.0 * d_rew
+    # from dmcs
+    radii = physics.named.model.geom_size[['target', 'finger'], 0].sum()
+    sparse_reward = rewards.tolerance(physics.finger_to_target_dist(), (0, radii))
+
+    # print(sparse_reward)
+    # print(sparse_reward + self.shaping_rew)
+
+    # c_rew = np.square(physics.control()).sum()
+    return sparse_reward + self.shaping_rew

@@ -1,13 +1,62 @@
+Figure out why things are running so slowly!!!!!!!
+    - First check if pixel rendering without saving is the culprit or saving the buffer or loading it
+
+Getting Meta-IRL to Work:
+    - (done) Implement dmcs for meta-rl algorithms
+        - (done already) Need a new type of replay buffer where we keep track of the task-defining parameters
+    - Implement the meta-reacher environment
+        - (done) Implement a meta-environment for DMCS
+    - YOU WOULD MAYBE WANT TO ADD NEW OBJECTS ETC. TO THE PHYSICS ENGINE SO YOU WOULD NEED
+        TO DO THIS IN THE ENVIRONMENT NOT THE TASK. HENCE JUST FINISH THE WAY YOU WERE DOING IT NOW!
+    - Run meta-reacher experiment
+        - make sure that the shaped rewards are correct
+    - Write a script for generating train/test splits for expert trajs
+    
+
+    - Implement meta-irl algorithms
+        - And for makings things run a lot faster for expert data generation, first train the expert
+            with the priviledge information, then once done training load the expert and THEN generate
+            the pixels. This will make things run so much faster
+        - Need meta-train and meta-test splits for expert demonstrations
+        - Since expert demonstrations do not change during training, instead of using the replay buffer
+            implementation, use a pytorch data-loader to make things run a lot faster
+        - Implement a new type of expert replay buffer from which you can:
+            - Sample K tasks
+            - And from each task get however many trajectories you want
+            - And you can instead optionally ask for however many transitions from however many
+                trajs from however many tasks
+
+        - You need to form train and test splits
+
+        - Run first meta-irl experiments with ground-truth "latents" so you don't have to think
+            about encoding the transitions
+
+    - Add possibility of using the pixel wrapper rendering just for evaluation so you can
+        see that it is doing well
+
+
 - Making things work with deepmind control suite
     - (done) wrapper for non pixel version
     - (done) make the wrapper be able to give both a pixel obervation AND the concatenated vector
     - (done) make rlkit work with a dictionary of observations
     - (done) make rl algorithms take pixels and obs or just pixels or just obs
     - (done) make irl algorithms take pixels and obs or just pixels or just obs
-    - Debug
+    - (done) Debug
+    - Add a reward for being in the target zone and change the distance to a difference of distance
+        so that it acts as a potential function
+    - implement setter function for SimpleReplayBuffer for the policy_uses_pixels variable
     - Test GAIL on reacher with DCS
         - Run reacher and save one eval trajectory per eval cycle
         - Tune hyperparameters for the GAIL reacher and make sure it's working
+
+
+Thinking about tasks:
+    - The problem with sequential tasks and pretty complicated tasks is that GAIL probably won't work or it'll
+        be really hard to make GAIL work
+    - Need to figure out structured rewards or something for that
+    - You also have to design the tasks such that they are not partially observable
+
+
 
 - Try training GAIL from images
 

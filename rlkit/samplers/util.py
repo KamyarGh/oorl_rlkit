@@ -3,7 +3,8 @@ import numpy as np
 
 def rollout(env, agent, max_path_length=np.inf, animated=False,
     concat_env_params_to_obs=False, normalize_env_params=False, env_params_normalizer=None,
-    neural_process=None, latent_repr_fn=None, reward_scale=1, policy_uses_pixels=False):
+    neural_process=None, latent_repr_fn=None, reward_scale=1, policy_uses_pixels=False,
+    policy_uses_task_params=False, concat_task_params_to_policy_obs=False):
     """
     The following value for the following keys will be a 2D array, with the
     first dimension corresponding to the time dimension.
@@ -47,17 +48,26 @@ def rollout(env, agent, max_path_length=np.inf, animated=False,
     path_length = 0
     if animated:
         env.render()
-    if policy_uses_pixels:
-        o = o['pixels']
-    elif isinstance(o, dict):
-        o = o['obs']
+    
+    def process_obs(obs):
+        if policy_uses_pixels:
+            if policy_uses_task_params:
+                raise NotImplementedError()
+            return obs['pixels']
+        elif isinstance(obs, dict):
+            if policy_uses_task_params:
+                if concat_task_params_to_policy_obs:
+                    return np.concatenate((obs['obs'], obs['obs_task_params']), -1)
+                else:
+                    raise NotImplementedError()
+            return obs['obs']
+        return obs
+    
+    o = process_obs(o)
     while path_length < max_path_length:
         a, agent_info = agent.get_action(o)
         next_o, r, d, env_info = env.step(a)
-        if policy_uses_pixels:
-            next_o = next_o['pixels']
-        elif isinstance(next_o, dict):
-            next_o = next_o['obs']
+        next_o = process_obs(next_o)
         if neural_process is not None:
             posterior_state = neural_process.update_posterior_state(
                 posterior_state,

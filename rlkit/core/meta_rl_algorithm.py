@@ -40,7 +40,10 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
             eval_policy=None,
             replay_buffer=None,
             epoch_to_start_training=0,
-            animated_eval=False
+            animated_eval=False,
+            # for compatibility with deepmind control suite
+            policy_uses_pixels=False,
+            freq_saving=1
     ):
         """
         Base class for RL Algorithms
@@ -90,6 +93,8 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
         self.epoch_to_start_training = epoch_to_start_training
+        self.policy_uses_pixels = policy_uses_pixels
+        self.freq_saving = freq_saving
         if eval_sampler is None:
             if eval_policy is None:
                 eval_policy = exploration_policy
@@ -120,6 +125,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         if replay_buffer is None:
             obs_shape = self.obs_space.shape
             if len(obs_shape) == 3:
+                assert False, 'This is old code, idk what it\'s doing'
                 replay_buffer = SimpleReplayBuffer(
                     self.replay_buffer_size,
                     obs_shape,
@@ -131,7 +137,8 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
                     self.replay_buffer_size,
                     obs_space_dim + extra_obs_dim,
                     act_space_dim,
-                    discrete_action_dim=isinstance(self.action_space, Discrete)
+                    discrete_action_dim=isinstance(self.action_space, Discrete),
+                    policy_uses_pixels=self.policy_uses_pixels
                 )
         self.replay_buffer = replay_buffer
 
@@ -171,8 +178,15 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         ):
             self._start_epoch(epoch)
             for _ in range(self.num_env_steps_per_epoch):
+                if isinstance(self.obs_space, Dict):
+                    if self.policy_uses_pixels:
+                        agent_obs = observation['pixels']
+                    else:
+                        agent_obs = observation['obs']
+                else:
+                    agent_obs = observation
                 action, agent_info = self._get_action_and_info(
-                    observation,
+                    agent_obs,
                 )
                 if self.render:
                     self.training_env.render()
@@ -223,21 +237,23 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
             self.training_mode(False)
 
     def _try_to_eval(self, epoch):
-        logger.save_extra_data(self.get_extra_data_to_save(epoch))
+        if epoch % self.freq_saving == 0:
+            logger.save_extra_data(self.get_extra_data_to_save(epoch))
         if self._can_evaluate():
             self.evaluate(epoch)
 
-            params = self.get_epoch_snapshot(epoch)
-            logger.save_itr_params(epoch, params)
+            if epoch % self.freq_saving == 0:
+                params = self.get_epoch_snapshot(epoch)
+                logger.save_itr_params(epoch, params)
             table_keys = logger.get_table_key_set()
             if self._old_table_keys is not None:
-                print('$$$$$$$$$$$$$$$')
-                print(table_keys)
-                print('\n'*4)
-                print(self._old_table_keys)
-                print('$$$$$$$$$$$$$$$')
-                print(set(table_keys) - set(self._old_table_keys))
-                print(set(self._old_table_keys) - set(table_keys))
+                # print('$$$$$$$$$$$$$$$')
+                # print(table_keys)
+                # print('\n'*4)
+                # print(self._old_table_keys)
+                # print('$$$$$$$$$$$$$$$')
+                # print(set(table_keys) - set(self._old_table_keys))
+                # print(set(self._old_table_keys) - set(table_keys))
                 assert table_keys == self._old_table_keys, (
                     "Table keys cannot change from iteration to iteration."
                 )
