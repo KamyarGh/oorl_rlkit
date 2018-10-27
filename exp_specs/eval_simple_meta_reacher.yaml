@@ -1,34 +1,35 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/meta_sac.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: simple_meta_reacher_hype_search
+  exp_name: gen_simple_meta_reacher_expert_trajs
   description: searching over the SAC hyperparameters
-  num_workers: 12
-  cpu_range: [19,31]
+  num_workers: 1
+  cpu_range: [0,1]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
     # concat_env_params_to_obs: [false]
     num_updates_per_env_step: [1]
-    reward_scale: [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]
+    reward_scale: [25.0]
     soft_target_tau: [0.005]
   
   env_specs:
     normalized: [false]
   
-  seed: [9783, 5914]
-  # seed: [9783]
+  seed: [18247]
 
 # -----------------------------------------------------------------------------
 constants:
-  reload_policy_from: ''
-  # reload_policy_from: '/ais/gobi6/kamyar/oorl_rlkit/output/simple-meta-reacher-hype-search/simple_meta_reacher_hype_search_2018_10_25_04_52_15_0009--s-0/'
+  # reload_policy_from: ''
+  reload_policy_from: '/ais/gobi6/kamyar/oorl_rlkit/output/simple-meta-reacher-hype-search/simple_meta_reacher_hype_search_2018_10_25_04_52_15_0009--s-0/params.pkl'
 
   algo_params:
-    replay_buffer_size: 100000
+    do_not_train: true
+    
+    replay_buffer_size: 5000
 
-    num_epochs: 101
+    num_epochs: 6
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
     batch_size: 256
@@ -40,6 +41,7 @@ constants:
     vf_lr: 0.0003
     policy_mean_reg_weight: 0.001
     policy_std_reg_weight: 0.001
+    policy_pre_activation_weight: 0.0
 
     policy_uses_pixels: false
     policy_uses_task_params: true
@@ -49,9 +51,9 @@ constants:
 
     save_replay_buffer: true
     save_environment: false
-    freq_saving: 10
+    freq_saving: 5
   
   net_size: 256
   
   env_specs:
-    base_env_name: 'dmcs_simple_meta_reacher'
+    base_env_name: 'dmcs_simple_meta_reacher_with_pixels'

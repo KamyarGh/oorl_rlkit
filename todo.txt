@@ -1,17 +1,43 @@
 Figure out why things are running so slowly!!!!!!!
     - First check if pixel rendering without saving is the culprit or saving the buffer or loading it
 
+Parallel Data Gathering & Training:
+    - MPI stuff
+
+Refactor:
+    - REALLY need to refactor this code at some point to make the 1) DMCS and 2) the meta-learning
+        stuff not possible to have stupid random bugs inside
+
+Evaluation Scripts:
+    - Write a script that takes the save directory and the specific exp_specs variant and evaluates it
+        and generates pixels, then saves the pixels to a directory so that you can see if the model is
+        actually working or not more easily
+
 Getting Meta-IRL to Work:
     - (done) Implement dmcs for meta-rl algorithms
         - (done already) Need a new type of replay buffer where we keep track of the task-defining parameters
     - Implement the meta-reacher environment
         - (done) Implement a meta-environment for DMCS
-    - YOU WOULD MAYBE WANT TO ADD NEW OBJECTS ETC. TO THE PHYSICS ENGINE SO YOU WOULD NEED
+    - (done) YOU WOULD MAYBE WANT TO ADD NEW OBJECTS ETC. TO THE PHYSICS ENGINE SO YOU WOULD NEED
         TO DO THIS IN THE ENVIRONMENT NOT THE TASK. HENCE JUST FINISH THE WAY YOU WERE DOING IT NOW!
-    - Run meta-reacher experiment
+    - (done) Run meta-reacher experiment
         - make sure that the shaped rewards are correct
-    - Write a script for generating train/test splits for expert trajs
-    
+
+    - Implement script for taking a trained model checkpoint and generating expert trajectories for:
+        - Non meta IRL
+        - Meta IRL
+
+    - Initial Meta-IRL experiments:
+        - Train a GAIL for simple meta-reacher but not meta version, i.e. concatenate the task params to the
+            input of the policy that is being trained with GAIL
+        - Train the meta-learning version where you just encoder the last K timesteps (K small, concat them, pass
+            to an MLP)
+
+    - !!!!!! Before you do this you need to write the data loader for meta-expert replay buffer
+        so that you know what format to save the expert demonstrations in !!!!!!
+    - !!!!!! Write a script for generating train/test splits for expert trajs !!!!!!
+        - You need a script that first generates a set of train and test task params
+        - Then per train and test param generates two sets of trajectories for train and test
 
     - Implement meta-irl algorithms
         - And for makings things run a lot faster for expert data generation, first train the expert
@@ -28,8 +54,11 @@ Getting Meta-IRL to Work:
 
         - You need to form train and test splits
 
-        - Run first meta-irl experiments with ground-truth "latents" so you don't have to think
-            about encoding the transitions
+        - !!!!!!! Run first meta-irl experiments with ground-truth "latents" so you don't have to think
+            about encoding the transitions !!!!!!!!
+            - So essentially make sure that you can train GAIL with directly using the task params
+        
+        - Train the full meta-learning method
 
     - Add possibility of using the pixel wrapper rendering just for evaluation so you can
         see that it is doing well

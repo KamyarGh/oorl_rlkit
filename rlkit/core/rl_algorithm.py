@@ -47,7 +47,10 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             freq_saving=1,
             # for meta-learning
             policy_uses_task_params=False, # whether the policy uses the task parameters
-            concat_task_params_to_policy_obs=True # how the policy sees the task parameters
+            concat_task_params_to_policy_obs=True, # how the policy sees the task parameters
+            # this is useful when you want to generate trajectories from the expert using the
+            # exploration policy
+            do_not_train=False
     ):
         """
         Base class for RL Algorithms
@@ -129,6 +132,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         self._old_table_keys = None
         self._current_path_builder = PathBuilder()
         self._exploration_paths = []
+        self.do_not_train = do_not_train
 
     def train(self, start_epoch=0):
         self.pretrain()
@@ -199,7 +203,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
                     observation = next_ob
 
                 gt.stamp('sample')
-                self._try_to_train()
+                if not self.do_not_train: self._try_to_train()
                 gt.stamp('train')
 
             self._try_to_eval(epoch)

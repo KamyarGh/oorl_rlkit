@@ -17,6 +17,7 @@ import importlib
 import psutil
 import os
 import argparse
+import joblib
 
 
 def experiment(variant):
@@ -62,27 +63,33 @@ def experiment(variant):
     
     action_dim = int(np.prod(env.action_space.shape))
 
-    net_size = variant['net_size']
-    qf1 = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    qf2 = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    vf = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim,
-        output_size=1,
-    )
-    policy = ReparamTanhMultivariateGaussianPolicy(
-        hidden_sizes=[net_size, net_size],
-        obs_dim=obs_dim,
-        action_dim=action_dim,
-    )
+
+    if variant['reload_policy_from'] != '':
+        params = joblib.load(variant['reload_policy_from'])
+        qf1, qf2, vf, policy = params['qf1'], params['qf2'], params['vf'], params['policy']
+    else:
+        net_size = variant['net_size']
+        qf1 = FlattenMlp(
+            hidden_sizes=[net_size, net_size],
+            input_size=obs_dim + action_dim,
+            output_size=1,
+        )
+        qf2 = FlattenMlp(
+            hidden_sizes=[net_size, net_size],
+            input_size=obs_dim + action_dim,
+            output_size=1,
+        )
+        vf = FlattenMlp(
+            hidden_sizes=[net_size, net_size],
+            input_size=obs_dim,
+            output_size=1,
+        )
+        policy = ReparamTanhMultivariateGaussianPolicy(
+            hidden_sizes=[net_size, net_size],
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+        )
+    
     algorithm = NewSoftActorCritic(
         env=env,
         training_env=training_env,

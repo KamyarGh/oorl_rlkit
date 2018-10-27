@@ -77,7 +77,7 @@ def convertOrderedDict2Space(odict, has_pixels=False, has_task_params=False):
 
         dict_thus_far = {
             'obs': spaces.Box(-np.inf, np.inf, shape=(numdim,))
-        }    
+        }
         if has_pixels:
             dict_thus_far.update(
                 {'pixels': spaces.Box(low=0, high=1, shape=odict['pixels'].shape)}
@@ -93,6 +93,7 @@ def convertOrderedDict2Space(odict, has_pixels=False, has_task_params=False):
             gym_space = spaces.Box(-np.inf, np.inf, shape=(numdim,))
         else:
             gym_space = DictSpace(dict_thus_far)
+        
         return gym_space
 
 
@@ -138,7 +139,7 @@ class DmControlWrapper(core.Env):
         self.action_space = convertSpec2Space(self.dmcenv.action_spec(), clip_inf=True)
         dmcenv_obs_spec = self.dmcenv.observation_spec()
         self.conversion_kwargs = {
-            'has_pixels': 'pixel' in dmcenv_obs_spec.keys(),
+            'has_pixels': 'pixels' in dmcenv_obs_spec.keys(),
             'has_task_params': 'obs_task_params' in dmcenv_obs_spec.keys()
         }
         self.observation_space = convertOrderedDict2Space(dmcenv_obs_spec, **self.conversion_kwargs)
@@ -162,8 +163,8 @@ class DmControlWrapper(core.Env):
     #     self.np_random, seed = seeding.np_random(seed)
     #     return [seed]
 
-    def reset(self):
-        self.timestep = self.dmcenv.reset()
+    def reset(self, **kwargs):
+        self.timestep = self.dmcenv.reset(**kwargs)
         return self.getObservation()
 
     def step(self, a):

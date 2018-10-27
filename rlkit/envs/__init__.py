@@ -57,7 +57,14 @@ fixed_envs = {
             render_kwargs={'height':80, 'width':80, 'camera_id':0}
         )
     ),
-    'dmcs_simple_meta_reacher': lambda: DmControlWrapper(build_simple_meta_reacher())
+    'dmcs_simple_meta_reacher': lambda: DmControlWrapper(build_simple_meta_reacher()),
+    'dmcs_simple_meta_reacher_with_pixels': lambda: DmControlWrapper(
+        pixels.Wrapper(
+            build_simple_meta_reacher(),
+            pixels_only=False,
+            render_kwargs={'height':80, 'width':80, 'camera_id':0}
+        )
+    )
 }
 
 

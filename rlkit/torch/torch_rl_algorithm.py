@@ -40,8 +40,11 @@ class TorchRLAlgorithm(RLAlgorithm, metaclass=abc.ABCMeta):
 
     def evaluate(self, epoch):
         statistics = OrderedDict()
-        statistics.update(self.eval_statistics)
-        self.eval_statistics = None
+        try:
+            statistics.update(self.eval_statistics)
+            self.eval_statistics = None
+        except:
+            print('No Stats to Eval')
 
         logger.log("Collecting samples for evaluation")
         test_paths = self.eval_sampler.obtain_samples()
