@@ -43,6 +43,8 @@ all_envs = {
 
 fixed_envs = {
     'ant_v2': lambda: gym.envs.make('Ant-v2'),
+    'swimmer_v2': lambda: gym.envs.make('Swimmer-v2'),
+    'halfcheetah_v2': lambda: gym.envs.make('HalfCheetah-v2'),
     'hopper_v2': lambda: gym.envs.make('Hopper-v2'),
     'reacher_v2': lambda: gym.envs.make('Reacher-v2'),
     'pendulum_v0': lambda: gym.envs.make('Pendulum-v0'),

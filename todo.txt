@@ -23,6 +23,7 @@ Getting Meta-IRL to Work:
     - (done) Run meta-reacher experiment
         - make sure that the shaped rewards are correct
 
+    !!!!!!!!!!!!!!!!! IMPLEMENT THE PIPELINE FOR TAKING A TRAINED MODEL AND GETTING EXPERT REPLAY BUFFER !!!!!!!!!!!
     - Implement script for taking a trained model checkpoint and generating expert trajectories for:
         - Non meta IRL
         - Meta IRL

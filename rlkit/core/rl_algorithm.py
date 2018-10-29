@@ -25,6 +25,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             num_steps_per_epoch=10000,
             num_steps_per_eval=1000,
             num_updates_per_env_step=1,
+            max_num_episodes=None,
             batch_size=1024,
             max_path_length=1000,
             discount=0.99,
@@ -50,7 +51,8 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             concat_task_params_to_policy_obs=True, # how the policy sees the task parameters
             # this is useful when you want to generate trajectories from the expert using the
             # exploration policy
-            do_not_train=False
+            do_not_train=False,
+            **kwargs
     ):
         """
         Base class for RL Algorithms
@@ -133,6 +135,8 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         self._current_path_builder = PathBuilder()
         self._exploration_paths = []
         self.do_not_train = do_not_train
+        self.num_episodes = 0
+        self.max_num_episodes = max_num_episodes if max_num_episodes is not None else float('inf')
 
     def train(self, start_epoch=0):
         self.pretrain()
@@ -205,6 +209,12 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
                 gt.stamp('sample')
                 if not self.do_not_train: self._try_to_train()
                 gt.stamp('train')
+
+                if self.num_episodes > self.max_num_episodes:
+                    self._try_to_eval(epoch)
+                    gt.stamp('eval')
+                    self._end_epoch()
+                    return
 
             self._try_to_eval(epoch)
             gt.stamp('eval')
@@ -317,6 +327,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         logger.pop_prefix()
 
     def _start_new_rollout(self):
+        self.num_episodes += 1
         self.exploration_policy.reset()
         return self.training_env.reset()
 
