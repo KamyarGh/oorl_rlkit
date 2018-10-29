@@ -1,7 +1,14 @@
+'''
+IMPORTANT:
+There will be nasty bugs if this code is parallelized. These classes need
+to be made safe.
+'''
+
 from collections import defaultdict
 from random import sample
 
 import numpy as np
+from random import randint
 
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 
@@ -12,21 +19,31 @@ class ExpertReplayBuffer(EnvReplayBuffer):
         expert demonstrations
 
         You can't put in more data than max_replay_buffer_size
+
+        Subsampling is useful for reproducing things like GAIL and AIRL.
+        For each episode, we take every "subsampling" iteration starting
+        from a random offset.
     '''
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, subsampling=1, **kwargs):
+        self.subsampling = subsampling
+        self._episode_mod = randint(0, self.subsampling-1)
+        self._episode_itr = 0
         super(ExpertReplayBuffer, self).__init__(*args, **kwargs)
         self.traj_starts = []
     
 
     def add_sample(self, observation, action, reward, terminal,
                    next_observation, **kwargs):
-        if self._top != self._max_replay_buffer_size:
-            super(ExpertReplayBuffer, self).add_sample(
-                observation, action, reward, terminal,
-                next_observation, **kwargs
-            )
-        else:
-            print('Not adding the samples to the expert buffer, max buffer size exceeded')
+        # print(self._episode_itr, self.subsampling, self._episode_mod)
+        if self._episode_itr % self.subsampling == self._episode_mod:
+            if self._top != self._max_replay_buffer_size:
+                super(ExpertReplayBuffer, self).add_sample(
+                    observation, action, reward, terminal,
+                    next_observation, **kwargs
+                )
+            else:
+                print('Not adding the samples to the expert buffer, max buffer size exceeded')
+        self._episode_itr += 1
 
 
     def terminate_episode(self):
@@ -36,9 +53,15 @@ class ExpertReplayBuffer(EnvReplayBuffer):
         if len(self.traj_starts) > 0:
             if self.traj_starts[-1] != self._top:
                 self.traj_starts.append(self._top)
+        
+        self._episode_mod = randint(0, self.subsampling-1)
+        self._episode_itr = 0
     
 
     def _advance(self):
+        '''
+        This is called by super.add_sample
+        '''
         if self._terminals[self._top] == 1.0:
             if self._top + 1 != self._max_replay_buffer_size:
                 if self.traj_starts[-1] != self._top + 1:
@@ -65,7 +88,7 @@ class ExpertReplayBuffer(EnvReplayBuffer):
             if return_next_obs:
                 dict_to_return['next_observations'] = self._next_obs[indices]
 
-        dict_to_return['actions'] = self._action_dim[indices]
+        dict_to_return['actions'] = self._actions[indices]
         if return_rew: dict_to_return['rewards'] = self._rewards[indices]
         if return_terminals: dict_to_return['terminals'] = self._terminals[indices]
         
@@ -77,9 +100,7 @@ class ExpertReplayBuffer(EnvReplayBuffer):
             I don't need this right now
         '''
         raise NotImplementedError()
-
-
-
+        ATTENTION = 'THERE MIGHT BE A BUG ABOUT HOW THE VERY LAST EPISODE TERMINAL IS HANDLED'
 
 
 class MetaExpertReplayBuffer(EnvReplayBuffer):

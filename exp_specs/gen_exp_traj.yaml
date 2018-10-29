@@ -9,10 +9,15 @@ meta_data:
 # -----------------------------------------------------------------------------
 variables:
   specific_exp_dir: [
-    '/ais/gobi6/kamyar/oorl_rlkit/output/simple-meta-reacher-hype-search/simple_meta_reacher_hype_search_2018_10_25_04_52_15_0009--s-0/'
+    # '/ais/gobi6/kamyar/oorl_rlkit/output/simple-meta-reacher-hype-search/simple_meta_reacher_hype_search_2018_10_25_04_52_15_0009--s-0/'
+    '/ais/gobi6/kamyar/oorl_rlkit/output/correct-get-gym-env-experts/correct_get_gym_env_experts_2018_10_27_23_12_33_0006--s-0/'
+    # '/ais/gobi6/kamyar/oorl_rlkit/output/correct-get-gym-env-experts/correct_get_gym_env_experts_2018_10_27_23_12_33_0007--s-0/'
   ]
+  # num_episodes: [4, 11, 18, 25]
+  num_episodes: [4]
+  # seed: [28043, 99381]
+  seed: [28043]
 
 # -----------------------------------------------------------------------------
 constants:
-  num_episodes: 20
-  seed: 28043
+  subsampling: 20

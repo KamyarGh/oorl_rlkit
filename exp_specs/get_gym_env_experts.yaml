@@ -1,7 +1,7 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/sac.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: correct_gym_swimmer_hype_search
+  exp_name: gym_reacher_hype_search
   description: searching over the SAC hyperparameters
   num_workers: 24
   cpu_range: [7,31]
@@ -15,7 +15,7 @@ variables:
     soft_target_tau: [0.005]
   
   env_specs:
-    base_env_name: ['swimmer_v2']
+    base_env_name: ['reacher_v2']
     normalized: [true, false]
   
   seed: [9783, 5914]
@@ -24,13 +24,13 @@ variables:
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
-    replay_buffer_size: 1000000
+    replay_buffer_size: 100000
 
-    num_epochs: 3001
+    num_epochs: 101
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
     batch_size: 256
-    max_path_length: 1000
+    max_path_length: 100
     discount: 0.99
 
     policy_lr: 0.0003
@@ -45,7 +45,7 @@ constants:
 
     save_replay_buffer: true
     save_environment: false
-    freq_saving: 1000
+    freq_saving: 10
   
   net_size: 256
   

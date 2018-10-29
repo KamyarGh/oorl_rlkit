@@ -33,10 +33,17 @@ def experiment(specs):
     env, _ = get_env(env_specs)
     training_env, _ = get_env(env_specs)
 
-    variant['algo_params']['replay_buffer_size'] = specs['num_episodes'] * variant['algo_params']['max_path_length']
+    variant['algo_params']['replay_buffer_size'] = int(np.floor(
+        specs['num_episodes'] * variant['algo_params']['max_path_length'] / specs['subsampling']
+    ))
+    # Hack until I figure out how things are gonna be in general then I'll clean it up
+    if 'policy_uses_pixels' not in variant['algo_params']: variant['algo_params']['policy_uses_pixels'] = False
+    if 'policy_uses_task_params' not in variant['algo_params']: variant['algo_params']['policy_uses_task_params'] = False
+    if 'concat_task_params_to_policy_obs' not in variant['algo_params']: variant['algo_params']['concat_task_params_to_policy_obs'] = False
     replay_buffer = ExpertReplayBuffer(
         variant['algo_params']['replay_buffer_size'],
         env,
+        subsampling=specs['subsampling'],
         policy_uses_pixels=variant['algo_params']['policy_uses_pixels'],
         policy_uses_task_params=variant['algo_params']['policy_uses_task_params'],
         concat_task_params_to_policy_obs=variant['algo_params']['concat_task_params_to_policy_obs'],
