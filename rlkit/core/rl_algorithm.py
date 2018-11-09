@@ -52,6 +52,9 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             # this is useful when you want to generate trajectories from the expert using the
             # exploration policy
             do_not_train=False,
+            # some environment like halfcheetah_v2 have a timelimit that defines the terminal
+            # this is used as a minor hack to turn off time limits
+            no_terminal=False,
             **kwargs
     ):
         """
@@ -137,6 +140,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         self.do_not_train = do_not_train
         self.num_episodes = 0
         self.max_num_episodes = max_num_episodes if max_num_episodes is not None else float('inf')
+        self.no_terminal = no_terminal
 
     def train(self, start_epoch=0):
         self.pretrain()
@@ -187,6 +191,8 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
                 next_ob, raw_reward, terminal, env_info = (
                     self.training_env.step(action)
                 )
+                if self.no_terminal:
+                    terminal = False
                 self._n_env_steps_total += 1
                 reward = raw_reward * self.reward_scale
                 terminal = np.array([terminal])

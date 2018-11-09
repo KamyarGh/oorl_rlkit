@@ -33,18 +33,21 @@ def get_model_and_assets():
   return xml_data, common.ASSETS
 
 
-def build_simple_meta_reacher(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None):
+def build_simple_meta_reacher(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None, train_env=True):
   """Returns reacher with sparse reward with 5e-2 tol and randomized target."""
   physics = Physics.from_xml_string(*get_model_and_assets())
   task = SimpleMetaReacher(random=random)
-  task_params_sampler = SimpleMetaReacherTaskParamsSampler(random=random)
+  if train_env:
+    task_params_sampler = SimpleMetaReacherTrainTaskParamsSampler(random=random)
+  else:
+    task_params_sampler = SimpleMetaReacherTestTaskParamsSampler()
   environment_kwargs = environment_kwargs or {}
   return MetaEnvironment(
       physics, task, task_params_sampler, concat_task_params_to_obs=True,
       time_limit=time_limit, **environment_kwargs)
 
 
-class SimpleMetaReacherTaskParamsSampler():
+class SimpleMetaReacherTrainTaskParamsSampler():
     def __init__(self, random=None):
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
@@ -53,6 +56,20 @@ class SimpleMetaReacherTaskParamsSampler():
     def sample(self):
         angle = self._random.uniform(0, 2 * np.pi)
         x, y = 0.20 * np.sin(angle), 0.20 * np.cos(angle)
+        return {'x': x, 'y': y}, np.array([x,y])
+
+
+class SimpleMetaReacherTestTaskParamsSampler():
+    def __init__(self):
+        self.angles = np.linspace(0, 2*np.pi, num=11, endpoint=False)
+        self.ptr = 0
+    
+    def sample(self):
+        # doesn't matter that it's inefficient
+        # remember Amdahl's Law
+        angle = self.angles[self.ptr]
+        x, y = 0.20 * np.sin(angle), 0.20 * np.cos(angle)
+        self.ptr = (self.ptr + 1) % len(self.angles)
         return {'x': x, 'y': y}, np.array([x,y])
 
 
@@ -110,8 +127,12 @@ class SimpleMetaReacher(MetaTask):
   def get_observation(self, physics):
     """Returns an observation of the state and the target position."""
     obs = collections.OrderedDict()
-    obs['position'] = physics.position()
+    # obs['position'] = physics.position()
+    phys_pos = physics.position()
+    obs['position'] = np.concatenate([np.cos(phys_pos), np.sin(phys_pos)], -1)
+    # consider adding self.named.data.geom_xpos['finger']
     # obs['to_target'] = physics.finger_to_target()
+    obs['finger_pos'] = physics.named.data.geom_xpos['finger']
     obs['velocity'] = physics.velocity()
     return obs
 

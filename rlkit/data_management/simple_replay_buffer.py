@@ -37,11 +37,11 @@ class SimpleReplayBuffer(ReplayBuffer):
             
             # DO NOT USE THEM SORTED
             # HOWEVER YOU USE THEM SHOULD MATCH HOWEVER IT IS USED IN RL_ALGORITHM TO PASS TO THE POLICY
-            self.batching_keys = [k for k in sorted(self._observations.keys()) if k not in ['pixels', 'obs_task_params']]
-            if self.policy_uses_pixels:
-                self.batching_keys.append('pixels')
-            if self.policy_uses_task_params:
-                self.batching_keys.append('obs_task_params')
+            # self.batching_keys = [k for k in sorted(self._observations.keys()) if k not in ['pixels', 'obs_task_params']]
+            # if self.policy_uses_pixels:
+            #     self.batching_keys.append('pixels')
+            # if self.policy_uses_task_params:
+            #     self.batching_keys.append('obs_task_params')
         else:
             self._observations = np.zeros((max_replay_buffer_size, observation_dim))
             self._next_obs = np.zeros((max_replay_buffer_size, observation_dim))
@@ -87,10 +87,15 @@ class SimpleReplayBuffer(ReplayBuffer):
     def random_batch(self, batch_size):
         indices = np.random.randint(0, self._size, batch_size)
         if isinstance(self._observations, dict):
-            if self.policy_uses_task_params and not self.concat_task_params_to_policy_obs:
-                raise NotImplementedError()
-            obs_to_return = np.concatenate((self._observations['obs'][indices], self._observations['obs_task_params'][indices]), -1)
-            next_obs_to_return = np.concatenate((self._next_obs['obs'][indices], self._next_obs['obs_task_params'][indices]), -1)
+            if self.policy_uses_task_params:
+                if self.concat_task_params_to_policy_obs:
+                    obs_to_return = np.concatenate((self._observations['obs'][indices], self._observations['obs_task_params'][indices]), -1)
+                    next_obs_to_return = np.concatenate((self._next_obs['obs'][indices], self._next_obs['obs_task_params'][indices]), -1)
+                else:
+                    raise NotImplementedError()
+            else:
+                obs_to_return = self._observations['obs'][indices]
+                next_obs_to_return = self._next_obs['obs'][indices]
         else:
             obs_to_return = self._observations[indices]
             next_obs_to_return = self._next_obs[indices]

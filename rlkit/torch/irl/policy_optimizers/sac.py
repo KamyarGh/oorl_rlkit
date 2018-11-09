@@ -33,6 +33,8 @@ class NewSoftActorCritic():
 
             soft_target_tau=1e-2,
             eval_deterministic=True,
+
+            wrap_absorbing=True
     ):
         if eval_deterministic:
             eval_policy = MakeDeterministic(policy)
@@ -72,6 +74,9 @@ class NewSoftActorCritic():
             lr=vf_lr,
         )
 
+        self.wrap_absorbing = wrap_absorbing
+
+
     def train_step(self, batch):
         rewards = batch['rewards'] * self.reward_scale
         terminals = batch['terminals']
@@ -90,7 +95,10 @@ class NewSoftActorCritic():
         QF Loss
         """
         target_v_values = self.target_vf(next_obs)
-        q_target = rewards + (1. - terminals) * self.discount * target_v_values
+        if self.wrap_absorbing:
+            q_target = rewards + self.discount * target_v_values
+        else:
+            q_target = rewards + (1. - terminals) * self.discount * target_v_values
         qf1_loss = 0.5 * torch.mean((q1_pred - q_target.detach())**2)
         qf2_loss = 0.5 * torch.mean((q2_pred - q_target.detach())**2)
 

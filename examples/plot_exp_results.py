@@ -6,8 +6,6 @@ from itertools import product
 from rlkit.core.eval_util import plot_experiment_returns
 
 
-
-
 def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=None):
     output_dir = '/ais/gobi6/kamyar/oorl_rlkit/output'
     plots_dir = '/u/kamyar/oorl_rlkit/plots'
@@ -52,22 +50,22 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 
 
 
-for r in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
-    # for soft_t in [0.005, 0.01]:
-    # for normalized in [True, False]:
-    constraints = {
-        'algo_params.reward_scale': r,
-        # 'algo_params.soft_target_tau': soft_t,
-        # 'env_specs.normalized': normalized
-    }
-    plot_experiment_returns(
-        '/ais/gobi6/kamyar/oorl_rlkit/output/gym-reacher-hype-search',
-        'gym_reacher_hype_search_rew_scale_{}'.format(r),
-        '/u/kamyar/oorl_rlkit/plots/gym_reacher_hype_search_{}.png'.format(r),
-        # y_axis_lims=[0, 70],
-        plot_mean=False,
-        constraints=constraints
-    )
+# for r in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+#     # for soft_t in [0.005, 0.01]:
+#     # for normalized in [True, False]:
+#     constraints = {
+#         'algo_params.reward_scale': r,
+#         # 'algo_params.soft_target_tau': soft_t,
+#         # 'env_specs.normalized': normalized
+#     }
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/gym-reacher-hype-search',
+#         'gym_reacher_hype_search_rew_scale_{}'.format(r),
+#         '/u/kamyar/oorl_rlkit/plots/gym_reacher_hype_search_{}.png'.format(r),
+#         # y_axis_lims=[0, 70],
+#         plot_mean=False,
+#         constraints=constraints
+#     )
 
 # for b in ['ant_v2', 'halfcheetah_v2', 'swimmer_v2']:
 #     # for soft_t in [0.005, 0.01]:
@@ -87,29 +85,224 @@ for r in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
 #             constraints=constraints
 #         )
 
-plot_experiment_returns(
-    '/ais/gobi6/kamyar/oorl_rlkit/output/gym-reacher-hype-search',
-    'gym reacher hype search',
-    '/u/kamyar/oorl_rlkit/plots/gym_reacher_hype_search.png',
-    # y_axis_lims=[-25, 0],
-    plot_mean=False,
-    # constraints=constraints
-)
-
-
-
-
-# plot_results(
-#     'one-hot-5x5-1-obj-sac-meta-maze',
-#     [
-#         'algo_params.num_updates_per_env_step',
-#         'algo_params.reward_scale',
-#         'algo_params.soft_target_tau',
-#     ],
+# ------------------------------------------------------------------------
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/fixed-halfcheetah-gpu',
+#     'fixed halfcheetah gpu with no terminal condition',
+#     '/u/kamyar/oorl_rlkit/plots/no_terminal_halfcheetah.png',
+#     # y_axis_lims=[-25, 0],
 #     plot_mean=False,
-#     y_axis_lims=[-3,3]
+#     # constraints=constraints
 # )
 
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-1000-replay',
+#     'halfcheetah_gail_1000_replay',
+#     '/u/kamyar/oorl_rlkit/plots/halfcheetah_gail_1000_replay.png',
+#     # y_axis_lims=[-25, 0],
+#     plot_mean=False,
+#     # constraints=constraints
+# )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-10000-replay',
+#     'halfcheetah_gail_10000_replay',
+#     '/u/kamyar/oorl_rlkit/plots/halfcheetah_gail_10000_replay.png',
+#     # y_axis_lims=[-25, 0],
+#     plot_mean=False,
+#     # constraints=constraints
+# )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-100000-replay',
+#     'halfcheetah_gail_100000_replay',
+#     '/u/kamyar/oorl_rlkit/plots/halfcheetah_gail_100000_replay.png',
+#     # y_axis_lims=[-25, 0],
+#     plot_mean=False,
+#     # constraints=constraints
+# )
+
+# ------------------------------------------------------------------------
+# for r_iters in [1, 3]:
+#     for p_iters in [1,3,32]:
+#         for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+#             constraints = {
+#                 'gail_params.num_reward_updates': r_iters,
+#                 'gail_params.num_policy_updates': p_iters,
+#                 'policy_params.reward_scale': rew
+#             }
+
+#             base_name = 'r_updates_{}_p_updates_{}_rew_{}'.format(r_iters, p_iters, rew)
+
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-1000-replay',
+#                 base_name + ' buffer size 1000',
+#                 '/u/kamyar/oorl_rlkit/plots/gail_halfcheetah_buffer_1000/{}.png'.format(base_name),
+#                 y_axis_lims=[-1000, 3000],
+#                 plot_mean=False,
+#                 constraints=constraints
+#             )
+
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-10000-replay',
+#                 base_name + ' buffer size 10000',
+#                 '/u/kamyar/oorl_rlkit/plots/gail_halfcheetah_buffer_10000/{}.png'.format(base_name),
+#                 y_axis_lims=[-1000, 3000],
+#                 plot_mean=False,
+#                 constraints=constraints
+#             )
+
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-100000-replay',
+#                 base_name + ' buffer size 100000',
+#                 '/u/kamyar/oorl_rlkit/plots/gail_halfcheetah_buffer_100000/{}.png'.format(base_name),
+#                 y_axis_lims=[-1000, 3000],
+#                 plot_mean=False,
+#                 constraints=constraints
+#             )
+
+
+# for rb_size in [1000, 10000, 100000, 1000000]:
+#     constraints = {
+#         'gail_params.replay_buffer_size': rb_size
+#     }
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-longer-run-hyper-search',
+#         'halfcheetah longer run iters 1-32 rew 5 buffer %d' % rb_size,
+#         '/u/kamyar/oorl_rlkit/plots/halfcheetah_gail_buffer_%d.png' % rb_size,
+#         y_axis_lims=[-100, 6000],
+#         plot_mean=False,
+#         constraints=constraints
+#     )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-gail-sumsample-20',
+#     'halfcheetah subsampling 20',
+#     '/u/kamyar/oorl_rlkit/plots/halfcheetah_gail_subsample_20.png',
+#     y_axis_lims=[-100, 6000],
+#     plot_mean=False,
+# )
+
+
+# exp_name = 'just_sin_cos_dmcs_simple_meta_reacher_with_sin_cos'
+# exp_name = 'correct-dmcs-simple-meta-reacher-with-sin-cos'
+# these next two are the same plus either finger-to-target vector or finger pos
+exp_name = 'longer-run-with-finger-pos-dmcs-simple-meta-reacher-with-sin-cos'
+# exp_name = 'longer-run-with-to-target-dmcs-simple-meta-reacher-with-sin-cos'
+for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+    constraints = {
+        'algo_params.reward_scale': rew,
+        'env_specs.normalized': False,
+        'env_specs.train_test_env': True
+    }
+    plot_experiment_returns(
+        '/ais/gobi6/kamyar/oorl_rlkit/output/{}'.format(exp_name),
+        'sin-cos simple meta reacher hype search rew %f' % rew,
+        '/u/kamyar/oorl_rlkit/plots/unnorm_{}_rew_{}.png'.format(exp_name, rew),
+        y_axis_lims=[0, 70],
+        plot_mean=False,
+        constraints=constraints
+    )
+
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/get-good-halfcheetah-expert',
+#     'good halfcheetah expert',
+#     '/u/kamyar/oorl_rlkit/plots/good_halfcheetah_expert',
+#     y_axis_lims=[-1000, 10000],
+#     plot_mean=False,
+# )
+
+
+# for num_exp_traj in [100, 25]:
+#     for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+#         constraints = {
+#             'policy_params.reward_scale': rew,
+#             'num_expert_trajs': num_exp_traj
+#         }
+#         for exp_name in [
+#             'temp-dac-dmcs-simple-meta-reacher-2-layer-disc-batch-norm',
+#             'temp-dac-dmcs-simple-meta-reacher-2-layer-disc'
+#         ]:
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/{}'.format(exp_name),
+#                 '{} trajs {} rew_scale {}'.format(exp_name, num_exp_traj, rew),
+#                 '/u/kamyar/oorl_rlkit/plots/{}_{}_trajs_{}_rew.png'.format(exp_name, num_exp_traj, rew),
+#                 y_axis_lims=[0, 70],
+#                 plot_mean=False,
+#                 constraints=constraints
+#             )
+
+
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/test-something',
+#     'test-something',
+#     '/u/kamyar/oorl_rlkit/plots/test_something.png',
+#     y_axis_lims=[-100, 7000],
+#     plot_mean=False,
+# )
+
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/test-gail-simple-meta-reacher',
+#     'test_gail_simple_meta_reacher',
+#     '/u/kamyar/oorl_rlkit/plots/test_gail_simple_meta_reacher.png',
+#     # y_axis_lims=[-100, 6000],
+#     plot_mean=False,
+# )
+
+
+# for rb_size in [1000, 10000, 100000]:
+#     for rew_scale in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+#         constraints = {
+#             'gail_params.replay_buffer_size': rb_size,
+#             'policy_params.reward_scale': rew_scale
+#         }
+
+#         for num_p_upd in [16, 32]:
+#             constraints['gail_params.num_policy_updates'] = num_p_upd
+#             name = 'rb_size_{}_rew_scale_{}_num_p_upd_{}'.format(rb_size, rew_scale, num_p_upd)
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/gail-simple-meta-reacher-p-updates-16-32',
+#                 name,
+#                 '/u/kamyar/oorl_rlkit/plots/gail_simple_meta_reacher_{}.png'.format(name),
+#                 y_axis_lims=[0, 40],
+#                 constraints=constraints,
+#                 plot_mean=False,
+#             )
+
+#         for num_p_upd in [4, 8]:
+#             constraints['gail_params.num_policy_updates'] = num_p_upd
+#             name = 'rb_size_{}_rew_scale_{}_num_p_upd_{}'.format(rb_size, rew_scale, num_p_upd)
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/gail-simple-meta-reacher-p-updates-4-8',
+#                 name,
+#                 '/u/kamyar/oorl_rlkit/plots/gail_simple_meta_reacher_{}.png'.format(name),
+#                 y_axis_lims=[0, 40],
+#                 constraints=constraints,
+#                 plot_mean=False,
+#             )
+
+#         for num_p_upd in [1, 2]:
+#             constraints['gail_params.num_policy_updates'] = num_p_upd
+#             name = 'rb_size_{}_rew_scale_{}_num_p_upd_{}'.format(rb_size, rew_scale, num_p_upd)
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/gail-simple-meta-reacher-p-updates-1-2',
+#                 name,
+#                 '/u/kamyar/oorl_rlkit/plots/gail_simple_meta_reacher_{}.png'.format(name),
+#                 y_axis_lims=[0, 40],
+#                 constraints=constraints,
+#                 plot_mean=False,
+#             )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/test-something',
+#     'DAC but no wrapping (but halfcheetah does not need wrapping anyways)',
+#     '/u/kamyar/oorl_rlkit/plots/dac_halfcheetah.png',
+#     y_axis_lims=[-100, 6000],
+#     plot_mean=False,
+# )
 
 # plot_results(
 #     'fixing-sac-meta-maze',

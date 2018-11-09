@@ -1,9 +1,9 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: halfcheetah_gail_sumsample_20
+  exp_name: ant_gail_hype_search
   description: searching over the SAC hyperparameters
-  use_gpu: false
+  use_gpu: true
   num_workers: 20
   cpu_range: [0,31]
   num_cpu_per_worker: 1
@@ -11,11 +11,9 @@ meta_data:
 variables:
   concat_env_params_to_obs: [false]
 
-  num_expert_trajs: [4, 11, 18, 25]
-
   gail_params:
     no_terminal: [true]
-    replay_buffer_size: [10000]
+    replay_buffer_size: [1000, 10000, 100000, 1000000]
 
     num_reward_updates: [1]
     num_policy_updates: [32]
@@ -33,8 +31,9 @@ variables:
 constants:
   # expert_save_dict: '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search/final_pendulum_new_sac_hyper_param_search_2018_10_12_19_11_09_0000--s-0/extra_data.pkl'
   # last_k_expert_steps: 500
-  expert_name: gym_halfcheetah_25_trajs_20_subsampling
+  expert_name: gym_halfcheetah_25_trajs_1_subsampling
   expert_seed_run_idx: 0
+  num_expert_trajs: 25
   wrap_absorbing_state: false
   
   gail_params:

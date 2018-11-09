@@ -166,6 +166,7 @@ class MetaEnvironment(environment.Base):
         observation['obs_task_params'] = self.obs_task_params
       if self._flat_observation:
         observation = flatten_observation(observation)
+      print(observation)
       return _spec_from_observation(observation)
 
   @property

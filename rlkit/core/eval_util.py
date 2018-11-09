@@ -111,34 +111,40 @@ def plot_experiment_returns(
     arr_list = []
     names = []
 
+    # print(exp_path)
+
     for sub_exp_dir in os.listdir(exp_path):
-        sub_exp_path = os.path.join(exp_path, sub_exp_dir)
-        if not os.path.isdir(sub_exp_path): continue
-        if constraints is not None:
-            constraints_satisfied = True
-            with open(os.path.join(sub_exp_path, 'variant.json'), 'r') as j:
-                d = json.load(j)
-            for k, v in constraints.items():
-                k = k.split('.')
-                d_v = d[k[0]]
-                for sub_k in k[1:]:
-                    d_v = d_v[sub_k]
-                if d_v != v:
-                    constraints_satisfied = False
-                    break
-            if not constraints_satisfied:
-                # for debugging
-                # print('\nconstraints')
-                # print(constraints)
-                # print('\nthis dict')
-                # print(d)
-                continue
-        
-        csv_full_path = os.path.join(sub_exp_path, 'progress.csv')
         try:
-            returns = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)[column_name]
-            arr_list.append(returns)
-            names.append(sub_exp_dir)
+            sub_exp_path = os.path.join(exp_path, sub_exp_dir)
+            if not os.path.isdir(sub_exp_path): continue
+            if constraints is not None:
+                constraints_satisfied = True
+                with open(os.path.join(sub_exp_path, 'variant.json'), 'r') as j:
+                    d = json.load(j)
+                for k, v in constraints.items():
+                    k = k.split('.')
+                    d_v = d[k[0]]
+                    for sub_k in k[1:]:
+                        d_v = d_v[sub_k]
+                    if d_v != v:
+                        constraints_satisfied = False
+                        break
+                if not constraints_satisfied:
+                    # for debugging
+                    # print('\nconstraints')
+                    # print(constraints)
+                    # print('\nthis dict')
+                    # print(d)
+                    continue
+            
+            csv_full_path = os.path.join(sub_exp_path, 'progress.csv')
+            # print(csv_full_path)
+            try:
+                returns = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)[column_name]
+                arr_list.append(returns)
+                names.append(sub_exp_dir)
+            except:
+                pass
         except:
             pass
 
@@ -149,7 +155,7 @@ def plot_experiment_returns(
         mean = np.mean(returns, 0)
         # std = np.std(returns, 0)
         x = np.arange(min_len)
-        save_plot(x, mean, title, save_path, color='cyan')
+        save_plot(x, mean, title, save_path, color='cyan', y_axis_lims=y_axis_lims)
     else:
         if len(arr_list) == 0: print(0)
         plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)

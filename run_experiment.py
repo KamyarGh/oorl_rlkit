@@ -79,7 +79,10 @@ if __name__ == '__main__':
     # run the processes
     running_processes = {}
     args_idx = 0
-    command = 'taskset {aff} python {script} -e {specs}'
+    if 'use_gpu' in exp_specs['meta_data'] and exp_specs['meta_data']['use_gpu']:
+        command = 'srun --gres=gpu:1 -x dgx1,guppy9 -p gpuc python {script} -e {specs}'
+    else:
+        command = 'taskset {aff} python {script} -e {specs}'
     while (args_idx < num_variants) or (len(running_processes) > 0):
         if (len(running_processes) < num_workers) and (args_idx < num_variants):
             aff = affinity_Q.get()

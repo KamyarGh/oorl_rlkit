@@ -265,6 +265,7 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             obs,
             deterministic=False,
             return_log_prob=False,
+            return_tanh_normal=False
     ):
         """
         :param obs: Observation
@@ -302,6 +303,12 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             else:
                 action = tanh_normal.sample()
 
+        # I'm doing it like this for now for backwards compatibility, sorry!
+        if return_tanh_normal:
+            return (
+                action, mean, log_std, log_prob, expected_log_prob, std,
+                mean_action_log_prob, pre_tanh_value, tanh_normal,
+            )
         return (
             action, mean, log_std, log_prob, expected_log_prob, std,
             mean_action_log_prob, pre_tanh_value,

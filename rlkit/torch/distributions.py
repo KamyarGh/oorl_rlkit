@@ -1,6 +1,8 @@
 import torch
 from torch.autograd import Variable
 
+from rlkit.torch import pytorch_util as ptu
+
 from numpy import log as np_log
 from numpy import pi
 
@@ -139,6 +141,7 @@ class ReparamMultivariateNormalDiag():
 
     def sample(self):
         eps = Variable(torch.randn(self.mean.size()))
+        if ptu.gpu_enabled(): eps = eps.cuda()
         samples = eps*self.cov + self.mean
         return samples
 

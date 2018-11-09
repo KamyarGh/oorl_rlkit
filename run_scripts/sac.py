@@ -36,16 +36,27 @@ def experiment(variant):
     # import gym
     # env = NormalizedBoxEnv(gym.make('HalfCheetah-v1'))
 
+    if variant['use_gpu']:
+        ptu.set_gpu_mode(True)
+
     # we have to generate the combinations for the env_specs
     env_specs = variant['env_specs']
-    env, _ = get_env(env_specs)
-    training_env, _ = get_env(env_specs)
+    if env_specs['train_test_env']:
+        env, training_env = get_env(env_specs)
+    else:
+        env, _ = get_env(env_specs)
+        training_env, _ = get_env(env_specs)
 
     print(env.observation_space)
 
     if isinstance(env.observation_space, Dict):
         if not variant['algo_params']['policy_uses_pixels']:
             obs_dim = int(np.prod(env.observation_space.spaces['obs'].shape))
+            if variant['algo_params']['policy_uses_task_params']:
+                if variant['algo_params']['concat_task_params_to_policy_obs']:
+                    obs_dim += int(np.prod(env.observation_space.spaces['obs_task_params'].shape))
+                else:
+                    raise NotImplementedError()
         else:
             raise NotImplementedError()
     else:

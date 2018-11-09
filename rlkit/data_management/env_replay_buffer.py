@@ -11,8 +11,7 @@ class EnvReplayBuffer(SimpleReplayBuffer):
             extra_obs_dim=0,
             policy_uses_pixels=False,
             policy_uses_task_params=False,
-            concat_task_params_to_policy_obs=False,
-
+            concat_task_params_to_policy_obs=False
     ):
         """
         :param max_replay_buffer_size:

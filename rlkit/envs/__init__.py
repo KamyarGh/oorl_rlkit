@@ -70,6 +70,14 @@ fixed_envs = {
 }
 
 
+train_test_envs = {
+    'dmcs_simple_meta_reacher': {
+        'train': lambda: DmControlWrapper(build_simple_meta_reacher(train_env=True)),
+        'test': lambda: DmControlWrapper(build_simple_meta_reacher(train_env=False))
+    }
+}
+
+
 def get_env(env_specs):
     base_env_name = env_specs['base_env_name']
     spec_name = '_'.join(
@@ -97,32 +105,42 @@ def get_env(env_specs):
             meta_params.append(v)
     meta_params = array(meta_params)
 
-    if base_env_name in fixed_envs:
-        env = fixed_envs[base_env_name]()
-    else:
-        try:
-            env = all_envs[base_env_name]['env_class'](fpath, meta_params)
-        except:
-            # read the base xml string and fill the env_specs values
-            with open(osp.join(BASE_ASSETS_DIR, all_envs[base_env_name]['base_xml']), 'r') as f:
-                base_xml = f.read()
-            env_xml = base_xml.format(**env_specs)
-            with open(fpath, 'w') as f:
-                f.write(env_xml)
-                f.flush()
-            env = all_envs[base_env_name]['env_class'](fpath, meta_params)
+    if env_specs['train_test_env']:
+        env_dict = train_test_envs[base_env_name]
+        train_env, test_env = env_dict['train'](), env_dict['test']()
 
-            # remove the file to avoid getting a million spec files
-            try:
-                os.remove(fpath)
-            except:
-                pass
+        if env_specs['normalized']:
+            train_env = NormalizedBoxEnv(train_env)
+            test_env = NormalizedBoxEnv(test_env)
         
-    if env_specs['normalized']:
-        env = NormalizedBoxEnv(env)
-        print('\n\nNormalized\n\n')
+        return train_env, test_env
+    else:
+        if base_env_name in fixed_envs:
+            env = fixed_envs[base_env_name]()
+        else:
+            try:
+                env = all_envs[base_env_name]['env_class'](fpath, meta_params)
+            except:
+                # read the base xml string and fill the env_specs values
+                with open(osp.join(BASE_ASSETS_DIR, all_envs[base_env_name]['base_xml']), 'r') as f:
+                    base_xml = f.read()
+                env_xml = base_xml.format(**env_specs)
+                with open(fpath, 'w') as f:
+                    f.write(env_xml)
+                    f.flush()
+                env = all_envs[base_env_name]['env_class'](fpath, meta_params)
 
-    return env, spec_name
+                # remove the file to avoid getting a million spec files
+                try:
+                    os.remove(fpath)
+                except:
+                    pass
+            
+        if env_specs['normalized']:
+            env = NormalizedBoxEnv(env)
+            print('\n\nNormalized\n\n')
+
+        return env, spec_name
 
 
 class EnvSampler():

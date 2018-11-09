@@ -6,8 +6,6 @@ from __future__ import print_function
 
 import collections
 
-from rlkit.envs.dmcs_envs.meta_env import MetaEnvironment, MetaTask
-
 # Internal dependencies.
 
 from dm_control import mujoco
@@ -54,7 +52,7 @@ class Physics(mujoco.Physics):
     return np.linalg.norm(self.finger_to_target())
 
 
-class Reacher(MetaTask):
+class Reacher(base.Task):
   """A reacher `Task` to reach the target."""
 
   def __init__(self, random=None):

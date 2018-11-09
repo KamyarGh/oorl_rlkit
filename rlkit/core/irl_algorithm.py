@@ -11,6 +11,9 @@ from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
 from rlkit.samplers.in_place import InPlacePathSampler
+from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
+
+from gym.spaces import Dict
 
 
 class IRLAlgorithm(metaclass=abc.ABCMeta):
@@ -32,7 +35,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             num_epochs=100,
             num_steps_per_epoch=10000,
             num_steps_per_eval=1000,
-            num_steps_between_updates=10000,
+            num_steps_between_updates=1000,
             num_reward_updates=50,
             num_policy_updates=50,
             min_steps_before_training=1000,
@@ -47,8 +50,14 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             eval_policy=None,
             replay_buffer=None,
             policy_uses_pixels=False,
-            freq_saving=1
-    ):
+            wrap_absorbing=True,
+            freq_saving=1,
+            # some environment like halfcheetah_v2 have a timelimit that defines the terminal
+            # this is used as a minor hack to turn off time limits
+            no_terminal=False,
+            policy_uses_task_params=False,
+            concat_task_params_to_policy_obs=False
+        ):
         """
         Base class for RL Algorithms
         :param env: Environment used to evaluate.
@@ -92,6 +101,8 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
         self.policy_uses_pixels = policy_uses_pixels
+        self.policy_uses_task_params = policy_uses_task_params
+        self.concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
         if eval_sampler is None:
             if eval_policy is None:
                 eval_policy = exploration_policy
@@ -99,7 +110,9 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                 env=env,
                 policy=eval_policy,
                 max_samples=self.num_steps_per_eval + self.max_path_length,
-                max_path_length=self.max_path_length,
+                max_path_length=self.max_path_length, policy_uses_pixels=policy_uses_pixels,
+                policy_uses_task_params=policy_uses_task_params,
+                concat_task_params_to_policy_obs=concat_task_params_to_policy_obs
             )
         self.eval_policy = eval_policy
         self.eval_sampler = eval_sampler
@@ -111,7 +124,9 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             replay_buffer = EnvReplayBuffer(
                 self.replay_buffer_size,
                 self.env,
-                policy_uses_pixels=self.policy_uses_pixels
+                policy_uses_pixels=self.policy_uses_pixels,
+                policy_uses_task_params=self.policy_uses_task_params,
+                concat_task_params_to_policy_obs=self.concat_task_params_to_policy_obs
             )
         self.replay_buffer = replay_buffer
 
@@ -125,6 +140,12 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         self._old_table_keys = None
         self._current_path_builder = PathBuilder()
         self._exploration_paths = []
+        self.wrap_absorbing = wrap_absorbing
+        if self.wrap_absorbing:
+            assert isinstance(env, WrappedAbsorbingEnv), 'Env is not wrapped!'
+        self.freq_saving = freq_saving
+        self.no_terminal = no_terminal
+
 
     def train(self, start_epoch=0):
         self.pretrain()
@@ -137,11 +158,13 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         gt.set_def_unique(False)
         self.train_online(start_epoch=start_epoch)
 
+
     def pretrain(self):
         """
         Do anything before the main training phase.
         """
         pass
+
 
     def train_online(self, start_epoch=0):
         self._current_path_builder = PathBuilder()
@@ -161,6 +184,12 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                             agent_obs = observation['obs']
                     else:
                         agent_obs = observation
+                    if self.policy_uses_task_params:
+                        task_params = observation['obs_task_params']
+                        if self.concat_task_params_to_policy_obs:
+                            agent_obs = np.concatenate((agent_obs, task_params), -1)
+                        else:
+                            agent_obs = {'obs': agent_obs, 'obs_task_params': task_params}
                     action, agent_info = self._get_action_and_info(
                         agent_obs,
                     )
@@ -169,6 +198,8 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                     next_ob, raw_reward, terminal, env_info = (
                         self.training_env.step(action)
                     )
+                    if self.no_terminal:
+                        terminal = False
                     self._n_env_steps_total += 1
                     reward = raw_reward
                     terminal = np.array([terminal])
@@ -178,11 +209,30 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                         action,
                         reward,
                         next_ob,
-                        terminal,
+                        np.array([False]) if self.wrap_absorbing else terminal,
                         agent_info=agent_info,
                         env_info=env_info,
                     )
-                    if terminal or len(self._current_path_builder) >= self.max_path_length:
+                    if terminal:
+                        if self.wrap_absorbing:
+                            # next_ob is the absorbing state
+                            # for now just using the action from the previous timesteps
+                            # as well as agent info and env info
+                            self._handle_step(
+                                next_ob,
+                                action,
+                                # the reward doesn't matter cause it will be
+                                # overwritten by the model that defines the reward
+                                # e.g. the discriminator in GAIL
+                                reward,
+                                next_ob,
+                                terminal,
+                                agent_info=agent_info,
+                                env_info=env_info
+                            )
+                        self._handle_rollout_ending()
+                        observation = self._start_new_rollout()
+                    elif len(self._current_path_builder) >= self.max_path_length:
                         self._handle_rollout_ending()
                         observation = self._start_new_rollout()
                     else:
@@ -210,12 +260,14 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             self.training_mode(False)
 
     def _try_to_eval(self, epoch):
-        logger.save_extra_data(self.get_extra_data_to_save(epoch))
+        if epoch % self.freq_saving == 0:
+            logger.save_extra_data(self.get_extra_data_to_save(epoch))
         if self._can_evaluate():
             self.evaluate(epoch)
 
-            params = self.get_epoch_snapshot(epoch)
-            logger.save_itr_params(epoch, params)
+            if epoch % self.freq_saving == 0:
+                params = self.get_epoch_snapshot(epoch)
+                logger.save_itr_params(epoch, params)
             table_keys = logger.get_table_key_set()
             # if self._old_table_keys is not None:
             #     print('$$$$$$$$$$$$$$$')
