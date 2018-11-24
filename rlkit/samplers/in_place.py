@@ -25,10 +25,7 @@ class InPlacePathSampler(object):
         self.concat_env_params_to_obs = concat_env_params_to_obs
         self.normalize_env_params = normalize_env_params
         self.env_params_normalizer = env_params_normalizer
-        assert (
-            max_samples >= max_path_length,
-            "Need max_samples >= max_path_length"
-        )
+        assert max_samples >= max_path_length, "Need max_samples >= max_path_length"
         self.neural_process = neural_process
         self.latent_repr_fn = latent_repr_fn
         self.reward_scale = reward_scale
@@ -50,6 +47,8 @@ class InPlacePathSampler(object):
         already_animated_one = False
         while n_steps_total + self.max_path_length <= self.max_samples:
             animate_this = self.animated and not already_animated_one
+            # YOU SHOULD REMOVE THIS ENV SAMPLER STUFF
+            # ITS FROM THE OLD OORL PROJECT
             if self.env_sampler is not None:
                 self.env, _ = self.env_sampler()
             path = rollout(

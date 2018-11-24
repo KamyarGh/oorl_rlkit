@@ -104,7 +104,8 @@ def create_stats_ordered_dict(
 # I (Kamyar) will be adding my own eval utils here too
 def plot_experiment_returns(
     exp_path, title, save_path, column_name='Test_Returns_Mean',
-    y_axis_lims=None, constraints=None, plot_mean=False):
+    y_axis_lims=None, constraints=None, plot_mean=False,
+    plot_horizontal_lines_at=None, horizontal_lines_names=None):
     '''
         plots the Test Returns Mean of all the
     '''
@@ -158,4 +159,8 @@ def plot_experiment_returns(
         save_plot(x, mean, title, save_path, color='cyan', y_axis_lims=y_axis_lims)
     else:
         if len(arr_list) == 0: print(0)
+        if plot_horizontal_lines_at is not None:
+            max_len = max(map(lambda a: a.shape[0], arr_list))
+            arr_list += [np.ones(max_len)*y_val for y_val in plot_horizontal_lines_at]
+            names += horizontal_lines_names
         plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)

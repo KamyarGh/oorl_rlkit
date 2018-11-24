@@ -1,3 +1,5 @@
+<!-- This is exactly DMCS reacher environment but I jsut made the arms fatter
+ to be more visible and less noisy in small images -->
 <mujoco model="two-link planar reacher">
   <include file="./common/skybox.xml"/>
   <include file="./common/visual.xml"/>

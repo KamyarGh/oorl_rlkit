@@ -17,11 +17,8 @@ from rlkit.torch.sac.policies import MakeDeterministic
 
 class GAIL(TorchIRLAlgorithm):
     '''
-        This is not your grandma's good-ol' GAIL
-        This is off-policy GAIL with different reward objective:
-        https://arxiv.org/pdf/1809.02925.pdf
-        But with the updated SAC
-
+        This is actually AIRL / DAC, sorry!
+        
         I did not implement the reward-wrapping mentioned in
         https://arxiv.org/pdf/1809.02925.pdf though
     '''

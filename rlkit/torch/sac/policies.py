@@ -122,6 +122,7 @@ class MakeDeterministic(Policy):
     def __init__(self, stochastic_policy):
         self.stochastic_policy = stochastic_policy
 
+
     def get_action(self, observation):
         return self.stochastic_policy.get_action(observation,
                                                  deterministic=True)
@@ -129,6 +130,13 @@ class MakeDeterministic(Policy):
     def get_actions(self, observations):
         return self.stochastic_policy.get_actions(observations,
                                                   deterministic=True)
+    
+    def train(self, mode):
+        pass
+    
+
+    def set_num_steps_total(self, num):
+        pass
 
 
 
@@ -330,3 +338,50 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
         tanh_normal = ReparamTanhMultivariateNormal(mean, log_std)
         log_prob = tanh_normal.log_prob(acts)
         return log_prob
+
+     
+class PostCondMLPPolicyWrapper(ExplorationPolicy):
+    def __init__(self, policy, np_post_sample):
+        super().__init__()
+        self.policy = policy
+        self.np_z = np_post_sample # assuming it is a flat np array
+
+
+    def get_action(self, obs_np):
+        obs = np.concatenate((obs_np, self.np_z), axis=0)
+        return self.policy.get_action(obs)
+     
+
+# class PostCondReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):
+#     '''
+#         This is a very simple version of a policy that conditions on a sample from the posterior
+#         I just concatenate the latent to the obs, so for now assuming everyting is flat
+#     '''
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.z = None
+    
+
+#     def set_post_sample(self, z):
+#         self.z = z
+    
+
+#     def forward(
+#         self,
+#         obs,
+#         deterministic=False,
+#         return_log_prob=False,
+#         return_tanh_normal=False
+#     ):
+#         obs = torch.cat([obs, self.z], dim=-1)
+#         return super().forward(
+#             obs,
+#             deterministic=deterministic,
+#             return_log_prob=return_log_prob,
+#             return_tanh_normal=return_tanh_normal
+#         )
+
+
+#     def get_log_prob(self, obs, acts):
+#         obs = torch.cat([obs, self.z], dim=-1)
+#         return super().get_log_prob(obs, acts)

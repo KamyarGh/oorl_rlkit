@@ -12,10 +12,10 @@ class Model(nn.Module):
         hid_dim = 100
         self.model = nn.Sequential(
             nn.Linear(input_dim, hid_dim),
-            # nn.BatchNorm1d(hid_dim),
+            nn.BatchNorm1d(hid_dim),
             nn.Tanh(),
             nn.Linear(hid_dim, hid_dim),
-            # nn.BatchNorm1d(hid_dim),
+            nn.BatchNorm1d(hid_dim),
             nn.Tanh(),
             nn.Linear(hid_dim, 1)
         )

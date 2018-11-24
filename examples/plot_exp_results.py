@@ -184,33 +184,110 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 # )
 
 
-# exp_name = 'just_sin_cos_dmcs_simple_meta_reacher_with_sin_cos'
-# exp_name = 'correct-dmcs-simple-meta-reacher-with-sin-cos'
-# these next two are the same plus either finger-to-target vector or finger pos
-exp_name = 'longer-run-with-finger-pos-dmcs-simple-meta-reacher-with-sin-cos'
-# exp_name = 'longer-run-with-to-target-dmcs-simple-meta-reacher-with-sin-cos'
-for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
-    constraints = {
-        'algo_params.reward_scale': rew,
-        'env_specs.normalized': False,
-        'env_specs.train_test_env': True
-    }
-    plot_experiment_returns(
-        '/ais/gobi6/kamyar/oorl_rlkit/output/{}'.format(exp_name),
-        'sin-cos simple meta reacher hype search rew %f' % rew,
-        '/u/kamyar/oorl_rlkit/plots/unnorm_{}_rew_{}.png'.format(exp_name, rew),
-        y_axis_lims=[0, 70],
-        plot_mean=False,
-        constraints=constraints
-    )
+# # exp_name = 'just_sin_cos_dmcs_simple_meta_reacher_with_sin_cos'
+# # exp_name = 'correct-dmcs-simple-meta-reacher-with-sin-cos'
+# # these next two are the same plus either finger-to-target vector or finger pos
+# exp_name = 'longer-run-with-finger-pos-dmcs-simple-meta-reacher-with-sin-cos'
+# # exp_name = 'longer-run-with-to-target-dmcs-simple-meta-reacher-with-sin-cos'
+# for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+#     constraints = {
+#         'algo_params.reward_scale': rew,
+#         'env_specs.normalized': False,
+#         'env_specs.train_test_env': True
+#     }
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/{}'.format(exp_name),
+#         'sin-cos simple meta reacher hype search rew %f' % rew,
+#         '/u/kamyar/oorl_rlkit/plots/unnorm_{}_rew_{}.png'.format(exp_name, rew),
+#         y_axis_lims=[0, 70],
+#         plot_mean=False,
+#         constraints=constraints
+#     )
 
 
+# !!!!!! test_halfcheetah_dac_25_trajs_20_subsampling_disc_with_batchnorm
+# halfcheetah-dac-25-trajs-20-subsampling-disc-with-batchnorm
+# halfcheetah-dac-25-trajs-20-subsampling-disc-without-batchnorm
 # plot_experiment_returns(
-#     '/ais/gobi6/kamyar/oorl_rlkit/output/get-good-halfcheetah-expert',
-#     'good halfcheetah expert',
-#     '/u/kamyar/oorl_rlkit/plots/good_halfcheetah_expert',
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/test-halfcheetah-dac-25-trajs-20-subsampling-disc-with-batchnorm',
+#     'test_halfcheetah_dac_25_trajs_20_subsampling_disc_with_batchnorm',
+#     '/u/kamyar/oorl_rlkit/plots/test_halfcheetah_dac_25_trajs_20_subsampling_disc_with_batchnorm.png',
 #     y_axis_lims=[-1000, 10000],
 #     plot_mean=False,
+#     plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
+#     horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
+# )
+
+
+
+# for num_exp_traj in [25, 100]:
+#     for exp_name in [
+#             'good_halfcheetah_100_trajs_1_subsampling',
+#             'good_halfcheetah_100_trajs_20_subsampling'
+#         ]:
+#         for net_size in [256, 100]:
+#             constraints = {
+#                 'expert_name': exp_name,
+#                 'num_expert_trajs': num_exp_traj,
+#                 'policy_net_size': net_size
+#             }
+#             name = 'expert_{expert_name}_num_trajs_used_{num_expert_trajs}_net_size_{policy_net_size}'.format(**constraints)
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/halfcheetah-bc-100-trajs',
+#                 'halfcheetah behaviour cloning {}'.format(name),
+#                 '/u/kamyar/oorl_rlkit/plots/{}.png'.format(name),
+#                 y_axis_lims=[-1000, 10000],
+#                 plot_mean=False,
+#                 constraints=constraints
+#                 # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
+#                 # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
+#             )
+
+for num_exp_traj in [25, 100]:
+    for exp_name in [
+            'dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_20_subsampling',
+            'dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling'
+        ]:
+        for net_size in [256, 100]:
+            constraints = {
+                'expert_name': exp_name,
+                'num_expert_trajs': num_exp_traj,
+                'policy_net_size': net_size
+            }
+            name = 'expert_{expert_name}_num_trajs_used_{num_expert_trajs}_net_size_{policy_net_size}'.format(**constraints)
+            plot_experiment_returns(
+                '/ais/gobi6/kamyar/oorl_rlkit/output/with-logging-reacher-bc-100-trajs',
+                'reacher behaviour cloning {}'.format(name),
+                '/u/kamyar/oorl_rlkit/plots/reacher_bc/{}.png'.format(name),
+                y_axis_lims=[0, 80],
+                plot_mean=False,
+                constraints=constraints
+                # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
+                # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
+            )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/with-logging-reacher-bc-100-trajs',
+#     'reacher behaviour cloning',
+#     '/u/kamyar/oorl_rlkit/plots/reacher_bc.png',
+#     y_axis_lims=[0, 80],
+#     plot_mean=False,
+#     # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
+#     # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
+# )
+
+
+# # dac-dmcs-simple-meta-reacher-2-layer-disc-batch-norm-1-subsampling
+# # dac-dmcs-simple-meta-reacher-2-layer-disc-batch-norm-20-subsampling
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/dac-dmcs-simple-meta-reacher-2-layer-disc-batch-norm-1-subsampling',
+#     'dac-dmcs-simple-meta-reacher-2-layer-disc-batch-norm-1-subsampling',
+#     '/u/kamyar/oorl_rlkit/plots/dac-dmcs-simple-meta-reacher-2-layer-disc-batch-norm-1-subsampling.png',
+#     y_axis_lims=[0, 85],
+#     plot_mean=False,
+#     plot_horizontal_lines_at=[66.0388, 66.0388 + 16.3005, 66.0388 - 16.3005], # for the 1 subsampling expert
+#     # plot_horizontal_lines_at=[64.3771, 64.3771 + 18.0769, 64.3771 - 18.0769], # for the 20 subsampling expert
+#     horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
 # )
 
 

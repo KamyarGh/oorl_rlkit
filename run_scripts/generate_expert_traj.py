@@ -6,8 +6,9 @@ import rlkit.torch.pytorch_util as ptu
 from rlkit.torch.gen_exp_traj_algorithm import ExpertTrajGeneratorAlgorithm
 from rlkit.data_management.expert_replay_buffer import ExpertReplayBuffer
 
-from rlkit.launchers.launcher_util import setup_logger
+from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.sac.policies import MakeDeterministic
 
 from rlkit.envs import get_env
 
@@ -28,6 +29,9 @@ def experiment(specs):
     variant['algo_params']['do_not_train'] = True
     variant['seed'] = specs['seed']
     policy = joblib.load(path.join(specs['specific_exp_dir'], 'params.pkl'))['exploration_policy']
+
+    assert False, 'Do you really wanna make it deterministic?'
+    policy = MakeDeterministic(policy)
 
     env_specs = variant['env_specs']
     env, _ = get_env(env_specs)
@@ -71,6 +75,7 @@ def exp_fn(variant):
 
     print(variant.keys())
     exp_prefix = variant['exp_name']
+    set_seed(exp_specs['seed'])
     setup_logger(exp_prefix=exp_prefix, exp_id=exp_id, variant=variant)
 
     # run the experiment

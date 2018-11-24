@@ -8,6 +8,7 @@ import collections
 
 from rlkit.envs.dmcs_envs.meta_env import MetaEnvironment
 from rlkit.envs.dmcs_envs.meta_task import MetaTask
+from rlkit.envs.meta_task_params_sampler import MetaTaskParamsSampler
 
 # Internal dependencies.
 
@@ -22,7 +23,7 @@ from dm_control.utils import rewards
 import numpy as np
 
 
-_DEFAULT_TIME_LIMIT = 20
+_DEFAULT_TIME_LIMIT = 100
 _TARGET_SIZE = 0.025
 
 
@@ -33,44 +34,67 @@ def get_model_and_assets():
   return xml_data, common.ASSETS
 
 
-def build_simple_meta_reacher(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None, train_env=True):
-  """Returns reacher with sparse reward with 5e-2 tol and randomized target."""
+def build_meta_simple_meta_reacher(time_limit=_DEFAULT_TIME_LIMIT, random=None, environment_kwargs=None, train_env=True):
   physics = Physics.from_xml_string(*get_model_and_assets())
-  task = SimpleMetaReacher(random=random)
+  task = MetaSimpleMetaReacher(random=random)
   if train_env:
-    task_params_sampler = SimpleMetaReacherTrainTaskParamsSampler(random=random)
+    task_params_sampler = TrainTaskParamsSampler(random=random)
   else:
-    task_params_sampler = SimpleMetaReacherTestTaskParamsSampler(random=random)
+    task_params_sampler = TestTaskParamsSampler(random=random)
   environment_kwargs = environment_kwargs or {}
   return MetaEnvironment(
       physics, task, task_params_sampler, concat_task_params_to_obs=True,
       time_limit=time_limit, **environment_kwargs)
 
 
-class SimpleMetaReacherTrainTaskParamsSampler():
-    def __init__(self, random=None):
+def get_params_iterators(train_env=True, random=None):
+    if train_env:
+        return TrainTaskParamsSampler(random=random)
+    return TestTaskParamsSampler(random=random)
+
+
+class _BaseParamsSampler(MetaTaskParamsSampler):
+    def __init__(self, idx_offset, random=None):
+        super().__init__()
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
         self._random = random
-    
-    def sample(self):
-        angle = self._random.uniform(0, 2 * np.pi)
-        x, y = 0.20 * np.sin(angle), 0.20 * np.cos(angle)
-        return {'x': x, 'y': y}, np.array([x,y])
 
-
-class SimpleMetaReacherTestTaskParamsSampler():
-    def __init__(self):
-        self.angles = np.linspace(0, 2*np.pi, num=11, endpoint=False)
+        idx = 2*np.arange(16) + idx_offset
+        angles = 2 * np.pi * idx / 32
+        x = np.sin(angles)
+        y = np.cos(angles)
+        self.p = 0.2 * np.stack([x,y], axis=1)
         self.ptr = 0
+        self.itr_ptr = 0
     
+
     def sample(self):
-        # doesn't matter that it's inefficient
-        # remember Amdahl's Law
-        angle = self.angles[self.ptr]
-        x, y = 0.20 * np.sin(angle), 0.20 * np.cos(angle)
-        self.ptr = (self.ptr + 1) % len(self.angles)
+        x, y = self.p[self.ptr, 0], self.p[self.ptr, 1]
+        self.ptr = (self.ptr + 1) % 16
         return {'x': x, 'y': y}, np.array([x,y])
+
+
+    def __iter__(self):
+        self.itr_ptr = 0
+        return self
+    
+
+    def __next__(self):
+        if self.itr_ptr == 16: raise StopIteration
+        x, y = self.p[self.itr_ptr, 0], self.p[self.itr_ptr, 1]
+        self.itr_ptr += 1
+        return {'x': x, 'y': y}, np.array([x,y])
+
+
+class TrainTaskParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=None):
+        super(TrainTaskParamsSampler, self).__init__(0, random=random)
+
+
+class TestTaskParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=None):
+        super(TestTaskParamsSampler, self).__init__(1, random=random)
 
 
 class Physics(mujoco.Physics):
@@ -86,7 +110,7 @@ class Physics(mujoco.Physics):
     return np.linalg.norm(self.finger_to_target())
 
 
-class SimpleMetaReacher(MetaTask):
+class MetaSimpleMetaReacher(MetaTask):
   """A reacher `Task` to reach the target.
   It has a shaped version of the reward function provided by Deepmind Control Suite
 
@@ -102,7 +126,7 @@ class SimpleMetaReacher(MetaTask):
         integer seed for creating a new `RandomState`, or None to select a seed
         automatically (default).
     """
-    super(SimpleMetaReacher, self).__init__(random=random)
+    super(MetaSimpleMetaReacher, self).__init__(random=random)
 
 
   def initialize_episode(self, physics, task_params):

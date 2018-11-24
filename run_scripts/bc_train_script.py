@@ -2,11 +2,13 @@ import numpy as np
 from gym.envs.mujoco import HalfCheetahEnv, InvertedPendulumEnv, ReacherEnv
 from gym.spaces import Dict
 
+from rlkit.core import logger
 from rllab.misc.instrument import VariantGenerator
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.networks import MlpPolicy
 from rlkit.torch.sac.policies import MakeDeterministic
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
@@ -92,10 +94,17 @@ def experiment(variant):
     sleep(3)
 
     policy_net_size = variant['policy_net_size']
-    policy = ReparamTanhMultivariateGaussianPolicy(
-        hidden_sizes=[policy_net_size, policy_net_size],
-        obs_dim=obs_dim,
-        action_dim=action_dim
+    # policy = ReparamTanhMultivariateGaussianPolicy(
+    #     hidden_sizes=[policy_net_size, policy_net_size],
+    #     obs_dim=obs_dim,
+    #     action_dim=action_dim
+    # )
+    policy = MlpPolicy(
+        [policy_net_size, policy_net_size],
+        action_dim,
+        obs_dim,
+        hidden_activation=torch.nn.functional.tanh,
+        layer_norm=variant['bc_params']['use_layer_norm']
     )
 
     policy_optimizer = optim.Adam(
@@ -129,25 +138,37 @@ def experiment(variant):
         batch = np_to_pytorch_batch(batch)
         obs, acts = batch['observations'], batch['actions']
 
-        policy_outputs = policy.forward(obs, return_log_prob=True, return_tanh_normal=True)
-        tanh_normal = policy_outputs[-1]
-        policy_mean, policy_log_std = policy_outputs[1:3]
-        log_prob = tanh_normal.log_prob(acts)
-        log_prob_mean = torch.mean(log_prob)
+        # IF POLICY IS AN MLP
+        policy_mean = policy.forward(obs)
 
-        log_prob_loss = -1.0 * log_prob_mean
+        # IF POLICY WAS REPARMAT TANH MVN
+        # policy_outputs = policy.forward(obs, return_log_prob=True, return_tanh_normal=True)
+        # tanh_normal = policy_outputs[-1]
+        # policy_mean, policy_log_std = policy_outputs[1:3]
+        # log_prob = tanh_normal.log_prob(acts)
+
+        # log_prob = torch.nn.functional.relu(log_prob + 100) - 100
+
+        # try:
+        #     log_prob_mean = torch.mean(log_prob)
+        # except:
+        #     print(log_prob)
+        #     print(acts)
+
+        # log_prob_loss = -1.0 * log_prob_mean
         # add regularization
         # mean_reg_loss = variant['bc_params']['policy_mean_reg_weight'] * (policy_mean**2).mean()
-        std_reg_loss = variant['bc_params']['policy_std_reg_weight'] * (policy_log_std**2).mean()
+        # std_reg_loss = variant['bc_params']['policy_std_reg_weight'] * (policy_log_std**2).mean()
         # pre_activation_reg_loss = variant['bc_params']['policy_pre_activation_weight'] * (
-            # (pre_tanh_value**2).sum(dim=1).mean()
+        #     (pre_tanh_value**2).sum(dim=1).mean()
         # )
         # policy_reg_loss = mean_reg_loss + std_reg_loss + pre_activation_reg_loss
 
         # loss = log_prob_loss + policy_reg_loss
         # loss = log_prob_loss + std_reg_loss
-        # loss = torch.sum((policy_mean - acts)**2, 1).mean()
-        loss = log_prob_loss
+        loss = torch.sum((policy_mean - acts)**2, 1).mean()
+        # loss = log_prob_loss
+
         
         loss.backward()
         policy_optimizer.step()
@@ -156,14 +177,20 @@ def experiment(variant):
             test_paths = eval_sampler.obtain_samples()
             average_returns = get_average_returns(test_paths)
             print('\nIter {} Returns:\t{}'.format(itr, average_returns))
-            print('Iter {} LogProb:\t{}'.format(itr, log_prob_mean.data[0]))
+            print('Iter {} Loss:\t{}'.format(itr, loss.data[0]))
+            # print('Iter {} LogProb:\t{}'.format(itr, log_prob_mean.data[0]))
 
-            print(acts.data[0].numpy())
-            print(policy_mean.data[0].numpy())
-            print(torch.exp(policy_log_std).data[0].numpy())
-            print()
-        
+            logger.record_tabular('Test_Returns_Mean', average_returns)
+
+            # print(acts.data[0].numpy())
+            # print(policy_mean.data[0].numpy())
+            # print(torch.exp(policy_log_std).data[0].numpy())
+            # print()
+
+            logger.dump_tabular(with_prefix=False, with_timestamp=False)
+                
         # add saving
+
         
     return 1
 

@@ -1,7 +1,7 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: dac_dmcs_simple_meta_reacher_2_layer_disc_batch_norm_1_subsampling
+  exp_name: halfcheetah_dac_25_trajs_20_subsampling_disc_without_batchnorm
   description: searching over the SAC hyperparameters
   use_gpu: false
   num_workers: 12
@@ -11,14 +11,14 @@ meta_data:
 variables:
   concat_env_params_to_obs: [false]
 
-  num_expert_trajs: [100]
+  num_expert_trajs: [25]
 
   gail_params:
-    no_terminal: [false]
-    replay_buffer_size: [500000]
+    no_terminal: [true]
+    replay_buffer_size: [3000000]
 
-    num_reward_updates: [100]
-    num_policy_updates: [100]
+    num_reward_updates: [1000]
+    num_policy_updates: [1000]
   
   policy_params:
     # reward_scale: [10.0]
@@ -27,24 +27,22 @@ variables:
   
   env_specs:
     normalized: [false]
-    train_test_env: [true]
+    train_test_env: [false]
   
   seed: [9783, 5914]
   # seed: [9783]
 
 # -----------------------------------------------------------------------------
 constants:
-  # expert_save_dict: '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search/final_pendulum_new_sac_hyper_param_search_2018_10_12_19_11_09_0000--s-0/extra_data.pkl'
-  # last_k_expert_steps: 500
-  expert_name: dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling
-  expert_seed_run_idx: 1
+  expert_name: good_halfcheetah_100_trajs_20_subsampling
+  expert_seed_run_idx: 2
   wrap_absorbing_state: false
   
   gail_params:
-    num_epochs: 511
+    num_epochs: 3005
     num_steps_per_epoch: 1000
     num_steps_per_eval: 1000
-    max_path_length: 100
+    max_path_length: 1000
 
     # num_reward_updates: 3
     # num_policy_updates: 32
@@ -52,11 +50,11 @@ constants:
     policy_optim_batch_size: 100
 
     policy_uses_pixels: false
-    policy_uses_task_params: true
-    concat_task_params_to_policy_obs: true
+    policy_uses_task_params: false
+    concat_task_params_to_policy_obs: false
 
     # the interaction between these two numbers matters
-    num_steps_between_updates: 100
+    num_steps_between_updates: 1000
     # replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
     min_steps_before_training: 1000
     
@@ -67,7 +65,7 @@ constants:
     use_grad_pen: true
     grad_pen_weight: 10
 
-    freq_saving: 100
+    freq_saving: 500
   
   policy_net_size: 256
   policy_params:
@@ -82,4 +80,4 @@ constants:
 
     
   env_specs:
-    base_env_name: 'dmcs_simple_meta_reacher'
+    base_env_name: 'halfcheetah_v2'

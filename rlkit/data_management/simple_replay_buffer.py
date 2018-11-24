@@ -1,3 +1,8 @@
+from collections import defaultdict
+from random import sample
+from itertools import starmap
+from functools import partial
+
 import numpy as np
 
 from rlkit.data_management.replay_buffer import ReplayBuffer
@@ -5,9 +10,9 @@ from rlkit.data_management.replay_buffer import ReplayBuffer
 
 class SimpleReplayBuffer(ReplayBuffer):
     def __init__(
-            self, max_replay_buffer_size, observation_dim, action_dim,
-            discrete_action_dim=False, policy_uses_pixels=False,
-            policy_uses_task_params=False, concat_task_params_to_policy_obs=False
+        self, max_replay_buffer_size, observation_dim, action_dim,
+        discrete_action_dim=False, policy_uses_pixels=False,
+        policy_uses_task_params=False, concat_task_params_to_policy_obs=False
     ):
         self._observation_dim = observation_dim
         self._action_dim = action_dim
@@ -57,6 +62,12 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._top = 0
         self._size = 0
 
+        # keeping track of trajectory boundaries
+        # assumption is trajectory lengths are AT MOST the lenght of the replay buffer
+        self._cur_start = 0
+        self._traj_endpoints = {} # start->end means [start, end)
+
+
     def add_sample(self, observation, action, reward, terminal,
                    next_observation, **kwargs):
         # if self.discrete_action_dim:
@@ -65,6 +76,11 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._actions[self._top] = action
         self._rewards[self._top] = reward
         self._terminals[self._top] = terminal
+
+        if terminal:
+            temp = (self._top + 1) % self._max_replay_buffer_size
+            self._traj_endpoints[self._cur_start] = temp
+            self._cur_start = temp
 
         if isinstance(self._observations, dict):
             for key, obs in observation.items():
@@ -76,10 +92,18 @@ class SimpleReplayBuffer(ReplayBuffer):
             self._next_obs[self._top] = next_observation
         self._advance()
 
+
     def terminate_episode(self):
-        pass
+        if self._cur_start != self._top:
+            # if they are equal it means that the previous state was terminal
+            # and was handled so there is no need to handle it again
+            self._traj_endpoints[self._cur_start] = self._top
+            self._cur_start = self._top
+
 
     def _advance(self):
+        if self._top in self._traj_endpoints:
+            del self._traj_endpoints[self._top]
         self._top = (self._top + 1) % self._max_replay_buffer_size
         if self._size < self._max_replay_buffer_size:
             self._size += 1
@@ -107,9 +131,55 @@ class SimpleReplayBuffer(ReplayBuffer):
             terminals=self._terminals[indices],
             next_observations=next_obs_to_return,
         )
+    
+
+    def _get_cont_segment(self, start, end):
+        if isinstance(self._observations, dict):
+            if self.policy_uses_task_params:
+                if self.concat_task_params_to_policy_obs:
+                    obs_to_return = np.concatenate((self._observations['obs'][start:end], self._observations['obs_task_params'][start:end]), -1)
+                    next_obs_to_return = np.concatenate((self._next_obs['obs'][start:end], self._next_obs['obs_task_params'][start:end]), -1)
+                else:
+                    raise NotImplementedError()
+            else:
+                obs_to_return = self._observations['obs'][start:end]
+                next_obs_to_return = self._next_obs['obs'][start:end]
+        else:
+            obs_to_return = self._observations[start:end]
+            next_obs_to_return = self._next_obs[start:end]
+        
+        return dict(
+            observations=obs_to_return,
+            actions=self._actions[start:end],
+            rewards=self._rewards[start:end],
+            terminals=self._terminals[start:end],
+            next_observations=next_obs_to_return,
+        )
+    
+
+    def _get_segment(self, start, end):
+        if start < end or end == 0:
+            if end == 0: end = self._max_replay_buffer_size
+            return self._get_cont_segment(start, end)
+        
+        first_part = self._get_cont_segment(start, self._max_replay_buffer_size)
+        sec_part = self._get_cont_segment(0, end)
+        # concat them now
+        return concat_nested_dicts(first_part, sec_part)
+
+
+    def sample_trajs(self, num_trajs):
+        starts = sample(self._traj_endpoints.keys(), num_trajs)
+        ends = map(lambda k: self._traj_endpoints[k], starts)
+
+        return list(
+            starmap(lambda s,e: self._get_segment(s,e), zip(starts, ends))
+        )
+
 
     def num_steps_can_sample(self):
         return self._size
+
 
     def sample_and_remove(self, batch_size):
         assert not isinstance(self._observations, dict), 'not implemented'
@@ -135,6 +205,7 @@ class SimpleReplayBuffer(ReplayBuffer):
 
         return samples
 
+
     def set_buffer_from_dict(self, batch_dict):
         assert not isinstance(self._observations, dict), 'not implemented'
         self._max_replay_buffer_size = max(self._max_replay_buffer_size, batch_dict['observations'].shape[0])
@@ -146,6 +217,7 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._top = batch_dict['observations'].shape[0] % self._max_replay_buffer_size
         self._size = batch_dict['observations'].shape[0]
 
+
     def change_max_size_to_cur_size(self):
         assert not isinstance(self._observations, dict), 'not implemented'
         self._max_replay_buffer_size = self._size
@@ -155,3 +227,82 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._rewards = self._rewards[:self._size]
         self._terminals = self._terminals[:self._size]
         self._top = min(self._top, self._size) % self._size
+
+
+class MetaSimpleReplayBuffer():
+    def __init__(
+            self, max_rb_size_per_task, observation_dim, action_dim,
+            discrete_action_dim=False, policy_uses_pixels=False,
+            policy_uses_task_params=False, concat_task_params_to_policy_obs=False
+        ):
+        p = partial(
+            SimpleReplayBuffer,
+            max_rb_size_per_task, observation_dim, action_dim,
+            discrete_action_dim=discrete_action_dim,
+            policy_uses_pixels=policy_uses_pixels,
+            policy_uses_task_params=policy_uses_task_params,
+            concat_task_params_to_policy_obs=concat_task_params_to_policy_obs
+        )
+        self.task_replay_buffers = defaultdict(p)
+
+    
+    def add_path(self, path, task_identifier):
+        '''
+            task_identifier must be hashable
+        '''
+        self.task_replay_buffers[task_identifier].add_path(path)
+    
+
+    def add_sample(self, observation, action, reward, terminal,
+                   next_observation, task_identifier, **kwargs):
+        self.task_replay_buffers[task_identifier].add_sample(
+            observation, action, reward, terminal, next_observation,
+            **kwargs
+        )
+    
+
+    def terminate_episode(self, task_identifier):
+        self.task_replay_buffers[task_identifier].terminate_episode()
+    
+
+    def sample_trajs(self, num_trajs_per_task, num_tasks=1, task_identifiers=None):
+        if task_identifiers is None:
+            sample_params = list(sample(self.task_replay_buffers.keys(), num_tasks))
+        else:
+            sample_params = task_identifiers
+        batch_list = [
+            self.task_replay_buffers[p].sample_trajs(num_trajs_per_task) \
+            for p in sample_params
+        ]
+        return batch_list, sample_params
+    
+
+    def sample_trajs_from_task(self, task_identifier, num_trajs):
+        return self.task_replay_buffers[task_identifier].sample_trajs(num_trajs)
+    
+
+    def sample_random_batch(self, batch_size_per_task, num_task_params=1, task_identifiers_list=None):
+        if task_identifiers_list is None:
+            sample_params = list(sample(self.task_replay_buffers.keys(), num_task_params))
+        else:
+            sample_params = task_identifiers_list
+        batch_list = [
+            self.task_replay_buffers[p].random_batch(batch_size_per_task) \
+            for p in sample_params
+        ]
+        return batch_list, sample_params
+
+
+    def num_steps_can_sample(self):
+        return sum(map(lambda rb: rb.num_steps_can_sample(), self.task_replay_buffers.values()))
+
+
+def concat_nested_dicts(d1, d2):
+    # two dicts that have the exact same nesting structure
+    # and contain leaf values that are numpy arrays of the same
+    # shape except for the first dimensions
+    return {
+        k: np.concatenate((d1[k], d2[k]), axis=0) if not isinstance(d1[k], dict) \
+        else concat_nested_dicts(d1[k], d2[k]) \
+        for k in d1
+    }

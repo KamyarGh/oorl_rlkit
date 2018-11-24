@@ -1,10 +1,11 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/generate_expert_traj.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: temp_reacher_expert_with_finger_pos
+  exp_name: ugh_very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_20_subsampling
   description: searching over the SAC hyperparameters
+  use_gpu: false
   num_workers: 5
-  cpu_range: [23,31]
+  cpu_range: [26,31]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
@@ -16,8 +17,10 @@ variables:
     # '/ais/gobi6/kamyar/oorl_rlkit/output/correct-get-gym-env-experts/correct_get_gym_env_experts_2018_10_27_23_12_33_0007--s-0/'
     # dmcs simple meta reacher
     # '/ais/gobi6/kamyar/oorl_rlkit/output/simple-meta-reacher-hype-search/simple_meta_reacher_hype_search_2018_10_25_04_52_15_0009--s-0/'
-    # dmcs simple meta reacher 300 episodes sin-cos with finger pos
-    '/ais/gobi6/kamyar/oorl_rlkit/output/longer-run-with-finger-pos-dmcs-simple-meta-reacher-with-sin-cos/longer_run_with_finger_pos_dmcs_simple_meta_reacher_with_sin_cos_2018_11_07_18_08_07_0003--s-0/'
+    # final dmcs simple meta reacher sin-cos with finger pos
+    '/ais/gobi6/kamyar/oorl_rlkit/output/longer-run-with-finger-pos-dmcs-simple-meta-reacher-with-sin-cos/longer_run_with_finger_pos_dmcs_simple_meta_reacher_with_sin_cos_2018_11_07_18_08_08_0004--s-0/'
+    # good halfcheetah
+    # '/ais/gobi6/kamyar/oorl_rlkit/output/get-good-halfcheetah-expert/get_good_halfcheetah_expert_2018_11_07_13_35_55_0002--s-0/'
   ]
   num_episodes: [100]
   seed: [28043, 99381, 33478, 448293, 5739]
@@ -25,4 +28,4 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
-  subsampling: 1
+  subsampling: 20

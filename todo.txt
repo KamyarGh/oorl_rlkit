@@ -1,3 +1,78 @@
+Implementing Neural Process Meta-Learner first verions:
+    - (done) implement the main class
+    - (done) buffers:
+        - simple replay buffer
+        - env replay buffer
+    - (done) add sample trajs function to SimpleReplayBuffer
+    - (already done) updating meta env classes so that you can specificy what environment you want to get
+    - (done) implement meta irl algorithm
+        - (don't need this I think) meta in place policy sampler
+        - (don't need this rn I think) implement sampling from the policy for specific task params
+    - (done) handle giving task identifiers to meta-irl
+    - (done) add torch meta irl algorithm
+    - (done) implement a basic trajectory encoder
+        - (done) finish implementing r to z map
+    - (done) fix the interface between encoder and the MetaAIRL algorithm
+
+    - (done) implement an instance of torch rl algorithm that generates "meta-expert-data"
+    - (done) fix the interface between np_bc and meta-expert-sampler
+    - (done) implement train_online for meta irl
+    - (done) implement policies that condition on z
+    - (done) implement the two get expert trajs
+    - (done) implement get exploration policy
+    - (done) fix the trivial encoder
+    - (done) fix _do_training
+        - make the encoder and policy training look nicer
+    - (done) implement obtain_eval_samples
+    - (done) implement evaluate in torch meta irl
+
+    - (done) make a script for populating a meta simple replay buffer with expert data
+    - (done) debug it
+    - (done) debug the meta simple replay buffer
+    - (done) fix meta-irl init parameters
+    - (done) use the pretrained simple meta reacher expert to generate meta expert trajs
+        - fix up the expert traj generation algorithm
+    - (done) debug np_bc
+    - (done) implement the training script for np_bc
+        - use an MlpPolicy
+    
+    - (done) debug task_identifier
+    - (done) debug trivialencoder
+
+    - DONT FORGET TO REMOVE:
+        - z is not being sample, taking the means
+        - trivial encoder is only taking the last 5 timesteps (also has to be fixed in train_np_bc where you set input_size)
+
+    - implement subsampling for meta-simple-replay-buffer
+    - !!!! don't forget to add the KL for the elbo objective !!!!
+    - add scheduling for the KL
+    - run initial experiments for np_bc
+
+
+    - implement sac for meta-irl
+    - changed some stuff in np_bc, make sure it matches in np_airl
+    - implement meta-testing for np_airl
+    - fix the interface between np_airl and metaenvreplaybuffer    
+    - !!!! don't forget to add the KL for the elbo objective !!!!
+    - debug np_airl
+    - add scheduling for the KL
+    - run np_airl experiments
+
+
+    - need to clean up task_params, obs_task_params, task_identifier
+        - also consider that maybe expert has access to extra information that is not constant
+            throughout an episode and hence cannot be folded into obs_task_params
+
+    - do the relabeling trick
+    
+    - implement eval_policy for meta-irl
+    - fixing a broken ELBO
+
+
+    - I should change things so that the meta train and meta test sets don't need to be finite
+
+
+
 Figure out why things are running so slowly!!!!!!!
     - First check if pixel rendering without saving is the culprit or saving the buffer or loading it
 

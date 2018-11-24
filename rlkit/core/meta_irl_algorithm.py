@@ -7,72 +7,60 @@ import gtimer as gt
 import numpy as np
 
 from rlkit.core import logger
-from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
+from rlkit.data_management.env_replay_buffer import MetaEnvReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
-from rlkit.samplers.in_place import InPlacePathSampler
+from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
 
 from gym.spaces import Dict
 
 
-class RLAlgorithm(metaclass=abc.ABCMeta):
+class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
+    '''
+        Generic class for Me
+        While True:
+            generate trajectories for a batch of different task settings
+            update the models
+    '''
     def __init__(
             self,
             env,
-            exploration_policy: ExplorationPolicy,
+            train_context_expert_replay_buffer,
+            train_test_expert_replay_buffer,
+            test_context_expert_replay_buffer,
+            test_test_expert_replay_buffer,
             training_env=None,
             num_epochs=100,
-            num_steps_per_epoch=10000,
-            num_steps_per_eval=1000,
-            num_updates_per_env_step=1,
-            max_num_episodes=None,
-            batch_size=1024,
+            num_rollouts_per_epoch=10,
+            min_rollouts_before_training=10,
             max_path_length=1000,
             discount=0.99,
-            replay_buffer_size=1000000,
-            reward_scale=1,
+            replay_buffer_size_per_task=10000,
             render=False,
             save_replay_buffer=False,
             save_algorithm=False,
-            save_environment=True,
-            eval_sampler=None,
-            eval_policy=None,
+            save_environment=False,
             replay_buffer=None,
-            # for compatibility with deepmind control suite
-            # Right now the semantics is that if observations is not a dictionary
-            # then it means the policy just uses that. If it's a dictionary, it
-            # checks whether policy_uses_pixels to see if it's true or false and
-            # based on that it decides whether the policy takes 'pixels' or 'obs'
-            # from the dictionary
             policy_uses_pixels=False,
+            wrap_absorbing=False,
             freq_saving=1,
-            # for meta-learning
-            policy_uses_task_params=False, # whether the policy uses the task parameters
-            concat_task_params_to_policy_obs=True, # how the policy sees the task parameters
-            # this is useful when you want to generate trajectories from the expert using the
-            # exploration policy
-            do_not_train=False,
             # some environment like halfcheetah_v2 have a timelimit that defines the terminal
             # this is used as a minor hack to turn off time limits
             no_terminal=False,
             **kwargs
-    ):
+        ):
         """
         Base class for RL Algorithms
         :param env: Environment used to evaluate.
-        :param exploration_policy: Policy used to explore
         :param training_env: Environment used by the algorithm. By default, a
         copy of `env` will be made.
         :param num_epochs:
         :param num_steps_per_epoch:
         :param num_steps_per_eval:
-        :param num_updates_per_env_step: Used by online training mode.
-        :param num_updates_per_epoch: Used by batch training mode.
         :param batch_size:
         :param max_path_length:
         :param discount:
         :param replay_buffer_size:
-        :param reward_scale:
         :param render:
         :param save_replay_buffer:
         :param save_algorithm:
@@ -83,48 +71,30 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         """
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
         # self.training_env = training_env or deepcopy(env)
-        self.exploration_policy = exploration_policy
+        self.train_context_expert_replay_buffer = train_context_expert_replay_buffer
+        self.train_test_expert_replay_buffer = train_test_expert_replay_buffer
+        self.test_context_expert_replay_buffer = test_context_expert_replay_buffer
+        self.test_test_expert_replay_buffer = test_test_expert_replay_buffer
         self.num_epochs = num_epochs
-        self.num_env_steps_per_epoch = num_steps_per_epoch
-        self.num_steps_per_eval = num_steps_per_eval
-        self.num_updates_per_train_call = num_updates_per_env_step
-        self.batch_size = batch_size
+        self.num_rollouts_per_epoch = num_rollouts_per_epoch
+        self.min_rollouts_before_training = min_rollouts_before_training
         self.max_path_length = max_path_length
         self.discount = discount
-        self.replay_buffer_size = replay_buffer_size
-        self.reward_scale = reward_scale
+        self.replay_buffer_size_per_task = replay_buffer_size_per_task
         self.render = render
         self.save_replay_buffer = save_replay_buffer
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
         self.policy_uses_pixels = policy_uses_pixels
-        self.policy_uses_task_params = policy_uses_task_params
-        self.concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
-        self.freq_saving = freq_saving
-        if eval_sampler is None:
-            if eval_policy is None:
-                eval_policy = exploration_policy
-            eval_sampler = InPlacePathSampler(
-                env=env,
-                policy=eval_policy,
-                max_samples=self.num_steps_per_eval + self.max_path_length,
-                max_path_length=self.max_path_length, policy_uses_pixels=policy_uses_pixels,
-                policy_uses_task_params=policy_uses_task_params,
-                concat_task_params_to_policy_obs=concat_task_params_to_policy_obs
-            )
-        self.eval_policy = eval_policy
-        self.eval_sampler = eval_sampler
 
         self.action_space = env.action_space
         self.obs_space = env.observation_space
         self.env = env
         if replay_buffer is None:
-            replay_buffer = EnvReplayBuffer(
-                self.replay_buffer_size,
-                self.env,
+            replay_buffer = MetaEnvReplayBuffer(
+                self.replay_buffer_size_per_task,
+                self.training_env,
                 policy_uses_pixels=self.policy_uses_pixels,
-                policy_uses_task_params=self.policy_uses_task_params,
-                concat_task_params_to_policy_obs=self.concat_task_params_to_policy_obs
             )
         self.replay_buffer = replay_buffer
 
@@ -137,10 +107,12 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         self._old_table_keys = None
         self._current_path_builder = PathBuilder()
         self._exploration_paths = []
-        self.do_not_train = do_not_train
-        self.num_episodes = 0
-        self.max_num_episodes = max_num_episodes if max_num_episodes is not None else float('inf')
+        self.wrap_absorbing = wrap_absorbing
+        if self.wrap_absorbing:
+            assert isinstance(env, WrappedAbsorbingEnv), 'Env is not wrapped!'
+        self.freq_saving = freq_saving
         self.no_terminal = no_terminal
+
 
     def train(self, start_epoch=0):
         self.pretrain()
@@ -148,10 +120,11 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             params = self.get_epoch_snapshot(-1)
             logger.save_itr_params(-1, params)
         self.training_mode(False)
-        self._n_env_steps_total = start_epoch * self.num_env_steps_per_epoch
+        # self._n_env_steps_total = start_epoch * self.num_env_steps_per_epoch
         gt.reset()
         gt.set_def_unique(False)
         self.train_online(start_epoch=start_epoch)
+
 
     def pretrain(self):
         """
@@ -159,80 +132,99 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         """
         pass
 
+
     def train_online(self, start_epoch=0):
+        # No need for training mode to be True when generating trajectories
+        # training mode is automatically set to True
+        # in _try_to_train and before exiting
+        # it that function it reverts it to False
+        self.training_mode(False)
         self._current_path_builder = PathBuilder()
-        observation = self._start_new_rollout()
+
         for epoch in gt.timed_for(
-                range(start_epoch, self.num_epochs),
-                save_itrs=True,
+            range(start_epoch, self.num_epochs),
+            save_itrs=True,
         ):
             self._start_epoch(epoch)
-            for _ in range(self.num_env_steps_per_epoch):
-                # we are assuming that if it's a dict then it has
-                # pixels and obs, and maybe obs_task_params
-                if isinstance(self.obs_space, Dict):
-                    if self.policy_uses_pixels:
-                        agent_obs = observation['pixels']
+            
+            for _ in range(self.num_rollouts_per_epoch):
+                observation, task_identifier = self._start_new_rollout()
+                terminal = False
+                # when you start a new rollout self.exploration_policy
+                # is set to the one for the current task
+
+                while (not terminal) and len(self._current_path_builder) < self.max_path_length:
+                    if isinstance(self.obs_space, Dict):
+                        if self.policy_uses_pixels:
+                            agent_obs = observation['pixels']
+                        else:
+                            agent_obs = observation['obs']
                     else:
-                        agent_obs = observation['obs']
-                else:
-                    agent_obs = observation
-                if self.policy_uses_task_params:
-                    task_params = observation['obs_task_params']
-                    if self.concat_task_params_to_policy_obs:
-                        agent_obs = np.concatenate((agent_obs, task_params), -1)
-                    else:
-                        agent_obs = {'obs': agent_obs, 'obs_task_params': task_params}
-                action, agent_info = self._get_action_and_info(
-                    agent_obs,
-                )
-                if self.render:
-                    self.training_env.render()
-                next_ob, raw_reward, terminal, env_info = (
-                    self.training_env.step(action)
-                )
-                if self.no_terminal:
-                    terminal = False
-                self._n_env_steps_total += 1
-                reward = raw_reward * self.reward_scale
-                terminal = np.array([terminal])
-                reward = np.array([reward])
-                self._handle_step(
-                    observation,
-                    action,
-                    reward,
-                    next_ob,
-                    terminal,
-                    agent_info=agent_info,
-                    env_info=env_info,
-                )
-                if terminal or len(self._current_path_builder) >= self.max_path_length:
-                    self._handle_rollout_ending()
-                    observation = self._start_new_rollout()
-                else:
+                        agent_obs = observation
+                    
+                    action, agent_info = self._get_action_and_info(agent_obs)
+                    if self.render:
+                        self.training_env.render()
+                    
+                    next_ob, raw_reward, terminal, env_info = (self.training_env.step(action))
+                    if self.no_terminal:
+                        terminal = False
+                    
+                    self._n_env_steps_total += 1
+                    reward = raw_reward
+                    terminal = np.array([terminal])
+                    reward = np.array([reward])
+                    self._handle_step(
+                        observation,
+                        action,
+                        reward,
+                        next_ob,
+                        np.array([False]) if self.wrap_absorbing else terminal,
+                        task_identifier,
+                        agent_info=agent_info,
+                        env_info=env_info,
+                    )
                     observation = next_ob
 
-                gt.stamp('sample')
-                if not self.do_not_train: self._try_to_train()
-                gt.stamp('train')
+                if terminal and self.wrap_absorbing:
+                    raise NotImplementedError("I think they used 0 actions for this")
+                    # next_ob is the absorbing state
+                    # for now just using the action from the previous timesteps
+                    # as well as agent info and env info
+                    self._handle_step(
+                        next_ob,
+                        action,
+                        # the reward doesn't matter cause it will be
+                        # overwritten by the model that defines the reward
+                        # e.g. the discriminator in GAIL
+                        reward,
+                        next_ob,
+                        terminal,
+                        task_identifier,
+                        agent_info=agent_info,
+                        env_info=env_info
+                    )
+                
+                self._handle_rollout_ending(task_identifier)
 
-                if self.num_episodes > self.max_num_episodes:
-                    self._try_to_eval(epoch)
-                    gt.stamp('eval')
-                    self._end_epoch()
-                    return
+            # essentially in each epoch we gather data then do a certain amount of training
+            gt.stamp('sample')
+            self._try_to_train()
+            gt.stamp('train')
 
+            # and then we evaluate it
             self._try_to_eval(epoch)
             gt.stamp('eval')
             self._end_epoch()
 
+
     def _try_to_train(self):
         if self._can_train():
             self.training_mode(True)
-            for i in range(self.num_updates_per_train_call):
-                self._do_training()
-                self._n_train_steps_total += 1
+            self._do_training()
+            self._n_train_steps_total += 1
             self.training_mode(False)
+
 
     def _try_to_eval(self, epoch):
         if epoch % self.freq_saving == 0:
@@ -244,23 +236,11 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
                 params = self.get_epoch_snapshot(epoch)
                 logger.save_itr_params(epoch, params)
             table_keys = logger.get_table_key_set()
-            if self._old_table_keys is not None:
-                # print('$$$$$$$$$$$$$$$')
-                # print(table_keys)
-                # print('\n'*4)
-                # print(self._old_table_keys)
-                # print('$$$$$$$$$$$$$$$')
-                # print(set(table_keys) - set(self._old_table_keys))
-                # print(set(self._old_table_keys) - set(table_keys))
-                assert table_keys == self._old_table_keys, (
-                    "Table keys cannot change from iteration to iteration."
-                )
-            self._old_table_keys = table_keys
 
-            logger.record_tabular(
-                "Number of train steps total",
-                self._n_train_steps_total,
-            )
+            # logger.record_tabular(
+            #     "Number of train steps total",
+            #     self._n_policy_train_steps_total,
+            # )
             logger.record_tabular(
                 "Number of env steps total",
                 self._n_env_steps_total,
@@ -288,6 +268,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         else:
             logger.log("Skipping eval for now.")
 
+
     def _can_evaluate(self):
         """
         One annoying thing about the logger table is that the keys at each
@@ -302,11 +283,13 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         """
         return (
             len(self._exploration_paths) > 0
-            and self.replay_buffer.num_steps_can_sample() >= self.batch_size
+            and self._n_rollouts_total >= self.min_rollouts_before_training
         )
 
+
     def _can_train(self):
-        return self.replay_buffer.num_steps_can_sample() >= self.batch_size
+        return self._n_rollouts_total >= self.min_rollouts_before_training
+
 
     def _get_action_and_info(self, observation):
         """
@@ -319,11 +302,13 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             observation,
         )
 
+
     def _start_epoch(self, epoch):
         self._epoch_start_time = time.time()
         self._exploration_paths = []
         self._do_train_time = 0
         logger.push_prefix('Iteration #%d | ' % epoch)
+
 
     def _end_epoch(self):
         logger.log("Epoch Duration: {0}".format(
@@ -332,12 +317,17 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         logger.log("Started Training: {0}".format(self._can_train()))
         logger.pop_prefix()
 
-    def _start_new_rollout(self):
-        self.num_episodes += 1
-        self.exploration_policy.reset()
-        return self.training_env.reset()
 
-    def _handle_path(self, path):
+    def _start_new_rollout(self):
+        observation = self.training_env.reset()
+        task_id = self.training_env.task_identifier
+
+        self.exploration_policy = self.get_exploration_policy(task_id)
+        self.exploration_policy.reset()
+        return observation, task_id
+
+
+    def _handle_path(self, path, task_identifier):
         """
         Naive implementation: just loop through each transition.
         :param path:
@@ -366,10 +356,12 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
                 reward,
                 next_ob,
                 terminal,
+                task_identifier,
                 agent_info=agent_info,
                 env_info=env_info,
             )
-        self._handle_rollout_ending()
+        self._handle_rollout_ending(task_identifier)
+
 
     def _handle_step(
             self,
@@ -378,6 +370,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             reward,
             next_observation,
             terminal,
+            task_identifier,
             agent_info,
             env_info,
     ):
@@ -393,6 +386,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             terminals=terminal,
             agent_infos=agent_info,
             env_infos=env_info,
+            task_identifiers=task_identifier
         )
         self.replay_buffer.add_sample(
             observation=observation,
@@ -400,15 +394,17 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             reward=reward,
             terminal=terminal,
             next_observation=next_observation,
+            task_identifier=task_identifier,
             agent_info=agent_info,
             env_info=env_info,
         )
 
-    def _handle_rollout_ending(self):
+
+    def _handle_rollout_ending(self, task_identifier):
         """
         Implement anything that needs to happen after every rollout.
         """
-        self.replay_buffer.terminate_episode()
+        self.replay_buffer.terminate_episode(task_identifier)
         self._n_rollouts_total += 1
         if len(self._current_path_builder) > 0:
             self._exploration_paths.append(
@@ -416,14 +412,15 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             )
             self._current_path_builder = PathBuilder()
 
+
     def get_epoch_snapshot(self, epoch):
         data_to_save = dict(
             epoch=epoch,
-            exploration_policy=self.exploration_policy,
         )
         if self.save_environment:
             data_to_save['env'] = self.training_env
         return data_to_save
+
 
     def get_extra_data_to_save(self, epoch):
         """
@@ -444,6 +441,52 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         if self.save_algorithm:
             data_to_save['algorithm'] = self
         return data_to_save
+    
+
+    @abc.abstractmethod
+    def get_exploration_policy(self, task_identifier):
+        '''
+            Since for each task a meta-irl algorithm needs to somehow
+            use some expert demonstrations, this is a convenience method
+            to get a version of the policy that is handling this stuff internally.
+
+            Example:
+            In the neural process meta-irl method, for a given task we need to,
+            take some demonstrations, infer the posterior, sample from the posterior,
+            then conidtion the policy by concatenating the sample to any observations
+            that are passed to the policy. So internally, in np_bc and np_airl, when
+            we call get_exploration_policy we set the latent sample for a
+            PostCondReparamTanhMultivariateGaussianPolicy and return that. From then on,
+            whenever we call get_action on the policy, it internally concatenates the
+            latent to the observation passed to it.
+        '''
+        pass
+    
+
+    @abc.abstractmethod
+    def get_eval_policy(self, task_identifier):
+        '''
+            Since for each task a meta-irl algorithm needs to somehow
+            use some expert demonstrations, this is a convenience method
+            to get a version of the policy that is handling this stuff internally.
+
+            Example:
+            In the neural process meta-irl method, for a given task we need to,
+            take some demonstrations, infer the posterior, sample from the posterior,
+            then conidtion the policy by concatenating the sample to any observations
+            that are passed to the policy. So internally, in np_bc and np_airl, when
+            we call get_exploration_policy we set the latent sample for a
+            PostCondReparamTanhMultivariateGaussianPolicy and return that. From then on,
+            whenever we call get_action on the policy, it internally concatenates the
+            latent to the observation passed to it.
+        '''
+        pass
+    
+
+    @abc.abstractmethod
+    def obtain_eval_samples(self, epoch):
+        pass
+
 
     @abc.abstractmethod
     def training_mode(self, mode):
@@ -454,6 +497,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         """
         pass
 
+
     @abc.abstractmethod
     def cuda(self):
         """
@@ -461,6 +505,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         :return:
         """
         pass
+
 
     @abc.abstractmethod
     def evaluate(self, epoch):
@@ -470,6 +515,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
         :return:
         """
         pass
+
 
     @abc.abstractmethod
     def _do_training(self):

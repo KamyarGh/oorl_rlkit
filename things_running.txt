@@ -1,3 +1,5 @@
+dac for good halfcheetah with 20 subsampling (with and without batchnorm in disc)
+
 (done) halfcheetah experts
 (done) longer run dmcs simple meta reacher (longer run with to target 10 and with finger 25 and 50 seem quite good)
 (done) 2 layer disc reacher dac

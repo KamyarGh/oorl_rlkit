@@ -1,5 +1,5 @@
 """Base class for tasks in the Control Suite.
-Pretty much a carbon copy of this:
+Pretty much a direct copy of this:
 https://github.com/deepmind/dm_control/blob/master/dm_control/suite/base.py
 """
 
@@ -78,6 +78,9 @@ class MetaTask(meta_env.MetaTask):
     if not isinstance(value, bool):
       raise ValueError("Expected a boolean, got {}.".format(type(value)))
     self._visualize_reward = value
+
+  def get_task_identifier(self, physics):
+    raise NotImplementedError()
 
 
 def _set_reward_colors(physics, reward):

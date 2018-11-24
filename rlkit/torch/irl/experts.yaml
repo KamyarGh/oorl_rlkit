@@ -10,36 +10,75 @@ gym_ant_25_trajs_20_subsampling:
     expert_gym_ant_25_trajs_20_subsampling_2018_10_29_21_07_40_0004--s-0
   ]
 
-# These two cheetahs are with bad experts, should be eventually replaced with the good ones
-gym_halfcheetah_25_trajs_1_subsampling:
+# 0001 is the best one
+good_halfcheetah_100_trajs_1_subsampling:
   description: "gym halfcheetah v2 unnormalized"
-  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/final-correct-expert-gym-halfcheetah-25-trajs-1-subsampling
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/final-good-halfcheetah-expert-100-traj-subsampling-1-stochastic
   seed_runs: [
-    final_correct_expert_gym_halfcheetah_25_trajs_1_subsampling_2018_10_31_02_26_33_0000--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_1_subsampling_2018_10_31_02_26_33_0001--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_1_subsampling_2018_10_31_02_26_35_0002--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_1_subsampling_2018_10_31_02_26_35_0003--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_1_subsampling_2018_10_31_02_26_35_0004--s-0
+    final_good_halfcheetah_expert_100_traj_subsampling_1_stochastic_2018_11_08_20_09_26_0000--s-0,
+    final_good_halfcheetah_expert_100_traj_subsampling_1_stochastic_2018_11_08_20_09_47_0002--s-0,
+    final_good_halfcheetah_expert_100_traj_subsampling_1_stochastic_2018_11_08_20_09_51_0001--s-0,
+    final_good_halfcheetah_expert_100_traj_subsampling_1_stochastic_2018_11_08_20_09_51_0003--s-0,
+    final_good_halfcheetah_expert_100_traj_subsampling_1_stochastic_2018_11_08_20_09_51_0004--s-0
   ]
 
-gym_halfcheetah_25_trajs_20_subsampling:
+# 0002 is the best one
+good_halfcheetah_100_trajs_20_subsampling:
   description: "gym halfcheetah v2 unnormalized"
-  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/final-correct-expert-gym-halfcheetah-25-trajs-20-subsampling
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/good-halfcheetah-expert-100-traj-subsampling-20-stochastic
   seed_runs: [
-    final_correct_expert_gym_halfcheetah_25_trajs_20_subsampling_2018_11_02_20_09_55_0000--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_20_subsampling_2018_11_02_20_09_55_0001--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_20_subsampling_2018_11_02_20_09_55_0002--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_20_subsampling_2018_11_02_20_09_55_0003--s-0,
-    final_correct_expert_gym_halfcheetah_25_trajs_20_subsampling_2018_11_02_20_09_56_0004--s-0
+    good_halfcheetah_expert_100_traj_subsampling_20_stochastic_2018_11_08_20_26_23_0000--s-0,
+    good_halfcheetah_expert_100_traj_subsampling_20_stochastic_2018_11_08_20_26_00_0001--s-0,
+    good_halfcheetah_expert_100_traj_subsampling_20_stochastic_2018_11_08_20_25_56_0002--s-0,
+    good_halfcheetah_expert_100_traj_subsampling_20_stochastic_2018_11_08_20_26_01_0003--s-0,
+    good_halfcheetah_expert_100_traj_subsampling_20_stochastic_2018_11_08_20_26_15_0004--s-0
   ]
 
-temp_dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling:
-  description: "dmcs simple meta reacher unnormalized reward scale 25.0"
-  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/temp-reacher-expert-with-finger-pos
+# use 0004
+dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_20_subsampling:
+  description: "dmcs simple meta reacher unnormalized reward scale 50.0"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/ugh-very-final-dmcs-simple-meta-reacher-sin-cos-with-finger-pos-100-traj-20-subsampling
   seed_runs: [
-    temp_reacher_expert_with_finger_pos_2018_11_07_19_47_48_0000--s-0,
-    temp_reacher_expert_with_finger_pos_2018_11_07_19_47_48_0001--s-0,
-    temp_reacher_expert_with_finger_pos_2018_11_07_19_47_48_0002--s-0,
-    temp_reacher_expert_with_finger_pos_2018_11_07_19_47_48_0003--s-0,
-    temp_reacher_expert_with_finger_pos_2018_11_07_19_47_48_0004--s-0
+    ugh_very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_20_subsampling_2018_11_09_03_39_04_0004--s-0,
+    ugh_very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_20_subsampling_2018_11_09_03_39_04_0000--s-0,
+    ugh_very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_20_subsampling_2018_11_09_03_39_04_0001--s-0,
+    ugh_very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_20_subsampling_2018_11_09_03_39_04_0002--s-0,
+    ugh_very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_20_subsampling_2018_11_09_03_39_04_0003--s-0,
+  ]
+
+# use 0002
+dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling:
+  description: "dmcs simple meta reacher unnormalized reward scale 50.0"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/very-final-dmcs-simple-meta-reacher-sin-cos-with-finger-pos-100-traj-1-subsampling
+  seed_runs: [
+    very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_41_0002--s-0,
+    very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_41_0000--s-0,
+    very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_42_0001--s-0,
+    very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_43_0003--s-0,
+    very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_43_0004--s-0
+  ]
+
+
+# META-EXPERTS ----------------------------------------------------------------
+meta_simple_meta_reacher_expert_no_subsampling:
+  description: "meta simple meta reacher expert, 6 trajs per task"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/final-exp-trajs-for-meta-simple-meta-reacher
+  seed_runs: [
+    final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_03_11_34_0000--s-0,
+    final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_03_11_34_0001--s-0,
+    final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_03_11_34_0002--s-0,
+    final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_03_11_34_0003--s-0,
+    final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_03_11_35_0004--s-0
+  ]
+
+
+meta_simple_meta_reacher_expert_no_subsampling_50_trajs_per_task:
+  description: "meta simple meta reacher expert"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/a-lot-of-trajs-final-exp-trajs-for-meta-simple-meta-reacher
+  seed_runs: [
+    a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_09_0000--s-0,
+    a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_09_0001--s-0,
+    a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_09_0002--s-0,
+    a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_09_0003--s-0,
+    a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_10_0004--s-0
   ]

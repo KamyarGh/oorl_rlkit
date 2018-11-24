@@ -1,6 +1,7 @@
 import os
 from os import path as osp
 from random import randrange
+import abc
 
 from numpy import array
 from numpy.random import uniform
@@ -16,6 +17,12 @@ from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.envs.dmcs_wrapper import DmControlWrapper
 from rlkit.envs.dmcs_envs.simple_reacher import build_simple_reacher as build_dmcv_simple_reacher
 from rlkit.envs.dmcs_envs.simple_meta_reacher import build_simple_meta_reacher
+
+# for meta simple meta reacher
+from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
+from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import get_params_iterators as get_meta_simple_meta_reacher_params_iters
+
+from gym.envs.mujoco.half_cheetah import HalfCheetahEnv
 
 from dm_control.suite.wrappers import pixels
 
@@ -44,7 +51,7 @@ all_envs = {
 fixed_envs = {
     'ant_v2': lambda: gym.envs.make('Ant-v2'),
     'swimmer_v2': lambda: gym.envs.make('Swimmer-v2'),
-    'halfcheetah_v2': lambda: gym.envs.make('HalfCheetah-v2'),
+    'halfcheetah_v2': lambda: HalfCheetahEnv(),
     'hopper_v2': lambda: gym.envs.make('Hopper-v2'),
     'reacher_v2': lambda: gym.envs.make('Reacher-v2'),
     'pendulum_v0': lambda: gym.envs.make('Pendulum-v0'),
@@ -69,6 +76,19 @@ fixed_envs = {
     )
 }
 
+meta_envs = {
+    'meta_simple_meta_reacher': {
+        'meta_train': lambda: DmControlWrapper(build_meta_simple_meta_reacher(train_env=True)),
+        'meta_test': lambda: DmControlWrapper(build_meta_simple_meta_reacher(train_env=False))
+    }
+}
+
+meta_env_task_params_iterators = {
+    'meta_simple_meta_reacher': {
+        'meta_train': lambda: get_meta_simple_meta_reacher_params_iters(train_env=True),
+        'meta_test': lambda: get_meta_simple_meta_reacher_params_iters(train_env=False)
+    }
+}
 
 train_test_envs = {
     'dmcs_simple_meta_reacher': {
@@ -76,6 +96,21 @@ train_test_envs = {
         'test': lambda: DmControlWrapper(build_simple_meta_reacher(train_env=False))
     }
 }
+
+
+def get_meta_env(env_specs):
+    base_env_name = env_specs['base_env_name']
+    meta_train_env, meta_test_env = meta_envs[base_env_name]['meta_train'](), meta_envs[base_env_name]['meta_test']()
+    if env_specs['normalized']:
+        meta_train_env, meta_test_env = NormalizedBoxEnv(meta_train_env), NormalizedBoxEnv(meta_test_env)
+    return meta_train_env, meta_test_env
+
+
+def get_meta_env_params_iters(env_specs):
+    base_env_name = env_specs['base_env_name']
+    meta_train_iter = meta_env_task_params_iterators[base_env_name]['meta_train']()
+    meta_test_iter = meta_env_task_params_iterators[base_env_name]['meta_test']()
+    return meta_train_iter, meta_test_iter
 
 
 def get_env(env_specs):

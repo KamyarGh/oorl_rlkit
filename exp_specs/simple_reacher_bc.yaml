@@ -1,24 +1,34 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/bc_train_script.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: simple_reacher_bc
+  exp_name: halfcheetah_bc_100_trajs
   description: searching over the SAC hyperparameters
-  use_gpu: false
-  num_workers: 4
-  cpu_range: [0,4]
+  use_gpu: true
+  num_workers: 1
+  cpu_range: [0,31]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   concat_env_params_to_obs: [false]
 
+  expert_name: [
+    # good_halfcheetah_100_trajs_1_subsampling,
+    # good_halfcheetah_100_trajs_20_subsampling
+    dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling
+  ]
   num_expert_trajs: [100]
 
   bc_params:
-    batch_size: [100]
+    batch_size: [128]
+    lr: [0.0003, 0.001]
+    # lr: [0.0003]
+    use_layer_norm: [true, false]
 
   env_specs:
     normalized: [false]
-    train_test_env: [true]
+    train_test_env: [false]
+  
+  policy_net_size: [100]
   
   # seed: [9783, 5914]
   seed: [9783]
@@ -27,13 +37,12 @@ variables:
 constants:
   # expert_save_dict: '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search/final_pendulum_new_sac_hyper_param_search_2018_10_12_19_11_09_0000--s-0/extra_data.pkl'
   # last_k_expert_steps: 500
-  expert_name: temp_dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling
-  expert_seed_run_idx: 4
+  expert_seed_run_idx: 0
   wrap_absorbing_state: false
   
   bc_params:
-    max_iters: 500001
-    num_steps_per_eval: 1000
+    max_iters: 200001
+    num_steps_per_eval: 100
     max_path_length: 100
 
     # batch_size: 100
@@ -42,7 +51,6 @@ constants:
     policy_uses_task_params: true
     concat_task_params_to_policy_obs: true
 
-    lr: 0.0003 # or 0.001
     policy_mean_reg_weight: 0.001
     policy_std_reg_weight: 0.001
     policy_pre_activation_weight: 0.0
@@ -50,7 +58,6 @@ constants:
     freq_eval: 1000
     freq_saving: 10000
   
-  policy_net_size: 256
     
   env_specs:
     base_env_name: 'dmcs_simple_meta_reacher'

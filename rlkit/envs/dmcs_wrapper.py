@@ -1,5 +1,5 @@
 '''
-Modified from
+Modified a bit from
 https://github.com/martinseilair/dm_control2gym/blob/master/dm_control2gym/wrapper.py
 '''
 
@@ -134,6 +134,7 @@ def convertObservation(spec_obs, has_pixels=False, has_task_params=False):
 class DmControlWrapper(core.Env):
     def __init__(self, dmcenv, render_mode_list=None):
         self.dmcenv = dmcenv
+        self.is_meta_env = isinstance(dmcenv, MetaEnvironment)
 
         # convert spec to space
         self.action_space = convertSpec2Space(self.dmcenv.action_spec(), clip_inf=True)
@@ -167,6 +168,7 @@ class DmControlWrapper(core.Env):
         self.timestep = self.dmcenv.reset(**kwargs)
         return self.getObservation()
 
+
     def step(self, a):
 
         if type(self.action_space) == DmcDiscrete:
@@ -174,8 +176,17 @@ class DmControlWrapper(core.Env):
         self.timestep = self.dmcenv.step(a)
 
         # print(self.getObservation())
+        if self.is_meta_env:
+            info_dict = {'task_identifier': self.dmcenv.task_identifier}
+        else:
+            info_dict = {}
 
-        return self.getObservation(), self.timestep.reward, self.timestep.last(), {}
+        return self.getObservation(), self.timestep.reward, self.timestep.last(), info_dict
+
+
+    @property
+    def task_identifier(self):
+        return self.dmcenv.task_identifier
 
 
     def _render(self, mode='human', close=False):

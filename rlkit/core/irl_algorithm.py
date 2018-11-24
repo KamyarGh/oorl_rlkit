@@ -28,7 +28,8 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
     def __init__(
             self,
             env,
-            expert_replay_buffer,
+            train_expert_replay_buffer,
+            test_expert_replay_buffer,
             exploration_policy: ExplorationPolicy,
             policy_optimizer,
             training_env=None,
@@ -50,7 +51,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             eval_policy=None,
             replay_buffer=None,
             policy_uses_pixels=False,
-            wrap_absorbing=True,
+            wrap_absorbing=False,
             freq_saving=1,
             # some environment like halfcheetah_v2 have a timelimit that defines the terminal
             # this is used as a minor hack to turn off time limits
@@ -85,7 +86,8 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         # self.training_env = training_env or deepcopy(env)
         self.exploration_policy = exploration_policy
         self.policy_optimizer = policy_optimizer
-        self.expert_replay_buffer = expert_replay_buffer
+        self.train_expert_replay_buffer = train_expert_replay_buffer
+        self.test_expert_replay_buffer = test_expert_replay_buffer
         self.num_epochs = num_epochs
         self.num_env_steps_per_epoch = num_steps_per_epoch
         self.num_steps_per_eval = num_steps_per_eval

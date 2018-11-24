@@ -80,6 +80,7 @@ class MetaEnvironment(environment.Base):
     self._step_count = 0
     self._reset_next_step = True
 
+
   def reset(self, task_params=None, obs_task_params=None):
     """Starts a new episode and returns the first `TimeStep`.
     task_params: a dict of task params to pass to the task
@@ -99,12 +100,14 @@ class MetaEnvironment(environment.Base):
         observation['obs_task_params'] = self.obs_task_params
     if self._flat_observation:
       observation = flatten_observation(observation)
-
+    
     return environment.TimeStep(
         step_type=environment.StepType.FIRST,
         reward=None,
         discount=None,
-        observation=observation)
+        observation=observation
+    )
+
 
   def step(self, action):
     """Updates the environment using the action and returns a `TimeStep`."""
@@ -140,13 +143,16 @@ class MetaEnvironment(environment.Base):
       return environment.TimeStep(
           environment.StepType.MID, reward, 1.0, observation)
 
+
   def action_spec(self):
     """Returns the action specification for this environment."""
     return self._task.action_spec(self._physics)
 
+
   def step_spec(self):
     """May return a specification for the values returned by `step`."""
     return self._task.step_spec(self._physics)
+
 
   def observation_spec(self):
     """Returns the observation specification for this environment.
@@ -169,13 +175,21 @@ class MetaEnvironment(environment.Base):
       print(observation)
       return _spec_from_observation(observation)
 
+
   @property
   def physics(self):
     return self._physics
 
+
   @property
   def task(self):
     return self._task
+  
+
+  @property
+  def task_identifier(self):
+    return self._task.get_task_identifier(self._physics)
+
 
   def control_timestep(self):
     """Returns the interval between agent actions in seconds."""
@@ -218,7 +232,6 @@ def _spec_from_observation(observation):
   return result
 
 
-
 @six.add_metaclass(abc.ABCMeta)
 class MetaTask(object):
   """Defines a task in a `control.Environment`."""
@@ -234,6 +247,7 @@ class MetaTask(object):
       physics: Instance of `Physics`.
     """
 
+
   @abc.abstractmethod
   def before_step(self, action, physics):
     """Updates the task from the provided action.
@@ -246,6 +260,7 @@ class MetaTask(object):
         `self.action_spec(physics)`.
       physics: Instance of `Physics`.
     """
+
 
   def after_step(self, physics):
     """Optional method to update the task after the physics engine has stepped.
@@ -260,6 +275,7 @@ class MetaTask(object):
       physics: Instance of `Physics`.
     """
 
+
   @abc.abstractmethod
   def action_spec(self, physics):
     """Returns a specification describing the valid actions for this task.
@@ -272,6 +288,7 @@ class MetaTask(object):
       that describe the shapes, dtypes and elementwise lower and upper bounds
       for the action array(s) passed to `self.step`.
     """
+
 
   def step_spec(self, physics):
     """Returns a specification describing the time_step for this task.
@@ -286,6 +303,7 @@ class MetaTask(object):
     """
     raise NotImplementedError()
 
+
   @abc.abstractmethod
   def get_observation(self, physics):
     """Returns an observation from the environment.
@@ -294,6 +312,7 @@ class MetaTask(object):
       physics: Instance of `Physics`.
     """
 
+
   @abc.abstractmethod
   def get_reward(self, physics):
     """Returns a reward from the environment.
@@ -301,9 +320,20 @@ class MetaTask(object):
     Args:
       physics: Instance of `Physics`.
     """
+  
+
+  @abc.abstractmethod
+  def get_task_identifier(self, physics):
+    """Returns a hashable task identifier
+
+    Args:
+      physics: Instance of `Physics`.
+    """
+
 
   def get_termination(self, physics):
     """If the episode should end, returns a final discount, otherwise None."""
+
 
   def observation_spec(self, physics):
     """Optional method that returns the observation spec.

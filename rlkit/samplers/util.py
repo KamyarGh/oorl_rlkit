@@ -4,7 +4,8 @@ import numpy as np
 def rollout(env, agent, max_path_length=np.inf, animated=False,
     concat_env_params_to_obs=False, normalize_env_params=False, env_params_normalizer=None,
     neural_process=None, latent_repr_fn=None, reward_scale=1, policy_uses_pixels=False,
-    policy_uses_task_params=False, concat_task_params_to_policy_obs=False):
+    policy_uses_task_params=False, concat_task_params_to_policy_obs=False,
+    do_not_reset=False, first_obs=None):
     """
     The following value for the following keys will be a 2D array, with the
     first dimension corresponding to the time dimension.
@@ -33,7 +34,10 @@ def rollout(env, agent, max_path_length=np.inf, animated=False,
     terminals = []
     agent_infos = []
     env_infos = []
-    o = env.reset()
+    if do_not_reset:
+        o = first_obs
+    else:
+        o = env.reset()
     if neural_process is not None:
         posterior_state = neural_process.reset_posterior_state()
         latent_repr = latent_repr_fn(posterior_state)
