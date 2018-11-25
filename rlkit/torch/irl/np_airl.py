@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from random import sample
 
 import numpy as np
 
@@ -11,89 +12,112 @@ import torch.nn.functional as F
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.core.eval_util import create_stats_ordered_dict
-from rlkit.torch.torch_irl_algorithm import TorchIRLAlgorithm
+from rlkit.torch.torch_meta_irl_algorithm import TorchMetaIRLAlgorithm
 from rlkit.torch.sac.policies import MakeDeterministic
+from rlkit.samplers.util import rollout
+from rlkit.torch.sac.policies import PostCondMLPPolicyWrapper
+from rlkit.data_management.path_builder import PathBuilder
+
+from gym.spaces import Dict
 
 
-class NeuralProcessAIRL(TorchIRLAlgorithm):
+class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
     '''
-        Meta-AIRL
-        Neural Process + AIRL/DAC
+        Meta-AIRL using a neural process
 
         assuming the context trajectories all have the same length and flat and everything nice
-        context batch: N x L x (S+A)
-        test batch: N x K x(S+A)
     '''
     def __init__(
             self,
             env,
 
-            policy,
-            encoder,
-            discriminator,
+            # this is the main policy network that we wrap with
+            # PostCondWrapperPolicy for get_exploration policy
+            main_policy,
+            disc,
 
-            policy_optimizer,
-            expert_replay_buffer,
+            train_context_expert_replay_buffer,
+            train_test_expert_replay_buffer,
+            test_context_expert_replay_buffer,
+            test_test_expert_replay_buffer,
 
-            num_context_trajs=3,
-            test_batch_size_per_task=5,
+            np_encoder,
+            test_task_params_sampler,
+
+            policy_optimizer, # the RL algorith that updates the policy
+
+            num_policy_updates_per_epoch=1000,
+            num_disc_updates_per_epoch=1000,
             num_tasks_used_per_update=4,
+            num_context_trajs_for_training=3,
+            test_batch_size_per_task=5,
 
-            disc_optim_batch_size=32,
-            policy_optim_batch_size=1000,
+            # for each task, for each context, infer post, for each post sample, generate some eval trajs
+            num_tasks_per_eval=10,
+            num_diff_context_per_eval_task=2,
+            num_context_trajs_for_eval=3,
+            num_eval_trajs_per_post_sample=2,
 
-            disc_lr=1e-3,
-            disc_optimizer_class=optim.Adam,
+            num_context_trajs_for_exploration=3,
 
             encoder_lr=1e-3,
             encoder_optimizer_class=optim.Adam,
+
+            disc_lr=1e-3,
+            disc_optimizer_class=optim.Adam,
 
             use_grad_pen=True,
             grad_pen_weight=10,
 
             plotter=None,
             render_eval_paths=False,
-            eval_deterministic=True,
             **kwargs
     ):
-        if eval_deterministic:
-            eval_policy = MakeDeterministic(policy)
-        else:
-            eval_policy = policy
         super().__init__(
             env=env,
-            exploration_policy=policy,
-            eval_policy=eval_policy,
-            expert_replay_buffer=expert_replay_buffer,
-            policy_optimizer=policy_optimizer,
+            train_context_expert_replay_buffer=train_context_expert_replay_buffer,
+            train_test_expert_replay_buffer=train_test_expert_replay_buffer,
+            test_context_expert_replay_buffer=test_context_expert_replay_buffer,
+            test_test_expert_replay_buffer=test_test_expert_replay_buffer,
             **kwargs
         )
 
-        self.encoder = encoder
-        self.discriminator = discriminator
+        self.main_policy = main_policy
+        self.encoder = np_encoder
+        self.disc = disc
         self.rewardf_eval_statistics = None
+        self.test_task_params_sampler = test_task_params_sampler
         
-        self.disc_optimizer = disc_optimizer_class(
-            self.discriminator.parameters(),
-            lr=disc_lr,
-        )
+
+        self.policy_optimizer = policy_optimizer
         self.encoder_optimizer = encoder_optimizer_class(
             self.encoder.parameters(),
             lr=encoder_lr,
         )
+        self.disc_optimizer = disc_optimizer_class(
+            self.disc.parameters(),
+            lr=disc_lr,
+        )
 
-        self.disc_optim_batch_size = disc_optim_batch_size
-        self.policy_optim_batch_size = policy_optim_batch_size
-
+        self.num_policy_updates_per_epoch = num_policy_updates_per_epoch
+        self.num_disc_updates_per_epoch = num_disc_updates_per_epoch
         self.num_tasks_used_per_update = num_tasks_used_per_update
-        self.num_context_trajs = num_context_trajs
+        self.num_context_trajs_for_training = num_context_trajs_for_training
         self.test_batch_size_per_task = test_batch_size_per_task
 
+        self.num_tasks_per_eval = num_tasks_per_eval
+        self.num_diff_context_per_eval_task = num_diff_context_per_eval_task
+        self.num_context_trajs_for_eval = num_context_trajs_for_eval
+        self.num_eval_trajs_per_post_sample = num_eval_trajs_per_post_sample
+
+        self.num_context_trajs_for_exploration = num_context_trajs_for_exploration
+
+        # things we need for computing the discriminator objective
         self.bce = nn.BCEWithLogitsLoss()
         self.bce_targets = torch.cat(
             [
-                torch.ones(self.disc_optim_batch_size, 1),
-                torch.zeros(self.disc_optim_batch_size, 1)
+                torch.ones(self.test_batch_size_per_task * self.num_tasks_used_per_update, 1),
+                torch.zeros(self.test_batch_size_per_task * self.num_tasks_used_per_update, 1)
             ],
             dim=0
         )
@@ -106,131 +130,103 @@ class NeuralProcessAIRL(TorchIRLAlgorithm):
         self.grad_pen_weight = grad_pen_weight
 
 
-    def get_expert_trajs(self, num_tasks, num_trajs_per_task, train_mode=True, task_params=None):
-        '''
-            train_mode=True means samples from train set of expert trajectories
-            otherwise sample from test set of expert trajectories
-        '''
-        batch, task_params = self.expert_replay_buffer.sample_expert_trajs(
-            num_tasks,
-            num_trajs_per_task,
-            train_mode=train_mode,
-            task_params=task_params
+    def get_exploration_policy(self, task_identifier):
+        list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
+            task_identifier,
+            self.num_context_trajs_for_exploration,
         )
-        if self.wrap_absorbing:
-            raise NotImplementedError()
-        return np_to_pytorch_batch(batch), task_params
+        post_dist = self.encoder([list_of_trajs])
+        # z = post_dist.sample()
+        z = post_dist.mean
+        z = z.cpu().data.numpy()[0]
+        return PostCondMLPPolicyWrapper(self.main_policy, z)
     
 
-    def get_expert_batch(self, num_tasks, batch_size_per_task, train_mode=True, task_params=None):
-        '''
-            train_mode=True means samples from train set of expert trajectories
-            otherwise sample from test set of expert trajectories
-        '''
-        batch, task_params = self.expert_replay_buffer.sample_expert_random_batch(
-            num_tasks,
-            batch_size_per_task,
-            train_mode=train_mode,
-            task_params=task_params
+    def get_eval_policy(self, task_identifier):
+        list_of_trajs = self.test_context_expert_replay_buffer.sample_trajs_from_task(
+            task_identifier,
+            self.num_context_trajs_for_eval,
         )
-        if self.wrap_absorbing:
-            raise NotImplementedError()
-        return np_to_pytorch_batch(batch), task_params
-    
-
-    def get_policy_batch(self, batch_size):
-        batch = self.replay_buffer.random_batch(batch_size)
-        return np_to_pytorch_batch(batch)
+        post_dist = self.encoder([list_of_trajs])
+        # z = post_dist.sample()
+        z = post_dist.mean
+        z = z.cpu().data.numpy()[0]
+        return PostCondMLPPolicyWrapper(self.main_policy, z)
 
 
     def _do_training(self):
         '''
         '''
-        # train the disc
-        # here we have to make a choice of how/when we update the encoder
-        for i in range(self.num_disc_updates):
-            context_batch, task_params = self.get_expert_trajs(
-                self.num_tasks_used_per_update,
-                self.num_context_trajs,
-                train_mode=True
-            )
-            test_batch = self.get_expert_batch(
-                self.num_tasks_used_per_update,
-                self.test_batch_size_per_task,
-                train_mode=True,
-                task_params=task_params
-            )
-            policy_batch = self.get_policy_batch(
-                self.num_tasks_used_per_update,
-                self.test_batch_size_per_task,
-                task_params=task_params
-            )
-            
-            if i % self.freq_update_encoder != 0:
-                post_dist = self.encoder(context_batch)
-                z = post_dist.sample()
-                z = z.detach()
-            else:
-                self.encoder_optimizer.zero_grad()
-                post_dist = self.encoder(context_batch)
-                z = post_dist.sample()
-
-            self._update_disc(test_batch, policy_batch)
-            if i % self.freq_update_encoder == 0:
-                # in _update_disc the necessary gradients will have been computed
-                self.encoder_optimizer.step()
-        
-        # train the policy
-        for i in range(self.num_policy_updates):
-            context_batch, task_params = self.get_expert_trajs(
-                self.num_tasks_used_per_update,
-                self.num_context_trajs,
-                train_mode=True
-            )
-            policy_batch = self.get_policy_batch(
-                self.num_tasks_used_per_update,
-                self.test_batch_size_per_task,
-                task_params=task_params
-            )
-
-            post_dist = self.encoder(context_batch).detach()
-            z = post_dist.sample()
-            _update_policy(policy_batch, z)
-
-    
-    def _update_disc(self, test_batch, policy_batch, z)
+        # train the discriminator
+        for i in range(self.num_disc_updates_per_epoch):
+            self.encoder_optimizer.zero_grad()
             self.disc_optimizer.zero_grad()
 
-            test_obs = test_batch['observations']
-            test_actions = test_batch['actions']
-            test_obs = test_obs.view(-1, test_obs.size(-1))
-            test_actions = test_actions.view(-1, test_actions.size(-1))
+            # context batch is a list of list of dicts
+            context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
+                self.num_context_trajs_for_training,
+                num_tasks=self.num_tasks_used_per_update
+            )
+            post_dist = self.encoder(context_batch)
+            # z = post_dist.sample() # N_tasks x Dim
+            z = post_dist.mean
 
-            policy_obs = policy_batch['observations']
-            policy_actions = policy_batch['actions']
-            policy_obs = policy_obs.view(-1, policy_obs.size(-1))
-            policy_actions = policy_actions.view(-1, policy_actions.size(-1))
+            # get the test batch for the tasks from expert buffer
+            exp_test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
+                self.test_batch_size_per_task,
+                task_identifiers_list=task_identifiers_list
+            )
+            # test_batch is a list of dicts: each dict is a random batch from that task
+            # convert it to a pytorch tensor
+            exp_obs = np.concatenate([d['observations'] for d in exp_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            exp_obs = Variable(ptu.from_numpy(exp_obs), requires_grad=False)
+            exp_acts = np.concatenate([d['actions'] for d in exp_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            exp_acts = Variable(ptu.from_numpy(exp_acts), requires_grad=False)
 
-            obs = torch.cat([test_obs, policy_obs], dim=0)
-            actions = torch.cat([test_actions, policy_actions], dim=0)
+            # get the test batch for the tasks from policy buffer
+            policy_test_batch, _ = self.replay_buffer.sample_random_batch(
+                self.test_batch_size_per_task,
+                task_identifiers_list=task_identifiers_list
+            )
+            # test_batch is a list of dicts: each dict is a random batch from that task
+            # convert it to a pytorch tensor
+            policy_obs = np.concatenate([d['observations'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            policy_obs = Variable(ptu.from_numpy(policy_obs), requires_grad=False).detach()
+            policy_acts = np.concatenate([d['actions'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            policy_acts = Variable(ptu.from_numpy(policy_acts), requires_grad=False).detach()
 
-            disc_logits = self.discriminator(obs, actions, z)
+
+            # repeat z to have the right size
+            z = z.repeat(1, self.test_batch_size_per_task).view(
+                self.num_tasks_used_per_update * self.test_batch_size_per_task,
+                -1
+            )
+
+            # make the batches
+            # !! only policy_obs and policy_acts should be detached not the z !!
+            exp_obs = torch.cat([exp_obs, z], dim=1)
+            policy_obs = torch.cat([policy_obs, z], dim=1)
+            obs_batch = torch.cat([exp_obs, policy_obs], dim=0)
+            act_batch = torch.cat([exp_acts, policy_acts], dim=0)
+
+            # compute the loss for the discriminator
+            disc_logits = self.disc(obs_batch, act_batch)
             disc_preds = (disc_logits > 0).type(torch.FloatTensor)
             disc_loss = self.bce(disc_logits, self.bce_targets)
             accuracy = (disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 
             if self.use_grad_pen:
-                eps = Variable(torch.rand(self.disc_optim_batch_size, 1))
+                eps = Variable(torch.rand(self.test_batch_size_per_task * self.num_tasks_used_per_update, 1), requires_grad=True)
                 if ptu.gpu_enabled(): eps = eps.cuda()
                 
-                interp_obs = eps*test_obs + (1-eps)*policy_obs
+                interp_obs = eps*exp_obs + (1-eps)*policy_obs
                 interp_obs.detach()
-                interp_obs.requires_grad = True
-                interp_actions = eps*test_actions + (1-eps)*policy_actions
+                # interp_obs.requires_grad = True
+                interp_actions = eps*exp_acts + (1-eps)*policy_acts
                 interp_actions.detach()
-                interp_actions.requires_grad = True
+                # interp_actions.requires_grad = True
                 gradients = autograd.grad(
-                    outputs=self.discriminator(interp_obs, interp_actions, z).sum(),
+                    outputs=self.disc(interp_obs, interp_actions).sum(),
                     inputs=[interp_obs, interp_actions],
                     # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
                     create_graph=True, retain_graph=True, only_inputs=True
@@ -242,35 +238,153 @@ class NeuralProcessAIRL(TorchIRLAlgorithm):
 
             disc_loss.backward()
             self.disc_optimizer.step()
+            self.encoder_optimizer.step()
 
+        # train the policy
+        for i in range(self.num_policy_updates_per_epoch):
+            # context batch is a list of list of dicts
+            context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
+                self.num_context_trajs_for_training,
+                num_tasks=self.num_tasks_used_per_update
+            )
+            post_dist = self.encoder(context_batch)
+            # z = post_dist.sample() # N_tasks x Dim
+            z = post_dist.mean
+
+            test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
+                self.test_batch_size_per_task,
+                task_identifiers_list=task_identifiers_list
+            )
+            # test_batch is a list of dicts: each dict is a random batch from that task
+            # convert it to a pytorch tensor
+            obs = np.concatenate([d['observations'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            obs = Variable(ptu.from_numpy(obs), requires_grad=False)
+            acts = np.concatenate([d['actions'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            acts = Variable(ptu.from_numpy(acts), requires_grad=False)
+            terminals = np.concatenate([d['terminals'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            terminals = Variable(ptu.from_numpy(terminals), requires_grad=False)
+            next_obs = np.concatenate([d['next_observations'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            next_obs = Variable(ptu.from_numpy(next_obs), requires_grad=False)
+
+            # repeat z to have the right size
+            z = z.repeat(1, self.test_batch_size_per_task).view(
+                self.num_tasks_used_per_update * self.test_batch_size_per_task,
+                -1
+            ).detach()
+
+            # now augment the obs with the latent sample z
+            obs = torch.cat([obs, z], dim=1)
+            next_obs = torch.cat([next_obs, z], dim=1)
+
+            # compute the rewards
+            # If you compute log(D) - log(1-D) then you just get the logits
+            rewards = self.disc(obs, acts).detach()
+            
+
+            # do a policy update (the zeroing of grads etc. should be handled internally)
+            batch = dict(
+                observations=obs,
+                actions=acts,
+                rewards=rewards,
+                terminals=terminals,
+                next_observations=next_obs
+            )
+            self.policy_optimizer.train_step(batch)
+
+        if self.eval_statistics is None:
             """
-            Save some statistics for eval
+            Eval should set this to None.
+            This way, these statistics are only computed for one batch.
             """
-            if self.rewardf_eval_statistics is None:
-                """
-                Eval should set this to None.
-                This way, these statistics are only computed for one batch.
-                """
-                self.rewardf_eval_statistics = OrderedDict()
-                self.rewardf_eval_statistics['Disc Loss'] = np.mean(ptu.get_numpy(disc_loss))
-                self.rewardf_eval_statistics['Disc Acc'] = np.mean(ptu.get_numpy(accuracy))
-    
+            self.eval_statistics = OrderedDict()
+            self.eval_statistics['Disc Loss'] = np.mean(ptu.get_numpy(disc_loss))
+            self.eval_statistics['Disc Acc'] = np.mean(ptu.get_numpy(accuracy))
+            self.eval_statistics.update(self.policy_optimizer.eval_statistics)
 
-    def _update_policy(self, policy_batch, z):
-        # If you compute log(D) - log(1-D) then you just get the logits
-        policy_batch['rewards'] = self.discriminator(policy_batch['observations'], policy_batch['actions'], z)
-        self.policy_optimizer.train_step(policy_batch, z)
 
+    def obtain_eval_samples(self, epoch):
+        self.training_mode(False)
+
+        params_samples = [self.test_task_params_sampler.sample() for _ in range(self.num_tasks_per_eval)]
+        all_eval_tasks_paths = []
+        for task_params, obs_task_params in params_samples:
+            cur_eval_task_paths = []
+            self.env.reset(task_params=task_params, obs_task_params=obs_task_params)
+            task_identifier = self.env.task_identifier
+
+            for _ in range(self.num_diff_context_per_eval_task):
+                eval_policy = self.get_eval_policy(task_identifier)
+
+                for _ in range(self.num_eval_trajs_per_post_sample):
+                    cur_eval_path_builder = PathBuilder()
+                    observation = self.env.reset(task_params=task_params, obs_task_params=obs_task_params)
+                    terminal = False
+
+                    while (not terminal) and len(cur_eval_path_builder) < self.max_path_length:
+                        if isinstance(self.obs_space, Dict):
+                            if self.policy_uses_pixels:
+                                agent_obs = observation['pixels']
+                            else:
+                                agent_obs = observation['obs']
+                        else:
+                            agent_obs = observation
+                        action, agent_info = eval_policy.get_action(agent_obs)
+                        
+                        next_ob, raw_reward, terminal, env_info = (self.env.step(action))
+                        if self.no_terminal:
+                            terminal = False
+                        
+                        reward = raw_reward
+                        terminal = np.array([terminal])
+                        reward = np.array([reward])
+                        cur_eval_path_builder.add_all(
+                            observations=observation,
+                            actions=action,
+                            rewards=reward,
+                            next_observations=next_ob,
+                            terminals=terminal,
+                            agent_infos=agent_info,
+                            env_infos=env_info,
+                            task_identifiers=task_identifier
+                        )
+                        observation = next_ob
+
+                    if terminal and self.wrap_absorbing:
+                        raise NotImplementedError("I think they used 0 actions for this")
+                        cur_eval_path_builder.add_all(
+                            observations=next_ob,
+                            actions=action,
+                            rewards=reward,
+                            next_observations=next_ob,
+                            terminals=terminal,
+                            agent_infos=agent_info,
+                            env_infos=env_info,
+                            task_identifiers=task_identifier
+                        )
+                    
+                    if len(cur_eval_path_builder) > 0:
+                        cur_eval_task_paths.append(
+                            cur_eval_path_builder.get_all_stacked()
+                        )
+            all_eval_tasks_paths.extend(cur_eval_task_paths)
+        
+        # flatten the list of lists
+        return all_eval_tasks_paths
+                
 
     @property
     def networks(self):
-        return [self.discriminator, self.encoder] + self.policy_optimizer.networks
+        return [
+            self.encoder,
+            self.main_policy
+        ] + self.policy_optimizer.networks
+
 
     def get_epoch_snapshot(self, epoch):
         snapshot = super().get_epoch_snapshot(epoch)
         snapshot.update(
-            disc=self.discriminator,
-            encoder=self.encoder
+            encoder=self.encoder,
+            main_policy=self.main_policy
         )
         snapshot.update(self.policy_optimizer.get_snapshot())
         return snapshot

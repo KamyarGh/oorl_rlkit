@@ -103,68 +103,6 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         self.num_context_trajs_for_exploration = num_context_trajs_for_exploration
 
 
-    # def get_expert_trajs_for_task(self, buffer, task_identifier, num_trajs):
-    #     '''
-    #         returns a list of trajs (which are dicts)
-    #         does not turn them into pytorch tensors or anything
-    #     '''
-    #     return buffer.sample_trajs_from_task(task_identifier, num_trajs)
-
-
-    # def get_expert_trajs(self, buffer, num_tasks, num_trajs_per_task):
-    #     '''
-    #         this samples from the train_context or test_context
-
-    #         batch_list is a list of lists of trajs
-    #         trajs are dicts of numpy arrays
-
-    #         return them just the way they are and get the encoders to handle the reshaping
-    #         this will be more general for when different tasks have different context size
-    #         as well as when different trajs have different lengths
-
-    #         train_mode=True means samples from train set of expert trajectories
-    #         otherwise sample from test set of expert trajectories
-    #     '''
-    #     batch_list, task_identifiers_list = buffer.sample_trajs(
-    #         num_tasks,
-    #         num_trajs_per_task,
-    #         train_mode=train_mode,
-    #         task_params=task_params
-    #     )
-
-    #     if self.wrap_absorbing:
-    #         raise NotImplementedError()
-    #     return batch_list, task_identifiers_list
-
-    #     # batch_list = [np_to_pytorch_batch(b) for b in batch_list]
-    #     # # since we are making simplifying assumption right now
-    #     # batch = torch.stack(batch_list)
-
-    #     # return batch, task_identifiers_list
-    
-
-    # def get_expert_random_batch(self, buffer, num_tasks, batch_size_per_task, task_identifiers_list=None):
-    #     '''
-    #         samples random timesteps from random trajectories
-    #     '''
-
-    
-
-    # def get_policy_batch(self, num_tasks, batch_size_per_task, task_identifiers_list=None):
-    #     batch_list, task_identifiers_list = self.replay_buffer.sample_random_batch(
-    #         num_tasks,
-    #         batch_size_per_task,
-    #         task_identifiers_list=task_identifiers_list
-    #     )
-    #     # batch_list = [np_to_pytorch_batch(b) for b in batch_list]
-    #     # since we are making simplifying assumption right now
-    #     # batch = torch.stack(batch_list)
-
-    #     if self.wrap_absorbing:
-    #         raise NotImplementedError()
-    #     return batch_list, task_identifiers_list
-
-
     def get_exploration_policy(self, task_identifier):
         list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
             task_identifier,

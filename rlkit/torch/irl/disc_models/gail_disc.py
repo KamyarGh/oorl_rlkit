@@ -6,10 +6,9 @@ from torch.autograd import Variable
 from rlkit.torch.core import PyTorchModule
 
 class Model(nn.Module):
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, hid_dim=100):
         super().__init__()
 
-        hid_dim = 100
         self.model = nn.Sequential(
             nn.Linear(input_dim, hid_dim),
             nn.BatchNorm1d(hid_dim),
