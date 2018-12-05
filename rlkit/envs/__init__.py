@@ -17,6 +17,10 @@ from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.envs.dmcs_wrapper import DmControlWrapper
 from rlkit.envs.dmcs_envs.simple_reacher import build_simple_reacher as build_dmcv_simple_reacher
 from rlkit.envs.dmcs_envs.simple_meta_reacher import build_simple_meta_reacher
+from rlkit.envs.picker import PickerEnv
+
+# fetch env
+from rlkit.envs.wrapped_goal_envs import WrappedFetchPickAndPlaceEnv, DebugReachFetchPickAndPlaceEnv
 
 # for meta simple meta reacher
 from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
@@ -24,7 +28,8 @@ from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import get_params_iterators a
 
 from gym.envs.mujoco.half_cheetah import HalfCheetahEnv
 
-from dm_control.suite.wrappers import pixels
+# from dm_control.suite.wrappers import pixels
+from rlkit.envs.dmcs_envs import pixels
 
 BASE_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'base_assets')
 CUSTOM_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'custom_assets')
@@ -73,13 +78,19 @@ fixed_envs = {
             pixels_only=False,
             render_kwargs={'height':80, 'width':80, 'camera_id':0}
         )
-    )
+    ),
+    'jaco_picker': lambda: PickerEnv(),
+    'fetch_pick_and_place': lambda: WrappedFetchPickAndPlaceEnv(),
+    'debug_fetch_reacher': lambda: DebugReachFetchPickAndPlaceEnv()
 }
 
 meta_envs = {
     'meta_simple_meta_reacher': {
-        'meta_train': lambda: DmControlWrapper(build_meta_simple_meta_reacher(train_env=True)),
-        'meta_test': lambda: DmControlWrapper(build_meta_simple_meta_reacher(train_env=False))
+        'meta_train': lambda: build_meta_simple_meta_reacher(train_env=True),
+        'meta_test': lambda: build_meta_simple_meta_reacher(train_env=False),
+        'info': {
+            'is_dmcs_env': True
+        }
     }
 }
 
@@ -100,7 +111,26 @@ train_test_envs = {
 
 def get_meta_env(env_specs):
     base_env_name = env_specs['base_env_name']
+    env_dict = meta_envs[base_env_name]
     meta_train_env, meta_test_env = meta_envs[base_env_name]['meta_train'](), meta_envs[base_env_name]['meta_test']()
+    if env_specs['need_pixels']:
+        if env_dict['info']['is_dmcs_env']:
+            meta_train_env = pixels.Wrapper(
+                meta_train_env,
+                pixels_only=False,
+                render_kwargs=env_specs['render_kwargs']
+            )
+            meta_test_env = pixels.Wrapper(
+                meta_test_env,
+                pixels_only=False,
+                render_kwargs=env_specs['render_kwargs']
+            )
+        else:
+            raise NotImplementedError()
+    # if its a dmcs env we need to wrap it to look like a gym env
+    if env_dict['info']['is_dmcs_env']:
+        meta_train_env = DmControlWrapper(meta_train_env)
+        meta_test_env = DmControlWrapper(meta_test_env)
     if env_specs['normalized']:
         meta_train_env, meta_test_env = NormalizedBoxEnv(meta_train_env), NormalizedBoxEnv(meta_test_env)
     return meta_train_env, meta_test_env

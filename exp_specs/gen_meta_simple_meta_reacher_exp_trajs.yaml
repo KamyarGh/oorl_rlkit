@@ -1,11 +1,11 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/gen_meta_irl_expert_trajs.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher
+  exp_name: test_pixel_traj_gen
   description: searching over the SAC hyperparameters
   use_gpu: false
-  num_workers: 5
-  cpu_range: [0,5]
+  num_workers: 1
+  cpu_range: [0,1]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
@@ -14,12 +14,17 @@ variables:
     '/ais/gobi6/kamyar/oorl_rlkit/output/longer-run-with-finger-pos-dmcs-simple-meta-reacher-with-sin-cos/longer_run_with_finger_pos_dmcs_simple_meta_reacher_with_sin_cos_2018_11_07_18_08_08_0004--s-0/'
   ]
   student_policy_uses_pixels: [False]
-  num_rollouts_per_task: [50]
-  seed: [28043, 99381, 33478, 448293, 5739]
-  # seed: [28043]
+  num_rollouts_per_task: [2]
+  # seed: [28043, 99381, 33478, 448293, 5739]
+  seed: [28043]
 
 # -----------------------------------------------------------------------------
 constants:
   env_specs:
     base_env_name: 'meta_simple_meta_reacher'
     normalized: false
+    need_pixels: true
+    render_kwargs:
+      height: 64
+      width: 64
+      camera_id: 0

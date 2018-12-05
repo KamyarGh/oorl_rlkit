@@ -5,3 +5,9 @@
 - make a subclass of gym Env for a meta env and make it so that it has to have things
     like iterators etc. and move every constraint in there
 - working with both task_identifiers and task_params and obs_task_params is unintuitive and messy, fix it
+- fix the monkey patching pixels.wrapper
+- how replay buffer handles returning pixels. Right now if you return pixels you also return obs
+- some functions in simple replay buffer are really old and not needed
+- the bug in simple replay buffer due to size being same as max path length
+- removing any trace of expert_replay_buffer
+- in irl_algorithm num_steps_between_updates is a bit weird

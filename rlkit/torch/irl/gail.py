@@ -87,7 +87,7 @@ class GAIL(TorchIRLAlgorithm):
 
 
     def get_expert_batch(self, batch_size):
-        batch = self.expert_replay_buffer.sample_expert_random_batch(batch_size)
+        batch = self.expert_replay_buffer.random_batch(batch_size)
         if self.wrap_absorbing:
             if isinstance(batch['observations'], np.ndarray):
                 obs = batch['observations']

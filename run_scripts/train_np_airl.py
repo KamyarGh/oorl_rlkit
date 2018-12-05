@@ -110,8 +110,8 @@ def experiment(variant):
     timestep_enc_params['input_size'] = obs_dim + action_dim
     
     traj_samples, _ = train_context_buffer.sample_trajs(1, num_tasks=1)
-    len_context_traj = traj_samples[0][0]['observations'].shape[0]
-    # len_context_traj = 5
+    # len_context_traj = traj_samples[0][0]['observations'].shape[0]
+    len_context_traj = 5
     traj_enc_params['input_size'] = timestep_enc_params['output_size'] * len_context_traj
 
     traj_enc = TrivialTrajEncoder(

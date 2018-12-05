@@ -49,9 +49,11 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
         statistics.update(eval_util.get_generic_path_information(
             self._exploration_paths, stat_prefix="Exploration",
         ))
-        print(statistics.keys())
+        # print(statistics.keys())
         if hasattr(self.env, "log_diagnostics"):
             self.env.log_diagnostics(test_paths)
+        if hasattr(self.env, "log_statistics"):
+            statistics.update(self.env.log_statistics(test_paths))
 
         average_returns = rlkit.core.eval_util.get_average_returns(test_paths)
         statistics['AverageReturn'] = average_returns

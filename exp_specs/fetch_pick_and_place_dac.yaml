@@ -1,0 +1,82 @@
+meta_data:
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
+  exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
+  exp_name: try_fetch_dac_2_layer_policy
+  description: searching over the SAC hyperparameters
+  use_gpu: false
+  num_workers: 30
+  cpu_range: [0,30]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  gail_params:
+    no_terminal: [false]
+    replay_buffer_size: [1000000]
+
+    num_reward_updates: [50]
+    num_policy_updates: [50]
+  
+  policy_params:
+    # reward_scale: [10.0]
+    reward_scale: [1.0, 5.0, 10.0, 25.0, 50.0]
+    # reward_scale: [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]
+  
+  disc_num_blocks: [2, 3]
+  disc_hid_dim: [100, 256]
+
+  env_specs:
+    normalized: [false]
+    train_test_env: [false]
+  
+  seed: [9783, 5914]
+  # seed: [9783]
+
+# -----------------------------------------------------------------------------
+constants:
+  expert_name: original_fetch_pick_and_place_100_demos
+  expert_seed_run_idx: 0
+  wrap_absorbing_state: false
+  
+  gail_params:
+    num_epochs: 1011 # to match HER, they run for 1000 epochs, 50 each epoch
+    num_steps_per_epoch: 2500 # 50 * 50
+    num_steps_per_eval: 500 # 50 * 10
+    max_path_length: 50
+
+    disc_optim_batch_size: 128
+    policy_optim_batch_size: 128
+
+    policy_uses_pixels: false
+    policy_uses_task_params: true
+    concat_task_params_to_policy_obs: true
+
+    # the interaction between these two numbers matters
+    num_steps_between_updates: 50
+    # replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
+    min_steps_before_training: 5000
+    
+    save_replay_buffer: true
+    render: false
+
+    disc_lr: 0.0003
+    use_grad_pen: true
+    grad_pen_weight: 10
+
+    freq_saving: 100
+  
+  # bad naming but policy_net_size and num_hidden_layers are also
+  # for the value function and the Q function
+  policy_net_size: 256
+  num_hidden_layers: 2
+  policy_params:
+    # policy always has 2 hidden layers
+    discount: 0.99
+    policy_lr: 0.0003
+    qf_lr: 0.0003
+    vf_lr: 0.0003
+    policy_mean_reg_weight: 0.001
+    policy_std_reg_weight: 0.001
+    soft_target_tau: 0.005
+    
+  env_specs:
+    base_env_name: 'fetch_pick_and_place'

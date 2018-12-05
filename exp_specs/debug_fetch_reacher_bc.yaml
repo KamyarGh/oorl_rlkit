@@ -1,0 +1,66 @@
+meta_data:
+  script_path: /u/kamyar/oorl_rlkit/run_scripts/bc_train_script.py
+  exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
+  exp_name: test_debug_fetch_bc
+  description: searching over the SAC hyperparameters
+  use_gpu: false
+  num_workers: 1
+  cpu_range: [25,26]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  concat_env_params_to_obs: [false]
+
+  expert_name: [
+    # good_halfcheetah_100_trajs_1_subsampling,
+    # good_halfcheetah_100_trajs_20_subsampling
+    # dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling
+    # original_fetch_pick_and_place_100_demos
+    debug_fetch_reach_100_demos
+  ]
+
+  bc_params:
+    batch_size: [128]
+    # lr: [0.0003, 0.001]
+    # lr: [0.0003]
+    lr: [0.001]
+    # use_layer_norm: [true, false]
+    use_layer_norm: [false]
+
+  env_specs:
+    normalized: [false]
+    train_test_env: [false]
+  
+  policy_net_size: [256]
+  
+  # seed: [9783, 5914]
+  seed: [9783]
+
+# -----------------------------------------------------------------------------
+constants:
+  # expert_save_dict: '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search/final_pendulum_new_sac_hyper_param_search_2018_10_12_19_11_09_0000--s-0/extra_data.pkl'
+  # last_k_expert_steps: 500
+  expert_seed_run_idx: 0
+  wrap_absorbing_state: false
+  
+  bc_params:
+    max_iters: 200001
+    num_steps_per_eval: 250
+    max_path_length: 25
+
+    # batch_size: 100
+
+    policy_uses_pixels: false
+    policy_uses_task_params: false
+    concat_task_params_to_policy_obs: false
+
+    policy_mean_reg_weight: 0.001
+    policy_std_reg_weight: 0.001
+    policy_pre_activation_weight: 0.0
+
+    freq_eval: 2500
+    freq_saving: 10000
+  
+    
+  env_specs:
+    base_env_name: 'debug_fetch_reacher'

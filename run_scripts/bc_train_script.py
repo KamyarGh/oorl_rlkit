@@ -47,16 +47,17 @@ def experiment(variant):
     expert_replay_buffer.concat_task_params_to_policy_obs = variant['bc_params']['concat_task_params_to_policy_obs']
 
     # Now determine how many trajectories you want to use
-    num_trajs_to_use = int(variant['num_expert_trajs'])
-    assert num_trajs_to_use > 0, 'Dude, you need to use expert demonstrations!'
-    idx = expert_replay_buffer.traj_starts[num_trajs_to_use]
-    expert_replay_buffer._size = idx
-
-    print(expert_replay_buffer._size)
-    print(expert_replay_buffer.traj_starts)
-    print(num_trajs_to_use)
-    print(sum(expert_replay_buffer._rewards[:expert_replay_buffer._size]/(5 * num_trajs_to_use)))
-
+    if 'num_expert_trajs' in variant: raise NotImplementedError()
+    # num_trajs_to_use = int(variant['num_expert_trajs'])
+    # assert num_trajs_to_use > 0, 'Dude, you need to use expert demonstrations!'
+    # idx = expert_replay_buffer.traj_starts[num_trajs_to_use]
+    # expert_replay_buffer._size = idx
+  
+    # print(expert_replay_buffer._size)
+    # print(expert_replay_buffer.traj_starts)
+    # print(num_trajs_to_use)
+    # print(sum(expert_replay_buffer._rewards[:expert_replay_buffer._size]/(5 * num_trajs_to_use)))
+    # ------------------
     # Approximately verify that the expert was getting a good reward
     # exp_rew = expert_replay_buffer.subsampling * np.sum(expert_replay_buffer._rewards[:expert_replay_buffer._size]) / num_trajs_to_use
     # exp_rew /= 5
@@ -99,11 +100,22 @@ def experiment(variant):
     #     obs_dim=obs_dim,
     #     action_dim=action_dim
     # )
+
+    # The policy for reacher
+    # policy = MlpPolicy(
+    #     [policy_net_size, policy_net_size],
+    #     action_dim,
+    #     obs_dim,
+    #     hidden_activation=torch.nn.functional.tanh,
+    #     layer_norm=variant['bc_params']['use_layer_norm']
+    # )
+    # The policy for fetch
     policy = MlpPolicy(
-        [policy_net_size, policy_net_size],
+        [policy_net_size, policy_net_size, policy_net_size, policy_net_size],
         action_dim,
         obs_dim,
-        hidden_activation=torch.nn.functional.tanh,
+        hidden_activation=torch.nn.functional.relu,
+        output_activation=torch.nn.functional.tanh,
         layer_norm=variant['bc_params']['use_layer_norm']
     )
 
@@ -181,6 +193,13 @@ def experiment(variant):
             # print('Iter {} LogProb:\t{}'.format(itr, log_prob_mean.data[0]))
 
             logger.record_tabular('Test_Returns_Mean', average_returns)
+
+            if variant['env_specs']['base_env_name'] in ['fetch_pick_and_place', 'debug_fetch_reacher']:
+                solved = [sum(path["rewards"])[0] > -1.0 * path["rewards"].shape[0] for path in test_paths]
+                print(solved)
+                print([sum(path["rewards"])[0] for path in test_paths])
+                percent_solved = sum(solved) / float(len(solved))
+                logger.record_tabular('Percent_Solved', percent_solved)
 
             # print(acts.data[0].numpy())
             # print(policy_mean.data[0].numpy())

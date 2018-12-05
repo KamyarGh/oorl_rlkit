@@ -38,7 +38,7 @@ class TrivialTrajEncoder(PyTorchModule):
 
     def forward(self, all_timesteps):
         # DONT FORGET TO REMOVE THIS
-        # all_timesteps = all_timesteps[:,:,-5:,:].contiguous()
+        all_timesteps = all_timesteps[:,:,-5:,:].contiguous()
 
         N_tasks, N_trajs, traj_len, dim = all_timesteps.size(0), all_timesteps.size(1), all_timesteps.size(2), all_timesteps.size(3)
 

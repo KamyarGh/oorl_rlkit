@@ -1,11 +1,11 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/train_np_airl.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: meta_simple_meta_reacher_np_airl_hype_search
+  exp_name: first_np_airl_proper_run_tanh_with_bn_disc
   description: searching over the SAC hyperparameters
   use_gpu: false
   num_workers: 24
-  cpu_range: [0,25]
+  cpu_range: [0,24]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
@@ -27,8 +27,8 @@ constants:
 
   algo_params:
     num_epochs: 502
-    num_rollouts_per_epoch: 16
-    min_rollouts_before_training: 0
+    num_rollouts_per_epoch: 1
+    min_rollouts_before_training: 16
     max_path_length: 100
 
     replay_buffer_size_per_task: 100000
@@ -75,20 +75,31 @@ constants:
           # input_size must be inferred based on env
           hidden_sizes: [50]
           output_size: 50
+          # batch_norm: true
+          # batch_norm_before_output_activation: true
+          # layer_norm: true
 
         traj_enc_params:
           # input_size must be inferred
           hidden_sizes: [100]
           output_size: 100
+          # batch_norm: true
+          # batch_norm_before_output_activation: false
+          # layer_norm: true
       
       r2z_map_params:
         trunk_params:
           # input_size must be inferred
           hidden_sizes: []
           output_size: 100
+          batch_norm: true
+          batch_norm_before_output_activation: true
+
         split_heads_params:
           # input_size must be inferred
           hidden_sizes: [100]
+          batch_norm: true
+          batch_norm_before_output_activation: false
           # output_size must be inferred
       
       np_enc_params:

@@ -84,6 +84,11 @@ class NewSoftActorCritic():
         actions = batch['actions']
         next_obs = batch['next_observations']
 
+        # print('-'*50)
+        # print(obs[:10])
+        # print(next_obs[:10])
+        # print(rewards[:10])
+
         q1_pred = self.qf1(obs, actions)
         q2_pred = self.qf2(obs, actions)
         v_pred = self.vf(obs)

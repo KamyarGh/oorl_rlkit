@@ -47,6 +47,10 @@ dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_20_subsampling:
   ]
 
 # use 0002
+# mean actions: [0.01167053, 0.01021167]
+# actions std: [0.58279539, 0.53315956]
+# actions magnitude mean: [0.42449487, 0.37508521]
+# actions magnitude std: [0.39948814, 0.37904417]
 dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling:
   description: "dmcs simple meta reacher unnormalized reward scale 50.0"
   exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/very-final-dmcs-simple-meta-reacher-sin-cos-with-finger-pos-100-traj-1-subsampling
@@ -56,6 +60,22 @@ dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling:
     very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_42_0001--s-0,
     very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_43_0003--s-0,
     very_final_dmcs_simple_meta_reacher_sin_cos_with_finger_pos_100_traj_1_subsampling_2018_11_09_03_13_43_0004--s-0
+  ]
+
+
+original_fetch_pick_and_place_100_demos:
+  description: "fetch pick and place demos generated from the baselines HER demo generation script"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place
+  seed_runs: [
+    default_baselines_one
+  ]
+
+
+debug_fetch_reach_100_demos:
+  description: "expert for just the reaching aspect of pick and place"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/
+  seed_runs: [
+    debug_fetch_reach/
   ]
 
 

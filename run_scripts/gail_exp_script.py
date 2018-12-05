@@ -72,16 +72,17 @@ def experiment(variant):
     expert_replay_buffer.concat_task_params_to_policy_obs = variant['gail_params']['concat_task_params_to_policy_obs']
 
     # Now determine how many trajectories you want to use
-    num_trajs_to_use = int(variant['num_expert_trajs'])
-    assert num_trajs_to_use > 0, 'Dude, you need to use expert demonstrations!'
-    idx = expert_replay_buffer.traj_starts[num_trajs_to_use]
-    expert_replay_buffer._size = idx
+    if 'num_expert_trajs' in variant: raise NotImplementedError('Not implemented during the transition away from ExpertReplayBuffer')
+    # num_trajs_to_use = int(variant['num_expert_trajs'])
+    # assert num_trajs_to_use > 0, 'Dude, you need to use expert demonstrations!'
+    # idx = expert_replay_buffer.traj_starts[num_trajs_to_use]
+    # expert_replay_buffer._size = idx
 
-    print(expert_replay_buffer._size)
-    print(expert_replay_buffer.traj_starts)
-    print(num_trajs_to_use)
-    print(sum(expert_replay_buffer._rewards[:expert_replay_buffer._size]/(5 * num_trajs_to_use)))
-
+    # print(expert_replay_buffer._size)
+    # print(expert_replay_buffer.traj_starts)
+    # print(num_trajs_to_use)
+    # print(sum(expert_replay_buffer._rewards[:expert_replay_buffer._size]/(5 * num_trajs_to_use)))
+    # ---------------
     # Approximately verify that the expert was getting a good reward
     # exp_rew = expert_replay_buffer.subsampling * np.sum(expert_replay_buffer._rewards[:expert_replay_buffer._size]) / num_trajs_to_use
     # exp_rew /= 5
@@ -119,27 +120,33 @@ def experiment(variant):
     sleep(3)
 
     policy_net_size = variant['policy_net_size']
+    hidden_sizes = [policy_net_size] * variant['num_hidden_layers']
     qf1 = FlattenMlp(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         input_size=obs_dim + action_dim,
         output_size=1,
     )
     qf2 = FlattenMlp(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         input_size=obs_dim + action_dim,
         output_size=1,
     )
     vf = FlattenMlp(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         input_size=obs_dim,
         output_size=1,
     )
     policy = ReparamTanhMultivariateGaussianPolicy(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         obs_dim=obs_dim,
         action_dim=action_dim,
     )
-    disc_model = GAILDiscModel(obs_dim + action_dim)
+
+    disc_model = GAILDiscModel(
+        obs_dim + action_dim,
+        num_layer_blocks=variant['disc_num_blocks'],
+        hid_dim=variant['disc_hid_dim']
+    )
 
     policy_optimizer = NewSoftActorCritic(
         policy=policy,

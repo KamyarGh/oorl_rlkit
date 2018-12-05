@@ -40,10 +40,12 @@ def fill_buffer(
     concat_task_params_to_policy_obs = expert_policy_specs['concat_task_params_to_policy_obs']
 
     for task_params, obs_task_params in task_params_sampler:
+        print('Doing Task {}...'.format(task_params))
         meta_env.reset(task_params=task_params, obs_task_params=obs_task_params)
         task_id = meta_env.task_identifier
 
         for i in range(num_rollouts_per_task):
+            print('\tRollout %d...' % i)
             observation = meta_env.reset(task_params=task_params, obs_task_params=obs_task_params)
             cur_path_len = 0
             terminal = False

@@ -8,6 +8,7 @@ import math
 import torch
 from torch import nn as nn
 from torch.nn import functional as F
+from torch.nn import BatchNorm1d
 
 from rlkit.policies.base import Policy
 from rlkit.torch import pytorch_util as ptu
@@ -33,6 +34,9 @@ class Mlp(PyTorchModule):
             b_init_value=0.1,
             layer_norm=False,
             layer_norm_kwargs=None,
+            batch_norm=False,
+            # batch_norm_kwargs=None,
+            batch_norm_before_output_activation=False
     ):
         self.save_init_params(locals())
         super().__init__()
@@ -45,8 +49,11 @@ class Mlp(PyTorchModule):
         self.hidden_activation = hidden_activation
         self.output_activation = output_activation
         self.layer_norm = layer_norm
+        self.batch_norm = batch_norm
+        self.batch_norm_before_output_activation = batch_norm_before_output_activation
         self.fcs = []
         self.layer_norms = []
+        self.batch_norms = []
         in_size = input_size
 
         for i, next_size in enumerate(hidden_sizes):
@@ -61,6 +68,16 @@ class Mlp(PyTorchModule):
                 ln = LayerNorm(next_size)
                 self.__setattr__("layer_norm{}".format(i), ln)
                 self.layer_norms.append(ln)
+            
+            if self.batch_norm:
+                bn = BatchNorm1d(next_size)
+                self.__setattr__("batch_norm{}".format(i), bn)
+                self.batch_norms.append(bn)
+
+        if self.batch_norm_before_output_activation:
+            bn = BatchNorm1d(output_size)
+            self.__setattr__("batch_norm{}".format(len(hidden_sizes)), bn)
+            self.batch_norms.append(bn)
 
         self.last_fc = nn.Linear(in_size, output_size)
         self.last_fc.weight.data.uniform_(-init_w, init_w)
@@ -72,8 +89,12 @@ class Mlp(PyTorchModule):
             h = fc(h)
             if self.layer_norm and i < len(self.fcs) - 1:
                 h = self.layer_norms[i](h)
+            if self.batch_norm and i < len(self.fcs) - 1:
+                h = self.batch_norms[i](h)
             h = self.hidden_activation(h)
         preactivation = self.last_fc(h)
+        if self.batch_norm_before_output_activation:
+            preactivation = self.batch_norms[-1](preactivation)
         output = self.output_activation(preactivation)
         if return_preactivations:
             return output, preactivation

@@ -139,6 +139,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         # z = post_dist.sample()
         z = post_dist.mean
         z = z.cpu().data.numpy()[0]
+        # z = np.array([task_identifier[0], task_identifier[1]])
         return PostCondMLPPolicyWrapper(self.main_policy, z)
     
 
@@ -151,13 +152,14 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         # z = post_dist.sample()
         z = post_dist.mean
         z = z.cpu().data.numpy()[0]
+        # z = np.array([task_identifier[0], task_identifier[1]])
         return PostCondMLPPolicyWrapper(self.main_policy, z)
 
 
     def _do_training(self):
         '''
         '''
-        # train the discriminator
+        # train the discriminator (and the encoder)
         for i in range(self.num_disc_updates_per_epoch):
             self.encoder_optimizer.zero_grad()
             self.disc_optimizer.zero_grad()
@@ -170,6 +172,12 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             post_dist = self.encoder(context_batch)
             # z = post_dist.sample() # N_tasks x Dim
             z = post_dist.mean
+            # z = [[t[0], t[1]] for t in task_identifiers_list]
+            # z = np.array(task_identifiers_list)
+            # z = Variable(ptu.from_numpy(z), requires_grad=True)
+
+            # z_reg_loss = 0.0001 * z.norm(2, dim=1).mean()
+            z_reg_loss = 0.0
 
             # get the test batch for the tasks from expert buffer
             exp_test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
@@ -191,19 +199,20 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             # test_batch is a list of dicts: each dict is a random batch from that task
             # convert it to a pytorch tensor
             policy_obs = np.concatenate([d['observations'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
-            policy_obs = Variable(ptu.from_numpy(policy_obs), requires_grad=False).detach()
+            policy_obs = Variable(ptu.from_numpy(policy_obs), requires_grad=False)
             policy_acts = np.concatenate([d['actions'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
-            policy_acts = Variable(ptu.from_numpy(policy_acts), requires_grad=False).detach()
-
+            policy_acts = Variable(ptu.from_numpy(policy_acts), requires_grad=False)
+            # policy_acts.zero_()
+            # policy_obs.zero_()
 
             # repeat z to have the right size
             z = z.repeat(1, self.test_batch_size_per_task).view(
-                self.num_tasks_used_per_update * self.test_batch_size_per_task,
+                z.size(0) * self.test_batch_size_per_task,
                 -1
             )
+            # z.zero_()
 
             # make the batches
-            # !! only policy_obs and policy_acts should be detached not the z !!
             exp_obs = torch.cat([exp_obs, z], dim=1)
             policy_obs = torch.cat([policy_obs, z], dim=1)
             obs_batch = torch.cat([exp_obs, policy_obs], dim=0)
@@ -212,11 +221,12 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             # compute the loss for the discriminator
             disc_logits = self.disc(obs_batch, act_batch)
             disc_preds = (disc_logits > 0).type(torch.FloatTensor)
+            # disc_percent_policy_preds_one = disc_preds[z.size(0):].mean()
             disc_loss = self.bce(disc_logits, self.bce_targets)
             accuracy = (disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 
             if self.use_grad_pen:
-                eps = Variable(torch.rand(self.test_batch_size_per_task * self.num_tasks_used_per_update, 1), requires_grad=True)
+                eps = Variable(torch.rand(exp_obs.size(0), 1), requires_grad=True)
                 if ptu.gpu_enabled(): eps = eps.cuda()
                 
                 interp_obs = eps*exp_obs + (1-eps)*policy_obs
@@ -236,9 +246,13 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
 
                 disc_loss = disc_loss + gradient_penalty * self.grad_pen_weight
 
-            disc_loss.backward()
+            total_loss = z_reg_loss + disc_loss
+
+            total_loss.backward()
+            # disc_loss.backward()
             self.disc_optimizer.step()
             self.encoder_optimizer.step()
+
 
         # train the policy
         for i in range(self.num_policy_updates_per_epoch):
@@ -250,44 +264,64 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             post_dist = self.encoder(context_batch)
             # z = post_dist.sample() # N_tasks x Dim
             z = post_dist.mean
+            # z = np.array(task_identifiers_list)
+            # z = Variable(ptu.from_numpy(z), requires_grad=True)
 
-            test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
+            policy_test_batch, _ = self.replay_buffer.sample_random_batch(
                 self.test_batch_size_per_task,
                 task_identifiers_list=task_identifiers_list
             )
             # test_batch is a list of dicts: each dict is a random batch from that task
             # convert it to a pytorch tensor
-            obs = np.concatenate([d['observations'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
-            obs = Variable(ptu.from_numpy(obs), requires_grad=False)
-            acts = np.concatenate([d['actions'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
-            acts = Variable(ptu.from_numpy(acts), requires_grad=False)
-            terminals = np.concatenate([d['terminals'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
-            terminals = Variable(ptu.from_numpy(terminals), requires_grad=False)
-            next_obs = np.concatenate([d['next_observations'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
-            next_obs = Variable(ptu.from_numpy(next_obs), requires_grad=False)
+            policy_obs = np.concatenate([d['observations'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            policy_obs = Variable(ptu.from_numpy(policy_obs), requires_grad=False)
+            policy_acts = np.concatenate([d['actions'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            policy_acts = Variable(ptu.from_numpy(policy_acts), requires_grad=False)
+            policy_terminals = np.concatenate([d['terminals'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            policy_terminals = Variable(ptu.from_numpy(policy_terminals), requires_grad=False)
+            policy_next_obs = np.concatenate([d['next_observations'] for d in policy_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            policy_next_obs = Variable(ptu.from_numpy(policy_next_obs), requires_grad=False)
+
+            # !!!!! For now this the workaround for the batchnorm problem !!!!!
+            # get the test batch for the tasks from expert buffer
+            exp_test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
+                self.test_batch_size_per_task,
+                task_identifiers_list=task_identifiers_list
+            )
+            # test_batch is a list of dicts: each dict is a random batch from that task
+            # convert it to a pytorch tensor
+            exp_obs = np.concatenate([d['observations'] for d in exp_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            exp_obs = Variable(ptu.from_numpy(exp_obs), requires_grad=False)
+            exp_acts = np.concatenate([d['actions'] for d in exp_test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            exp_acts = Variable(ptu.from_numpy(exp_acts), requires_grad=False)
 
             # repeat z to have the right size
             z = z.repeat(1, self.test_batch_size_per_task).view(
-                self.num_tasks_used_per_update * self.test_batch_size_per_task,
+                z.size(0) * self.test_batch_size_per_task,
                 -1
             ).detach()
 
             # now augment the obs with the latent sample z
-            obs = torch.cat([obs, z], dim=1)
-            next_obs = torch.cat([next_obs, z], dim=1)
+            policy_obs = torch.cat([policy_obs, z], dim=1)
+            policy_next_obs = torch.cat([policy_next_obs, z], dim=1)
+            exp_obs = torch.cat([exp_obs, z], dim=1)
+            obs_batch = torch.cat([exp_obs, policy_obs], dim=0)
+            act_batch = torch.cat([exp_acts, policy_acts], dim=0)
 
             # compute the rewards
             # If you compute log(D) - log(1-D) then you just get the logits
-            rewards = self.disc(obs, acts).detach()
-            
+            policy_rewards = self.disc(obs_batch, act_batch)[exp_obs.size(0):].detach()
+            # rew_more_than_zero = (rewards > 0).type(torch.FloatTensor).mean()
+            # print(rew_more_than_zero.data[0])
+
 
             # do a policy update (the zeroing of grads etc. should be handled internally)
             batch = dict(
-                observations=obs,
-                actions=acts,
-                rewards=rewards,
-                terminals=terminals,
-                next_observations=next_obs
+                observations=policy_obs,
+                actions=policy_acts,
+                rewards=policy_rewards,
+                terminals=policy_terminals,
+                next_observations=policy_next_obs
             )
             self.policy_optimizer.train_step(batch)
 
@@ -299,7 +333,23 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             self.eval_statistics = OrderedDict()
             self.eval_statistics['Disc Loss'] = np.mean(ptu.get_numpy(disc_loss))
             self.eval_statistics['Disc Acc'] = np.mean(ptu.get_numpy(accuracy))
-            self.eval_statistics.update(self.policy_optimizer.eval_statistics)
+            # self.eval_statistics['Disc Percent Policy Preds 1'] = np.mean(ptu.get_numpy(disc_percent_policy_preds_one))
+            self.eval_statistics['Disc Rewards Mean'] = np.mean(ptu.get_numpy(policy_rewards))
+            self.eval_statistics['Disc Rewards Std'] = np.std(ptu.get_numpy(policy_rewards))
+            self.eval_statistics['Disc Rewards Max'] = np.max(ptu.get_numpy(policy_rewards))
+            self.eval_statistics['Disc Rewards Min'] = np.min(ptu.get_numpy(policy_rewards))
+            # self.eval_statistics['Disc Rewards GT Zero'] = np.mean(ptu.get_numpy(rew_more_than_zero))
+
+            z_norm = z.norm(2, dim=1).mean()
+            self.eval_statistics['Z Norm'] = np.mean(ptu.get_numpy(z_norm))
+
+            if self.policy_optimizer.eval_statistics is not None:
+                self.eval_statistics.update(self.policy_optimizer.eval_statistics)
+
+
+    def evaluate(self, epoch):
+        super().evaluate(epoch)
+        self.policy_optimizer.eval_statistics = None
 
 
     def obtain_eval_samples(self, epoch):

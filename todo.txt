@@ -1,3 +1,16 @@
+Getting Fetch Results:
+    - (done) Figure out how to make the data generation script work
+    - Figure out how to get the HER stuff training on multiple cpus
+
+
+AIRL for Fetch:
+    - Read what the diff between the original pick & place and the new one is
+    - (done) Convert demonstrations to the right format
+    - add the environment and env script (or see how you can call it from GYM)
+    - Run AIRL with policy and Q-func that has similar network size as the one 
+
+
+
 Implementing Neural Process Meta-Learner first verions:
     - (done) implement the main class
     - (done) buffers:
@@ -39,6 +52,8 @@ Implementing Neural Process Meta-Learner first verions:
     - (done) debug task_identifier
     - (done) debug trivialencoder
 
+    - (done) run initial experiments for np_bc
+
     - DONT FORGET TO REMOVE:
         - z is not being sample, taking the means
         - trivial encoder is only taking the last 5 timesteps (also has to be fixed in train_np_bc where you set input_size)
@@ -46,30 +61,32 @@ Implementing Neural Process Meta-Learner first verions:
     - implement subsampling for meta-simple-replay-buffer
     - !!!! don't forget to add the KL for the elbo objective !!!!
     - add scheduling for the KL
-    - run initial experiments for np_bc
+    - fixing a broken ELBO
 
 
-    - implement sac for meta-irl
-    - changed some stuff in np_bc, make sure it matches in np_airl
-    - implement meta-testing for np_airl
-    - fix the interface between np_airl and metaenvreplaybuffer    
     - !!!! don't forget to add the KL for the elbo objective !!!!
     - debug np_airl
     - add scheduling for the KL
     - run np_airl experiments
 
-
     - need to clean up task_params, obs_task_params, task_identifier
         - also consider that maybe expert has access to extra information that is not constant
             throughout an episode and hence cannot be folded into obs_task_params
 
-    - do the relabeling trick
-    
-    - implement eval_policy for meta-irl
-    - fixing a broken ELBO
+    - ?? do the relabeling trick ??
+
+    - I should add an online flag to meta-irl so that the meta train and meta test sets don't need to be finite
 
 
-    - I should change things so that the meta train and meta test sets don't need to be finite
+DEBUGGIN NP_AIRL AND MAKING IT WORK WITHOUT KL:
+    - read over to code to make sure you didn't fuck up
+        - e.g. detaching etc.
+        
+    - The disc is not able to get perfect accuracy
+        - (trying) make discriminator have 3 layers instead of two
+        - The whole model is decently big and you don't have batch norm anywhere except the disc
+        - Use the LSTM version of things
+        - Last resort make models larger
 
 
 

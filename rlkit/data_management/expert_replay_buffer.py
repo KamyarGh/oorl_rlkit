@@ -1,4 +1,8 @@
 '''
+!!!!!!!!!!!!!!
+DEPRECATED! DO NOT USE! USE simple_replay_buffer and its meta version please!
+!!!!!!!!!!!!!!
+
 IMPORTANT:
 There will be nasty bugs if this code is parallelized. These classes need
 to be made safe.

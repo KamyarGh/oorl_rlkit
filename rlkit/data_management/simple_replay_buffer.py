@@ -9,6 +9,10 @@ from rlkit.data_management.replay_buffer import ReplayBuffer
 
 
 class SimpleReplayBuffer(ReplayBuffer):
+    '''
+        THE MAX LENGTH OF AN EPISODE SHOULD BE STRICTLY SMALLER THAN THE _size
+        OTHERWISE THERE IS A BUG IN TERMINATE_EPISODE
+    '''
     def __init__(
         self, max_replay_buffer_size, observation_dim, action_dim,
         discrete_action_dim=False, policy_uses_pixels=False,
@@ -97,6 +101,8 @@ class SimpleReplayBuffer(ReplayBuffer):
         if self._cur_start != self._top:
             # if they are equal it means that the previous state was terminal
             # and was handled so there is no need to handle it again
+            # THERE WILL BE A BUG HERE IS _size IS NOT STRICTLY LARGER THAN
+            # MAX EPISODE LENGTH
             self._traj_endpoints[self._cur_start] = self._top
             self._cur_start = self._top
 
@@ -123,6 +129,16 @@ class SimpleReplayBuffer(ReplayBuffer):
         else:
             obs_to_return = self._observations[indices]
             next_obs_to_return = self._next_obs[indices]
+        
+        if self.policy_uses_pixels:
+            obs_to_return = {
+                'obs': obs_to_return,
+                'pixels': self._observations['pixels'][indices]
+            }
+            next_obs_to_return = {
+                'obs': next_obs_to_return,
+                'pixels': self._next_obs['pixels'][indices]
+            }
 
         return dict(
             observations=obs_to_return,
@@ -147,6 +163,16 @@ class SimpleReplayBuffer(ReplayBuffer):
         else:
             obs_to_return = self._observations[start:end]
             next_obs_to_return = self._next_obs[start:end]
+        
+        if self.policy_uses_pixels:
+            obs_to_return = {
+                'obs': obs_to_return,
+                'pixels': self._observations['pixels'][start:end]
+            }
+            next_obs_to_return = {
+                'obs': next_obs_to_return,
+                'pixels': self._next_obs['pixels'][start:end]
+            }
         
         return dict(
             observations=obs_to_return,
@@ -235,17 +261,81 @@ class MetaSimpleReplayBuffer():
             discrete_action_dim=False, policy_uses_pixels=False,
             policy_uses_task_params=False, concat_task_params_to_policy_obs=False
         ):
-        p = partial(
-            SimpleReplayBuffer,
-            max_rb_size_per_task, observation_dim, action_dim,
-            discrete_action_dim=discrete_action_dim,
-            policy_uses_pixels=policy_uses_pixels,
-            policy_uses_task_params=policy_uses_task_params,
-            concat_task_params_to_policy_obs=concat_task_params_to_policy_obs
-        )
+        self._obs_dim = observation_dim
+        self._act_dim = action_dim
+        self._max_rb_size_per_task = max_rb_size_per_task
+        self._disc_act_dim = discrete_action_dim
+        self._policy_uses_pixels = policy_uses_pixels
+        self._policy_uses_task_params = policy_uses_task_params
+        self._concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
+        p = self._get_partial()
         self.task_replay_buffers = defaultdict(p)
 
+
+    def _get_partial(self):
+        return partial(
+            SimpleReplayBuffer,
+            self._max_rb_size_per_task,
+            self._obs_dim,
+            self._act_dim,
+            discrete_action_dim=self._disc_act_dim,
+            policy_uses_pixels=self._policy_uses_pixels,
+            policy_uses_task_params=self._policy_uses_task_params,
+            concat_task_params_to_policy_obs=self._concat_task_params_to_policy_obs
+        )
     
+    
+    @property
+    def policy_uses_pixels(self):
+        return self._policy_uses_pixels
+    
+
+    @policy_uses_pixels.setter
+    def policy_uses_pixels(self, value):
+        if value == self._policy_uses_pixels: return
+        
+        for srb in self.task_replay_buffers.values():
+            srb.policy_uses_pixels = value
+
+        self._policy_uses_pixels = value
+        p = self._get_partial()
+        self.task_replay_buffers.default_factory = p
+    
+
+    @property
+    def policy_uses_task_params(self):
+        return self._policy_uses_task_params
+    
+
+    @policy_uses_pixels.setter
+    def policy_uses_task_params(self, value):
+        if value == self._policy_uses_task_params: return
+            
+        for srb in self.task_replay_buffers.values():
+            srb.policy_uses_task_params = value
+
+        self._policy_uses_task_params = value
+        p = self._get_partial()
+        self.task_replay_buffers.default_factory = p
+    
+
+    @property
+    def concat_task_params_to_policy_obs(self):
+        return self._concat_task_params_to_policy_obs
+    
+
+    @policy_uses_pixels.setter
+    def concat_task_params_to_policy_obs(self, value):
+        if value == self._concat_task_params_to_policy_obs: return
+        
+        for srb in self.task_replay_buffers.values():
+            srb.concat_task_params_to_policy_obs = value
+
+        self._concat_task_params_to_policy_obs = value
+        p = self._get_partial()
+        self.task_replay_buffers.default_factory = p
+
+
     def add_path(self, path, task_identifier):
         '''
             task_identifier must be hashable
@@ -281,6 +371,8 @@ class MetaSimpleReplayBuffer():
         return self.task_replay_buffers[task_identifier].sample_trajs(num_trajs)
     
 
+    def random_batch(self, *args, **kwargs):
+        return self.sample_random_batch(*args, **kwargs)
     def sample_random_batch(self, batch_size_per_task, num_task_params=1, task_identifiers_list=None):
         if task_identifiers_list is None:
             sample_params = list(sample(self.task_replay_buffers.keys(), num_task_params))

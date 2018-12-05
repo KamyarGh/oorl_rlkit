@@ -28,10 +28,9 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
     def __init__(
             self,
             env,
-            train_expert_replay_buffer,
-            test_expert_replay_buffer,
             exploration_policy: ExplorationPolicy,
             policy_optimizer,
+            expert_replay_buffer,
             training_env=None,
             num_epochs=100,
             num_steps_per_epoch=10000,
@@ -86,8 +85,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         # self.training_env = training_env or deepcopy(env)
         self.exploration_policy = exploration_policy
         self.policy_optimizer = policy_optimizer
-        self.train_expert_replay_buffer = train_expert_replay_buffer
-        self.test_expert_replay_buffer = test_expert_replay_buffer
+        self.expert_replay_buffer = expert_replay_buffer
         self.num_epochs = num_epochs
         self.num_env_steps_per_epoch = num_steps_per_epoch
         self.num_steps_per_eval = num_steps_per_eval

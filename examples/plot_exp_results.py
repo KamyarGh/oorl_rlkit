@@ -239,32 +239,104 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #                 y_axis_lims=[-1000, 10000],
 #                 plot_mean=False,
 #                 constraints=constraints
+#                 # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8
+# 191.5064 - 629.3840],
+#                 # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
+#             )
+
+# for num_exp_traj in [25, 100]:
+#     for exp_name in [
+#             'dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_20_subsampling',
+#             'dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling'
+#         ]:
+#         for net_size in [256, 100]:
+#             constraints = {
+#                 'expert_name': exp_name,
+#                 'num_expert_trajs': num_exp_traj,
+#                 'policy_net_size': net_size
+#             }
+#             name = 'expert_{expert_name}_num_trajs_used_{num_expert_trajs}_net_size_{policy_net_size}'.format(**constraints)
+#             plot_experiment_returns(
+#                 '/ais/gobi6/kamyar/oorl_rlkit/output/with-logging-reacher-bc-100-trajs',
+#                 'reacher behaviour cloning {}'.format(name),
+#                 '/u/kamyar/oorl_rlkit/plots/reacher_bc/{}.png'.format(name),
+#                 y_axis_lims=[0, 80],
+#                 plot_mean=False,
+#                 constraints=constraints
 #                 # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
 #                 # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
 #             )
 
-for num_exp_traj in [25, 100]:
-    for exp_name in [
-            'dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_20_subsampling',
-            'dmcs_with_finger_pos_and_sin_cos_simple_meta_reacher_100_trajs_1_subsampling'
-        ]:
-        for net_size in [256, 100]:
-            constraints = {
-                'expert_name': exp_name,
-                'num_expert_trajs': num_exp_traj,
-                'policy_net_size': net_size
-            }
-            name = 'expert_{expert_name}_num_trajs_used_{num_expert_trajs}_net_size_{policy_net_size}'.format(**constraints)
-            plot_experiment_returns(
-                '/ais/gobi6/kamyar/oorl_rlkit/output/with-logging-reacher-bc-100-trajs',
-                'reacher behaviour cloning {}'.format(name),
-                '/u/kamyar/oorl_rlkit/plots/reacher_bc/{}.png'.format(name),
-                y_axis_lims=[0, 80],
-                plot_mean=False,
-                constraints=constraints
-                # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
-                # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
-            )
+
+# ----------------------------------------------------------------------------------------------
+# '''
+# gt_z_2_layer_relu_disc_no_bn_16_pre_rollout_1_rollout_per_epoch_with_grad_pen
+# gt_z_3_layer_tanh_disc_with_bn_16_pre_rollout_1_rollout_per_epoch_with_grad_pen
+# gt_z_2_layer_relu_disc_with_bn_16_pre_rollout_1_rollout_per_epoch_with_grad_pen
+# gt_z_2_layer_tanh_disc_no_bn_16_pre_rollout_1_rollout_per_epoch_with_grad_pen
+# gt_z_2_layer_tanh_disc_with_bn_16_pre_rollout_1_rollout_per_epoch_with_grad_pen
+
+# fixed_* version of some of the aboves
+
+# first_np_airl_proper_run_tanh_with_bn_disc
+# first_np_airl_proper_run_tanh_with_bn_disc
+# '''
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/first-np-airl-proper-run-tanh-with-bn-disc',
+#     'first try np airl',
+#     '/u/kamyar/oorl_rlkit/plots/msmr_proper_np_airl.png',
+#     y_axis_lims=[0, 80],
+#     plot_mean=False,
+#     # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
+#     # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
+# )
+# ----------------------------------------------------------------------------------------------
+# Result for the fetch environment v1 from openai gym for the pick and place task using airl
+# for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+#     for disc_blocks in [2, 3]:
+#         constraints = {
+#             'policy_params.reward_scale': rew,
+#             'disc_num_blocks': disc_blocks
+#         }
+#     name = 'disc_hid_256_disc_num_blocks_{}_rew_scale_{}'.format(disc_blocks, rew)
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/correct-fetch-dac-disc-256',
+#         name,
+#         '/u/kamyar/oorl_rlkit/plots/{}.png'.format(name),
+#         y_axis_lims=[-50, 0],
+#         plot_mean=False,
+#         constraints=constraints
+#         # plot_horizontal_lines_at=[8191.5064, 8191.5064 + 629.3840, 8191.5064 - 629.3840],
+#         # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
+#     )
+
+plot_experiment_returns(
+    '/ais/gobi6/kamyar/oorl_rlkit/output/try-fetch-dac-2-layer-policy',
+    'fetch dac 2 layer policy',
+    '/u/kamyar/oorl_rlkit/plots/fetch_dac_2_layer_policy.png',
+    y_axis_lims=[0, 1.0],
+    plot_mean=False,
+    column_name='Percent_Solved'
+)
+plot_experiment_returns(
+    '/ais/gobi6/kamyar/oorl_rlkit/output/corect-fetch-dac-4-layer-policy-disc-100',
+    'fetch dac 4 layer policy disc hidden 100',
+    '/u/kamyar/oorl_rlkit/plots/fetch_dac_4_layer_policy_disc_hid_100.png',
+    y_axis_lims=[0, 1.0],
+    plot_mean=False,
+    column_name='Percent_Solved'
+)
+plot_experiment_returns(
+    '/ais/gobi6/kamyar/oorl_rlkit/output/corect-fetch-dac-4-layer-policy-disc-256',
+    'fetch dac 4 layer policy disc hidden 256',
+    '/u/kamyar/oorl_rlkit/plots/fetch_dac_4_layer_policy_disc_hid_256.png',
+    y_axis_lims=[0, 1.0],
+    plot_mean=False,
+    column_name='Percent_Solved'
+)
+# ----------------------------------------------------------------------------------------------
+
+
 
 # plot_experiment_returns(
 #     '/ais/gobi6/kamyar/oorl_rlkit/output/with-logging-reacher-bc-100-trajs',
