@@ -1,7 +1,7 @@
 meta_data:
   script_path: /u/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: correct_disc_100_64_pol_100_100_100_fetch_dac_with_max_ent_demos
+  exp_name: narrower_search_disc_100_64_pol_100_100_super_easy_fetch_dac
   description: searching over the SAC hyperparameters
   use_gpu: false
   num_workers: 32
@@ -13,8 +13,8 @@ variables:
     no_terminal: [false]
     replay_buffer_size: [1000000]
 
-    num_reward_updates: [100]
-    num_policy_updates: [100]
+    num_reward_updates: [55]
+    num_policy_updates: [55]
   
   policy_params:
     # reward_scale: [10.0]
@@ -39,7 +39,7 @@ variables:
 
   # policy_net_size: [100, 256]
   policy_net_size: [100]
-  num_hidden_layers: [3]
+  num_hidden_layers: [2]
   # policy_net_size: [100, 256]
   # num_hidden_layers: [2, 3]
 
@@ -52,15 +52,15 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
-  expert_name: max_ent_fetch_1000_demos
+  expert_name: super_easy_fetch_1000_demos
   expert_seed_run_idx: 0
   wrap_absorbing_state: false
   
   gail_params:
     num_epochs: 1011 # to match HER, they run for 1000 epochs, 50 each epoch
-    num_steps_per_epoch: 5000 # 100 * 50
-    num_steps_per_eval: 5000 # 100 * 50
-    max_path_length: 100
+    num_steps_per_epoch: 2750 # 55 * 50
+    num_steps_per_eval: 2750 # 55 * 50
+    max_path_length: 55
 
     disc_optim_batch_size: 1024
     policy_optim_batch_size: 1024
@@ -70,9 +70,9 @@ constants:
     concat_task_params_to_policy_obs: false
 
     # the interaction between these two numbers matters
-    num_steps_between_updates: 100
+    num_steps_between_updates: 55
     # replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
-    min_steps_before_training: 1000 # 100 * 10, the variability is so small that 10 is probably enough
+    min_steps_before_training: 550 # 55 * 10, the variability is so small that 10 is probably enough
     
     save_replay_buffer: true
     render: false
@@ -95,4 +95,4 @@ constants:
     soft_target_tau: 0.005
     
   env_specs:
-    base_env_name: 'scaled_and_wrapped_fetch'
+    base_env_name: 'scaled_super_easy_fetch_pick_and_place'

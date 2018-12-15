@@ -38,6 +38,35 @@ class ProxyEnv(Serializable, Env):
             self.wrapped_env.terminate()
 
 
+class ScaledEnv(ProxyEnv, Serializable):
+    '''
+        idk how to describe this right now.
+        if it turns out to be useful I will document it later.
+    '''
+    def __init__(
+        self,
+        env,
+        acts_max,
+        acts_min,
+        obs_max,
+        obs_min,
+        SCALE
+    ):
+        raise NotImplementedError()
+        self._wrapped_env = env
+        Serializable.quick_init(self, locals())
+        ProxyEnv.__init__(self, env)
+        self.SCALE = SCALE
+        a1 = (acts_max - acts_min) / (2.0 * SCALE) # a constant array we need
+        self.acts_min = acts_min
+        self.obs_max_minus_min = obs_max - obs_min
+        self.obs_min = obs_min
+    
+    def step(self, action):
+        action = a1 * (action + self.SCALE) + self.acts_min
+        return self._wrapped_env.step(action)
+    
+
 class NormalizedBoxEnv(ProxyEnv, Serializable):
     """
     Normalize action to in [-1, 1].

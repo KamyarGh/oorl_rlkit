@@ -9,11 +9,14 @@ from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
 from rlkit.torch.irl.gail import GAIL
-from rlkit.torch.networks import FlattenMlp
+from rlkit.torch.networks import FlattenMlp, Mlp
 from rlkit.torch.irl.disc_models.gail_disc import Model as GAILDiscModel
+from rlkit.torch.irl.disc_models.gail_disc import MlpGAILDisc
 from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
 
-from rlkit.envs import get_env 
+from rlkit.envs import get_env
+
+import torch
 
 import yaml
 import argparse
@@ -142,10 +145,18 @@ def experiment(variant):
         action_dim=action_dim,
     )
 
-    disc_model = GAILDiscModel(
-        obs_dim + action_dim,
-        num_layer_blocks=variant['disc_num_blocks'],
-        hid_dim=variant['disc_hid_dim']
+    # disc_model = GAILDiscModel(
+    #     obs_dim + action_dim,
+    #     num_layer_blocks=variant['disc_num_blocks'],
+    #     hid_dim=variant['disc_hid_dim'],
+    #     use_bn=variant['use_bn_in_disc'],
+    # )
+    disc_model = MlpGAILDisc(
+        hidden_sizes=variant['disc_hidden_sizes'],
+        output_size=1,
+        input_size=obs_dim+action_dim,
+        hidden_activation=torch.nn.functional.tanh,
+        # output_activation=identity,
     )
 
     policy_optimizer = NewSoftActorCritic(

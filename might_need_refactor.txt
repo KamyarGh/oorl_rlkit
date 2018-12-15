@@ -11,3 +11,11 @@
 - the bug in simple replay buffer due to size being same as max path length
 - removing any trace of expert_replay_buffer
 - in irl_algorithm num_steps_between_updates is a bit weird
+- envs.__init__ is very inefficient (figure out how gym.envs.make works and make something like that)
+- add the files for new and rotated no head fetch environments to the repo
+- either remove or generalize copy over params
+- some things say algo_params some things say policy params
+- clean up ~/local_params and ~/oorl_rlkit/local_params
+- I need to clean up wrapped_goal....
+
+- need to remove the copy of wrapped_goal.....

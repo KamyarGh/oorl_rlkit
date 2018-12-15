@@ -141,9 +141,13 @@ def plot_experiment_returns(
             csv_full_path = os.path.join(sub_exp_path, 'progress.csv')
             # print(csv_full_path)
             try:
-                returns = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)[column_name]
-                arr_list.append(returns)
-                names.append(sub_exp_dir)
+                progress_csv = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)
+                if isinstance(column_name, str):
+                    column_name = [column_name]
+                for c_name in column_name:
+                    returns = progress_csv[c_name]
+                    arr_list.append(returns)
+                    names.append(c_name + '_' + sub_exp_dir)
             except:
                 pass
         except:
@@ -163,4 +167,9 @@ def plot_experiment_returns(
             max_len = max(map(lambda a: a.shape[0], arr_list))
             arr_list += [np.ones(max_len)*y_val for y_val in plot_horizontal_lines_at]
             names += horizontal_lines_names
-        plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)
+        try:
+            plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)
+        except:
+            print('Failed to plot:')
+            print(exp_path)
+            print(constraints)

@@ -310,32 +310,378 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #         # horizontal_lines_names=['expert_mean', 'expert_high_std', 'expert_low_std']
 #     )
 
-plot_experiment_returns(
-    '/ais/gobi6/kamyar/oorl_rlkit/output/try-fetch-dac-2-layer-policy',
-    'fetch dac 2 layer policy',
-    '/u/kamyar/oorl_rlkit/plots/fetch_dac_2_layer_policy.png',
-    y_axis_lims=[0, 1.0],
-    plot_mean=False,
-    column_name='Percent_Solved'
-)
-plot_experiment_returns(
-    '/ais/gobi6/kamyar/oorl_rlkit/output/corect-fetch-dac-4-layer-policy-disc-100',
-    'fetch dac 4 layer policy disc hidden 100',
-    '/u/kamyar/oorl_rlkit/plots/fetch_dac_4_layer_policy_disc_hid_100.png',
-    y_axis_lims=[0, 1.0],
-    plot_mean=False,
-    column_name='Percent_Solved'
-)
-plot_experiment_returns(
-    '/ais/gobi6/kamyar/oorl_rlkit/output/corect-fetch-dac-4-layer-policy-disc-256',
-    'fetch dac 4 layer policy disc hidden 256',
-    '/u/kamyar/oorl_rlkit/plots/fetch_dac_4_layer_policy_disc_hid_256.png',
-    y_axis_lims=[0, 1.0],
-    plot_mean=False,
-    column_name='Percent_Solved'
-)
-# ----------------------------------------------------------------------------------------------
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/try-fetch-dac-2-layer-policy',
+#     'fetch dac 2 layer policy',
+#     '/u/kamyar/oorl_rlkit/plots/fetch_dac_2_layer_policy.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/corect-fetch-dac-4-layer-policy-disc-100',
+#     'fetch dac 4 layer policy disc hidden 100',
+#     '/u/kamyar/oorl_rlkit/plots/fetch_dac_4_layer_policy_disc_hid_100.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/corect-fetch-dac-4-layer-policy-disc-256',
+#     'fetch dac 4 layer policy disc hidden 256',
+#     '/u/kamyar/oorl_rlkit/plots/fetch_dac_4_layer_policy_disc_hid_256.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
 
+# for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0]:
+#     for disc_blocks in [2 ,3]:
+#         constraints = {
+#             'policy_params.reward_scale': rew,
+#             'disc_num_blocks': disc_blocks
+#         }
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/correct-debug-fetch-reacher-2-layer-policy',
+#             'fetch reacher rew %f disc blocks %d' % (rew, disc_blocks),
+#             '/u/kamyar/oorl_rlkit/plots/fetch_reacher/fetch_reacher_rew_%.0f_disc_blocks_%d.png' % (rew, disc_blocks),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/fixed-debug-fetch-reach-and-lift-dac',
+#     'fetch reach and lift dac from 100 trajs of len 50',
+#     '/u/kamyar/oorl_rlkit/plots/fetch_reach_and_lift_dac.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/fixed-fetch-anywhere-reach',
+#     'fetch reach anywhere SAC',
+#     '/u/kamyar/oorl_rlkit/plots/fetch_reach_anywhere_SAC.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/fixed-fetch-anywhere-reach-10x-shaping',
+#     'fetch reach anywhere 10x shaping SAC',
+#     '/u/kamyar/oorl_rlkit/plots/fetch_reach_anywhere_10x_shaping_SAC.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+# for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 750.0, 1000.0]:
+#     constraints = {
+#         'algo_params.reward_scale': rew
+#     }
+#     name = 'fetch_anywhere_10x_shaping_rew_%d' % rew
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/fixed-fetch-anywhere-reach-10x-shaping',
+#         'fetch reach anywhere 10x shaping SAC rew scale %d' % rew,
+#         '/u/kamyar/oorl_rlkit/plots/fetch_reach_anywhere_10x_shaping_SAC_rew_%d.png' % rew,
+#         y_axis_lims=[0, 1.0],
+#         plot_mean=False,
+#         column_name='Percent_Solved',
+#         constraints=constraints
+#     )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/batch-1-fetch-pick-and-place-with-noisy-demos-3-lay-pol-2-lay-disc',
+#     'fetch pick and place noisy demos',
+#     '/u/kamyar/oorl_rlkit/plots/batch_1_fetch_pick_and_place_with_noisy_demos_3_lay_pol_2_lay_disc.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/batch-2-fetch-pick-and-place-with-noisy-demos-3-lay-pol-2-lay-disc',
+#     'fetch pick and place noisy demos',
+#     '/u/kamyar/oorl_rlkit/plots/batch_2_fetch_pick_and_place_with_noisy_demos_3_lay_pol_2_lay_disc.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/batch-3-fetch-pick-and-place-with-noisy-demos-3-lay-pol-2-lay-disc',
+#     'fetch pick and place noisy demos',
+#     '/u/kamyar/oorl_rlkit/plots/batch_3_fetch_pick_and_place_with_noisy_demos_3_lay_pol_2_lay_disc.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved'
+# )
+
+# for pol_size in [100, 256]:
+#     for pol_lays in [2, 3, 4]:
+#         constraints = {
+#             'policy_net_size': pol_size,
+#             'num_policy_layers': pol_lays
+#         }
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/test-easy-fetch-bc',
+#             'easy fetch pick and place pol layers %d pol size %d' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/pol_lays_%d_pol_size_%d.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/test-easy-fetch-bc-with-normalized-acts',
+#             'easy fetch pick and place pol layers %d pol size %d with norm acts' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/pol_lays_%d_pol_size_%d_with_norm_acts.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/test-easy-fetch-bc-with-normalized-acts-with-bn',
+#             'easy fetch pick and place pol layers %d pol size %d with norm acts with bn' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/pol_lays_%d_pol_size_%d_with_norm_acts_with_bn.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/test-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             'easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/large-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             'large batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/large_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/full-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             'full batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/full_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/tanh-large-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             'Tanh large batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/tanh_large_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/tanh-full-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             'Tanh full batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/tanh_full_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         # this next one is actually large batch (1024) not full batch
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/1000-demos-tanh-full-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             '1000 demos Tanh 1024 batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/1000_demos_tanh_1024_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/lower-lr-1000-demos-tanh-1024-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             'lower lr 1000 demos Tanh 1024 batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/lower_lr_1000_demos_tanh_1024_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/fixed-norm-all-lower-lr-1000-clipped-demos-tanh-1024-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm/',
+#             'all normalized lower lr 1000 demos Tanh 1024 batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/all_norm_lower_lr_1000_demos_tanh_1024_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/noisy-eval-fixed-norm-all-lower-lr-1000-clipped-demos-tanh-1024-batch-easy-fetch-bc-with-normalized-acts-with-layer-norm',
+#             'noisy eval all normalized lower lr 1000 demos Tanh 1024 batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/noisy_eval_all_norm_lower_lr_1000_demos_tanh_1024_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/fixed-norm-all-lower-lr-1000-clipped-demos-tanh-1024-batch-easy-fetch-bc-with-normalized-acts-no-layer-norm',
+#             'no layer norm all normalized lower lr 1000 demos Tanh 1024 batch easy fetch pick and place pol layers %d pol size %d with norm acts with layer norm' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/easy_fetch_bc/no_layer_norm_all_norm_lower_lr_1000_demos_tanh_1024_batch_pol_lays_%d_pol_size_%d_with_norm_acts_with_layer_norm.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-256-pol-2-100-easy-fetch-pick-and-place',
+#     'disc 2 - 256, pol 2 - 100',
+#     '/u/kamyar/oorl_rlkit/plots/easy_fetch_dac/disc_2_256_pol_2_100.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved',
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-256-pol-2-256-easy-fetch-pick-and-place',
+#     'disc 2 - 256, pol 2 - 256',
+#     '/u/kamyar/oorl_rlkit/plots/easy_fetch_dac/disc_2_256_pol_2_256.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved',
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/batch-1-disc-2-100-pol-2-256-easy-fetch-pick-and-place',
+#     'disc 2 - 100, pol 2 - 256',
+#     '/u/kamyar/oorl_rlkit/plots/easy_fetch_dac/batch_1_disc_2_100_pol_2_256.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved',
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/batch-2-disc-2-100-pol-2-256-easy-fetch-pick-and-place',
+#     'disc 2 - 100, pol 2 - 256',
+#     '/u/kamyar/oorl_rlkit/plots/easy_fetch_dac/batch_2_disc_2_100_pol_2_256.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved',
+# )
+# plot_experiment_returns(
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-100-pol-2-100-easy-fetch-pick-and-place',
+#     'disc 2 - 100, pol 2 - 100',
+#     '/u/kamyar/oorl_rlkit/plots/easy_fetch_dac/disc_2_100_pol_2_100.png',
+#     y_axis_lims=[0, 1.0],
+#     plot_mean=False,
+#     column_name='Percent_Solved',
+# )
+
+# for pol_size in [100, 256]:
+#     for pol_lays in [2, 3, 4]:
+#         constraints = {
+#             'policy_net_size': pol_size,
+#             'num_policy_layers': pol_lays
+#         }
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/fetch-bc-with-max-ent-demos',
+#             'fetch pick and place bc pol layers %d pol size %d' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/fetch_bc/pol_lays_%d_pol_size_%d.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/super-easy-fetch-bc',
+#             'super easy fetch pick and place pol layers %d pol size %d' % (pol_lays, pol_size),
+#             '/u/kamyar/oorl_rlkit/plots/super_easy_fetch_bc/pol_lays_%d_pol_size_%d.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+
+# for rew in [1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 750.0, 1000.0]: 
+#     constraints = {
+#         'policy_params.reward_scale': rew
+#     }   
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/disc-100-100-pol-256-256-super-easy-fetch-dac',
+#         'disc 100-100, pol 256-256, rew %d' % rew,
+#         '/u/kamyar/oorl_rlkit/plots/super_easy_fetch_dac/disc_100_100_pol_256_256_rew_%d.png' % rew,
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#         constraints=constraints
+#     )
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/disc-100-64-pol-256-256-super-easy-fetch-dac',
+#         'disc 100-64, pol 256-256, rew %d' % rew,
+#         '/u/kamyar/oorl_rlkit/plots/super_easy_fetch_dac/disc_100_64_pol_256_256_rew_%d.png' % rew,
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#         constraints=constraints
+#     )
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/seed-5914-disc-100-100-pol-100-100-super-easy-fetch-dac',
+#         'disc 100-100, pol 100-100, rew %d' % rew,
+#         '/u/kamyar/oorl_rlkit/plots/super_easy_fetch_dac/seed_5914_disc_100_100_pol_100_100_rew_%d.png' % rew,
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#         constraints=constraints
+#     )
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/seed-9783-disc-100-100-pol-100-100-super-easy-fetch-dac',
+#         'disc 100-100, pol 100-100, rew %d' % rew,
+#         '/u/kamyar/oorl_rlkit/plots/super_easy_fetch_dac/seed_9783_disc_100_100_pol_100_100_rew_%d.png' % rew,
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#         constraints=constraints
+#     )
+#     plot_experiment_returns(
+#         '/ais/gobi6/kamyar/oorl_rlkit/output/disc-100-64-pol-100-100-super-easy-fetch-dac',
+#         'disc 100-64, pol 100-100, rew %d' % rew,
+#         '/u/kamyar/oorl_rlkit/plots/super_easy_fetch_dac/disc_100_64_pol_100_100_rew_%d.png' % rew,
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#         constraints=constraints
+#     )
+
+for rew in [2.0, 4.0, 6.0, 8.0]:
+    for grad_pen in [1.0, 3.0, 5.0, 7.0]:
+        constraints = {
+            'policy_params.reward_scale': rew,
+            'grad_pen_weight': grad_pen
+        }
+        plot_experiment_returns(
+            '/ais/gobi6/kamyar/oorl_rlkit/output/correct-disc-100-64-pol-100-100-100-fetch-dac-with-max-ent-demos',
+            'disc 100-64, pol 100-100-100, rew %d, grad_pen %.1f' % (rew, grad_pen),
+            '/u/kamyar/oorl_rlkit/plots/fetch_dac/disc_100_64_pol_100_100_100_rew_%d_grad_pen_%.1f.png' % (rew, grad_pen),
+            y_axis_lims=[-0.05, 1.05],
+            plot_mean=False,
+            column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+            constraints=constraints
+        )
+#         plot_experiment_returns(
+#             '/ais/gobi6/kamyar/oorl_rlkit/output/narrower-search-disc-100-64-pol-100-100-super-easy-fetch-dac',
+#             'disc 100-64, pol 100-100, rew %d, grad_pen %.1f' % (rew, grad_pen),
+#             '/u/kamyar/oorl_rlkit/plots/super_easy_fetch_dac/narrower_search/disc_100_64_pol_100_100_rew_%d_grad_pen_%.1f.png' % (rew, grad_pen),
+#             y_axis_lims=[-0.05, 1.05],
+#             plot_mean=False,
+#             column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#             constraints=constraints
+#         )
+# ----------------------------------------------------------------------------------------------
 
 
 # plot_experiment_returns(

@@ -15,7 +15,8 @@ class InPlacePathSampler(object):
     def __init__(self, env, policy, max_samples, max_path_length,
             concat_env_params_to_obs=False, normalize_env_params=False, env_params_normalizer=None,
             neural_process=None, latent_repr_fn=None, reward_scale=1, animated=False, env_sampler=None,
-            policy_uses_pixels=False, policy_uses_task_params=False, concat_task_params_to_policy_obs=False
+            policy_uses_pixels=False, policy_uses_task_params=False, concat_task_params_to_policy_obs=False,
+            animate_only_one=False
         ):
         self.env = env
         self.env_sampler = env_sampler
@@ -30,6 +31,7 @@ class InPlacePathSampler(object):
         self.latent_repr_fn = latent_repr_fn
         self.reward_scale = reward_scale
         self.animated = animated
+        self.animate_only_one = animate_only_one
         self.policy_uses_pixels = policy_uses_pixels
         self.policy_uses_task_params = policy_uses_task_params
         self.concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
@@ -46,7 +48,8 @@ class InPlacePathSampler(object):
         # only animate one rollout
         already_animated_one = False
         while n_steps_total + self.max_path_length <= self.max_samples:
-            animate_this = self.animated and not already_animated_one
+            animate_this = self.animated
+            if self.animate_only_one:  animate_this = not already_animated_one
             # YOU SHOULD REMOVE THIS ENV SAMPLER STUFF
             # ITS FROM THE OLD OORL PROJECT
             if self.env_sampler is not None:

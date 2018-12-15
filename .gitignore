@@ -98,6 +98,9 @@ batch_runners/ind_grow_size_base_specs
 *.png
 *.jpg
 *.jpeg
+*.pkl
+*.npy
+*.npz
 junk_vis/*
 output/*
 plots/*

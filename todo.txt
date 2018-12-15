@@ -1,3 +1,30 @@
+- need to handle how it takes very different amounts of time to complete the tasks for fetch (implement terminal states)
+
+- (done) make extra easy env
+- (done) generate noisy demos for extra easy env
+- modify the conversion script to also add the discriminator observations
+- convert the demos
+
+- how many updates per iter
+- how many iters to not train for in the beginning
+- see how that gail pick and place/stack thing paper did it
+- batch norm
+- make demonstrations more temporally extended
+- make demonstrations more noisy
+- add initial D iters
+
+- (done) reduce the learning rate
+- (done) change the demos so they are clipped between -1.0 and 1.0
+    - (done) get the demos
+    - (done) convert them and add to expert list
+- run fetch bc with normalized obs as well
+    - run it with normalized
+    - also add achieved goal to the observations as well
+    - run this version as well
+    - look up how they normalize/preprocess themselves in the HER code
+    - implement anything else that you might need
+- run experiments for AIRL
+
 Getting Fetch Results:
     - (done) Figure out how to make the data generation script work
     - Figure out how to get the HER stuff training on multiple cpus

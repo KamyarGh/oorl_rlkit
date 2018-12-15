@@ -20,7 +20,10 @@ from rlkit.envs.dmcs_envs.simple_meta_reacher import build_simple_meta_reacher
 from rlkit.envs.picker import PickerEnv
 
 # fetch env
-from rlkit.envs.wrapped_goal_envs import WrappedFetchPickAndPlaceEnv, DebugReachFetchPickAndPlaceEnv
+from rlkit.envs.wrapped_goal_envs import WrappedFetchPickAndPlaceEnv, DebugReachFetchPickAndPlaceEnv, DebugFetchReachAndLiftEnv
+from rlkit.envs.wrapped_goal_envs import WrappedRotatedFetchReachAnywhereEnv, WrappedEasyFetchPickAndPlaceEnv
+from rlkit.envs.wrapped_goal_envs import ScaledWrappedEasyFetchPickAndPlaceEnv, ScaledWrappedSuperEasyFetchPickAndPlaceEnv
+from rlkit.envs.wrapped_goal_envs import ScaledWrappedFetchPickAndPlaceEnv
 
 # for meta simple meta reacher
 from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
@@ -81,7 +84,55 @@ fixed_envs = {
     ),
     'jaco_picker': lambda: PickerEnv(),
     'fetch_pick_and_place': lambda: WrappedFetchPickAndPlaceEnv(),
-    'debug_fetch_reacher': lambda: DebugReachFetchPickAndPlaceEnv()
+    'debug_fetch_reacher': lambda: DebugReachFetchPickAndPlaceEnv(),
+    'debug_fetch_reach_and_lift': lambda: DebugFetchReachAndLiftEnv(),
+    'rotated_no_head_fetch_reach_anywhere': lambda: WrappedRotatedFetchReachAnywhereEnv(),
+    'easy_fetch_pick_and_place': lambda: WrappedEasyFetchPickAndPlaceEnv(),
+    'scaled_easy_fetch_pick_and_place': lambda: ScaledWrappedEasyFetchPickAndPlaceEnv(
+        acts_max=array([0.11622048, 0.11837779, 1., 0.05]),
+        acts_min=array([-0.11406593, -0.11492375, -0.48009082, -0.005]),
+        obs_max=array([ 1.35211534e+00,  7.59012039e-01,  8.74170327e-01,  1.35216868e+00,
+        7.59075514e-01,  8.65117304e-01,  9.99349991e-03,  9.97504859e-03,
+       -5.73782252e-04,  5.14756901e-02,  5.14743797e-02,  3.06240725e-03,
+        1.60782802e-02,  9.09377515e-03,  1.45024249e-03,  1.55772198e-03,
+        1.27349030e-02,  2.10399698e-02,  3.87118880e-03,  1.10660038e-02,
+        2.63549517e-03,  3.08370689e-03,  2.64278933e-02,  2.67708565e-02,
+        2.67707824e-02]),
+        obs_min=array([ 1.32694457e+00,  7.39177494e-01,  4.25007763e-01,  1.33124808e+00,
+        7.39111105e-01,  4.24235324e-01, -9.98595942e-03, -9.98935859e-03,
+       -1.10015137e-01,  2.55108763e-06, -8.67902630e-08, -2.71974527e-03,
+       -9.63782682e-03, -4.56146656e-04, -1.68586348e-03, -1.55750811e-03,
+       -7.64317184e-04, -2.08764492e-02, -3.56580593e-03, -1.05306888e-02,
+       -3.47314426e-03, -3.00819907e-03, -1.27082374e-02, -3.65293252e-03,
+       -3.65292508e-03]),
+       goal_max=array([1.35216868, 0.75907551, 0.87419374]),
+       goal_min=array([1.33124808, 0.73911111, 0.42423532]),
+       SCALE=0.99
+    ),
+    'scaled_super_easy_fetch_pick_and_place': lambda: ScaledWrappedSuperEasyFetchPickAndPlaceEnv(
+        acts_max=array([0.24968111, 0.24899998, 0.24999904, 0.01499934]),
+        acts_min=array([-0.24993695, -0.24931063, -0.24999953, -0.01499993]),
+        obs_max=array([0.0152033 , 0.01572069, 0.00401832, 0.02023052, 0.03041435,
+        0.20169743, 0.05092416, 0.05090878, 0.01017929, 0.01013457]),
+        obs_min=array([-1.77039428e-02, -1.64070528e-02, -1.10015137e-01, -2.06485778e-02,
+        -2.99603855e-02, -3.43990285e-03,  0.00000000e+00, -8.67902630e-08,
+        -9.50872658e-03, -9.28206220e-03]),
+        SCALE=0.99
+    ),
+    'scaled_and_wrapped_fetch': lambda: ScaledWrappedFetchPickAndPlaceEnv(
+        acts_max=array([0.24999679, 0.24999989, 0.24999854, 0.01499987]),
+        acts_min=array([-0.24999918, -0.24999491, -0.24998883, -0.01499993]),
+        obs_max=array([0.14997844, 0.14999457, 0.0066419 , 0.2896332 , 0.29748688,
+        0.4510363 , 0.05095725, 0.05090321, 0.01027833, 0.01043796]),
+        obs_min=array([-0.14985769, -0.14991582, -0.11001514, -0.29275747, -0.28962639,
+        -0.01673591, -0.00056493, -0.00056452, -0.00953662, -0.00964976]),
+        SCALE=0.99
+    )
+    # 'scaled_easy_fetch_pick_and_place': lambda: ScaledActionsEnv(
+    #     WrappedEasyFetchPickAndPlaceEnv(),
+    #     array([0.0005593, 0.00024555, 0.10793256, 0.0104]),
+    #     array([0.01485482, 0.0138236, 0.4666197, 0.02469494])
+    # ),
 }
 
 meta_envs = {

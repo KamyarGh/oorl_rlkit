@@ -4,6 +4,13 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+def plot_histogram(flat_array, num_bins, title, save_path):
+    fig, ax = plt.subplots(1)
+    ax.set_title(title)
+    plt.hist(flat_array, bins=num_bins)
+    plt.savefig(save_path, bbox_inches='tight')
+    plt.close()
+
 
 def save_pytorch_tensor_as_img(tensor, save_path):
     if tensor.size(0) == 1: tensor = tensor.repeat(3, 1, 1)

@@ -17,9 +17,11 @@ from rlkit.envs import get_env
 from rlkit.torch.torch_rl_algorithm import np_to_pytorch_batch
 from rlkit.core.eval_util import get_average_returns
 from rlkit.samplers.in_place import InPlacePathSampler
+from rlkit.torch.data_management.normalizer import TorchFixedNormalizer
 
 import torch
 from torch import optim
+from torch.autograd import Variable
 
 import yaml
 import argparse
@@ -110,13 +112,27 @@ def experiment(variant):
     #     layer_norm=variant['bc_params']['use_layer_norm']
     # )
     # The policy for fetch
+    hidden_sizes = [policy_net_size] * variant['num_policy_layers']
+
+    # mean_acts = Variable(ptu.from_numpy(np.array([[0.0005593, 0.00024555, 0.10793256, 0.0104]])), requires_grad=False)
+    # std_acts = Variable(ptu.from_numpy(np.array([[0.01485482, 0.0138236, 0.4666197, 0.02469494]])), requires_grad=False)
+    # class OutputNormalizedPolicy(MlpPolicy):
+    #     def forward(self, obs, unnormalized=True):
+    #         acts = super().forward(obs)
+    #         if unnormalized:
+    #             acts = (acts * std_acts) + mean_acts
+    #         return acts
+
+    # policy = OutputNormalizedPolicy(
     policy = MlpPolicy(
-        [policy_net_size, policy_net_size, policy_net_size, policy_net_size],
+        hidden_sizes,
         action_dim,
         obs_dim,
-        hidden_activation=torch.nn.functional.relu,
+        # hidden_activation=torch.nn.functional.relu,
+        hidden_activation=torch.nn.functional.tanh,
         output_activation=torch.nn.functional.tanh,
         layer_norm=variant['bc_params']['use_layer_norm']
+        # batch_norm=True
     )
 
     policy_optimizer = optim.Adam(
@@ -140,6 +156,66 @@ def experiment(variant):
         concat_task_params_to_policy_obs=variant['bc_params']['concat_task_params_to_policy_obs']
     )
 
+
+    # FOR EASY FETCH ENV ----------------------------------------------------------
+    # acts_max = Variable(ptu.from_numpy(np.array([0.11622048, 0.11837779, 1., 0.05])), requires_grad=False)
+    # acts_min = Variable(ptu.from_numpy(np.array([-0.11406593, -0.11492375, -0.48009082, -0.005])), requires_grad=False)
+
+    # obs_max = np.array([ 1.35211534e+00,  7.59012039e-01,  8.74170327e-01,  1.35216868e+00,
+    # 7.59075514e-01,  8.65117304e-01,  9.99349991e-03,  9.97504859e-03,
+    # -5.73782252e-04,  5.14756901e-02,  5.14743797e-02,  3.06240725e-03,
+    # 1.60782802e-02,  9.09377515e-03,  1.45024249e-03,  1.55772198e-03,
+    # 1.27349030e-02,  2.10399698e-02,  3.87118880e-03,  1.10660038e-02,
+    # 2.63549517e-03,  3.08370689e-03,  2.64278933e-02,  2.67708565e-02,
+    # 2.67707824e-02])
+    # obs_min = np.array([ 1.32694457e+00,  7.39177494e-01,  4.25007763e-01,  1.33124808e+00,
+    # 7.39111105e-01,  4.24235324e-01, -9.98595942e-03, -9.98935859e-03,
+    # -1.10015137e-01,  2.55108763e-06, -8.67902630e-08, -2.71974527e-03,
+    # -9.63782682e-03, -4.56146656e-04, -1.68586348e-03, -1.55750811e-03,
+    # -7.64317184e-04, -2.08764492e-02, -3.56580593e-03, -1.05306888e-02,
+    # -3.47314426e-03, -3.00819907e-03, -1.27082374e-02, -3.65293252e-03,
+    # -3.65292508e-03])
+    # goal_max = np.array([1.35216868, 0.75907551, 0.87419374])
+    # goal_min = np.array([1.33124808, 0.73911111, 0.42423532])
+    # observation_max = Variable(ptu.from_numpy(np.concatenate((obs_max, goal_max), axis=-1)), requires_grad=False)
+    # observation_min = Variable(ptu.from_numpy(np.concatenate((obs_min, goal_min), axis=-1)), requires_grad=False)
+
+    # SCALE = 0.99
+    # -----------------------------------------------------------------------------
+
+    # FOR SUPER EASY FETCH ENV ----------------------------------------------------
+    # acts_max = Variable(ptu.from_numpy(np.array([0.24968111, 0.24899998, 0.24999904, 0.01499934])), requires_grad=False)
+    # acts_min = Variable(ptu.from_numpy(np.array([-0.24993695, -0.24931063, -0.24999953, -0.01499993])), requires_grad=False)
+    # observation_max = Variable(ptu.from_numpy(np.array([0.0152033 , 0.01572069, 0.00401832, 0.02023052, 0.03041435,
+    #     0.20169743, 0.05092416, 0.05090878, 0.01017929, 0.01013457])), requires_grad=False)
+    # observation_min = Variable(ptu.from_numpy(np.array([-1.77039428e-02, -1.64070528e-02, -1.10015137e-01, -2.06485778e-02,
+    #     -2.99603855e-02, -3.43990285e-03,  0.00000000e+00, -8.67902630e-08,
+    #     -9.50872658e-03, -9.28206220e-03])), requires_grad=False)
+    # SCALE = 0.99
+    # -----------------------------------------------------------------------------
+
+    # FOR FETCH ENV ----------------------------------------------------
+    observation_max = Variable(ptu.from_numpy(np.array([0.14997844, 0.14999457, 0.0066419 , 0.2896332 , 0.29748688,
+       0.4510363 , 0.05095725, 0.05090321, 0.01027833, 0.01043796])), requires_grad=False)
+    observation_min = Variable(ptu.from_numpy(np.array([-0.14985769, -0.14991582, -0.11001514, -0.29275747, -0.28962639,
+       -0.01673591, -0.00056493, -0.00056452, -0.00953662, -0.00964976])), requires_grad=False)
+    acts_max = Variable(ptu.from_numpy(np.array([0.24999679, 0.24999989, 0.24999854, 0.01499987])), requires_grad=False)
+    acts_min = Variable(ptu.from_numpy(np.array([-0.24999918, -0.24999491, -0.24998883, -0.01499993])), requires_grad=False)
+    SCALE = 0.99
+    # -----------------------------------------------------------------------------
+
+    def normalize_obs(observation):
+        observation = (observation - observation_min) / (observation_max - observation_min)
+        observation *= 2 * SCALE
+        observation -= SCALE
+        return observation
+    
+    def normalize_acts(action):
+        action = (action - acts_min) / (acts_max - acts_min)
+        action *= 2 * SCALE
+        action -= SCALE
+        return action
+
     batch_size = variant['bc_params']['batch_size']
     freq_eval = variant['bc_params']['freq_eval']
     freq_saving = variant['bc_params']['freq_saving']
@@ -150,7 +226,13 @@ def experiment(variant):
         batch = np_to_pytorch_batch(batch)
         obs, acts = batch['observations'], batch['actions']
 
+        obs = normalize_obs(obs)
+        acts = normalize_acts(acts)
+
+        # acts = (acts - mean_acts) / std_acts
+
         # IF POLICY IS AN MLP
+        # policy_mean = policy.forward(obs, unnormalized=False)
         policy_mean = policy.forward(obs)
 
         # IF POLICY WAS REPARMAT TANH MVN
@@ -186,6 +268,7 @@ def experiment(variant):
         policy_optimizer.step()
 
         if itr % freq_eval == 0:
+            policy.eval()
             test_paths = eval_sampler.obtain_samples()
             average_returns = get_average_returns(test_paths)
             print('\nIter {} Returns:\t{}'.format(itr, average_returns))
@@ -194,7 +277,7 @@ def experiment(variant):
 
             logger.record_tabular('Test_Returns_Mean', average_returns)
 
-            if variant['env_specs']['base_env_name'] in ['fetch_pick_and_place', 'debug_fetch_reacher']:
+            if variant['env_specs']['base_env_name'] in ['fetch_pick_and_place', 'debug_fetch_reacher', 'debug_fetch_reach_and_lift', 'easy_fetch_pick_and_place', 'scaled_easy_fetch_pick_and_place', 'scaled_super_easy_fetch_pick_and_place', 'scaled_and_wrapped_fetch']:
                 solved = [sum(path["rewards"])[0] > -1.0 * path["rewards"].shape[0] for path in test_paths]
                 print(solved)
                 print([sum(path["rewards"])[0] for path in test_paths])
@@ -207,9 +290,11 @@ def experiment(variant):
             # print()
 
             logger.dump_tabular(with_prefix=False, with_timestamp=False)
+            policy.train()
                 
         # add saving
-
+        # if itr % freq_saving == 0:
+        #     logger.save_itr_params(itr, policy)
         
     return 1
 

@@ -79,6 +79,58 @@ debug_fetch_reach_100_demos:
   ]
 
 
+my_noisy_fetch_100_demos:
+  description: "my nlisy demos for pick and place"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/
+  seed_runs: [
+    my_noisy_demos
+  ]
+
+
+debug_fetch_reach_and_lift_100_demos:
+  description: "demos for a debug env to reach and lift"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/
+  seed_runs: [
+    fetch_reach_and_lift/
+  ]
+
+
+easy_fetch_0p01_range_1_goal_high_prob:
+  description: "fetch pick and place but the goal and object are initialized within 0.01 range and goal is always above ground"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/
+  seed_runs: [
+    easy_0p01_range_1_goal_high/
+  ]
+
+
+easy_fetch_0p01_range_1_goal_high_prob_1000_demos:
+  description: "fetch pick and place but the goal and object are initialized within 0.01 range and goal is always above ground"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/easy_0p01_range_1_goal_high
+  seed_runs: [
+    1000_demos
+  ]
+
+easy_fetch_0p01_range_1_goal_high_prob_1000_clipped_demos:
+  description: "fetch pick and place but the goal and object are initialized within 0.01 range and goal is always above ground"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/easy_0p01_range_1_goal_high/
+  seed_runs: [
+    1000_clipped_demos
+  ]
+
+super_easy_fetch_1000_demos:
+  description: "super easy fetch pick and place, note that episode length is 55"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/super_easy_fetch/
+  seed_runs: [
+    new_cont_data/
+  ]
+
+max_ent_fetch_1000_demos:
+  description: "episode length 100"
+  exp_dir: /ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/
+  seed_runs: [
+    max_ent_fetch/
+  ]
+
 # META-EXPERTS ----------------------------------------------------------------
 meta_simple_meta_reacher_expert_no_subsampling:
   description: "meta simple meta reacher expert, 6 trajs per task"

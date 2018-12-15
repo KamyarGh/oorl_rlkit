@@ -191,12 +191,14 @@ class MlpPolicy(Mlp, Policy):
 
     def __init__(
             self,
-            *args,
+            hidden_sizes,
+            output_size,
+            input_size,
             obs_normalizer: TorchFixedNormalizer = None,
             **kwargs
     ):
         self.save_init_params(locals())
-        super().__init__(*args, **kwargs)
+        super().__init__(hidden_sizes, output_size, input_size, **kwargs)
         self.obs_normalizer = obs_normalizer
 
     def forward(self, obs, **kwargs):
@@ -219,3 +221,4 @@ class TanhMlpPolicy(MlpPolicy):
     def __init__(self, *args, **kwargs):
         self.save_init_params(locals())
         super().__init__(*args, output_activation=torch.tanh, **kwargs)
+        raise NotImplementedError()
