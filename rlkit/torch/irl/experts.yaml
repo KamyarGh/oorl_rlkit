@@ -131,6 +131,34 @@ max_ent_fetch_1000_demos:
     max_ent_fetch/
   ]
 
+easy_in_the_air_1000_demos:
+  description: "episode length 55"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    easy_in_the_air_fetch/
+  ]
+
+larger_range_easy_in_the_air_1000_demos:
+  description: "episode length 80"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    larger_range_easy_in_the_air_fetch/
+  ]
+
+larger_z_range_easy_in_the_air_1000_demos:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    larger_z_range_easy_in_the_air_fetch/
+  ]
+
+larger_x_y_range_easy_in_the_air_1000_demos:
+  description: "episode length 70"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    larger_x_y_range_easy_in_the_air_fetch/
+  ]
+
 # META-EXPERTS ----------------------------------------------------------------
 meta_simple_meta_reacher_expert_no_subsampling:
   description: "meta simple meta reacher expert, 6 trajs per task"

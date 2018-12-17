@@ -3,7 +3,8 @@ import joblib
 import numpy as np
 from rlkit.core.vistools import plot_histogram
 
-path_to_expert_rb = '/ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/max_ent_fetch/extra_data.pkl'
+path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_x_y_range_easy_in_the_air_fetch/extra_data.pkl'
+plot_dir = 'plots/expert_demos_stats/target_in_air_easy_larger_x_y_range'
 rb = joblib.load(path_to_expert_rb)['replay_buffer']
 obs = rb._observations
 acts = rb._actions
@@ -30,8 +31,8 @@ norm_acts *= 2 * SCALE
 norm_acts -= SCALE
 
 for i in range(obs.shape[1]):
-    plot_histogram(obs[:,i], 100, 'obs dim %d' % i, 'plots/super_easy_fetch/obs_%d.png'%i)
-    plot_histogram(norm_obs[:,i], 100, 'norm obs dim %d' % i, 'plots/super_easy_fetch/norm_obs_%d.png'%i)
+    plot_histogram(obs[:,i], 100, 'obs dim %d' % i, os.path.join(plot_dir, 'obs_%d.png'%i))
+    plot_histogram(norm_obs[:,i], 100, 'norm obs dim %d' % i, os.path.join(plot_dir, 'norm_obs_%d.png'%i))
 for i in range(acts.shape[1]):
-    plot_histogram(acts[:,i], 100, 'acts dim %d' % i, 'plots/super_easy_fetch/acts_%d.png'%i)
-    plot_histogram(norm_acts[:,i], 100, 'norm acts dim %d' % i, 'plots/super_easy_fetch/norm_acts_%d.png'%i)
+    plot_histogram(acts[:,i], 100, 'acts dim %d' % i, os.path.join(plot_dir, 'acts_%d.png'%i))
+    plot_histogram(norm_acts[:,i], 100, 'norm acts dim %d' % i, os.path.join(plot_dir, 'norm_acts_%d.png'%i))

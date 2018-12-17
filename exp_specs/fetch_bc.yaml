@@ -1,11 +1,11 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/bc_train_script.py
-  exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: fetch_bc_with_max_ent_demos
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/bc_train_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
+  exp_name: random_test_larger_x_y_range_easy_in_the_air_fetch_bc
   description: searching over the SAC hyperparameters
-  use_gpu: false
-  num_workers: 12
-  cpu_range: [0,12]
+  use_gpu: true
+  num_workers: 1
+  cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
@@ -20,7 +20,10 @@ variables:
     # easy_fetch_0p01_range_1_goal_high_prob
     # easy_fetch_0p01_range_1_goal_high_prob_1000_clipped_demos
     # super_easy_fetch_1000_demos
-    max_ent_fetch_1000_demos
+    # max_ent_fetch_1000_demos
+    # easy_in_the_air_1000_demos
+    # larger_z_range_easy_in_the_air_1000_demos
+    larger_x_y_range_easy_in_the_air_1000_demos
   ]
 
   bc_params:
@@ -35,10 +38,10 @@ variables:
     normalized: [false]
     train_test_env: [false]
   
-  policy_net_size: [100, 256]
-  num_policy_layers: [2, 3 , 4]
+  policy_net_size: [256]
+  num_policy_layers: [4]
   
-  seed: [9783, 5914]
+  seed: [9783]
   # seed: [9783]
   # seed: [5914, 4865, 2135, 2349]
 
@@ -51,8 +54,8 @@ constants:
   
   bc_params:
     max_iters: 200001
-    num_steps_per_eval: 5000 # 50*100
-    max_path_length: 100
+    num_steps_per_eval: 3500 # 70*50
+    max_path_length: 70
 
     # batch_size: 100
 
@@ -69,4 +72,4 @@ constants:
   
     
   env_specs:
-    base_env_name: 'scaled_and_wrapped_fetch'
+    base_env_name: 'scaled_and_wrapped_target_in_air_easy'

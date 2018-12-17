@@ -228,3 +228,33 @@ class SuperEasyFetchPickAndPlaceEnv(EasyFetchEnv, gym_utils.EzPickle):
             min_goal_extra_height=0.15, max_goal_extra_height=0.20)
         gym_utils.EzPickle.__init__(self)
         self._max_episode_steps = 55
+
+
+class TargetOnlyInAirFetchPickAndPlaceEnv(EasyFetchEnv, gym_utils.EzPickle):
+    def __init__(self, reward_type='sparse'):
+        initial_qpos = {
+            'robot0:slide0': 0.405,
+            'robot0:slide1': 0.48,
+            'robot0:slide2': 0.0,
+            'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
+        }
+        EasyFetchEnv.__init__(
+            self, PICK_AND_PLACE_XML_PATH, has_object=True, block_gripper=False, n_substeps=20,
+            gripper_extra_height=0.2, target_in_the_air=True, target_offset=0.0,
+            obj_range=0.15, target_range=0.15, distance_threshold=0.05,
+            initial_qpos=initial_qpos, reward_type=reward_type, goal_high_prob=1.0,
+            min_goal_extra_height=0.15, max_goal_extra_height=0.2)
+        gym_utils.EzPickle.__init__(self)
+        self._max_episode_steps = 70
+
+        # EasyFetchEnv.__init__(
+        #     self, PICK_AND_PLACE_XML_PATH, has_object=True, block_gripper=False, n_substeps=20,
+        #     gripper_extra_height=0.2, target_in_the_air=True, target_offset=0.0,
+        #     obj_range=0.05, target_range=0.05, distance_threshold=0.05,
+        #     initial_qpos=initial_qpos, reward_type=reward_type, goal_high_prob=1.0,
+        #     min_goal_extra_height=0.1, max_goal_extra_height=0.3)
+        # gym_utils.EzPickle.__init__(self)
+        # self._max_episode_steps = 65
+
+        # self._max_episode_steps = 80
+        # self._max_episode_steps = 55

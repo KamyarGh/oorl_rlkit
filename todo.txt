@@ -1,3 +1,9 @@
+- need to try initial disc iters
+- need to try with terminal state
+
+
+
+
 - need to handle how it takes very different amounts of time to complete the tasks for fetch (implement terminal states)
 
 - (done) make extra easy env

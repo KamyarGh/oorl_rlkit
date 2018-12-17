@@ -28,7 +28,7 @@ import argparse
 import joblib
 from time import sleep
 
-EXPERT_LISTING_YAML_PATH = '/u/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
+EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
 def experiment(variant):
     # assert False, "This method sucks because your replay for pendulum is not full and you're just gonna get zeros now"
@@ -156,6 +156,7 @@ def experiment(variant):
         output_size=1,
         input_size=obs_dim+action_dim,
         hidden_activation=torch.nn.functional.tanh,
+        layer_norm=variant['disc_uses_layer_norm']
         # output_activation=identity,
     )
 

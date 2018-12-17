@@ -21,9 +21,10 @@ from rlkit.envs.picker import PickerEnv
 
 # fetch env
 from rlkit.envs.wrapped_goal_envs import WrappedFetchPickAndPlaceEnv, DebugReachFetchPickAndPlaceEnv, DebugFetchReachAndLiftEnv
-from rlkit.envs.wrapped_goal_envs import WrappedRotatedFetchReachAnywhereEnv, WrappedEasyFetchPickAndPlaceEnv
+from rlkit.envs.wrapped_goal_envs import WrappedEasyFetchPickAndPlaceEnv
+# from rlkit.envs.wrapped_goal_envs import WrappedRotatedFetchReachAnywhereEnv, WrappedEasyFetchPickAndPlaceEnv
 from rlkit.envs.wrapped_goal_envs import ScaledWrappedEasyFetchPickAndPlaceEnv, ScaledWrappedSuperEasyFetchPickAndPlaceEnv
-from rlkit.envs.wrapped_goal_envs import ScaledWrappedFetchPickAndPlaceEnv
+from rlkit.envs.wrapped_goal_envs import ScaledWrappedFetchPickAndPlaceEnv, ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv
 
 # for meta simple meta reacher
 from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
@@ -86,7 +87,7 @@ fixed_envs = {
     'fetch_pick_and_place': lambda: WrappedFetchPickAndPlaceEnv(),
     'debug_fetch_reacher': lambda: DebugReachFetchPickAndPlaceEnv(),
     'debug_fetch_reach_and_lift': lambda: DebugFetchReachAndLiftEnv(),
-    'rotated_no_head_fetch_reach_anywhere': lambda: WrappedRotatedFetchReachAnywhereEnv(),
+    # 'rotated_no_head_fetch_reach_anywhere': lambda: WrappedRotatedFetchReachAnywhereEnv(),
     'easy_fetch_pick_and_place': lambda: WrappedEasyFetchPickAndPlaceEnv(),
     'scaled_easy_fetch_pick_and_place': lambda: ScaledWrappedEasyFetchPickAndPlaceEnv(
         acts_max=array([0.11622048, 0.11837779, 1., 0.05]),
@@ -126,6 +127,47 @@ fixed_envs = {
         0.4510363 , 0.05095725, 0.05090321, 0.01027833, 0.01043796]),
         obs_min=array([-0.14985769, -0.14991582, -0.11001514, -0.29275747, -0.28962639,
         -0.01673591, -0.00056493, -0.00056452, -0.00953662, -0.00964976]),
+        SCALE=0.99
+    ),
+    # 'scaled_and_wrapped_target_in_air_easy': lambda: ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv(
+    #     acts_max=array([ 0.24997477,  0.24999408,  0.24999995,  0.01499998]),
+    #     acts_min=array([-0.24999714, -0.24999004, -0.24999967, -0.01499985]),
+    #     obs_max=array([ 0.04999746,  0.04979575,  0.00102964,  0.09834792,  0.10275888,
+    #     0.2026911 ,  0.05087222,  0.05089798,  0.01014106,  0.01024989]),
+    #     obs_min=array([ -4.97249838e-02,  -4.99201765e-02,  -1.10015137e-01,
+    #     -9.57695575e-02,  -9.56882197e-02,  -2.95093730e-03,
+    #      0.00000000e+00,  -8.67902630e-08,  -9.48171330e-03,
+    #     -9.57788163e-03]),
+    #     SCALE=0.99
+    # )
+    # 'scaled_and_wrapped_target_in_air_easy': lambda: ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv(
+    #     acts_max=array([0.24999906, 0.2499996 , 0.24999867, 0.01499948]),
+    #     acts_min=array([-0.24999676, -0.2499984 , -0.24999669, -0.01499992]),
+    #     obs_max=array([0.14967261, 0.14953164, 0.00056922, 0.28737584, 0.29375757,
+    #     0.30215514, 0.05092484, 0.05089244, 0.01006456, 0.01010476]),
+    #     obs_min=array([-1.49660926e-01, -1.49646858e-01, -1.10015137e-01, -2.82999770e-01,
+    #     -2.85085491e-01, -4.58114691e-03,  0.00000000e+00, -8.67902630e-08,
+    #     -9.47718257e-03, -9.47846722e-03]),
+    #     SCALE=0.99
+    # ),
+    # 'scaled_and_wrapped_target_in_air_easy': lambda: ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv(
+    #     acts_max=array([0.24995736, 0.2499716 , 0.24999983, 0.01499852]),
+    #     acts_min=array([-0.24989959, -0.24995068, -0.2499989 , -0.01499998]),
+    #     obs_max=array([0.0499439 , 0.04998455, 0.00098634, 0.09421162, 0.10457129,
+    #     0.3022664 , 0.05094975, 0.05090175, 0.01024486, 0.01029508]),
+    #     obs_min=array([-4.98090099e-02, -4.97771561e-02, -1.10015137e-01, -9.60775777e-02,
+    #     -1.03508767e-01, -3.50153560e-03,  0.00000000e+00, -8.67902630e-08,
+    #     -9.47353981e-03, -9.62584145e-03]),
+    #     SCALE=0.99
+    # ),
+    'scaled_and_wrapped_target_in_air_easy': lambda: ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv(
+        acts_max=array([0.24999749, 0.2499975 , 0.2499998 , 0.01499951]),
+        acts_min=array([-0.24999754, -0.24999917, -0.24999704, -0.01499989]),
+        obs_max=array([0.14953716, 0.14865454, 0.00155898, 0.28595684, 0.27644423,
+        0.20200016, 0.05094223, 0.05082468, 0.01033346, 0.0103368 ]),
+        obs_min=array([-1.49931348e-01, -1.49895902e-01, -1.10015137e-01, -2.80037372e-01,
+        -2.82756899e-01, -3.44387360e-03,  0.00000000e+00, -8.67902630e-08,
+        -9.53356933e-03, -9.71619128e-03]),
         SCALE=0.99
     )
     # 'scaled_easy_fetch_pick_and_place': lambda: ScaledActionsEnv(

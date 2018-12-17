@@ -19,6 +19,8 @@ def do_the_copy(exp_log_dir, save_dir, exp_name):
             specs = json.loads(spec_string)
         
         rew = specs['policy_params']['reward_scale']
+        disc_hid_sizes = specs['disc_hidden_sizes']
+        grad_pen_weight = specs['grad_pen_weight']
         # rew = specs['algo_params']['reward_scale']
         # disc_blocks = specs['disc_num_blocks']
         seed = specs['seed']
@@ -27,7 +29,7 @@ def do_the_copy(exp_log_dir, save_dir, exp_name):
         # try:
         policy = joblib.load(params_path)['exploration_policy']
         print(policy)
-        dest_path = os.path.join(save_dir, exp_name+'_rew_%.0f_seed_%d.pkl' % (rew, seed))
+        dest_path = os.path.join(save_dir, exp_name+'_rew_%.0f_disc_hid_sizes_%d_%d_grad_pen_%d_seed_%d.pkl' % (rew, disc_hid_sizes[0], disc_hid_sizes[1], grad_pen_weight, seed))
         joblib.dump(policy, dest_path, compress=3)
         # except:
             # print('fuck')
@@ -38,12 +40,15 @@ def do_the_copy(exp_log_dir, save_dir, exp_name):
 # save_dir = '/u/kamyar/oorl_rlkit/local_params/fixed_fetch_anywhere_reach_1x_shaping'
 # exp_name = 'fixed_fetch_anywhere_reach_1x_shaping'
 
+# log_dirs_list = [
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-256-pol-2-100-easy-fetch-pick-and-place',
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-256-pol-2-256-easy-fetch-pick-and-place',
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/batch-1-disc-2-100-pol-2-256-easy-fetch-pick-and-place',
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/batch-2-disc-2-100-pol-2-256-easy-fetch-pick-and-place',
+#     '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-100-pol-2-100-easy-fetch-pick-and-place',    
+# ]
 log_dirs_list = [
-    '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-256-pol-2-100-easy-fetch-pick-and-place',
-    '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-256-pol-2-256-easy-fetch-pick-and-place',
-    '/ais/gobi6/kamyar/oorl_rlkit/output/batch-1-disc-2-100-pol-2-256-easy-fetch-pick-and-place',
-    '/ais/gobi6/kamyar/oorl_rlkit/output/batch-2-disc-2-100-pol-2-256-easy-fetch-pick-and-place',
-    '/ais/gobi6/kamyar/oorl_rlkit/output/disc-2-100-pol-2-100-easy-fetch-pick-and-place',    
+    '/scratch/gobi2/kamyar/oorl_rlkit/output/more-disc-iters-larger-z-range-easy-in-the-air-fetch-dac'
 ]
 for log_dir in log_dirs_list:
     tail = os.path.split(log_dir)[1]

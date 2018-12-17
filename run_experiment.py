@@ -23,6 +23,25 @@ def get_pool_function(exp_fn_name):
     return exp_fn
 
 
+def get_legal_cpus(cpu_range, num_cpu_per_worker):
+    num_available_cpus = cpu_range[1] - cpu_range[0] + 1
+    affinities = []
+    for i in range(int(num_available_cpus / num_cpu_per_worker)):
+        affinities.append(
+            [
+                cpu_range[0] + num_cpu_per_worker * i + j
+                for j in range(num_cpu_per_worker)
+            ]
+        )
+    affinities = [hex(sum(2**i for i in aff)) for aff in affinities]
+
+    legal_cpus = []
+    for i, aff in enumerate(affinities):
+        command_to_run = 'taskset {} python -c \"x=1\" >/dev/null 2>&1'.format(aff)
+        if os.system(command_to_run) == 0: legal_cpus.append(i)
+    return legal_cpus
+
+
 if __name__ == '__main__':
     # Arguments
     parser = argparse.ArgumentParser()
@@ -60,15 +79,19 @@ if __name__ == '__main__':
     num_workers = min(exp_specs['meta_data']['num_workers'], num_variants)
 
     cpu_range = exp_specs['meta_data']['cpu_range']
-    num_available_cpus = cpu_range[1] - cpu_range[0] + 1
     num_cpu_per_worker = exp_specs['meta_data']['num_cpu_per_worker']
-    assert  num_cpu_per_worker * num_workers <= num_available_cpus
+    # num_available_cpus = cpu_range[1] - cpu_range[0] + 1
+    # assert  num_cpu_per_worker * num_workers <= num_available_cpus
 
+    legal_cpus = get_legal_cpus(cpu_range, num_cpu_per_worker)
+    num_available_cpus = len(legal_cpus)
+    assert num_cpu_per_worker * num_workers <= num_available_cpus
+    # print(legal_cpus)
     affinities = []
     for i in range(int(num_available_cpus / num_cpu_per_worker)):
         affinities.append(
             [
-                cpu_range[0] + num_cpu_per_worker * i + j
+                legal_cpus[num_cpu_per_worker * i + j]
                 for j in range(num_cpu_per_worker)
             ]
         )
