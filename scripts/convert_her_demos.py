@@ -1,11 +1,15 @@
+'''
+DO NOT USE! WRONG OBSERVATION SPACE!!!!
+'''
+
 import numpy as np
 import joblib
 import os
 from rlkit.data_management.simple_replay_buffer import SimpleReplayBuffer
 
 # get the original
-her_demos_path = '/ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/easy_0p01_range_1_goal_high/1000_clipped_demos/clipped_acts_data_easy_0p01_range_goal_high_prob_1_fetch_pick_and_place_random_1000.npz'
-rlkit_buffer_save_dir = '/ais/gobi6/kamyar/oorl_rlkit/expert_demos/her_fetch_pick_and_place/easy_0p01_range_1_goal_high/1000_clipped_demos/'
+her_demos_path = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_object_range_fetch_pick_and_place/larger_object_range_easy_in_the_air_fetch_data_random_1000.npz'
+rlkit_buffer_save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_object_range_fetch_pick_and_place'
 d = np.load(her_demos_path)
 
 # make the buffer

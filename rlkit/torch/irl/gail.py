@@ -132,13 +132,23 @@ class GAIL(TorchIRLAlgorithm):
         # self.SCALE = 0.99
 
         # FOR IN THE AIR FETCH EASY LARGER X-Y RANGE
-        self.acts_max = Variable(ptu.from_numpy(np.array([0.24999749, 0.2499975 , 0.2499998 , 0.01499951])), requires_grad=False)
-        self.acts_min = Variable(ptu.from_numpy(np.array([-0.24999754, -0.24999917, -0.24999704, -0.01499989])), requires_grad=False)
-        self.observation_max = Variable(ptu.from_numpy(np.array([0.14953716, 0.14865454, 0.00155898, 0.28595684, 0.27644423,
-        0.20200016, 0.05094223, 0.05082468, 0.01033346, 0.0103368 ])), requires_grad=False)
-        self.observation_min = Variable(ptu.from_numpy(np.array([-1.49931348e-01, -1.49895902e-01, -1.10015137e-01, -2.80037372e-01,
-        -2.82756899e-01, -3.44387360e-03,  0.00000000e+00, -8.67902630e-08,
-        -9.53356933e-03, -9.71619128e-03])), requires_grad=False)
+        # self.acts_max = Variable(ptu.from_numpy(np.array([0.24999749, 0.2499975 , 0.2499998 , 0.01499951])), requires_grad=False)
+        # self.acts_min = Variable(ptu.from_numpy(np.array([-0.24999754, -0.24999917, -0.24999704, -0.01499989])), requires_grad=False)
+        # self.observation_max = Variable(ptu.from_numpy(np.array([0.14953716, 0.14865454, 0.00155898, 0.28595684, 0.27644423,
+        # 0.20200016, 0.05094223, 0.05082468, 0.01033346, 0.0103368 ])), requires_grad=False)
+        # self.observation_min = Variable(ptu.from_numpy(np.array([-1.49931348e-01, -1.49895902e-01, -1.10015137e-01, -2.80037372e-01,
+        # -2.82756899e-01, -3.44387360e-03,  0.00000000e+00, -8.67902630e-08,
+        # -9.53356933e-03, -9.71619128e-03])), requires_grad=False)
+        # self.SCALE = 0.99
+
+        # FOR IN THE AIR FETCH EASY LARGER OBJECT RANGE
+        self.acts_max = Variable(ptu.from_numpy(np.array([0.24999844, 0.24999035, 0.24999848, 0.01499987])), requires_grad=False)
+        self.acts_min = Variable(ptu.from_numpy(np.array([-0.24999948, -0.24999969, -0.24999971, -0.01499985])), requires_grad=False)
+        self.observation_max = Variable(ptu.from_numpy(np.array([0.14981718, 0.14922823, 0.00105448, 0.19316468, 0.20144443,
+            0.20205348, 0.05088978, 0.05087405, 0.01012868, 0.01011336])), requires_grad=False)
+        self.observation_min = Variable(ptu.from_numpy(np.array([-1.49439076e-01, -1.49636276e-01, -1.10015137e-01, -1.99832936e-01,
+            -1.96645722e-01, -3.35041414e-03,  0.00000000e+00, -8.67902630e-08,
+            -9.49761703e-03, -9.71219664e-03])), requires_grad=False)
         self.SCALE = 0.99
 
         super().__init__(

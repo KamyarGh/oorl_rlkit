@@ -1,21 +1,20 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: more_disc_iters_larger_object_range_easy_in_the_air_fetch_dac
+  exp_name: airly_more_disc_iters_larger_x_y_range_easy_in_the_air_fetch_dac
   description: searching over the SAC hyperparameters
   use_gpu: false
-  num_workers: 128
+  num_workers: 32
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   gail_params:
     no_terminal: [false]
-    replay_buffer_size: [1000000]
+    replay_buffer_size: [17500]
 
-    num_reward_updates: [130]
-    num_policy_updates: [65]
-    grad_pen_weight: [0.0, 1.0, 5.0, 10.0]
+    num_reward_updates: [16]
+    num_policy_updates: [8]
   
   policy_params:
     # reward_scale: [10.0]
@@ -34,18 +33,19 @@ variables:
 
   disc_hidden_sizes: [
     # [100, 64],
-    [100, 100],
-    [256, 256],
+    # [100, 100],
+    # [256, 256],
     [100, 100, 100],
-    [256, 256, 256],
+    # [256, 256, 256],
   ]
   disc_uses_layer_norm: [false]
+  grad_pen_weight: [0.0, 1.0, 5.0, 10.0]
   # grad_pen_weight: [1.0, 3.0, 5.0, 7.0, 10.0]
   # grad_pen_weight: [10.0]
 
   # policy_net_size: [100, 256]
   policy_net_size: [100]
-  num_hidden_layers: [3]
+  num_hidden_layers: [4]
   # policy_net_size: [100, 256]
   # num_hidden_layers: [2, 3]
 
@@ -58,15 +58,16 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
-  expert_name: larger_object_range_easy_in_the_air_1000_demos
+  expert_name: larger_x_y_range_easy_in_the_air_1000_demos
   expert_seed_run_idx: 0
   wrap_absorbing_state: false
   
   gail_params:
-    num_epochs: 1011 # to match HER, they run for 1000 epochs, 50 each epoch
-    num_steps_per_epoch: 1625 # 65 * 25
-    num_steps_per_eval: 3250 # 65 * 50
-    max_path_length: 65
+    num_epochs: 10011 # to match HER, they run for 1000 epochs, 50 each epoch
+    # num_steps_per_epoch: 1750 # 70 * 25
+    num_steps_per_epoch: 15313 # 70 * 25 * 8.75 (which is 140/16)
+    num_steps_per_eval: 3500 # 70 * 50
+    max_path_length: 70
 
     disc_optim_batch_size: 1024
     policy_optim_batch_size: 1024
@@ -76,9 +77,9 @@ constants:
     concat_task_params_to_policy_obs: false
 
     # the interaction between these two numbers matters
-    num_steps_between_updates: 65
+    num_steps_between_updates: 70
     # replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
-    min_steps_before_training: 650 # 65 * 10, the variability is so small that 10 is probably enough
+    min_steps_before_training: 700 # 70 * 10, the variability is so small that 10 is probably enough
     
     save_replay_buffer: true
     render: false

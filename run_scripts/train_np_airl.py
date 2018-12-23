@@ -137,6 +137,7 @@ def experiment(variant):
         r2z_map
     )
 
+    assert False, 'fix how you give params_samplers to the algorithm'
     _, test_task_params_sampler = get_meta_env_params_iters(env_specs)
     algorithm = NeuralProcessAIRL(
         meta_test_env, # env is the test env, training_env is the training env (following rlkit original setup)

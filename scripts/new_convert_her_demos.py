@@ -9,8 +9,8 @@ import os
 from rlkit.data_management.simple_replay_buffer import SimpleReplayBuffer
 
 # get the original
-her_demos_path = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_x_y_range_easy_in_the_air_fetch/larger_x_y_range_easy_in_the_air_fetch_data_random_1000.npz'
-rlkit_buffer_save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_x_y_range_easy_in_the_air_fetch/'
+her_demos_path = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_object_range_fetch_pick_and_place/larger_object_range_easy_in_the_air_fetch_data_random_1000.npz'
+rlkit_buffer_save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_object_range_fetch_pick_and_place'
 d = np.load(her_demos_path)
 
 # make the buffer

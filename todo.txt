@@ -1,3 +1,78 @@
+Train few shot fetch:
+    - (done) Train lift to center basic models to get a sense of good params
+        - (done) Get expert data
+        - (done) train the bc
+        - (done) train the airl
+    - Train the few shot version
+        - (done) Fix the few shot env to have small target range
+        - (done) Make sure the expert demonstrations are good (visualize them!)
+        - (done) Generate the expert data for lifting to center
+        - implement a way to get an estimate of an upper bound on how well the model could do
+        - first plan your day
+        - check out why max-min values for the expert demos were weird
+        - if the np_bc model does not train, reduce to like only 5 meta-train tasks, without a meta-test
+            and see how well you could overfit
+        - you might also need more demos per task
+        - start writing
+        - fix how you sample random batches, you should sample trajectories then sample batches from the trajs
+        - train the np_bc version to figure out architecture sizes and stuff and make sure the same color radius is good
+            - figure out how much subsampling to use
+            - also try np_bc with convnets and maybe even LSTM
+        - remove the traj_len 5 and instead add subsampling
+        - train the np_airl version
+            - add the thing that for each task params setting you generate some number of trajectories before you start training
+    - Before you run the few shot experiments make sure you can reload the policies from checkpoints and that
+        you somehow always save the best checkpoint in addition to all other checkpoints
+    - Add the KL term to this
+    - Try with variable number of context trajs
+    - Try with a variation where you'd train the decoder part for a few iters then backprop to the encoder part
+    - np_airl has an advantage that it can see a lot more combinations of context and test colors, maybe also do
+        a version which the exact colors that are used in episodes are the ones from the expert demos
+
+Few Shot + Uncertainty Evaluation:
+    - Implement evaluation script
+    - Implement having variable number of context trajs
+
+
+
+
+
+
+
+
+
+
+
+- Add evaluation using both train and test task settings
+- NEED to fix in np_bc and np_airl sample_random_batch
+    - I should not be using sample_random_batch since it samples from all available trajectories
+    - I should be sampling the batch from a sampled subset of trajectories
+- Implement something that automatically looks at expert replay buffer
+    and performs the appropriate scalings
+- Make sure few shot fetch env is actually working as well as the expert trajs for it are good
+    - something was weird about the range of observation values
+- Implement a scaling wrapper
+
+- instead of the min-max thing could maybe try whitening by computing a covariance matrix
+
+
+- make the environment
+    - make sure it satisfies the interface from meta-irl envs
+- generate demos
+- convert the demos to proper format
+- update np_airl and np_bc to also maximize log prob(context)
+- run experiments
+- make necessary modifications for running with different context sizes
+- think about the hierarchical thing
+    - gatherer env
+    - maybe some blocks on top of one another and need to be moved
+    - learning to use an API
+    - Kevin Ellis stuff
+- implement the few shot evaluation thing
+- Also should try something where disc only sees the state and for example we change the dynamics
+    and we show that it still works
+- add the KL thing
+
 - need to try initial disc iters
 - need to try with terminal state
 

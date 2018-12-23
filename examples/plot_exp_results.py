@@ -416,21 +416,30 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     column_name='Percent_Solved'
 # )
 
-for pol_size in [100, 256]:
-    for pol_lays in [2, 3, 4]:
-        constraints = {
-            'policy_net_size': pol_size,
-            'num_policy_layers': pol_lays
-        }
-        plot_experiment_returns(
-            '/scratch/gobi2/kamyar/oorl_rlkit/output/test-larger-x-y-range-easy-in-the-air-fetch-bc',
-            'larger x-y range easy fetch pick and place pol layers %d pol size %d' % (pol_lays, pol_size),
-            '/h/kamyar/oorl_rlkit/plots/larger_x_y_range_easy_fetch_bc/pol_lays_%d_pol_size_%d.png' % (pol_lays, pol_size),
-            y_axis_lims=[0, 1.0],
-            plot_mean=False,
-            column_name='Percent_Solved',
-            constraints=constraints
-        )
+# for pol_size in [100, 256]:
+#     for pol_lays in [2, 3, 4]:
+#         constraints = {
+#             'policy_net_size': pol_size,
+#             'num_policy_layers': pol_lays
+#         }
+#         plot_experiment_returns(
+#             '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-larger-object-range-easy-in-the-air-fetch-bc',
+#             'larger object range easy fetch pick and place pol layers %d pol size %d' % (pol_lays, pol_size),
+#             '/h/kamyar/oorl_rlkit/plots/larger_object_range_easy_fetch_bc/pol_lays_%d_pol_size_%d.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             '/scratch/gobi2/kamyar/oorl_rlkit/output/test-larger-x-y-range-easy-in-the-air-fetch-bc',
+#             'larger x-y range easy fetch pick and place pol layers %d pol size %d' % (pol_lays, pol_size),
+#             '/h/kamyar/oorl_rlkit/plots/larger_x_y_range_easy_fetch_bc/pol_lays_%d_pol_size_%d.png' % (pol_lays, pol_size),
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name='Percent_Solved',
+#             constraints=constraints
+#         )
 #         plot_experiment_returns(
 #             '/scratch/gobi2/kamyar/oorl_rlkit/output/test-larger-z-range-easy-in-the-air-fetch-bc',
 #             'easy fetch pick and place pol layers %d pol size %d' % (pol_lays, pol_size),
@@ -709,16 +718,61 @@ for pol_size in [100, 256]:
 #             constraints=constraints
 #         )
 
-# for rew in [1.0, 2.0, 4.0, 6.0, 8.0, 10.0]:
-#     for disc_hid in [[100, 64], [100, 100], [256, 256]]:
-#         for grad_pen in [1.0, 5.0, 10.0]:
+# for rew in [2.0, 4.0, 6.0, 8.0]:
+#     for disc_hid in [[100, 100], [256, 256], [100, 100, 100], [256, 256, 256]]:
+#         for grad_pen in [0.0, 1.0, 5.0, 10.0]:
 #             # for num_rew_upd in [65, 32]:
 #             constraints = {
 #                 'policy_params.reward_scale': rew,
 #                 'disc_hidden_sizes': disc_hid,
-#                 'grad_pen_weight': grad_pen,
+#                 'gail_params.grad_pen_weight': grad_pen,
 #                 # 'gail_params.num_reward_updates': num_rew_upd
 #             }
+#             plot_experiment_returns(
+#                 '/scratch/gobi2/kamyar/oorl_rlkit/output/more-disc-iters-larger-object-range-easy-in-the-air-fetch-dac/',
+#                 'cpu disc hid {}, pol 100-100-100, rew {}, grad_pen {}, num rew updates 140, num pol updates 70'.format(disc_hid, rew, grad_pen),
+#                 '/h/kamyar/oorl_rlkit/plots/more_disc_iters_larger_object_range_easy_in_the_air_fetch_dac/disc_{}_pol_100_100_rew_{}_grad_pen_{}_num_rew_upd_128_num_pol_upd_65.png'.format(disc_hid, rew, grad_pen),
+#                 y_axis_lims=[-0.05, 1.05],
+#                 plot_mean=False,
+#                 column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#                 constraints=constraints
+#             )
+#             plot_experiment_returns(
+#                 '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-grad-pen-more-disc-iters-larger-x-y-range-easy-in-the-air-fetch-dac/',
+#                 'cpu disc hid {}, pol 100-100-100-100, rew {}, grad_pen {}, num rew updates 140, num pol updates 70'.format(disc_hid, rew, grad_pen),
+#                 '/h/kamyar/oorl_rlkit/plots/correct_grad_pen_more_disc_iters_larger_x_y_range_easy_in_the_air_fetch_dac/disc_{}_pol_100_100_rew_{}_grad_pen_{}_num_rew_upd_128_num_pol_upd_65.png'.format(disc_hid, rew, grad_pen),
+#                 y_axis_lims=[-0.05, 1.05],
+#                 plot_mean=False,
+#                 column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+#                 constraints=constraints
+#             )
+        # plot_experiment_returns(
+        #     '/scratch/gobi2/kamyar/oorl_rlkit/output/cpu-more-disc-iters-larger-x-y-range-easy-in-the-air-fetch-dac',
+        #     'cpu disc hid {}, pol 100-100-100-100, rew {}, grad_pen 10, num rew updates 140, num pol updates 70'.format(disc_hid, rew),
+        #     '/h/kamyar/oorl_rlkit/plots/cpu_more_disc_iters_larger_x_y_range_easy_in_the_air_fetch_dac/disc_{}_pol_100_100_rew_{}_grad_pen_10_num_rew_upd_128_num_pol_upd_65.png'.format(disc_hid, rew),
+        #     y_axis_lims=[-0.05, 1.05],
+        #     plot_mean=False,
+        #     column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+        #     constraints=constraints
+        # )
+        # plot_experiment_returns(
+        #     '/scratch/gobi2/kamyar/oorl_rlkit/output/gpu-more-disc-iters-larger-x-y-range-easy-in-the-air-fetch-dac',
+        #     'gpu disc hid {}, pol 100-100-100-100, rew {}, grad_pen 10, num rew updates 140, num pol updates 70'.format(disc_hid, rew),
+        #     '/h/kamyar/oorl_rlkit/plots/gpu_more_disc_iters_larger_x_y_range_easy_in_the_air_fetch_dac/disc_{}_pol_100_100_rew_{}_grad_pen_10_num_rew_upd_128_num_pol_upd_65.png'.format(disc_hid, rew),
+        #     y_axis_lims=[-0.05, 1.05],
+        #     plot_mean=False,
+        #     column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+        #     constraints=constraints
+        # )
+        # plot_experiment_returns(
+        #     '/scratch/gobi2/kamyar/oorl_rlkit/output/airly-more-disc-iters-larger-x-y-range-easy-in-the-air-fetch-dac',
+        #     'airly disc hid {}, pol 100-100-100-100, rew {}, grad_pen 10, num rew updates 16, num pol updates 8, buffer size 17500'.format(disc_hid, rew),
+        #     '/h/kamyar/oorl_rlkit/plots/airly_more_disc_iters_larger_x_y_range_easy_in_the_air_fetch_dac/disc_{}_pol_100_100_rew_{}_grad_pen_10.png'.format(disc_hid, rew),
+        #     y_axis_lims=[-0.05, 1.05],
+        #     plot_mean=False,
+        #     column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+        #     constraints=constraints
+        # )
 #             plot_experiment_returns(
 #                 '/scratch/gobi2/kamyar/oorl_rlkit/output/more-disc-iters-larger-z-range-easy-in-the-air-fetch-dac',
 #                 'disc hid {}, pol 100-100, rew {}, grad_pen {}, num rew updates 128, num pol updates 65'.format(disc_hid, rew, grad_pen),
@@ -772,15 +826,36 @@ for pol_size in [100, 256]:
 #             #     column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
 #             #     constraints=constraints
 #             # )
-#             plot_experiment_returns(
-#                 '/scratch/gobi2/kamyar/oorl_rlkit/output/larger-range-easy-in-the-air-fetch-dac',
-#                 'disc hid {}, pol 100-100, rew {}, grad_pen {}'.format(disc_hid, rew, grad_pen),
-#                 '/h/kamyar/oorl_rlkit/plots/larger_range_easy_in_the_air_fetch_dac/disc_{}_{}_pol_100_100_rew_{}_grad_pen_{}.png'.format(disc_hid[0], disc_hid[1], rew, grad_pen),
-#                 y_axis_lims=[-0.05, 1.05],
-#                 plot_mean=False,
-#                 column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
-#                 constraints=constraints
-#             )
+            # plot_experiment_returns(
+            #     '/scratch/gobi2/kamyar/oorl_rlkit/output/larger-range-easy-in-the-air-fetch-dac',
+            #     'disc hid {}, pol 100-100, rew {}, grad_pen {}'.format(disc_hid, rew, grad_pen),
+            #     '/h/kamyar/oorl_rlkit/plots/larger_range_easy_in_the_air_fetch_dac/disc_{}_{}_pol_100_100_rew_{}_grad_pen_{}.png'.format(disc_hid[0], disc_hid[1], rew, grad_pen),
+            #     y_axis_lims=[-0.05, 1.05],
+            #     plot_mean=False,
+            #     column_name=['Percent_Solved', 'Disc_Acc', 'Disc_Loss'],
+            #     constraints=constraints
+            # )
+
+
+for pol_size in [100, 256]:
+    for pol_layers in [3, 4]:
+        for test_batch_size in [256, 512]:
+            for z_dim in [20, 40, 60, 80]:
+                constraints = {
+                    'algo_params.policy_net_size': pol_size,
+                    'algo_params.policy_num_layers': pol_layers,
+                    'algo_params.test_batch_size_per_task': test_batch_size,
+                    'algo_params.np_params.z_dim': z_dim
+                }
+                plot_experiment_returns(
+                    '/scratch/gobi2/kamyar/oorl_rlkit/output/first-try-few-shot-np-bc',
+                    'pol size {}, pol layers {}, test_batch_size {}, z_dim {}'.format(pol_size, pol_layers, test_batch_size, z_dim),
+                    '/h/kamyar/oorl_rlkit/plots/first_try_few_shot_np_bc/pol_size_{}_pol_layers_{}_test_batch_size_{}_z_dim_{}.png'.format(pol_size, pol_layers, test_batch_size, z_dim),
+                    y_axis_lims=[-0.05, 1.05],
+                    plot_mean=False,
+                    column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+                    constraints=constraints
+                )
 
 # ----------------------------------------------------------------------------------------------
 

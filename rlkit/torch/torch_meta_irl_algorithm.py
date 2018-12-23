@@ -42,27 +42,34 @@ class TorchMetaIRLAlgorithm(MetaIRLAlgorithm, metaclass=abc.ABCMeta):
         statistics.update(self.eval_statistics)
         self.eval_statistics = None
 
-        logger.log("Collecting samples for evaluation")
-        test_paths = self.obtain_eval_samples(epoch)
+        # statistics.update(eval_util.get_generic_path_information(
+        #     self._exploration_paths, stat_prefix="Exploration",
+        # ))
 
-        statistics.update(eval_util.get_generic_path_information(
-            test_paths, stat_prefix="Test",
-        ))
-        statistics.update(eval_util.get_generic_path_information(
-            self._exploration_paths, stat_prefix="Exploration",
-        ))
-        print(statistics.keys())
-        if hasattr(self.env, "log_diagnostics"):
-            self.env.log_diagnostics(test_paths)
+        for mode in ['meta_train', 'meta_test']:
+            logger.log("Collecting samples for evaluation")
+            test_paths = self.obtain_eval_samples(epoch, mode=mode)
 
-        average_returns = rlkit.core.eval_util.get_average_returns(test_paths)
-        statistics['AverageReturn'] = average_returns
+            statistics.update(eval_util.get_generic_path_information(
+                test_paths, stat_prefix="Test " + mode,
+            ))
+            # print(statistics.keys())
+            if hasattr(self.env, "log_diagnostics"):
+                self.env.log_diagnostics(test_paths)
+            if hasattr(self.env, "log_statistics"):
+                log_stats = self.env.log_statistics(test_paths)
+                new_log_stats = {k+' '+mode: v for k, v in log_stats.items()}
+                statistics.update(new_log_stats)
+
+            average_returns = rlkit.core.eval_util.get_average_returns(test_paths)
+            statistics['AverageReturn '+mode] = average_returns
+
+            if self.render_eval_paths:
+                self.env.render_paths(test_paths)
+
         for key, value in statistics.items():
             logger.record_tabular(key, value)
-
-        if self.render_eval_paths:
-            self.env.render_paths(test_paths)
-
+        
         if self.plotter:
             self.plotter.draw()
 

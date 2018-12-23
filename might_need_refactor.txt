@@ -17,5 +17,6 @@
 - some things say algo_params some things say policy params
 - clean up ~/local_params and ~/oorl_rlkit/local_params
 - I need to clean up wrapped_goal....
+- documentation for the interface of meta-environments and task_samplers
 
 - need to remove the copy of wrapped_goal.....

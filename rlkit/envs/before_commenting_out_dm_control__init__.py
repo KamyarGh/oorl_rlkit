@@ -7,16 +7,16 @@ from numpy import array
 from numpy.random import uniform
 
 import gym
-# from dm_control import suite
+from dm_control import suite
 
 from rlkit.envs.base_inverted_pendulum import BaseInvertedPendulumEnv
 from rlkit.envs.reacher import MetaReacherEnv
 from rlkit.envs.hopper import MetaHopperEnv
 from rlkit.envs.meta_ant import MetaAntEnv
 from rlkit.envs.wrappers import NormalizedBoxEnv
-# from rlkit.envs.dmcs_wrapper import DmControlWrapper
-# from rlkit.envs.dmcs_envs.simple_reacher import build_simple_reacher as build_dmcv_simple_reacher
-# from rlkit.envs.dmcs_envs.simple_meta_reacher import build_simple_meta_reacher
+from rlkit.envs.dmcs_wrapper import DmControlWrapper
+from rlkit.envs.dmcs_envs.simple_reacher import build_simple_reacher as build_dmcv_simple_reacher
+from rlkit.envs.dmcs_envs.simple_meta_reacher import build_simple_meta_reacher
 from rlkit.envs.picker import PickerEnv
 
 # fetch env
@@ -26,17 +26,14 @@ from rlkit.envs.wrapped_goal_envs import WrappedEasyFetchPickAndPlaceEnv
 from rlkit.envs.wrapped_goal_envs import ScaledWrappedEasyFetchPickAndPlaceEnv, ScaledWrappedSuperEasyFetchPickAndPlaceEnv
 from rlkit.envs.wrapped_goal_envs import ScaledWrappedFetchPickAndPlaceEnv, ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv
 
-from rlkit.envs.few_shot_fetch_env import BasicFewShotFetchEnv, ScaledBasicFewShotFetchEnv
-from rlkit.envs.few_shot_fetch_env import get_task_params_iterator as few_shot_fetch_env_get_task_params_iterator
-
 # for meta simple meta reacher
-# from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
-# from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import get_params_iterators as get_meta_simple_meta_reacher_params_iters
+from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
+from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import get_params_iterators as get_meta_simple_meta_reacher_params_iters
 
 from gym.envs.mujoco.half_cheetah import HalfCheetahEnv
 
 # from dm_control.suite.wrappers import pixels
-# from rlkit.envs.dmcs_envs import pixels
+from rlkit.envs.dmcs_envs import pixels
 
 BASE_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'base_assets')
 CUSTOM_ASSETS_DIR = osp.join(os.path.dirname(os.path.realpath(__file__)), 'custom_assets')
@@ -67,25 +64,25 @@ fixed_envs = {
     'hopper_v2': lambda: gym.envs.make('Hopper-v2'),
     'reacher_v2': lambda: gym.envs.make('Reacher-v2'),
     'pendulum_v0': lambda: gym.envs.make('Pendulum-v0'),
-    # 'dmcs_reacher_hard': lambda: DmControlWrapper(suite.load(domain_name='reacher', task_name='hard')),
-    # 'dmcs_reacher_easy': lambda: DmControlWrapper(suite.load(domain_name='reacher', task_name='easy')),
-    # 'dmcs_simple_reacher': lambda: DmControlWrapper(build_dmcv_simple_reacher()),
+    'dmcs_reacher_hard': lambda: DmControlWrapper(suite.load(domain_name='reacher', task_name='hard')),
+    'dmcs_reacher_easy': lambda: DmControlWrapper(suite.load(domain_name='reacher', task_name='easy')),
+    'dmcs_simple_reacher': lambda: DmControlWrapper(build_dmcv_simple_reacher()),
     # in render_kwargs can specify: height, width, depth, camera_id
-    # 'dmcs_simple_reacher_with_pixels': lambda: DmControlWrapper(
-    #     pixels.Wrapper(
-    #         build_dmcv_simple_reacher(),
-    #         pixels_only=False,
-    #         render_kwargs={'height':80, 'width':80, 'camera_id':0}
-    #     )
-    # ),
-    # 'dmcs_simple_meta_reacher': lambda: DmControlWrapper(build_simple_meta_reacher()),
-    # 'dmcs_simple_meta_reacher_with_pixels': lambda: DmControlWrapper(
-    #     pixels.Wrapper(
-    #         build_simple_meta_reacher(),
-    #         pixels_only=False,
-    #         render_kwargs={'height':80, 'width':80, 'camera_id':0}
-    #     )
-    # ),
+    'dmcs_simple_reacher_with_pixels': lambda: DmControlWrapper(
+        pixels.Wrapper(
+            build_dmcv_simple_reacher(),
+            pixels_only=False,
+            render_kwargs={'height':80, 'width':80, 'camera_id':0}
+        )
+    ),
+    'dmcs_simple_meta_reacher': lambda: DmControlWrapper(build_simple_meta_reacher()),
+    'dmcs_simple_meta_reacher_with_pixels': lambda: DmControlWrapper(
+        pixels.Wrapper(
+            build_simple_meta_reacher(),
+            pixels_only=False,
+            render_kwargs={'height':80, 'width':80, 'camera_id':0}
+        )
+    ),
     'jaco_picker': lambda: PickerEnv(),
     'fetch_pick_and_place': lambda: WrappedFetchPickAndPlaceEnv(),
     'debug_fetch_reacher': lambda: DebugReachFetchPickAndPlaceEnv(),
@@ -163,26 +160,14 @@ fixed_envs = {
     #     -9.47353981e-03, -9.62584145e-03]),
     #     SCALE=0.99
     # ),
-    # FOR LARGER X-Y RANGE
-    # 'scaled_and_wrapped_target_in_air_easy': lambda: ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv(
-    #     acts_max=array([0.24999749, 0.2499975 , 0.2499998 , 0.01499951]),
-    #     acts_min=array([-0.24999754, -0.24999917, -0.24999704, -0.01499989]),
-    #     obs_max=array([0.14953716, 0.14865454, 0.00155898, 0.28595684, 0.27644423,
-    #     0.20200016, 0.05094223, 0.05082468, 0.01033346, 0.0103368 ]),
-    #     obs_min=array([-1.49931348e-01, -1.49895902e-01, -1.10015137e-01, -2.80037372e-01,
-    #     -2.82756899e-01, -3.44387360e-03,  0.00000000e+00, -8.67902630e-08,
-    #     -9.53356933e-03, -9.71619128e-03]),
-    #     SCALE=0.99
-    # )
-    # FOR LARGER OBJECT RANGE
     'scaled_and_wrapped_target_in_air_easy': lambda: ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv(
-        acts_max=array([0.24999844, 0.24999035, 0.24999848, 0.01499987]),
-        acts_min=array([-0.24999948, -0.24999969, -0.24999971, -0.01499985]),
-        obs_max=array([0.14981718, 0.14922823, 0.00105448, 0.19316468, 0.20144443,
-        0.20205348, 0.05088978, 0.05087405, 0.01012868, 0.01011336]),
-        obs_min=array([-1.49439076e-01, -1.49636276e-01, -1.10015137e-01, -1.99832936e-01,
-        -1.96645722e-01, -3.35041414e-03,  0.00000000e+00, -8.67902630e-08,
-        -9.49761703e-03, -9.71219664e-03]),
+        acts_max=array([0.24999749, 0.2499975 , 0.2499998 , 0.01499951]),
+        acts_min=array([-0.24999754, -0.24999917, -0.24999704, -0.01499989]),
+        obs_max=array([0.14953716, 0.14865454, 0.00155898, 0.28595684, 0.27644423,
+        0.20200016, 0.05094223, 0.05082468, 0.01033346, 0.0103368 ]),
+        obs_min=array([-1.49931348e-01, -1.49895902e-01, -1.10015137e-01, -2.80037372e-01,
+        -2.82756899e-01, -3.44387360e-03,  0.00000000e+00, -8.67902630e-08,
+        -9.53356933e-03, -9.71619128e-03]),
         SCALE=0.99
     )
     # 'scaled_easy_fetch_pick_and_place': lambda: ScaledActionsEnv(
@@ -199,20 +184,6 @@ meta_envs = {
         'info': {
             'is_dmcs_env': True
         }
-    },
-    'unscaled_basic_few_shot_fetch_env': {
-        'meta_train': lambda: BasicFewShotFetchEnv(),
-        'meta_test': lambda: BasicFewShotFetchEnv(),
-        'info': {
-            'is_dmcs_env': False
-        }
-    },
-    'scaled_basic_few_shot_fetch_env': {
-        'meta_train': lambda: ScaledBasicFewShotFetchEnv(),
-        'meta_test': lambda: ScaledBasicFewShotFetchEnv(),
-        'info': {
-            'is_dmcs_env': False
-        }
     }
 }
 
@@ -220,22 +191,14 @@ meta_env_task_params_iterators = {
     'meta_simple_meta_reacher': {
         'meta_train': lambda: get_meta_simple_meta_reacher_params_iters(train_env=True),
         'meta_test': lambda: get_meta_simple_meta_reacher_params_iters(train_env=False)
-    },
-    'unscaled_basic_few_shot_fetch_env': {
-        'meta_train': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=True),
-        'meta_test': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=False)
-    },
-    'scaled_basic_few_shot_fetch_env': {
-        'meta_train': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=True),
-        'meta_test': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=False)
     }
 }
 
 train_test_envs = {
-    # 'dmcs_simple_meta_reacher': {
-    #     'train': lambda: DmControlWrapper(build_simple_meta_reacher(train_env=True)),
-    #     'test': lambda: DmControlWrapper(build_simple_meta_reacher(train_env=False))
-    # }
+    'dmcs_simple_meta_reacher': {
+        'train': lambda: DmControlWrapper(build_simple_meta_reacher(train_env=True)),
+        'test': lambda: DmControlWrapper(build_simple_meta_reacher(train_env=False))
+    }
 }
 
 

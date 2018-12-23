@@ -98,6 +98,8 @@ def experiment(variant):
     else:
         env, _ = get_env(env_specs)
         training_env, _ = get_env(env_specs)
+    env.seed(variant['seed'])
+    training_env.seed(variant['seed'])
 
     if variant['wrap_absorbing_state']:
         assert False, 'Not handling train_test_env'

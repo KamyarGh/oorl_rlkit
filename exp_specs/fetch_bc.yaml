@@ -1,10 +1,10 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/bc_train_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: random_test_larger_x_y_range_easy_in_the_air_fetch_bc
+  exp_name: correct_larger_object_range_easy_in_the_air_fetch_bc
   description: searching over the SAC hyperparameters
-  use_gpu: true
-  num_workers: 1
+  use_gpu: false
+  num_workers: 12
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
@@ -23,7 +23,8 @@ variables:
     # max_ent_fetch_1000_demos
     # easy_in_the_air_1000_demos
     # larger_z_range_easy_in_the_air_1000_demos
-    larger_x_y_range_easy_in_the_air_1000_demos
+    # larger_x_y_range_easy_in_the_air_1000_demos
+    larger_object_range_easy_in_the_air_1000_demos
   ]
 
   bc_params:
@@ -38,10 +39,10 @@ variables:
     normalized: [false]
     train_test_env: [false]
   
-  policy_net_size: [256]
-  num_policy_layers: [4]
+  policy_net_size: [100, 256]
+  num_policy_layers: [2, 3 , 4]
   
-  seed: [9783]
+  seed: [9783, 5914]
   # seed: [9783]
   # seed: [5914, 4865, 2135, 2349]
 

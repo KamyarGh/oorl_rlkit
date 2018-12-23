@@ -241,11 +241,20 @@ class TargetOnlyInAirFetchPickAndPlaceEnv(EasyFetchEnv, gym_utils.EzPickle):
         EasyFetchEnv.__init__(
             self, PICK_AND_PLACE_XML_PATH, has_object=True, block_gripper=False, n_substeps=20,
             gripper_extra_height=0.2, target_in_the_air=True, target_offset=0.0,
-            obj_range=0.15, target_range=0.15, distance_threshold=0.05,
+            obj_range=0.15, target_range=0.05, distance_threshold=0.05,
             initial_qpos=initial_qpos, reward_type=reward_type, goal_high_prob=1.0,
             min_goal_extra_height=0.15, max_goal_extra_height=0.2)
         gym_utils.EzPickle.__init__(self)
-        self._max_episode_steps = 70
+        self._max_episode_steps = 65
+
+        # EasyFetchEnv.__init__(
+        #     self, PICK_AND_PLACE_XML_PATH, has_object=True, block_gripper=False, n_substeps=20,
+        #     gripper_extra_height=0.2, target_in_the_air=True, target_offset=0.0,
+        #     obj_range=0.15, target_range=0.15, distance_threshold=0.05,
+        #     initial_qpos=initial_qpos, reward_type=reward_type, goal_high_prob=1.0,
+        #     min_goal_extra_height=0.15, max_goal_extra_height=0.2)
+        # gym_utils.EzPickle.__init__(self)
+        # self._max_episode_steps = 70
 
         # EasyFetchEnv.__init__(
         #     self, PICK_AND_PLACE_XML_PATH, has_object=True, block_gripper=False, n_substeps=20,

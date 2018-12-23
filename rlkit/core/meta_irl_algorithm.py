@@ -29,6 +29,8 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             train_test_expert_replay_buffer,
             test_context_expert_replay_buffer,
             test_test_expert_replay_buffer,
+            train_task_params_sampler,
+            test_task_params_sampler,
             training_env=None,
             num_epochs=100,
             num_rollouts_per_epoch=10,
@@ -112,6 +114,9 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             assert isinstance(env, WrappedAbsorbingEnv), 'Env is not wrapped!'
         self.freq_saving = freq_saving
         self.no_terminal = no_terminal
+
+        self.train_task_params_sampler = train_task_params_sampler
+        self.test_task_params_sampler = test_task_params_sampler
 
 
     def train(self, start_epoch=0):
@@ -319,7 +324,8 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
 
 
     def _start_new_rollout(self):
-        observation = self.training_env.reset()
+        task_params, obs_task_params = self.train_task_params_sampler.sample()
+        observation = self.training_env.reset(task_params=task_params, obs_task_params=obs_task_params)
         task_id = self.training_env.task_identifier
 
         self.exploration_policy = self.get_exploration_policy(task_id)

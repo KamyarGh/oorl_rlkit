@@ -3,8 +3,9 @@ import joblib
 import numpy as np
 from rlkit.core.vistools import plot_histogram
 
-path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_x_y_range_easy_in_the_air_fetch/extra_data.pkl'
-plot_dir = 'plots/expert_demos_stats/target_in_air_easy_larger_x_y_range'
+path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_object_range_fetch_pick_and_place/extra_data.pkl'
+plot_dir = 'plots/expert_demos_stats/target_in_air_easy_larger_object_range'
+print(path_to_expert_rb)
 rb = joblib.load(path_to_expert_rb)['replay_buffer']
 obs = rb._observations
 acts = rb._actions

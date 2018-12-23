@@ -1,0 +1,34 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/gen_meta_irl_expert_trajs.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
+  exp_name: few_shot_larger_object_range_expert
+  description: generating expert demos for few shot
+  use_gpu: false
+  num_workers: 1
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  use_scripted_policy: [true]
+  scripted_policy_name: [few_shot_fetch_scripted_policy]
+  render: [false]
+  student_policy_uses_pixels: [false]
+  num_rollouts_per_task: [10]
+  # seed: [28043, 99381, 33478, 448293, 5739]
+  seed: [28043]
+
+# -----------------------------------------------------------------------------
+constants:
+  env_specs:
+    base_env_name: 'unscaled_basic_few_shot_fetch_env'
+    normalized: false
+    need_pixels: false
+  max_path_length: 65
+  wrap_absorbing: false
+  no_terminal: false
+
+  check_for_success: true
+
+  policy_uses_pixels: false
+  policy_uses_task_params: false
+  concat_task_params_to_policy_obs: false

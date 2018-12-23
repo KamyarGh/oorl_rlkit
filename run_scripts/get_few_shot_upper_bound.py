@@ -3,11 +3,14 @@ import torch
 
 from gym.spaces import Dict
 
+import torch
+import torch.nn as nn
+
 from rllab.misc.instrument import VariantGenerator
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
-from rlkit.torch.networks import MlpPolicy
+from rlkit.torch.networks import Mlp
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
 
@@ -26,6 +29,42 @@ from time import sleep
 
 EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
+
+class Classifier(nn.Module):
+    def __init__(self, enc_hidden_sizes, z_dim, classifier_hidden_sizes):
+        super(Classifier, self).__init__()
+        self.enc = Mlp(
+            enc_hidden_sizes,
+            z_dim,
+            6,
+            hidden_activation=torch.nn.functional.relu,
+        )
+        self.classifier = Mlp(
+            classifier_hidden_sizes,
+            1,
+            z_dim + 6
+        )
+        self.z_dim = z_dim
+    
+
+    def forward(self, context_batch, query_batch):
+        N_tasks, N_contexts = context_batch.size(0), context_batch.size(1)
+        context_batch = context_batch.view(N_tasks*N_contexts, 6)
+        encodings = self.enc(context_batch)
+        encodings = encodings.view(N_tasks, N_contexts, z_dim)
+        encodings = torch.sum(encodings, 1)
+
+        assert query_batch.size(0) == N_tasks
+        num_queries_per_task = query_batch.size(1)
+        encodings = encodings.repeat(1, num_queries_per_task)
+        encodings = encodings.view(N_tasks*num_queries_per_task, z_dim)
+        query_batch = query_batch.view(N_tasks*num_queries_per_task, 6)
+        input_batch = torch.cat([encodings, query_batch], 1)
+
+        logits = self.classifier(input_batch)
+        return logits
+
+
 def experiment(variant):
     with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
         listings = yaml.load(f.read())
@@ -38,51 +77,14 @@ def experiment(variant):
     train_context_buffer, train_test_buffer = extra_data['meta_train']['context'], extra_data['meta_train']['test']
     test_context_buffer, test_test_buffer = extra_data['meta_test']['context'], extra_data['meta_test']['test']
 
-    # set up the envs
-    env_specs = variant['env_specs']
-    meta_train_env, meta_test_env = get_meta_env(env_specs)
-
-    # student policy should not have access to any task information
-    print(variant['algo_params'].keys())
-    meta_train_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
-    meta_train_env.policy_uses_task_params = False
-    meta_train_env.concat_task_params_to_policy_obs = False
-
-    meta_test_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
-    meta_test_env.policy_uses_task_params = False
-    meta_test_env.concat_task_params_to_policy_obs = False
-
-    # set up the policy and training algorithm
-    if isinstance(meta_train_env.observation_space, Dict):
-        if variant['algo_params']['policy_uses_pixels']:
-            raise NotImplementedError('Not implemented pixel version of things!')
-        else:
-            obs_dim = int(np.prod(meta_train_env.observation_space.spaces['obs'].shape))
-    else:
-        obs_dim = int(np.prod(meta_train_env.observation_space.shape))
-    action_dim = int(np.prod(meta_train_env.action_space.shape))
-
-    print('obs dim: %d' % obs_dim)
-    print('act dim: %d' % action_dim)
-    sleep(3)
-
-    policy_net_size = variant['algo_params']['policy_net_size']
-    policy_num_layers = variant['algo_params']['policy_num_layers']
-    hidden_sizes = [policy_net_size] * policy_num_layers
-    # policy = MlpPolicy(
-    #     [policy_net_size, policy_net_size],
-    #     action_dim,
-    #     obs_dim + variant['algo_params']['np_params']['z_dim'],
-    #     hidden_activation=torch.nn.functional.tanh,
-    #     layer_norm=variant['algo_params']['use_layer_norm']
-    # )
+    net_size = variant['net_size']
+    num_layers = variant['num_layers']
+    hidden_sizes = [net_size] * num_layers
     policy = MlpPolicy(
         hidden_sizes,
-        action_dim,
-        obs_dim + variant['algo_params']['np_params']['z_dim'],
-        # hidden_activation=torch.nn.functional.relu,
-        hidden_activation=torch.nn.functional.tanh,
-        output_activation=torch.nn.functional.tanh,
+        1,
+        3,
+        hidden_activation=torch.nn.functional.relu,
         layer_norm=variant['algo_params']['use_layer_norm']
         # batch_norm=True
     )

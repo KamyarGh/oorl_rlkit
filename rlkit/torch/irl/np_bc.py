@@ -41,7 +41,6 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             test_test_expert_replay_buffer,
 
             np_encoder,
-            test_task_params_sampler,
 
             num_policy_updates_per_epoch=1000,
             num_tasks_used_per_update=4,
@@ -78,8 +77,6 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         self.main_policy = main_policy
         self.encoder = np_encoder
         self.rewardf_eval_statistics = None
-        self.test_task_params_sampler = test_task_params_sampler
-        
 
         self.policy_optimizer = policy_optimizer_class(
             self.main_policy.parameters(),
@@ -115,8 +112,12 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         return PostCondMLPPolicyWrapper(self.main_policy, z)
     
 
-    def get_eval_policy(self, task_identifier):
-        list_of_trajs = self.test_context_expert_replay_buffer.sample_trajs_from_task(
+    def get_eval_policy(self, task_identifier, mode='meta_test'):
+        if mode == 'meta_train':
+            rb = self.train_context_expert_replay_buffer
+        else:
+            rb = self.test_context_expert_replay_buffer
+        list_of_trajs = rb.sample_trajs_from_task(
             task_identifier,
             self.num_context_trajs_for_eval,
         )
@@ -144,15 +145,22 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             # z = post_dist.sample() # N_tasks x Dim
             z = post_dist.mean
 
-            test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
+            test_train_batch, _ = self.train_context_expert_replay_buffer.sample_random_batch(
+                self.test_batch_size_per_task,
+                task_identifiers_list=task_identifiers_list
+            )
+            test_test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
                 self.test_batch_size_per_task,
                 task_identifiers_list=task_identifiers_list
             )
             # test_batch is a list of dicts: each dict is a random batch from that task
+            
             # convert it to a pytorch tensor
-            obs = np.concatenate([d['observations'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            # note that our objective says we should maximize likelihood of
+            # BOTH the context_batch and the test_batch
+            obs = np.concatenate([d['observations'] for d in test_train_batch]+[d['observations'] for d in test_test_batch], axis=0) # (N_tasks * batch_size) x Dim
             obs = Variable(ptu.from_numpy(obs), requires_grad=False)
-            acts = np.concatenate([d['actions'] for d in test_batch], axis=0) # (N_tasks * batch_size) x Dim
+            acts = np.concatenate([d['actions'] for d in test_train_batch]+[d['actions'] for d in test_test_batch], axis=0) # (N_tasks * batch_size) x Dim
             acts = Variable(ptu.from_numpy(acts), requires_grad=False)
 
             # repeat z to have the right size
@@ -160,6 +168,7 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
                 self.num_tasks_used_per_update * self.test_batch_size_per_task,
                 -1
             )
+            z = z.repeat(2, 1)
 
             # get action predictions
             pred_acts = self.main_policy(torch.cat([obs, z], dim=-1))
@@ -180,10 +189,13 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             self.eval_statistics['Regr MSE Loss'] = np.mean(ptu.get_numpy(loss))
 
 
-    def obtain_eval_samples(self, epoch):
+    def obtain_eval_samples(self, epoch, mode='meta_train'):
         self.training_mode(False)
 
-        params_samples = [self.test_task_params_sampler.sample() for _ in range(self.num_tasks_per_eval)]
+        if mode == 'meta_train':
+            params_samples = [self.train_task_params_sampler.sample() for _ in range(self.num_tasks_per_eval)]
+        else:
+            params_samples = [self.test_task_params_sampler.sample() for _ in range(self.num_tasks_per_eval)]
         all_eval_tasks_paths = []
         for task_params, obs_task_params in params_samples:
             cur_eval_task_paths = []
@@ -191,7 +203,7 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             task_identifier = self.env.task_identifier
 
             for _ in range(self.num_diff_context_per_eval_task):
-                eval_policy = self.get_eval_policy(task_identifier)
+                eval_policy = self.get_eval_policy(task_identifier, mode=mode)
 
                 for _ in range(self.num_eval_trajs_per_post_sample):
                     cur_eval_path_builder = PathBuilder()

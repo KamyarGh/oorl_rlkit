@@ -518,7 +518,8 @@ class ScaledWrappedTargetOnlyInAirFetchPickAndPlaceEnv(TargetOnlyInAirFetchPickA
         self.obs_min, self.obs_max = obs_min, obs_max
         self.SCALE = SCALE
 
-        self._max_episode_steps = 70
+        self._max_episode_steps = 65
+        # self._max_episode_steps = 70
         # self._max_episode_steps = 55
 
 

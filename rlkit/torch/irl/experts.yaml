@@ -159,6 +159,13 @@ larger_x_y_range_easy_in_the_air_1000_demos:
     larger_x_y_range_easy_in_the_air_fetch/
   ]
 
+larger_object_range_easy_in_the_air_1000_demos:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    larger_object_range_fetch_pick_and_place
+  ]
+
 # META-EXPERTS ----------------------------------------------------------------
 meta_simple_meta_reacher_expert_no_subsampling:
   description: "meta simple meta reacher expert, 6 trajs per task"
@@ -181,4 +188,27 @@ meta_simple_meta_reacher_expert_no_subsampling_50_trajs_per_task:
     a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_09_0002--s-0,
     a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_09_0003--s-0,
     a_lot_of_trajs_final_exp_trajs_for_meta_simple_meta_reacher_2018_11_23_20_10_10_0004--s-0
+  ]
+
+
+basic_few_shot_fetch_expert_50_10_10:
+  description: "basic few shot fetch env, same color radius 0.3, 50 meta-train params, 50 meta-test params, 10-10 train/test"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-basic-few-shot-fetch-traj-gen
+  seed_runs: [
+    correct_basic_few_shot_fetch_traj_gen_2018_12_19_08_57_56_0000--s-0
+  ]
+
+
+normalized_basic_few_shot_fetch_expert_50_10_10:
+  description: "normalized using max-min, basic few shot fetch env, same color radius 0.3, 50 meta-train params, 50 meta-test params, 10-10 train/test"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    normalized_basic_few_shot_fetch_demos
+  ]
+
+normalized_basic_few_shot_fetch_larger_object_range_expert_50_10_10:
+  description: "normalized using max-min, basic few shot fetch env, same color radius 0.3, 50 meta-train params, 50 meta-test params, 10-10 train/test"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    normalized_few_shot_larger_object_range_expert
   ]
