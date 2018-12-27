@@ -36,16 +36,19 @@ def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct 
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     # for some weird reason 0 and 2 look almost identical
+    n += 1
     cmap = plt.cm.get_cmap(name, n)
-    def new_cmap(n):
-        if n == 1:
-            return (0,0,0,1)
-        else:
-            return cmap(n)
-    return new_cmap
+    # def new_cmap(n):
+    #     if n >= 3: n = n+1
+    #     if n == 1:
+    #         return (0,0,0,1)
+    #     else:
+    #         return cmap(n)
+    # return new_cmap
+    return cmap
 
 
-def plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=None):
+def plot_returns_on_same_plot(arr_list, names, title, save_path, x_axis_lims=None, y_axis_lims=None):
     # print(arr_list, names, title, save_path, y_axis_lims)
     fig, ax = plt.subplots(1)
     cmap = get_cmap(len(arr_list))
@@ -57,6 +60,8 @@ def plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=Non
         ax.plot(np.arange(ret.shape[0]), ret, color=cmap(i), label=name)
 
     ax.set_title(title)
+    if x_axis_lims is not None:
+        ax.set_xlim(x_axis_lims)
     if y_axis_lims is not None:
         ax.set_ylim(y_axis_lims)
     lgd = ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=False, ncol=3)
@@ -78,10 +83,12 @@ def plot_multiple_plots(plot_list, names, title, save_path):
     plt.close()
 
 
-def save_plot(x, y, title, save_path, color='cyan', y_axis_lims=None):
+def save_plot(x, y, title, save_path, color='cyan', x_axis_lims=None, y_axis_lims=None):
     fig, ax = plt.subplots(1)
     ax.plot(x, y, color=color)
     ax.set_title(title)
+    if x_axis_lims is not None:
+        ax.set_xlim(x_axis_lims)
     if y_axis_lims is not None:
         ax.set_ylim(y_axis_lims)
     plt.savefig(save_path, bbox_inches='tight')

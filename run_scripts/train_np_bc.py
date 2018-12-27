@@ -156,6 +156,8 @@ if __name__ == '__main__':
         spec_string = spec_file.read()
         exp_specs = yaml.load(spec_string)
     
+    if exp_specs['use_gpu']:
+        ptu.set_gpu_mode(True)
     exp_id = exp_specs['exp_id']
     exp_prefix = exp_specs['exp_name']
     seed = exp_specs['seed']

@@ -104,7 +104,7 @@ def create_stats_ordered_dict(
 # I (Kamyar) will be adding my own eval utils here too
 def plot_experiment_returns(
     exp_path, title, save_path, column_name='Test_Returns_Mean',
-    y_axis_lims=None, constraints=None, plot_mean=False,
+    x_axis_lims=None, y_axis_lims=None, constraints=None, plot_mean=False,
     plot_horizontal_lines_at=None, horizontal_lines_names=None):
     '''
         plots the Test Returns Mean of all the
@@ -160,7 +160,7 @@ def plot_experiment_returns(
         mean = np.mean(returns, 0)
         # std = np.std(returns, 0)
         x = np.arange(min_len)
-        save_plot(x, mean, title, save_path, color='cyan', y_axis_lims=y_axis_lims)
+        save_plot(x, mean, title, save_path, color='cyan', x_axis_lims=x_axis_lims, y_axis_lims=y_axis_lims)
     else:
         if len(arr_list) == 0: print(0)
         if plot_horizontal_lines_at is not None:
@@ -168,8 +168,9 @@ def plot_experiment_returns(
             arr_list += [np.ones(max_len)*y_val for y_val in plot_horizontal_lines_at]
             names += horizontal_lines_names
         try:
-            plot_returns_on_same_plot(arr_list, names, title, save_path, y_axis_lims=y_axis_lims)
-        except:
+            plot_returns_on_same_plot(arr_list, names, title, save_path, x_axis_lims=x_axis_lims, y_axis_lims=y_axis_lims)
+        except Exception as e:
             print('Failed to plot:')
             print(exp_path)
             print(constraints)
+            # raise e

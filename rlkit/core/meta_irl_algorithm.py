@@ -46,6 +46,8 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             policy_uses_pixels=False,
             wrap_absorbing=False,
             freq_saving=1,
+            do_not_train=False,
+            do_not_eval=False,
             # some environment like halfcheetah_v2 have a timelimit that defines the terminal
             # this is used as a minor hack to turn off time limits
             no_terminal=False,
@@ -117,6 +119,8 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
 
         self.train_task_params_sampler = train_task_params_sampler
         self.test_task_params_sampler = test_task_params_sampler
+        self.do_not_train = do_not_train
+        self.do_not_eval = do_not_eval
 
 
     def train(self, start_epoch=0):
@@ -214,11 +218,11 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
 
             # essentially in each epoch we gather data then do a certain amount of training
             gt.stamp('sample')
-            self._try_to_train()
+            if not self.do_not_train: self._try_to_train()
             gt.stamp('train')
 
             # and then we evaluate it
-            self._try_to_eval(epoch)
+            if not self.do_not_eval: self._try_to_eval(epoch)
             gt.stamp('eval')
             self._end_epoch()
 
@@ -508,6 +512,15 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
     def cuda(self):
         """
         Turn cuda on.
+        :return:
+        """
+        pass
+    
+
+    @abc.abstractmethod
+    def cpu(self):
+        """
+        Turn cuda off.
         :return:
         """
         pass

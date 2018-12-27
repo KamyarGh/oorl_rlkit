@@ -33,15 +33,41 @@ EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
 
 class Classifier(nn.Module):
-    def __init__(self, enc_hidden_sizes, z_dim, classifier_hidden_sizes):
+    def __init__(self, z_dim, classifier_hidden_sizes):
         super(Classifier, self).__init__()
-        self.enc = Mlp(
-            enc_hidden_sizes,
-            z_dim,
-            6,
-            hidden_activation=torch.nn.functional.relu,
-            # batch_norm=True
-            # layer_norm=True
+        timestep_enc_dim = 50
+        traj_enc_dim = 100
+        r_dim = 100
+        self.enc = TrivialNPEncoder(
+            'sum',
+            TrivialTrajEncoder(
+                {
+                    'hidden_sizes': [50],
+                    'output_size': timestep_enc_dim,
+                    'input_size': 26,
+                    'hidden_activation': torch.nn.functional.relu,
+                },
+                {
+                    'hidden_sizes': [100],
+                    'output_size': traj_enc_dim,
+                    'input_size': timestep_enc_dim * 5,
+                    'hidden_activation': torch.nn.functional.relu,
+                }
+            ),
+            TrivialR2ZMap(
+                {
+                    'hidden_sizes': [100],
+                    'output_size': r_dim,
+                    'input_size': traj_enc_dim,
+                    'hidden_activation': torch.nn.functional.relu,
+                },
+                {
+                    'hidden_sizes': [100],
+                    'output_size': z_dim,
+                    'input_size': r_dim,
+                    'hidden_activation': torch.nn.functional.relu,
+                }
+            )
         )
         self.classifier = Mlp(
             classifier_hidden_sizes,
@@ -55,30 +81,15 @@ class Classifier(nn.Module):
     
 
     def forward(self, context_batch, query_batch):
-        N_tasks, N_contexts = context_batch.size(0), context_batch.size(1)
-        context_batch = context_batch.view(N_tasks*N_contexts, 6)
-        encodings = self.enc(context_batch)
-        encodings = encodings.view(N_tasks, N_contexts, self.z_dim)
-        encodings = torch.sum(encodings, 1)
-        # print(encodings.size())
+        z = self.enc(context_batch)
+        z = z.mean
 
-        assert query_batch.size(0) == N_tasks
+        N_tasks = query_batch.size(0)
         num_queries_per_task = query_batch.size(1)
-        # print(num_queries_per_task)
-        # print(encodings.size())
-        encodings = encodings.repeat(1, num_queries_per_task)
-        # print(encodings.size())
-        encodings = encodings.view(N_tasks*num_queries_per_task, self.z_dim)
-        # print(encodings.size())
-        # print(query_batch[0])
         query_batch = query_batch.view(N_tasks*num_queries_per_task, 6)
-        # print(context_batch)
-        # print(query_batch[:10])
-
-        # print(query_batch[:8])
-        # print(query_batch.size())
-        input_batch = torch.cat([encodings, query_batch], 1)
-        # print(input_batch.size())
+        z = z.repeat(1, num_queries_per_task)
+        z = z.view(-1, self.z_dim)
+        input_batch = torch.cat([z, query_batch], dim=-1)
 
         logits = self.classifier(input_batch)
         return logits
@@ -181,7 +192,7 @@ def get_batch(context_buffer, test_buffer, num_tasks, num_context_trajs, num_tes
     # print(np.concatenate((task_ids, task_ids), -1).shape)
     
     # query_batch = query_batch.view(-1, 6)
-    return Variable(ptu.from_numpy(context_input_batch), requires_grad=False), query_batch, labels
+    return context_batch, query_batch, labels
 
 
 def experiment(variant):
@@ -196,16 +207,11 @@ def experiment(variant):
     train_context_buffer, train_test_buffer = extra_data['meta_train']['context'], extra_data['meta_train']['test']
     test_context_buffer, test_test_buffer = extra_data['meta_test']['context'], extra_data['meta_test']['test']
 
-    net_size = variant['enc_net_size']
-    num_layers = variant['enc_num_layers']
-    enc_hidden_sizes = [net_size] * num_layers
-
     net_size = variant['classifier_net_size']
     num_layers = variant['classifier_num_layers']
     classifier_hidden_sizes = [net_size] * num_layers
 
     model = Classifier(
-        enc_hidden_sizes,
         variant['z_dim'],
         classifier_hidden_sizes
     )

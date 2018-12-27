@@ -31,7 +31,8 @@ class TrivialTrajEncoder(PyTorchModule):
 
         timestep_enc_params['output_activation'] = F.relu
         self.timestep_mlp = Mlp(**timestep_enc_params)
-        traj_enc_params['output_activation'] = F.relu
+        # the relu below that has been commented out seriously hurts performance
+        # traj_enc_params['output_activation'] = F.relu
         self.traj_enc_mlp = Mlp(**traj_enc_params)
         self.output_size = self.traj_enc_mlp.output_size
 

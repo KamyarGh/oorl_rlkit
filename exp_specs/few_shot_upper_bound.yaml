@@ -1,0 +1,39 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/few_shot_color_from_context.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
+  exp_name: test_few_shot_upper_bound
+  description: searching over the SAC hyperparameters
+  use_gpu: false
+  num_workers: 1
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+
+  # seed: [9783, 5914]
+  seed: [9783]
+  # seed: [9783, 5914, 4865, 2135, 2349]
+
+# -----------------------------------------------------------------------------
+constants:
+  expert_name: unnormalized_basic_few_shot_fetch_larger_object_range_expert_50_10_10
+  expert_seed_run_idx: 0
+
+  max_train_iters: 10000
+  freq_val: 100
+
+  # enc_net_size: 20
+  # enc_num_layers: 2
+  z_dim: 100
+  classifier_net_size: 100
+  classifier_num_layers: 2
+
+
+  num_tasks_per_batch: 5
+  num_context_trajs: 3
+  num_test_trajs: 3
+
+  eval_num_context_trajs: 3
+  eval_num_test_trajs: 3
+
+  lr: 0.0003

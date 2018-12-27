@@ -837,25 +837,163 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
             # )
 
 
-for pol_size in [100, 256]:
-    for pol_layers in [3, 4]:
-        for test_batch_size in [256, 512]:
-            for z_dim in [20, 40, 60, 80]:
-                constraints = {
-                    'algo_params.policy_net_size': pol_size,
-                    'algo_params.policy_num_layers': pol_layers,
-                    'algo_params.test_batch_size_per_task': test_batch_size,
-                    'algo_params.np_params.z_dim': z_dim
-                }
-                plot_experiment_returns(
-                    '/scratch/gobi2/kamyar/oorl_rlkit/output/first-try-few-shot-np-bc',
-                    'pol size {}, pol layers {}, test_batch_size {}, z_dim {}'.format(pol_size, pol_layers, test_batch_size, z_dim),
-                    '/h/kamyar/oorl_rlkit/plots/first_try_few_shot_np_bc/pol_size_{}_pol_layers_{}_test_batch_size_{}_z_dim_{}.png'.format(pol_size, pol_layers, test_batch_size, z_dim),
-                    y_axis_lims=[-0.05, 1.05],
-                    plot_mean=False,
-                    column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
-                    constraints=constraints
-                )
+# for pol_size in [100, 256]:
+#     for pol_layers in [3, 4]:
+#         for test_batch_size in [256, 512]:
+#             for z_dim in [50, 75, 100, 125]:
+#                 for timestep_enc in [
+#                     {'hidden_sizes': [50], 'output_size': 50},
+#                     {'hidden_sizes': [100], 'output_size': 100}
+#                 ]:
+#             # for z_dim in [20, 40, 60, 80]:
+#                     constraints = {
+#                         'algo_params.policy_net_size': pol_size,
+#                         'algo_params.policy_num_layers': pol_layers,
+#                         'algo_params.test_batch_size_per_task': test_batch_size,
+#                         'algo_params.np_params.z_dim': z_dim,
+#                         'algo_params.np_params.traj_enc_params.timestep_enc_params': timestep_enc
+#                     }
+#                     # plot_experiment_returns(
+#                     #     '/scratch/gobi2/kamyar/oorl_rlkit/output/first-try-few-shot-np-bc',
+#                     #     'pol size {}, pol layers {}, test_batch_size {}, z_dim {}'.format(pol_size, pol_layers, test_batch_size, z_dim),
+#                     #     '/h/kamyar/oorl_rlkit/plots/first_try_few_shot_np_bc/pol_size_{}_pol_layers_{}_test_batch_size_{}_z_dim_{}.png'.format(pol_size, pol_layers, test_batch_size, z_dim),
+#                     #     y_axis_lims=[-0.05, 1.05],
+#                     #     plot_mean=False,
+#                     #     column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+#                     #     constraints=constraints
+#                     # )
+#                     if timestep_enc['hidden_sizes'][0] == 50:
+#                         enc_dim = 50
+#                     else:
+#                         enc_dim = 100
+#                     plot_experiment_returns(
+#                         '/scratch/gobi2/kamyar/oorl_rlkit/output/second-try-few-shot-np-bc',
+#                         'pol size {}, pol layers {}, test_batch_size {}, z_dim {}, timestep_enc {}'.format(pol_size, pol_layers, test_batch_size, z_dim, enc_dim),
+#                         '/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/pol_size_{}_pol_layers_{}_test_batch_size_{}_z_dim_{}_timestep_enc_{}.png'.format(pol_size, pol_layers, test_batch_size, z_dim, enc_dim),
+#                         y_axis_lims=[-0.05, 1.05],
+#                         plot_mean=False,
+#                         column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+#                         constraints=constraints
+#                     )
+
+
+# os.makedirs('/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/pol_arch', exist_ok=True)
+# for pol_size in [100, 256]:
+#     for pol_layers in [3, 4]:
+#         constraints = {
+#             'algo_params.policy_net_size': pol_size,
+#             'algo_params.policy_num_layers': pol_layers,
+#         }
+#         plot_experiment_returns(
+#             '/scratch/gobi2/kamyar/oorl_rlkit/output/second-try-few-shot-np-bc',
+#             'pol size {}, pol layers {}'.format(pol_size, pol_layers),
+#             '/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/pol_arch/pol_size_{}_pol_layers_{}.png'.format(pol_size, pol_layers),
+#             x_axis_lims=[0, 150],
+#             y_axis_lims=[-0.05, 1.05],
+#             plot_mean=False,
+#             column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+#             constraints=constraints
+#         )
+
+# os.makedirs('/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/test_batch_size', exist_ok=True)
+# for test_batch_size in [256, 512]:
+#     constraints = {
+#         'algo_params.test_batch_size_per_task': test_batch_size,
+#     }
+#     plot_experiment_returns(
+#         '/scratch/gobi2/kamyar/oorl_rlkit/output/second-try-few-shot-np-bc',
+#         'test_batch_size {}'.format(test_batch_size),
+#         '/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/test_batch_size/test_batch_size_{}.png'.format(test_batch_size),
+#         x_axis_lims=[0, 150],
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+#         constraints=constraints
+#     )
+
+# os.makedirs('/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/z_dim', exist_ok=True)
+# for z_dim in [50, 75, 100, 125]:
+#     constraints = {
+#         'algo_params.np_params.z_dim': z_dim,
+#     }
+#     plot_experiment_returns(
+#         '/scratch/gobi2/kamyar/oorl_rlkit/output/second-try-few-shot-np-bc',
+#         'z_dim {}'.format(z_dim),
+#         '/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/z_dim/z_dim_{}.png'.format(z_dim),
+#         x_axis_lims=[0, 150],
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+#         constraints=constraints
+#     )
+
+# os.makedirs('/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/timestep_enc', exist_ok=True)
+# for timestep_enc in [
+#         {'hidden_sizes': [50], 'output_size': 50},
+#         {'hidden_sizes': [100], 'output_size': 100}
+#     ]:
+#     constraints = {
+#         'algo_params.np_params.traj_enc_params.timestep_enc_params': timestep_enc
+#     }
+#     if timestep_enc['hidden_sizes'][0] == 50:
+#         enc_dim = 50
+#     else:
+#         enc_dim = 100
+#     plot_experiment_returns(
+#         '/scratch/gobi2/kamyar/oorl_rlkit/output/second-try-few-shot-np-bc',
+#         'timestep_enc {}'.format(enc_dim),
+#         '/h/kamyar/oorl_rlkit/plots/second_try_few_shot_np_bc/timestep_enc/timestep_enc_{}.png'.format(enc_dim),
+#         x_axis_lims=[0, 150],
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+#         constraints=constraints
+#     )
+
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/gpu-normal-try-few-shot-np-bc',
+#     'gpu normal',
+#     '/h/kamyar/oorl_rlkit/plots/gpu_normal.png',
+#     x_axis_lims=[0, 1000],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+# )
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/gpu-version-1-try-few-shot-np-bc',
+#     'gpu version 1',
+#     '/h/kamyar/oorl_rlkit/plots/gpu_version_1.png',
+#     x_axis_lims=[0, 1000],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+# )
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/gpu-version-2-try-few-shot-np-bc',
+#     'gpu version 2',
+#     '/h/kamyar/oorl_rlkit/plots/gpu_version_2.png',
+#     x_axis_lims=[0, 1000],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
+# )
+
+plot_experiment_returns(
+    '/scratch/gobi2/kamyar/oorl_rlkit/output/test-gpu-sum-dist-last-30-more-info-normal-try-few-shot-np-bc',
+    'gpu sum dist percent good reach',
+    '/h/kamyar/oorl_rlkit/plots/gpu_sum_dist_percent_good_reach.png',
+    x_axis_lims=[0, 600],
+    y_axis_lims=[-0.05, 1.05],
+    plot_mean=False,
+    column_name=[
+        'Percent_Solved_meta_train',
+        'Percent_Good_Reach_meta_train',
+        'Percent_Solved_meta_test',
+        'Percent_Good_Reach_meta_test',
+    ],
+)
+
 
 # ----------------------------------------------------------------------------------------------
 

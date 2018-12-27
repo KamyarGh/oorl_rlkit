@@ -1,6 +1,7 @@
 import numpy as np
 import os
 from time import sleep
+from collections import OrderedDict
 from gym.envs.robotics import utils
 from gym import utils as gym_utils
 from rlkit.envs import few_shot_robot_env
@@ -37,6 +38,12 @@ class _BaseParamsSampler(MetaTaskParamsSampler):
         idx = self._random.randint(0, self.num_colors)
         color = self.goal_color_centers[idx]
         return {'goal_color_center': color}, color
+    
+    def sample_unique(self, num):
+        idxs = self._random.choice(self.num_colors, size=num, replace=False)
+        return list(
+            map(lambda color: ({'goal_color_center': color}, color), (self.goal_color_centers[idx] for idx in idxs))
+        )
 
     def __iter__(self):
         self.itr_ptr = 0
@@ -272,6 +279,11 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         obs = super().reset()       
         return obs
     
+    def step(self, action):
+        obs, reward, done, info = super().step(action)
+        info['correct_obj_idx'] = self.correct_obj_idx
+        return obs, reward, done, info
+    
     @property
     def task_identifier(self):
         return tuple(self.goal_color_center)
@@ -301,11 +313,34 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
             self.height_offset = self.sim.data.get_site_xpos('object0')[2]
     
     def log_statistics(self, test_paths):
+        # compute proportion of episodes that were fully solved
         successes = []
         for path in test_paths:
             successes.append(np.sum([e_info['is_success'] for e_info in path['env_infos']]) > 0)
         percent_solved = np.sum(successes) / float(len(successes))
-        return {'Percent_Solved': percent_solved}
+
+        # compute proportion of episodes that the arm reached for the right
+        # object but was not necessarily able to pick it up
+        # the way I am computing this is a proxy for this, but it will probably
+        # be good enough
+        all_reached_for_correct = []
+        for path in test_paths:
+            cor_idx = path['env_infos'][0]['correct_obj_idx']
+            incor_idx = 1-cor_idx
+            cor_rel_pos = np.array([obs_dict['obs'][6+3*cor_idx:9+3*cor_idx] for obs_dict in path['observations']])
+            incor_rel_pos = np.array([obs_dict['obs'][6+3*incor_idx:9+3*incor_idx] for obs_dict in path['observations']])
+            # cor_min_norm = np.min(np.linalg.norm(cor_rel_pos, axis=-1))
+            # incor_min_norm = np.min(np.linalg.norm(incor_rel_pos, axis=-1))
+            # all_reached_for_correct.append(cor_min_norm < incor_min_norm)
+            cor_sum_dist = np.sum(np.linalg.norm(cor_rel_pos[:,:2], axis=-1)[:-30])
+            incor_sum_dist = np.sum(np.linalg.norm(incor_rel_pos[:,:2], axis=-1)[:-30])
+            all_reached_for_correct.append(cor_sum_dist < incor_sum_dist)
+        percent_good_reach = np.sum(all_reached_for_correct) / float(len(all_reached_for_correct))
+
+        return_dict = OrderedDict()
+        return_dict['Percent_Good_Reach'] = percent_good_reach
+        return_dict['Percent_Solved'] = percent_solved
+        return return_dict
 
 
 FEW_SHOT_ENV_XML_PATH = os.path.join(os.path.split(few_shot_robot_env.__file__)[0], 'assets', 'fetch', 'few_shot_pick_and_place.xml')

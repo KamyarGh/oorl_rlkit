@@ -33,55 +33,35 @@ EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
 
 class Classifier(nn.Module):
-    def __init__(self, enc_hidden_sizes, z_dim, classifier_hidden_sizes):
+    def __init__(self, enc_hidden_sizes):
         super(Classifier, self).__init__()
         self.enc = Mlp(
             enc_hidden_sizes,
-            z_dim,
-            6,
-            hidden_activation=torch.nn.functional.relu,
-            # batch_norm=True
-            # layer_norm=True
-        )
-        self.classifier = Mlp(
-            classifier_hidden_sizes,
             1,
-            z_dim + 6,
+            9,
             hidden_activation=torch.nn.functional.relu,
             # batch_norm=True
             # layer_norm=True
         )
-        self.z_dim = z_dim
     
-
-    def forward(self, context_batch, query_batch):
-        N_tasks, N_contexts = context_batch.size(0), context_batch.size(1)
-        context_batch = context_batch.view(N_tasks*N_contexts, 6)
-        encodings = self.enc(context_batch)
-        encodings = encodings.view(N_tasks, N_contexts, self.z_dim)
-        encodings = torch.sum(encodings, 1)
-        # print(encodings.size())
-
-        assert query_batch.size(0) == N_tasks
-        num_queries_per_task = query_batch.size(1)
-        # print(num_queries_per_task)
-        # print(encodings.size())
-        encodings = encodings.repeat(1, num_queries_per_task)
-        # print(encodings.size())
-        encodings = encodings.view(N_tasks*num_queries_per_task, self.z_dim)
-        # print(encodings.size())
-        # print(query_batch[0])
-        query_batch = query_batch.view(N_tasks*num_queries_per_task, 6)
-        # print(context_batch)
-        # print(query_batch[:10])
-
-        # print(query_batch[:8])
+    def forward(self, context_batch, query_batch, label=None):
+        # print(context_batch.size())
         # print(query_batch.size())
-        input_batch = torch.cat([encodings, query_batch], 1)
-        # print(input_batch.size())
 
-        logits = self.classifier(input_batch)
+        norm0 = torch.norm(context_batch - query_batch[:,:3], dim=-1, keepdim=True)
+        norm1 = torch.norm(context_batch - query_batch[:,3:6], dim=-1, keepdim=True)
+        cond0 = 1.0*(norm0 < 0.3).type(torch.FloatTensor)
+        cond1 = 1.0*(norm1 < 0.3).type(torch.FloatTensor)
+        # print('----------')
+        # print(torch.sum((cond0 + cond1)==1))
+        # print(cond0[37:71])
+        # if label is not None:
+        #     print(torch.sum((cond0 == label).type(torch.FloatTensor)))
+            # print(label[37:71])
+
+        logits = self.enc(torch.cat([context_batch, query_batch], -1))
         return logits
+        # return cond0 - 0.5
 
 
 def get_batch(context_buffer, test_buffer, num_tasks, num_context_trajs, num_test_trajs):
@@ -117,9 +97,9 @@ def get_batch(context_buffer, test_buffer, num_tasks, num_context_trajs, num_tes
 
     context_labels = np.linalg.norm(obj_0_color - context_task_ids, axis=-1) < 0.3
     context_labels = context_labels.astype(np.float32)
-    correct_obj_color = np.where(context_labels[...,None], obj_0_color, obj_1_color)
-    incorrect_obj_color = np.where(1 - context_labels[...,None], obj_0_color, obj_1_color)
-    context_input_batch = np.concatenate((correct_obj_color, incorrect_obj_color), 2)
+    # correct_obj_color = np.where(context_labels, obj_0_color, obj_1_color)
+    # incorrect_obj_color = np.where(1 - context_labels, obj_0_color, obj_1_color)
+    # context_input_batch = np.concatenate((correct_obj_color, incorrect_obj_color), 2)
 
     # unnorm_correct = c_min + (correct_obj_color + SCALE)*(c_max - c_min) / (2*SCALE)
     # unnorm_incorrect = c_min + (incorrect_obj_color + SCALE)*(c_max - c_min) / (2*SCALE)
@@ -180,8 +160,8 @@ def get_batch(context_buffer, test_buffer, num_tasks, num_context_trajs, num_tes
     # print(context_input_batch.shape)
     # print(np.concatenate((task_ids, task_ids), -1).shape)
     
-    # query_batch = query_batch.view(-1, 6)
-    return Variable(ptu.from_numpy(context_input_batch), requires_grad=False), query_batch, labels
+    query_batch = query_batch.view(-1, 6)
+    return Variable(ptu.from_numpy(all_task_ids), requires_grad=False), query_batch, labels
 
 
 def experiment(variant):
@@ -200,15 +180,7 @@ def experiment(variant):
     num_layers = variant['enc_num_layers']
     enc_hidden_sizes = [net_size] * num_layers
 
-    net_size = variant['classifier_net_size']
-    num_layers = variant['classifier_num_layers']
-    classifier_hidden_sizes = [net_size] * num_layers
-
-    model = Classifier(
-        enc_hidden_sizes,
-        variant['z_dim'],
-        classifier_hidden_sizes
-    )
+    model = Classifier(enc_hidden_sizes)
     print(model)
     model_optim = Adam(
         model.parameters(),
@@ -229,6 +201,7 @@ def experiment(variant):
             variant['num_test_trajs']
         )
 
+        # model(context_input_batch, query_batch, label=labels)
         model_optim.zero_grad()
         logits = model(context_input_batch, query_batch)
         # print(labels[:10])
@@ -252,7 +225,7 @@ def experiment(variant):
                 variant['eval_num_context_trajs'],
                 variant['eval_num_test_trajs']
             )
-            logits = model(context_input_batch, query_batch)
+            logits = model(context_input_batch, query_batch, label=labels)
             loss = bce_with_logits_loss(logits, labels)
             preds = (logits > 0).type(torch.FloatTensor)
             num_context_points = 50*variant['eval_num_context_trajs']
@@ -272,7 +245,7 @@ def experiment(variant):
                 variant['eval_num_context_trajs'],
                 variant['eval_num_test_trajs']
             )
-            logits = model(context_input_batch, query_batch)
+            logits = model(context_input_batch, query_batch, label=labels)
             loss = bce_with_logits_loss(logits, labels)
             preds = (logits > 0).type(torch.FloatTensor)
             num_context_points = 50*variant['eval_num_context_trajs']

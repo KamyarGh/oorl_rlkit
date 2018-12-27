@@ -36,6 +36,10 @@ class TorchMetaIRLAlgorithm(MetaIRLAlgorithm, metaclass=abc.ABCMeta):
     def cuda(self):
         for net in self.networks:
             net.cuda()
+    
+    def cpu(self):
+        for net in self.networks:
+            net.cpu()
 
     def evaluate(self, epoch):
         statistics = OrderedDict()
@@ -58,7 +62,7 @@ class TorchMetaIRLAlgorithm(MetaIRLAlgorithm, metaclass=abc.ABCMeta):
                 self.env.log_diagnostics(test_paths)
             if hasattr(self.env, "log_statistics"):
                 log_stats = self.env.log_statistics(test_paths)
-                new_log_stats = {k+' '+mode: v for k, v in log_stats.items()}
+                new_log_stats = OrderedDict((k+' '+mode, v) for k, v in log_stats.items())
                 statistics.update(new_log_stats)
 
             average_returns = rlkit.core.eval_util.get_average_returns(test_paths)

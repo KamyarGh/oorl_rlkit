@@ -21,3 +21,8 @@ class MetaTaskParamsSampler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def sample(self):
         pass
+
+
+    @abc.abstractmethod
+    def sample_unique(self, num):
+        pass

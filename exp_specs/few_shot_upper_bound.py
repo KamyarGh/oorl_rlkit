@@ -1,7 +1,7 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/train_np_bc.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
-  exp_name: second_try_few_shot_np_bc
+  exp_name: first_try_few_shot_np_bc
   description: searching over the SAC hyperparameters
   use_gpu: false
   num_workers: 128
@@ -17,7 +17,7 @@ variables:
     test_batch_size_per_task: [256, 512]
   
     np_params:
-      z_dim: [50, 75, 100, 125]
+      z_dim: [20, 40, 60, 80]
 
       traj_enc_params:
           timestep_enc_params:
@@ -45,12 +45,12 @@ constants:
     replay_buffer_size_per_task: 100
     no_terminal: false
 
-    num_policy_updates_per_epoch: 5000
+    num_policy_updates_per_epoch: 4000
     num_context_trajs_for_training: 3
 
-    num_tasks_per_eval: 25
+    num_tasks_per_eval: 10
     num_diff_context_per_eval_task: 2
-    num_context_trajs_for_eval: 3
+    num_context_trajs_for_eval_task: 3
     num_eval_trajs_per_post_sample: 2
 
     num_context_trajs_for_exploration: 3
@@ -79,7 +79,7 @@ constants:
       r2z_map_params:
         trunk_params:
           # input_size must be inferred
-          hidden_sizes: [100]
+          hidden_sizes: []
           output_size: 100
         split_heads_params:
           # input_size must be inferred
@@ -94,7 +94,7 @@ constants:
     save_algorithm: true
     render: false
 
-    freq_saving: 50
+    freq_saving: 25
     
   env_specs:
     base_env_name: 'scaled_basic_few_shot_fetch_env'

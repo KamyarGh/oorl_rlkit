@@ -7,13 +7,18 @@ Train few shot fetch:
         - (done) Fix the few shot env to have small target range
         - (done) Make sure the expert demonstrations are good (visualize them!)
         - (done) Generate the expert data for lifting to center
-        - implement a way to get an estimate of an upper bound on how well the model could do
+        - (done) implement a way to get an estimate of an upper bound on how well the model could do
+
+        - visualize the np_bc models
+        - try np_bc with reparam tanh multivariate gaussian with proper regularizations
         - first plan your day
         - check out why max-min values for the expert demos were weird
         - if the np_bc model does not train, reduce to like only 5 meta-train tasks, without a meta-test
-            and see how well you could overfit
-        - you might also need more demos per task
+            and see how well you could overfit OR increase the amount of demonstrations
+        
         - start writing
+        
+        - (done) fix the sampling for obtain eval_samples to be unique
         - fix how you sample random batches, you should sample trajectories then sample batches from the trajs
         - train the np_bc version to figure out architecture sizes and stuff and make sure the same color radius is good
             - figure out how much subsampling to use

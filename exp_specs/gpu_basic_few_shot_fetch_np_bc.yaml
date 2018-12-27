@@ -1,30 +1,31 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/train_np_bc.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
-  exp_name: second_try_few_shot_np_bc
+  exp_name: test_gpu_sum_dist_last_30_more_info_normal_try_few_shot_np_bc
   description: searching over the SAC hyperparameters
-  use_gpu: false
-  num_workers: 128
+  use_gpu: true
+  num_workers: 4
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
-    policy_net_size: [100, 256]
+    policy_net_size: [100]
     policy_num_layers: [3, 4]
 
     num_tasks_used_per_update: [5]
-    test_batch_size_per_task: [256, 512]
+    test_batch_size_per_task: [256]
   
     np_params:
-      z_dim: [50, 75, 100, 125]
+      z_dim: [100]
 
       traj_enc_params:
           timestep_enc_params:
             # input_size must be inferred based on env
               [
-                {hidden_sizes: [50], output_size: 50},
-                {hidden_sizes: [100], output_size: 100}
+                # {hidden_sizes: [50], output_size: 50},
+                # {hidden_sizes: [100], output_size: 100}
+                {hidden_sizes: [256], output_size: 256}
               ]
 
   seed: [9783, 5914]
@@ -45,10 +46,12 @@ constants:
     replay_buffer_size_per_task: 100
     no_terminal: false
 
-    num_policy_updates_per_epoch: 5000
+    num_updates_per_epoch: 1000
+    num_policy_steps_per_update: 0
+    num_full_model_steps_per_update: 5
     num_context_trajs_for_training: 3
 
-    num_tasks_per_eval: 25
+    num_tasks_per_eval: 10
     num_diff_context_per_eval_task: 2
     num_context_trajs_for_eval: 3
     num_eval_trajs_per_post_sample: 2
@@ -73,17 +76,17 @@ constants:
 
         traj_enc_params:
           # input_size must be inferred
-          hidden_sizes: [100]
-          output_size: 100
+          hidden_sizes: [256]
+          output_size: 256
       
       r2z_map_params:
         trunk_params:
           # input_size must be inferred
-          hidden_sizes: [100]
-          output_size: 100
+          hidden_sizes: [256]
+          output_size: 256
         split_heads_params:
           # input_size must be inferred
-          hidden_sizes: [100]
+          hidden_sizes: [256]
           # output_size must be inferred
       
       np_enc_params:
