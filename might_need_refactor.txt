@@ -18,5 +18,8 @@
 - clean up ~/local_params and ~/oorl_rlkit/local_params
 - I need to clean up wrapped_goal....
 - documentation for the interface of meta-environments and task_samplers
+- you really need to sort out the yaml files... the nesting structure makes no sense at this point
+- in meta-irl-algorithm freq_eval stuff is ugly
+- fix normalize meta-expert-demos and other normalization scripts
 
 - need to remove the copy of wrapped_goal.....

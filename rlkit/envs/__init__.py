@@ -28,6 +28,7 @@ from rlkit.envs.wrapped_goal_envs import ScaledWrappedFetchPickAndPlaceEnv, Scal
 
 from rlkit.envs.few_shot_fetch_env import BasicFewShotFetchEnv, ScaledBasicFewShotFetchEnv
 from rlkit.envs.few_shot_fetch_env import get_task_params_iterator as few_shot_fetch_env_get_task_params_iterator
+from rlkit.envs.few_shot_fetch_env import get_debug_task_params_iterator as debug_few_shot_fetch_env_get_task_params_iterator
 
 # for meta simple meta reacher
 # from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
@@ -213,6 +214,20 @@ meta_envs = {
         'info': {
             'is_dmcs_env': False
         }
+    },
+    'debug_unscaled_basic_few_shot_fetch_env': {
+        'meta_train': lambda: BasicFewShotFetchEnv(),
+        'meta_test': lambda: BasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'debug_scaled_basic_few_shot_fetch_env': {
+        'meta_train': lambda: ScaledBasicFewShotFetchEnv(),
+        'meta_test': lambda: ScaledBasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
     }
 }
 
@@ -228,6 +243,14 @@ meta_env_task_params_iterators = {
     'scaled_basic_few_shot_fetch_env': {
         'meta_train': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=True),
         'meta_test': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=False)
+    },
+    'debug_unscaled_basic_few_shot_fetch_env': {
+        'meta_train': lambda: debug_few_shot_fetch_env_get_task_params_iterator(train_env=True),
+        'meta_test': lambda: debug_few_shot_fetch_env_get_task_params_iterator(train_env=False)
+    },
+    'debug_scaled_basic_few_shot_fetch_env': {
+        'meta_train': lambda: debug_few_shot_fetch_env_get_task_params_iterator(train_env=True),
+        'meta_test': lambda: debug_few_shot_fetch_env_get_task_params_iterator(train_env=False)
     }
 }
 

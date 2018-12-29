@@ -1,10 +1,10 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: more_disc_iters_larger_object_range_easy_in_the_air_fetch_dac
+  exp_name: debug_random
   description: searching over the SAC hyperparameters
   use_gpu: false
-  num_workers: 128
+  num_workers: 1
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------

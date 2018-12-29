@@ -1,3 +1,8 @@
+- make things work with last 5 and no KL
+- make things work without last 5 and just subsampling, no KL
+- make things work with the previous plus KL
+- make things work with the previous plus variable number of context trajs
+
 Train few shot fetch:
     - (done) Train lift to center basic models to get a sense of good params
         - (done) Get expert data
@@ -19,11 +24,24 @@ Train few shot fetch:
         - start writing
         
         - (done) fix the sampling for obtain eval_samples to be unique
-        - fix how you sample random batches, you should sample trajectories then sample batches from the trajs
+        - (done) fix how you sample random batches, you should sample trajectories then sample batches from the trajs
+
+        - play with different more reasonable architecture sizes for the encoder
+            - while these are training implement the stuff you need for np_airl
+            - might need to try reparam multivariate tanh for np_bc as well
+
+        - Batching for np_airl is making things weird for grad_pen
+        - FIRST THING SET UP NP_AIRL
+            - run the 100 dim policy versions on cpu with a lot of setting
+            - run reasonable hyperparameters (up to 16 experiments) on GPUs as well
+        
+
+        - try much smaller encoder and z dims (maybe 50) to see what happens, even smaller policies (like 2 dims)
+        - try more number of tasks per update
         - train the np_bc version to figure out architecture sizes and stuff and make sure the same color radius is good
-            - figure out how much subsampling to use
-            - also try np_bc with convnets and maybe even LSTM
-        - remove the traj_len 5 and instead add subsampling
+            - remove the traj_len 5 and instead add subsampling
+                - figure out how much subsampling to use
+                - also try np_bc with convnets and maybe even LSTM
         - train the np_airl version
             - add the thing that for each task params setting you generate some number of trajectories before you start training
     - Before you run the few shot experiments make sure you can reload the policies from checkpoints and that

@@ -22,16 +22,22 @@ def get_task_params_iterator(train_env=True):
     else:
         return _BaseParamsSampler(random=8384)
 
+# this debug one uses only a few tasks so we can make sure things are actually working first
+def get_debug_task_params_iterator(train_env=True):
+    if train_env:
+        return _BaseParamsSampler(random=7342, num_colors=1)
+    else:
+        return _BaseParamsSampler(random=7342, num_colors=1)
 
 class _BaseParamsSampler(MetaTaskParamsSampler):
-    def __init__(self, random=None):
+    def __init__(self, random=None, num_colors=50):
         super().__init__()
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
         self._random = random
 
         # sample the goal color centers
-        self.num_colors = 50
+        self.num_colors = num_colors
         self.goal_color_centers = self._random.uniform(-1.0, 1.0, size=(self.num_colors,3))
 
     def sample(self):
@@ -370,14 +376,14 @@ class ScaledBasicFewShotFetchEnv(BasicFewShotFetchEnv):
     def __init__(self, reward_type='sparse'):
         self.obs_max = np.array([0.19673975, 0.19944288, 0.20234512, 0.19673975, 0.19944288,
             0.20234512, 0.28635685, 0.29541265, 0.00469703, 0.28635685,
-            0.29541265, 0.00469703, 1.27175999, 1.26395128, 1.21729739,
-            1.27175999, 1.26395128, 1.21729739, 0.05095022, 0.05092848,
+            0.29541265, 0.00469703, 1.3, 1.3, 1.3,
+            1.3, 1.3, 1.3, 0.05095022, 0.05092848,
             0.01019219, 0.01034121])
         self.obs_min = np.array([-1.94986926e-01, -1.97374503e-01, -3.04622497e-03, -1.94986926e-01,
             -1.97374503e-01, -3.04622497e-03, -3.00136632e-01, -2.82639213e-01,
             -2.17494754e-01, -3.00136632e-01, -2.82639213e-01, -2.17494754e-01,
-            -1.23604834e+00, -1.27612583e+00, -1.23701436e+00, -1.23604834e+00,
-            -1.27612583e+00, -1.23701436e+00,  2.55108763e-06, -8.67902630e-08,
+            -1.3, -1.3, -1.3, -1.3,
+            -1.3, -1.3, 2.55108763e-06, -8.67902630e-08,
             -9.42624227e-03, -9.39642018e-03])
         self.acts_max = np.array([0.24999889, 0.2499995 , 0.2499997 , 0.01499927])
         self.acts_min = np.array([-0.24999355, -0.24999517, -0.24999965, -0.01499985])

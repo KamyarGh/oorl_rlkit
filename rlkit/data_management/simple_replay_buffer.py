@@ -149,31 +149,43 @@ class SimpleReplayBuffer(ReplayBuffer):
         )
     
 
-    def _get_cont_segment(self, start, end):
+    def _get_cont_segment(self, start, end, keys=None):
         if isinstance(self._observations, dict):
             if self.policy_uses_task_params:
                 if self.concat_task_params_to_policy_obs:
                     obs_to_return = np.concatenate((self._observations['obs'][start:end], self._observations['obs_task_params'][start:end]), -1)
-                    next_obs_to_return = np.concatenate((self._next_obs['obs'][start:end], self._next_obs['obs_task_params'][start:end]), -1)
+                    if keys is None or 'next_observations' in keys:
+                        next_obs_to_return = np.concatenate((self._next_obs['obs'][start:end], self._next_obs['obs_task_params'][start:end]), -1)
                 else:
                     raise NotImplementedError()
             else:
                 obs_to_return = self._observations['obs'][start:end]
-                next_obs_to_return = self._next_obs['obs'][start:end]
+                if keys is None or 'next_observations' in keys:
+                    next_obs_to_return = self._next_obs['obs'][start:end]
         else:
             obs_to_return = self._observations[start:end]
-            next_obs_to_return = self._next_obs[start:end]
+            if keys is None or 'next_observations' in keys:
+                next_obs_to_return = self._next_obs[start:end]
         
         if self.policy_uses_pixels:
             obs_to_return = {
                 'obs': obs_to_return,
                 'pixels': self._observations['pixels'][start:end]
             }
-            next_obs_to_return = {
-                'obs': next_obs_to_return,
-                'pixels': self._next_obs['pixels'][start:end]
-            }
-        
+            if keys is None or 'next_observations' in keys:
+                next_obs_to_return = {
+                    'obs': next_obs_to_return,
+                    'pixels': self._next_obs['pixels'][start:end]
+                }
+
+        if keys is not None:        
+            return_dict = {}
+            if 'observations' in keys: return_dict['observations'] = obs_to_return
+            if 'actions' in keys: return_dict['actions'] = self._actions[start:end]
+            if 'rewards' in keys: return_dict['rewards'] = self._rewards[start:end]
+            if 'terminal' in keys: return_dict['terminal'] = self._terminals[start:end]
+            if 'next_observations' in keys: return_dict['next_observations'] = next_obs_to_return
+            return return_dict
         return dict(
             observations=obs_to_return,
             actions=self._actions[start:end],
@@ -183,23 +195,23 @@ class SimpleReplayBuffer(ReplayBuffer):
         )
     
 
-    def _get_segment(self, start, end):
+    def _get_segment(self, start, end, keys=None):
         if start < end or end == 0:
             if end == 0: end = self._max_replay_buffer_size
-            return self._get_cont_segment(start, end)
+            return self._get_cont_segment(start, end, keys)
         
-        first_part = self._get_cont_segment(start, self._max_replay_buffer_size)
-        sec_part = self._get_cont_segment(0, end)
+        first_part = self._get_cont_segment(start, self._max_replay_buffer_size, keys)
+        sec_part = self._get_cont_segment(0, end, keys)
         # concat them now
         return concat_nested_dicts(first_part, sec_part)
 
 
-    def sample_trajs(self, num_trajs):
+    def sample_trajs(self, num_trajs, keys=None):
         starts = sample(self._traj_endpoints.keys(), num_trajs)
         ends = map(lambda k: self._traj_endpoints[k], starts)
 
         return list(
-            starmap(lambda s,e: self._get_segment(s,e), zip(starts, ends))
+            starmap(lambda s,e: self._get_segment(s,e,keys), zip(starts, ends))
         )
 
 
@@ -355,13 +367,13 @@ class MetaSimpleReplayBuffer():
         self.task_replay_buffers[task_identifier].terminate_episode()
     
 
-    def sample_trajs(self, num_trajs_per_task, num_tasks=1, task_identifiers=None):
+    def sample_trajs(self, num_trajs_per_task, num_tasks=1, task_identifiers=None, keys=None):
         if task_identifiers is None:
             sample_params = list(sample(self.task_replay_buffers.keys(), num_tasks))
         else:
             sample_params = task_identifiers
         batch_list = [
-            self.task_replay_buffers[p].sample_trajs(num_trajs_per_task) \
+            self.task_replay_buffers[p].sample_trajs(num_trajs_per_task, keys=keys) \
             for p in sample_params
         ]
         return batch_list, sample_params

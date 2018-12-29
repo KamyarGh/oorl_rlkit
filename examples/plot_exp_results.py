@@ -994,7 +994,53 @@ plot_experiment_returns(
     ],
 )
 
+def plot_meta_train_meta_test(name):
+    N = 100
+    plot_experiment_returns(
+        '/scratch/gobi2/kamyar/oorl_rlkit/output/'+name,
+        'meta-train ' + name,
+        '/h/kamyar/oorl_rlkit/plots/{}_meta_train.png'.format(name),
+        x_axis_lims=[0, N],
+        y_axis_lims=[-0.05, 1.05],
+        plot_mean=False,
+        column_name=[
+            'Percent_Solved_meta_train',
+            'Percent_Good_Reach_meta_train',
+        ],
+    )
+    plot_experiment_returns(
+        '/scratch/gobi2/kamyar/oorl_rlkit/output/'+name,
+        'meta-test {}'.format(name),
+        '/h/kamyar/oorl_rlkit/plots/{}_meta_test.png'.format(name),
+        x_axis_lims=[0, N],
+        y_axis_lims=[-0.05, 1.05],
+        plot_mean=False,
+        column_name=[
+            'Percent_Solved_meta_test',
+            'Percent_Good_Reach_meta_test',
+        ],
+    )
 
+exp_names = ['correct-samples-np-bc', 'test-more-correct-samples-np-bc',
+            'pol-and-z-256-correct-samples-np-bc', 'pol-100-dim-5-6-layers-and-z-100-dim-correct-samples-np-bc',
+            'smaller-models-np-bc', 'even-smaller-models-np-bc',
+            'crazy-even-smaller-models-np-bc']
+for name in exp_names: plot_meta_train_meta_test(name)
+
+plot_experiment_returns(
+    '/scratch/gobi2/kamyar/oorl_rlkit/output/first-try-best-enc-size-models-np-airl',
+    'first_try_np_airl',
+    '/h/kamyar/oorl_rlkit/plots/first_try_np_airl.png',
+    x_axis_lims=[0, 1500],
+    y_axis_lims=[-0.05, 1.05],
+    plot_mean=False,
+    column_name=[
+        # 'Percent_Solved_meta_train',
+        'Percent_Good_Reach_meta_train',
+        # 'Percent_Solved_meta_test',
+        'Percent_Good_Reach_meta_test',
+    ],
+)
 # ----------------------------------------------------------------------------------------------
 
 

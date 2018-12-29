@@ -21,6 +21,16 @@ from rlkit.data_management.path_builder import PathBuilder
 from gym.spaces import Dict
 
 
+def concat_trajs(trajs):
+    new_dict = {}
+    for k in trajs[0].keys():
+        if isinstance(trajs[0][k], dict):
+            new_dict[k] = concat_trajs([t[k] for t in trajs])
+        else:
+            new_dict[k] = np.concatenate([t[k] for t in trajs], axis=0)
+    return new_dict
+
+
 class NeuralProcessBC(TorchMetaIRLAlgorithm):
     '''
         Meta-BC using a neural process
@@ -47,7 +57,7 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             num_full_model_steps_per_update=1,
             num_tasks_used_per_update=4,
             num_context_trajs_for_training=3,
-            test_batch_size_per_task=5,
+            num_test_trajs_for_training=3,
 
             # for each task, for each context, infer post, for each post sample, generate some eval trajs
             num_tasks_per_eval=10,
@@ -94,7 +104,7 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         self.num_full_model_steps_per_update = num_full_model_steps_per_update
         self.num_tasks_used_per_update = num_tasks_used_per_update
         self.num_context_trajs_for_training = num_context_trajs_for_training
-        self.test_batch_size_per_task = test_batch_size_per_task
+        self.num_test_trajs_for_training = num_test_trajs_for_training
 
         self.num_tasks_per_eval = num_tasks_per_eval
         self.num_diff_context_per_eval_task = num_diff_context_per_eval_task
@@ -132,106 +142,82 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         return PostCondMLPPolicyWrapper(self.main_policy, z)
 
 
+    def _get_training_batch(self):
+        # context batch is a list of list of dicts
+        context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
+            self.num_context_trajs_for_training,
+            num_tasks=self.num_tasks_used_per_update,
+            keys=['observations', 'actions']
+        )
+
+        flat_context_batch = [traj for task_trajs in context_batch for traj in task_trajs]
+        context_pred_batch = concat_trajs(flat_context_batch)
+
+        test_batch, _ = self.train_test_expert_replay_buffer.sample_trajs(
+            self.num_test_trajs_for_training,
+            task_identifiers=task_identifiers_list,
+            keys=['observations', 'actions']
+        )
+        flat_test_batch = [traj for task_trajs in test_batch for traj in task_trajs]
+        test_pred_batch = concat_trajs(flat_test_batch)
+
+        # if we want to handle envs with different traj lengths we need to do
+        # something smarter with how we repeat z
+        traj_len = flat_context_batch[0]['observations'].shape[0]
+        assert all(t['observations'].shape[0] == traj_len for t in flat_context_batch), "Not handling different traj lens"
+        assert all(t['observations'].shape[0] == traj_len for t in flat_test_batch), "Not handling different traj lens"
+
+        return context_batch, context_pred_batch, test_pred_batch, traj_len
+    
+
+    def _compute_training_loss(self, training_encoder=True):
+        context_batch, context_pred_batch, test_pred_batch, traj_len = self._get_training_batch()
+        
+        post_dist = self.encoder(context_batch)
+        # z = post_dist.sample() # N_tasks x Dim
+        z = post_dist.mean
+        if not training_encoder: z = z.detach()
+        context_pred_z = z.repeat(1, traj_len * self.num_context_trajs_for_training).view(
+            -1,
+            z.size(1)
+        )
+        test_pred_z = z.repeat(1, traj_len * self.num_test_trajs_for_training).view(
+            -1,
+            z.size(1)
+        )
+        z_batch = torch.cat([context_pred_z, test_pred_z], dim=0)
+
+        # convert it to a pytorch tensor
+        # note that our objective says we should maximize likelihood of
+        # BOTH the context_batch and the test_batch
+        obs_batch = np.concatenate((context_pred_batch['observations'], test_pred_batch['observations']), axis=0)
+        obs_batch = Variable(ptu.from_numpy(obs_batch), requires_grad=False)
+        acts_batch = np.concatenate((context_pred_batch['actions'], test_pred_batch['actions']), axis=0)
+        acts_batch = Variable(ptu.from_numpy(acts_batch), requires_grad=False)
+
+        # get action predictions
+        pred_acts = self.main_policy(torch.cat([obs_batch, z_batch], dim=-1))
+        loss = torch.sum((acts_batch - pred_acts)**2, dim=1).mean()
+
+        return loss
+
+
     def _do_training(self):
-        '''
-        '''
         for i in range(self.num_updates_per_epoch):
             # train just the policy for a certain number of iters
             self.encoder_optimizer.zero_grad()
 
             for _ in range(self.num_policy_steps_per_update):
                 self.policy_optimizer.zero_grad()
-
-                # context batch is a list of list of dicts
-                context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
-                    self.num_context_trajs_for_training,
-                    num_tasks=self.num_tasks_used_per_update
-                )
-                post_dist = self.encoder(context_batch)
-                # z = post_dist.sample() # N_tasks x Dim
-                z = post_dist.mean
-                
-                # detached z is used in the first train loop
-                detached_z = z.detach()
-                # repeat z to have the right size
-                detached_z = detached_z.repeat(1, self.test_batch_size_per_task).view(
-                    self.num_tasks_used_per_update * self.test_batch_size_per_task,
-                    -1
-                )
-                detached_z = detached_z.repeat(2, 1)
-
-                test_train_batch, _ = self.train_context_expert_replay_buffer.sample_random_batch(
-                    self.test_batch_size_per_task,
-                    task_identifiers_list=task_identifiers_list
-                )
-                test_test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
-                    self.test_batch_size_per_task,
-                    task_identifiers_list=task_identifiers_list
-                )
-                # test_batch is a list of dicts: each dict is a random batch from that task
-                
-                # convert it to a pytorch tensor
-                # note that our objective says we should maximize likelihood of
-                # BOTH the context_batch and the test_batch
-                obs = np.concatenate([d['observations'] for d in test_train_batch]+[d['observations'] for d in test_test_batch], axis=0) # (N_tasks * batch_size) x Dim
-                obs = Variable(ptu.from_numpy(obs), requires_grad=False)
-                acts = np.concatenate([d['actions'] for d in test_train_batch]+[d['actions'] for d in test_test_batch], axis=0) # (N_tasks * batch_size) x Dim
-                acts = Variable(ptu.from_numpy(acts), requires_grad=False)
-
-                # get action predictions
-                pred_acts = self.main_policy(torch.cat([obs, detached_z], dim=-1))
-
-                # loss and backprop
-                loss = torch.sum((acts - pred_acts)**2, dim=1).mean()
+                loss = self._compute_training_loss(training_encoder=False)
                 loss.backward()
                 self.policy_optimizer.step()
             
             for _ in range(self.num_full_model_steps_per_update):
-                # train just the policy for a certain number of iters
                 self.encoder_optimizer.zero_grad()
                 self.policy_optimizer.zero_grad()
-
-                # context batch is a list of list of dicts
-                context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
-                    self.num_context_trajs_for_training,
-                    num_tasks=self.num_tasks_used_per_update
-                )
-                post_dist = self.encoder(context_batch)
-                # z = post_dist.sample() # N_tasks x Dim
-                z = post_dist.mean
-
-                test_train_batch, _ = self.train_context_expert_replay_buffer.sample_random_batch(
-                    self.test_batch_size_per_task,
-                    task_identifiers_list=task_identifiers_list
-                )
-                test_test_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
-                    self.test_batch_size_per_task,
-                    task_identifiers_list=task_identifiers_list
-                )
-                # test_batch is a list of dicts: each dict is a random batch from that task
-                
-                # convert it to a pytorch tensor
-                # note that our objective says we should maximize likelihood of
-                # BOTH the context_batch and the test_batch
-                obs = np.concatenate([d['observations'] for d in test_train_batch]+[d['observations'] for d in test_test_batch], axis=0) # (N_tasks * batch_size) x Dim
-                obs = Variable(ptu.from_numpy(obs), requires_grad=False)
-                acts = np.concatenate([d['actions'] for d in test_train_batch]+[d['actions'] for d in test_test_batch], axis=0) # (N_tasks * batch_size) x Dim
-                acts = Variable(ptu.from_numpy(acts), requires_grad=False)
-
-                # repeat z to have the right size
-                z = z.repeat(1, self.test_batch_size_per_task).view(
-                    self.num_tasks_used_per_update * self.test_batch_size_per_task,
-                    -1
-                )
-                z = z.repeat(2, 1)
-
-                # get action predictions
-                pred_acts = self.main_policy(torch.cat([obs, z], dim=-1))
-
-                # loss and backprop
-                loss = torch.sum((acts - pred_acts)**2, dim=1).mean()
+                loss = self._compute_training_loss(training_encoder=True)
                 loss.backward()
-
                 self.encoder_optimizer.step()
                 self.policy_optimizer.step()
         
@@ -332,27 +318,3 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             main_policy=self.main_policy
         )
         return snapshot
-
-
-def _elem_or_tuple_to_variable(elem_or_tuple):
-    if isinstance(elem_or_tuple, tuple):
-        return tuple(
-            _elem_or_tuple_to_variable(e) for e in elem_or_tuple
-        )
-    return Variable(ptu.from_numpy(elem_or_tuple).float(), requires_grad=False)
-
-
-def _filter_batch(np_batch):
-    for k, v in np_batch.items():
-        if v.dtype == np.bool:
-            yield k, v.astype(int)
-        else:
-            yield k, v
-
-
-def np_to_pytorch_batch(np_batch):
-    return {
-        k: _elem_or_tuple_to_variable(x)
-        for k, x in _filter_batch(np_batch)
-        if x.dtype != np.dtype('O')  # ignore object (e.g. dictionaries)
-    }

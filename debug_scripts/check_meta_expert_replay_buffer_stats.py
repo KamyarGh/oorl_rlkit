@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 from rlkit.core.vistools import plot_histogram
 
-path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/few-shot-larger-object-range-expert/few_shot_larger_object_range_expert_2018_12_22_17_09_50_0000--s-0/extra_data.pkl'
+path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/single-task-1000-total-demos-few-shot-larger-object-range-expert/single_task_1000_total_demos_few_shot_larger_object_range_expert_2018_12_28_19_03_11_0000--s-0/extra_data.pkl'
 print(path_to_expert_rb)
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/normalized_basic_few_shot_fetch_demos/extra_data.pkl'
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-basic-few-shot-fetch-traj-gen/correct_basic_few_shot_fetch_traj_gen_2018_12_19_08_57_56_0000--s-0/extra_data.pkl'

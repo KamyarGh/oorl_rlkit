@@ -34,6 +34,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             training_env=None,
             num_epochs=100,
             num_rollouts_per_epoch=10,
+            num_initial_rollouts_for_all_train_tasks=0,
             min_rollouts_before_training=10,
             max_path_length=1000,
             discount=0.99,
@@ -46,6 +47,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             policy_uses_pixels=False,
             wrap_absorbing=False,
             freq_saving=1,
+            freq_eval=1,
             do_not_train=False,
             do_not_eval=False,
             # some environment like halfcheetah_v2 have a timelimit that defines the terminal
@@ -81,6 +83,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self.test_test_expert_replay_buffer = test_test_expert_replay_buffer
         self.num_epochs = num_epochs
         self.num_rollouts_per_epoch = num_rollouts_per_epoch
+        self.num_initial_rollouts_for_all_train_tasks = num_initial_rollouts_for_all_train_tasks
         self.min_rollouts_before_training = min_rollouts_before_training
         self.max_path_length = max_path_length
         self.discount = discount
@@ -115,6 +118,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         if self.wrap_absorbing:
             assert isinstance(env, WrappedAbsorbingEnv), 'Env is not wrapped!'
         self.freq_saving = freq_saving
+        self.freq_eval = freq_eval
         self.no_terminal = no_terminal
 
         self.train_task_params_sampler = train_task_params_sampler
@@ -139,7 +143,93 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         """
         Do anything before the main training phase.
         """
-        pass
+        if self.num_initial_rollouts_for_all_train_tasks > 0:
+            self.generate_rollouts_for_all_train_tasks(
+                self.num_initial_rollouts_for_all_train_tasks
+            )
+    
+
+    def generate_rollouts_for_all_train_tasks(self, num_rollouts_per_task):
+        '''
+        This is a simple work-around for a problem that arises when sampling
+        batches for NP-AIRL because you need to be able to sample a minimum
+        number of trajectories per train task.
+        I will try to replace this with a better fix later.
+        '''
+        for task_params, obs_task_params in self.train_task_params_sampler:
+            for _ in range(num_rollouts_per_task):
+                self.generate_exploration_rollout(
+                    task_params=task_params, obs_task_params=obs_task_params
+                )
+        # exploration paths maintains the exploration paths in one epoch
+        # so that we can analyze certain properties of the trajs if we
+        # wanted. we don't want these trajs to count towards that really.
+        self._exploration_paths = []
+
+
+    def generate_exploration_rollout(self, task_params=None, obs_task_params=None):
+        observation, task_identifier = self._start_new_rollout(
+            task_params=task_params, obs_task_params=obs_task_params
+        )
+        
+        # _current_path_builder is initialized to a new one everytime
+        # you call handle rollout ending
+        # When you start a new rollout, self.exploration_policy
+        # is set to the one for the current task
+        terminal = False
+        while (not terminal) and len(self._current_path_builder) < self.max_path_length:
+            if isinstance(self.obs_space, Dict):
+                if self.policy_uses_pixels:
+                    agent_obs = observation['pixels']
+                else:
+                    agent_obs = observation['obs']
+            else:
+                agent_obs = observation
+            
+            action, agent_info = self._get_action_and_info(agent_obs)
+            if self.render:
+                self.training_env.render()
+            
+            next_ob, raw_reward, terminal, env_info = (self.training_env.step(action))
+            if self.no_terminal:
+                terminal = False
+            
+            self._n_env_steps_total += 1
+            reward = raw_reward
+            terminal = np.array([terminal])
+            reward = np.array([reward])
+            self._handle_step(
+                observation,
+                action,
+                reward,
+                next_ob,
+                np.array([False]) if self.wrap_absorbing else terminal,
+                task_identifier,
+                agent_info=agent_info,
+                env_info=env_info,
+            )
+            observation = next_ob
+
+        if terminal and self.wrap_absorbing:
+            raise NotImplementedError("I think they used 0 actions for this")
+            # next_ob is the absorbing state
+            # for now just using the action from the previous timesteps
+            # as well as agent info and env info
+            self._handle_step(
+                next_ob,
+                action,
+                # the reward doesn't matter cause it will be
+                # overwritten by the model that defines the reward
+                # e.g. the discriminator in GAIL
+                reward,
+                next_ob,
+                terminal,
+                task_identifier,
+                agent_info=agent_info,
+                env_info=env_info
+            )
+        
+        self._handle_rollout_ending(task_identifier)
 
 
     def train_online(self, start_epoch=0):
@@ -155,75 +245,19 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             save_itrs=True,
         ):
             self._start_epoch(epoch)
-            
             for _ in range(self.num_rollouts_per_epoch):
-                observation, task_identifier = self._start_new_rollout()
-                terminal = False
-                # when you start a new rollout self.exploration_policy
-                # is set to the one for the current task
-
-                while (not terminal) and len(self._current_path_builder) < self.max_path_length:
-                    if isinstance(self.obs_space, Dict):
-                        if self.policy_uses_pixels:
-                            agent_obs = observation['pixels']
-                        else:
-                            agent_obs = observation['obs']
-                    else:
-                        agent_obs = observation
-                    
-                    action, agent_info = self._get_action_and_info(agent_obs)
-                    if self.render:
-                        self.training_env.render()
-                    
-                    next_ob, raw_reward, terminal, env_info = (self.training_env.step(action))
-                    if self.no_terminal:
-                        terminal = False
-                    
-                    self._n_env_steps_total += 1
-                    reward = raw_reward
-                    terminal = np.array([terminal])
-                    reward = np.array([reward])
-                    self._handle_step(
-                        observation,
-                        action,
-                        reward,
-                        next_ob,
-                        np.array([False]) if self.wrap_absorbing else terminal,
-                        task_identifier,
-                        agent_info=agent_info,
-                        env_info=env_info,
-                    )
-                    observation = next_ob
-
-                if terminal and self.wrap_absorbing:
-                    raise NotImplementedError("I think they used 0 actions for this")
-                    # next_ob is the absorbing state
-                    # for now just using the action from the previous timesteps
-                    # as well as agent info and env info
-                    self._handle_step(
-                        next_ob,
-                        action,
-                        # the reward doesn't matter cause it will be
-                        # overwritten by the model that defines the reward
-                        # e.g. the discriminator in GAIL
-                        reward,
-                        next_ob,
-                        terminal,
-                        task_identifier,
-                        agent_info=agent_info,
-                        env_info=env_info
-                    )
-                
-                self._handle_rollout_ending(task_identifier)
+                self.generate_exploration_rollout()
 
             # essentially in each epoch we gather data then do a certain amount of training
             gt.stamp('sample')
             if not self.do_not_train: self._try_to_train()
             gt.stamp('train')
 
-            # and then we evaluate it
-            if not self.do_not_eval: self._try_to_eval(epoch)
-            gt.stamp('eval')
+            if epoch % self.freq_eval == 0:
+                # and then we evaluate it
+                if not self.do_not_eval: self._try_to_eval(epoch)
+                gt.stamp('eval')
+
             self._end_epoch()
 
 
@@ -316,19 +350,21 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self._epoch_start_time = time.time()
         self._exploration_paths = []
         self._do_train_time = 0
-        logger.push_prefix('Iteration #%d | ' % epoch)
+        # logger.push_prefix('Iteration #%d | ' % epoch)
 
 
     def _end_epoch(self):
-        logger.log("Epoch Duration: {0}".format(
-            time.time() - self._epoch_start_time
-        ))
-        logger.log("Started Training: {0}".format(self._can_train()))
-        logger.pop_prefix()
+        # logger.log("Epoch Duration: {0}".format(
+        #     time.time() - self._epoch_start_time
+        # ))
+        # logger.log("Started Training: {0}".format(self._can_train()))
+        # logger.pop_prefix()
+        pass
 
 
-    def _start_new_rollout(self):
-        task_params, obs_task_params = self.train_task_params_sampler.sample()
+    def _start_new_rollout(self, task_params=None, obs_task_params=None):
+        if task_params is None:
+            task_params, obs_task_params = self.train_task_params_sampler.sample()
         observation = self.training_env.reset(task_params=task_params, obs_task_params=obs_task_params)
         task_id = self.training_env.task_identifier
 

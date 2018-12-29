@@ -219,3 +219,10 @@ unnormalized_basic_few_shot_fetch_larger_object_range_expert_50_10_10:
   seed_runs: [
     few_shot_larger_object_range_expert_2018_12_22_17_09_50_0000--s-0
   ]
+
+normalized_single_task_basic_few_shot_fetch_larger_object_range_expert_50_10_10:
+  description: "for debugging, normalized using max-min, basic few shot fetch env, same color radius 0.3, 50 meta-train params, 50 meta-test params, 10-10 train/test"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    single_task_normalized_few_shot_larger_object_range_expert
+  ]

@@ -10,7 +10,8 @@ from rlkit.launchers.launcher_util import setup_logger, set_seed
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
 
-from rlkit.torch.irl.disc_models.gail_disc import Model as GAILDiscModel
+# from rlkit.torch.irl.disc_models.gail_disc import Model as GAILDiscModel
+from rlkit.torch.irl.disc_models.gail_disc import MlpGAILDisc
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.networks import FlattenMlp
@@ -28,7 +29,7 @@ import argparse
 import joblib
 from time import sleep
 
-EXPERT_LISTING_YAML_PATH = '/u/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
+EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
 def experiment(variant):
     with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
@@ -47,14 +48,15 @@ def experiment(variant):
     meta_train_env, meta_test_env = get_meta_env(env_specs)
 
     # student policy should not have access to any task information
-    print(variant['algo_params'].keys())
-    meta_train_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
-    meta_train_env.policy_uses_task_params = False
-    meta_train_env.concat_task_params_to_policy_obs = False
+    # What are these things.... I don't remember....
+    # print(variant['algo_params'].keys())
+    # meta_train_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
+    # meta_train_env.policy_uses_task_params = False
+    # meta_train_env.concat_task_params_to_policy_obs = False
 
-    meta_test_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
-    meta_test_env.policy_uses_task_params = False
-    meta_test_env.concat_task_params_to_policy_obs = False
+    # meta_test_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
+    # meta_test_env.policy_uses_task_params = False
+    # meta_test_env.concat_task_params_to_policy_obs = False
 
     # set up the policy and training algorithm
     if isinstance(meta_train_env.observation_space, Dict):
@@ -71,29 +73,38 @@ def experiment(variant):
     sleep(3)
 
     # make the policy and policy optimizer
-    policy_net_size = variant['algo_params']['policy_net_size']
+    hidden_sizes = [variant['algo_params']['policy_net_size']] * variant['algo_params']['policy_num_layers']
     z_dim = variant['algo_params']['np_params']['z_dim']
     qf1 = FlattenMlp(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         input_size=obs_dim + z_dim + action_dim,
         output_size=1,
     )
     qf2 = FlattenMlp(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         input_size=obs_dim + z_dim + action_dim,
         output_size=1,
     )
     vf = FlattenMlp(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         input_size=obs_dim + z_dim,
         output_size=1,
     )
     policy = ReparamTanhMultivariateGaussianPolicy(
-        hidden_sizes=[policy_net_size, policy_net_size],
+        hidden_sizes=hidden_sizes,
         obs_dim=obs_dim + z_dim,
         action_dim=action_dim,
     )
-    disc_model = GAILDiscModel(obs_dim + action_dim + z_dim, hid_dim=variant['algo_params']['disc_net_size'])
+    
+    # disc_model = GAILDiscModel(obs_dim + action_dim + z_dim, hid_dim=variant['algo_params']['disc_net_size'])
+    disc_model = MlpGAILDisc(
+        hidden_sizes=variant['disc_hidden_sizes'],
+        output_size=1,
+        input_size=obs_dim + action_dim + z_dim,
+        hidden_activation=torch.nn.functional.tanh,
+        layer_norm=variant['disc_uses_layer_norm']
+        # output_activation=identity,
+    )
 
     policy_optimizer = NewSoftActorCritic(
         policy=policy,
@@ -137,8 +148,7 @@ def experiment(variant):
         r2z_map
     )
 
-    assert False, 'fix how you give params_samplers to the algorithm'
-    _, test_task_params_sampler = get_meta_env_params_iters(env_specs)
+    train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
     algorithm = NeuralProcessAIRL(
         meta_test_env, # env is the test env, training_env is the training env (following rlkit original setup)
         
@@ -151,11 +161,12 @@ def experiment(variant):
         test_test_buffer,
 
         np_enc,
-        test_task_params_sampler,
 
         policy_optimizer,
 
         training_env=meta_train_env, # the env used for generating trajectories
+        train_task_params_sampler=train_task_params_sampler,
+        test_task_params_sampler=test_task_params_sampler,
         **variant['algo_params']
     )
 

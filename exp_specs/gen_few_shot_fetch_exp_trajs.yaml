@@ -1,7 +1,9 @@
+# after running this you probably want to run normalize_meta_expert_demos.py on
+# the demos to normalize them (use check meta expert replay buffer stats)
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gen_meta_irl_expert_trajs.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
-  exp_name: few_shot_larger_object_range_expert
+  exp_name: single_task_1000_total_demos_few_shot_larger_object_range_expert
   description: generating expert demos for few shot
   use_gpu: false
   num_workers: 1
@@ -13,14 +15,14 @@ variables:
   scripted_policy_name: [few_shot_fetch_scripted_policy]
   render: [false]
   student_policy_uses_pixels: [false]
-  num_rollouts_per_task: [10]
+  num_rollouts_per_task: [500]
   # seed: [28043, 99381, 33478, 448293, 5739]
   seed: [28043]
 
 # -----------------------------------------------------------------------------
 constants:
   env_specs:
-    base_env_name: 'unscaled_basic_few_shot_fetch_env'
+    base_env_name: 'debug_unscaled_basic_few_shot_fetch_env'
     normalized: false
     need_pixels: false
   max_path_length: 65
