@@ -63,6 +63,8 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._rewards = np.zeros((max_replay_buffer_size, 1))
         # self._terminals[i] = a terminal was received at time i
         self._terminals = np.zeros((max_replay_buffer_size, 1), dtype='uint8')
+        # absorbing[0] is if obs was absorbing, absorbing[1] is if next_obs was absorbing
+        self._absorbing = np.zeros((max_replay_buffer_size, 2))
         self._top = 0
         self._size = 0
 
@@ -80,6 +82,8 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._actions[self._top] = action
         self._rewards[self._top] = reward
         self._terminals[self._top] = terminal
+        if 'absorbing' in kwargs:
+            self._absorbing[self._top] = kwargs['absorbing']
 
         if terminal:
             temp = (self._top + 1) % self._max_replay_buffer_size
@@ -114,8 +118,13 @@ class SimpleReplayBuffer(ReplayBuffer):
         if self._size < self._max_replay_buffer_size:
             self._size += 1
 
+
     def random_batch(self, batch_size):
         indices = np.random.randint(0, self._size, batch_size)
+        return self._get_batch_using_indices(indices)
+    
+    
+    def _get_batch_using_indices(self, indices):
         if isinstance(self._observations, dict):
             if self.policy_uses_task_params:
                 if self.concat_task_params_to_policy_obs:
@@ -146,6 +155,7 @@ class SimpleReplayBuffer(ReplayBuffer):
             rewards=self._rewards[indices],
             terminals=self._terminals[indices],
             next_observations=next_obs_to_return,
+            absorbing=self._absorbing[indices]
         )
     
 
@@ -185,6 +195,7 @@ class SimpleReplayBuffer(ReplayBuffer):
             if 'rewards' in keys: return_dict['rewards'] = self._rewards[start:end]
             if 'terminal' in keys: return_dict['terminal'] = self._terminals[start:end]
             if 'next_observations' in keys: return_dict['next_observations'] = next_obs_to_return
+            if 'absorbing' in keys: return_dict['absorbing'] = self._absorbing[start:end]
             return return_dict
         return dict(
             observations=obs_to_return,
@@ -192,6 +203,7 @@ class SimpleReplayBuffer(ReplayBuffer):
             rewards=self._rewards[start:end],
             terminals=self._terminals[start:end],
             next_observations=next_obs_to_return,
+            absorbing=self._absorbing[start:end]
         )
     
 
@@ -204,15 +216,39 @@ class SimpleReplayBuffer(ReplayBuffer):
         sec_part = self._get_cont_segment(0, end, keys)
         # concat them now
         return concat_nested_dicts(first_part, sec_part)
+    
+
+    def _get_samples_from_traj(self, start, end, samples_per_traj, keys=None):
+        if start < end or end == 0:
+            if end == 0: end = self._max_replay_buffer_size
+            idxs = np.arange(start, end)
+        else:
+            idxs = np.concatenate(
+                (
+                    np.arange(start, self._max_replay_buffer_size),
+                    np.arange(0, end)
+                ),
+                -1
+            )
+        idxs = np.random.choice(idxs, size=samples_per_traj, replace=idxs.shape[0]<samples_per_traj)
+        return self._get_batch_using_indices(idxs)
 
 
-    def sample_trajs(self, num_trajs, keys=None):
-        starts = sample(self._traj_endpoints.keys(), num_trajs)
+    def sample_trajs(self, num_trajs, keys=None, samples_per_traj=None):
+        # samples_per_traj of None mean use all of the samples
+        # old version: starts = sample(self._traj_endpoints.keys(), num_trajs)
+        keys_list = list(self._traj_endpoints.keys())
+        starts = np.random.choice(keys_list, size=num_trajs, replace=len(keys_list)<num_trajs)
         ends = map(lambda k: self._traj_endpoints[k], starts)
 
-        return list(
-            starmap(lambda s,e: self._get_segment(s,e,keys), zip(starts, ends))
-        )
+        if samples_per_traj is None:
+            return list(
+                starmap(lambda s,e: self._get_segment(s,e,keys), zip(starts, ends))
+            )
+        else:
+            return list(
+                starmap(lambda s,e: self._get_samples_from_traj(s,e,samples_per_traj,keys), zip(starts, ends))
+            )
 
 
     def num_steps_can_sample(self):
@@ -245,6 +281,7 @@ class SimpleReplayBuffer(ReplayBuffer):
 
 
     def set_buffer_from_dict(self, batch_dict):
+        raise NotImplementedError('Not handling absorbing')
         assert not isinstance(self._observations, dict), 'not implemented'
         self._max_replay_buffer_size = max(self._max_replay_buffer_size, batch_dict['observations'].shape[0])
         self._observations = batch_dict['observations']
@@ -257,6 +294,7 @@ class SimpleReplayBuffer(ReplayBuffer):
 
 
     def change_max_size_to_cur_size(self):
+        raise NotImplementedError('Not handling absorbing')
         assert not isinstance(self._observations, dict), 'not implemented'
         self._max_replay_buffer_size = self._size
         self._observations = self._observations[:self._size]
@@ -367,20 +405,20 @@ class MetaSimpleReplayBuffer():
         self.task_replay_buffers[task_identifier].terminate_episode()
     
 
-    def sample_trajs(self, num_trajs_per_task, num_tasks=1, task_identifiers=None, keys=None):
+    def sample_trajs(self, num_trajs_per_task, num_tasks=1, task_identifiers=None, keys=None, samples_per_traj=None):
         if task_identifiers is None:
             sample_params = list(sample(self.task_replay_buffers.keys(), num_tasks))
         else:
             sample_params = task_identifiers
         batch_list = [
-            self.task_replay_buffers[p].sample_trajs(num_trajs_per_task, keys=keys) \
+            self.task_replay_buffers[p].sample_trajs(num_trajs_per_task, keys=keys, samples_per_traj=samples_per_traj) \
             for p in sample_params
         ]
         return batch_list, sample_params
     
 
-    def sample_trajs_from_task(self, task_identifier, num_trajs):
-        return self.task_replay_buffers[task_identifier].sample_trajs(num_trajs)
+    def sample_trajs_from_task(self, task_identifier, num_trajs, samples_per_traj=None):
+        return self.task_replay_buffers[task_identifier].sample_trajs(num_trajs, samples_per_traj=samples_per_traj)
     
 
     def random_batch(self, *args, **kwargs):

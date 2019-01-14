@@ -26,14 +26,13 @@ def concat_trajs(trajs):
     return new_dict
 
 
-class GAIL(TorchIRLAlgorithm):
+class GAILWithTrajBatches(TorchIRLAlgorithm):
     '''
         This is actually AIRL / DAC, sorry!
         
         I did not implement the reward-wrapping mentioned in
         https://arxiv.org/pdf/1809.02925.pdf though
     '''
-
     def __init__(
             self,
             env,
@@ -43,14 +42,9 @@ class GAIL(TorchIRLAlgorithm):
             policy_optimizer,
             expert_replay_buffer,
 
-            state_only=False,
-
-            traj_based=False,
-            disc_num_trajs_per_batch=128,
-            disc_samples_per_traj=8,
-
-            disc_optim_batch_size=1024,
-            policy_optim_batch_size=1024,
+            disc_num_expert_trajs_per_batch=16,
+            disc_policy_batch_size=1024,
+            policy_optim_batch_size=1000,
 
             disc_lr=1e-3,
             disc_momentum=0.0,
@@ -76,7 +70,6 @@ class GAIL(TorchIRLAlgorithm):
             epochs_till_end_scale=50.0,
             **kwargs
     ):
-        assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
         if eval_deterministic:
             eval_policy = MakeDeterministic(policy)
         else:
@@ -91,12 +84,6 @@ class GAIL(TorchIRLAlgorithm):
             **kwargs
         )
 
-        self.state_only = state_only
-
-        self.traj_based = traj_based
-        self.disc_num_trajs_per_batch = disc_num_trajs_per_batch
-        self.disc_samples_per_traj = disc_samples_per_traj
-
         self.discriminator = discriminator
         self.rewardf_eval_statistics = None
         self.disc_optimizer = disc_optimizer_class(
@@ -106,18 +93,15 @@ class GAIL(TorchIRLAlgorithm):
         )
         print('\n\nDISC MOMENTUM: %f\n\n' % disc_momentum)
 
-        self.disc_optim_batch_size = disc_optim_batch_size
+        self.disc_num_expert_trajs_per_batch = disc_num_expert_trajs_per_batch
+        self.disc_policy_batch_size = disc_policy_batch_size
         self.policy_optim_batch_size = policy_optim_batch_size
 
         self.bce = nn.BCEWithLogitsLoss()
-        if self.traj_based:
-            target_batch_size = self.disc_num_trajs_per_batch * self.disc_samples_per_traj
-        else:
-            target_batch_size = self.disc_optim_batch_size
         self.bce_targets = torch.cat(
             [
-                torch.ones(target_batch_size, 1),
-                torch.zeros(target_batch_size, 1)
+                torch.ones(self.max_path_length * self.disc_num_expert_trajs_per_batch, 1),
+                torch.zeros(self.max_path_length * self.disc_num_expert_trajs_per_batch, 1)
             ],
             dim=0
         )
@@ -159,27 +143,39 @@ class GAIL(TorchIRLAlgorithm):
         self.epochs_till_end_scale = epochs_till_end_scale
 
 
-    def get_batch(self, batch_size, from_expert):
-        if from_expert:
-            buffer = self.expert_replay_buffer
-        else:
-            buffer = self.replay_buffer
-        batch = buffer.random_batch(batch_size)
-        batch = np_to_pytorch_batch(batch)
-        return batch
+    def get_expert_batch(self, num_trajs):
+        batch = self.expert_replay_buffer.sample_trajs(num_trajs, keys=['observations', 'actions'])
+        # for b in batch:
+            # print(b['observations'].shape)
+            # b['observations'] = b['observations'][:self.max_path_length]
+            # b['actions'] = b['actions'][:self.max_path_length]
 
-
-    def get_traj_based_batch(self, num_trajs, from_expert, samples_per_traj=None):
-        if from_expert:
-            buffer = self.expert_replay_buffer
-        else:
-            buffer = self.replay_buffer
-        keys_list = ['observations', 'actions']
-        if self.wrap_absorbing: keys_list.append('absorbing')
-        batch = buffer.sample_trajs(num_trajs, keys=keys_list, samples_per_traj=samples_per_traj)
         batch = concat_trajs(batch)
+        # if self.batch_size < batch['observations'].shape[0]:
+        #     idx = np.random.choice(batch['observations'].shape[0], size=self.batch_size, replace=False)
+        #     for k in batch:
+        #         batch[k] = batch[k][idx]
+        # elif self.batch_size > self.traj_len * self.num_trajs_per_update:
+        #     print('batch_size is larger than the sampled batch')
+
         batch = np_to_pytorch_batch(batch)
+
+        if self.wrap_absorbing:
+            if isinstance(batch['observations'], np.ndarray):
+                obs = batch['observations']
+                assert len(obs.shape) == 2
+                batch['observations'] = np.concatenate((obs, np.zeros((obs.shape[0],1))), -1)
+                if 'next_observations' in batch:
+                    next_obs = batch['next_observations']
+                    batch['next_observations'] = np.concatenate((next_obs, np.zeros((next_obs.shape[0],1))), -1)
+            else:
+                raise NotImplementedError()
         return batch
+    
+
+    def get_policy_batch(self, batch_size):
+        batch = self.replay_buffer.random_batch(batch_size)
+        return np_to_pytorch_batch(batch)
 
 
     def _do_reward_training(self, epoch):
@@ -188,21 +184,13 @@ class GAIL(TorchIRLAlgorithm):
         '''
         self.disc_optimizer.zero_grad()
 
-        if self.traj_based:
-            expert_batch = self.get_traj_based_batch(self.disc_num_trajs_per_batch, True, samples_per_traj=self.disc_samples_per_traj)
-            policy_batch = self.get_traj_based_batch(self.disc_num_trajs_per_batch, False, samples_per_traj=self.disc_samples_per_traj)
-        else:
-            expert_batch = self.get_batch(self.disc_optim_batch_size, True)
-            policy_batch = self.get_batch(self.disc_optim_batch_size, False)
-
+        expert_batch = self.get_expert_batch(self.disc_num_expert_trajs_per_batch)
         expert_obs = expert_batch['observations']
+        expert_actions = expert_batch['actions']
+
+        policy_batch = self.get_policy_batch(self.disc_policy_batch_size)
         policy_obs = policy_batch['observations']
-        if self.wrap_absorbing:
-            expert_obs = torch.cat([expert_obs, expert_batch['absorbing'][:, 0:1]], dim=-1)
-            policy_obs = torch.cat([policy_obs, policy_batch['absorbing'][:, 0:1]], dim=-1)
-        if not self.state_only:
-            expert_actions = expert_batch['actions']
-            policy_actions = policy_batch['actions']
+        policy_actions = policy_batch['actions']
 
         if self.use_disc_input_noise:
             noise_scale = linear_schedule(
@@ -213,18 +201,15 @@ class GAIL(TorchIRLAlgorithm):
             )
             if noise_scale > 0.0:
                 expert_obs = expert_obs + noise_scale * Variable(torch.randn(expert_obs.size()))
-                if not self.state_only: expert_actions = expert_actions + noise_scale * Variable(torch.randn(expert_actions.size()))
+                expert_actions = expert_actions + noise_scale * Variable(torch.randn(expert_actions.size()))
 
                 policy_obs = policy_obs + noise_scale * Variable(torch.randn(policy_obs.size()))
-                if not self.state_only: policy_actions = policy_actions + noise_scale * Variable(torch.randn(policy_actions.size()))
+                policy_actions = policy_actions + noise_scale * Variable(torch.randn(policy_actions.size()))
         
         obs = torch.cat([expert_obs, policy_obs], dim=0)
-        if not self.state_only: actions = torch.cat([expert_actions, policy_actions], dim=0)
-        
-        if self.state_only:
-            disc_logits = self.discriminator(obs, None)
-        else:
-            disc_logits = self.discriminator(obs, actions)
+        actions = torch.cat([expert_actions, policy_actions], dim=0)
+
+        disc_logits = self.discriminator(obs, actions)
         disc_preds = (disc_logits > 0).type(torch.FloatTensor)
         disc_ce_loss = self.bce(disc_logits, self.bce_targets)
         accuracy = (disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
@@ -255,7 +240,16 @@ class GAIL(TorchIRLAlgorithm):
         self.disc_ce_grad_norm_counter += 1
         
         self.disc_optimizer.zero_grad()
-        
+
+        # # do gradient clipping for the cross-entropy loss gradients
+        # torch.nn.utils.clip_grad_norm(self.discriminator.parameters(), self.disc_grad_clip, norm_type=2)
+
+        # check the magnitude of the gradients
+        # this_ce_loss_grad = 0.0
+        # for p in list(filter(lambda p: p.grad is not None, self.discriminator.parameters())):
+        #     this_ce_loss_grad += p.grad.pow(2).sum()
+        # this_ce_loss_grad = this_ce_loss_grad ** 0.5
+
         if self.use_grad_pen:
             eps = Variable(torch.rand(expert_obs.size(0), 1))
             if ptu.gpu_enabled(): eps = eps.cuda()
@@ -263,25 +257,16 @@ class GAIL(TorchIRLAlgorithm):
             interp_obs = eps*expert_obs + (1-eps)*policy_obs
             interp_obs.detach()
             interp_obs.requires_grad = True
-            if self.state_only:
-                gradients = autograd.grad(
-                    outputs=self.discriminator(interp_obs, None).sum(),
-                    inputs=[interp_obs],
-                    # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                    create_graph=True, retain_graph=True, only_inputs=True
-                )
-                total_grad = gradients[0]
-            else:
-                interp_actions = eps*expert_actions + (1-eps)*policy_actions
-                interp_actions.detach()
-                interp_actions.requires_grad = True
-                gradients = autograd.grad(
-                    outputs=self.discriminator(interp_obs, interp_actions).sum(),
-                    inputs=[interp_obs, interp_actions],
-                    # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                    create_graph=True, retain_graph=True, only_inputs=True
-                )
-                total_grad = torch.cat([gradients[0], gradients[1]], dim=1)
+            interp_actions = eps*expert_actions + (1-eps)*policy_actions
+            interp_actions.detach()
+            interp_actions.requires_grad = True
+            gradients = autograd.grad(
+                outputs=self.discriminator(interp_obs, interp_actions).sum(),
+                inputs=[interp_obs, interp_actions],
+                # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                create_graph=True, retain_graph=True, only_inputs=True
+            )
+            total_grad = torch.cat([gradients[0], gradients[1]], dim=1)
 
             # GP from Gulrajani et al.
             gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
@@ -329,10 +314,7 @@ class GAIL(TorchIRLAlgorithm):
             self.rewardf_eval_statistics = OrderedDict()
             
             if self.use_target_disc:
-                if self.state_only:
-                    target_disc_logits = self.target_disc(obs, None)
-                else:
-                    target_disc_logits = self.target_disc(obs, actions)
+                target_disc_logits = self.target_disc(obs, actions)
                 target_disc_preds = (target_disc_logits > 0).type(torch.FloatTensor)
                 target_disc_ce_loss = self.bce(target_disc_logits, self.bce_targets)
                 target_accuracy = (target_disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
@@ -344,25 +326,16 @@ class GAIL(TorchIRLAlgorithm):
                     interp_obs = eps*expert_obs + (1-eps)*policy_obs
                     interp_obs.detach()
                     interp_obs.requires_grad = True
-                    if self.state_only:
-                        target_gradients = autograd.grad(
-                            outputs=self.target_disc(interp_obs, None).sum(),
-                            inputs=[interp_obs],
-                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                            create_graph=True, retain_graph=True, only_inputs=True
-                        )
-                        total_target_grad = target_gradients[0]
-                    else:
-                        interp_actions = eps*expert_actions + (1-eps)*policy_actions
-                        interp_actions.detach()
-                        interp_actions.requires_grad = True
-                        target_gradients = autograd.grad(
-                            outputs=self.target_disc(interp_obs, interp_actions).sum(),
-                            inputs=[interp_obs, interp_actions],
-                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                            create_graph=True, retain_graph=True, only_inputs=True
-                        )
-                        total_target_grad = torch.cat([target_gradients[0], target_gradients[1]], dim=1)
+                    interp_actions = eps*expert_actions + (1-eps)*policy_actions
+                    interp_actions.detach()
+                    interp_actions.requires_grad = True
+                    target_gradients = autograd.grad(
+                        outputs=self.target_disc(interp_obs, interp_actions).sum(),
+                        inputs=[interp_obs, interp_actions],
+                        # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                        create_graph=True, retain_graph=True, only_inputs=True
+                    )
+                    total_target_grad = torch.cat([target_gradients[0], target_gradients[1]], dim=1)
 
                     # GP from Gulrajani et al.
                     target_gradient_penalty = ((total_target_grad.norm(2, dim=1) - 1) ** 2).mean()
@@ -395,26 +368,16 @@ class GAIL(TorchIRLAlgorithm):
 
 
     def _do_policy_training(self, epoch):
-        policy_batch = self.get_batch(self.policy_optim_batch_size, False)
-        obs = policy_batch['observations']
-        acts = policy_batch['actions']
-        if self.wrap_absorbing:
-            obs = torch.cat([obs, policy_batch['absorbing'][:, 0:1]], dim=-1)
+        policy_batch = self.get_policy_batch(self.policy_optim_batch_size)
         if self.use_target_disc:
             self.target_disc.eval()
             # If you compute log(D) - log(1-D) then you just get the logits
-            if self.state_only:
-                policy_batch['rewards'] = self.target_disc(obs, None).detach()
-            else:
-                policy_batch['rewards'] = self.target_disc(obs, acts).detach()
+            policy_batch['rewards'] = self.target_disc(policy_batch['observations'], policy_batch['actions']).detach()
             self.target_disc.train()
         else:
             self.discriminator.eval()
             # If you compute log(D) - log(1-D) then you just get the logits
-            if self.state_only:
-                policy_batch['rewards'] = self.discriminator(obs, None).detach()
-            else:
-                policy_batch['rewards'] = self.discriminator(obs, acts).detach()
+            policy_batch['rewards'] = self.discriminator(policy_batch['observations'], policy_batch['actions']).detach()
             self.discriminator.train()
 
         self.policy_optimizer.train_step(policy_batch)
@@ -423,8 +386,8 @@ class GAIL(TorchIRLAlgorithm):
         self.rewardf_eval_statistics['Disc Rew Std'] = np.std(ptu.get_numpy(policy_batch['rewards']))
         self.rewardf_eval_statistics['Disc Rew Max'] = np.max(ptu.get_numpy(policy_batch['rewards']))
         self.rewardf_eval_statistics['Disc Rew Min'] = np.min(ptu.get_numpy(policy_batch['rewards']))
-    
-    
+
+
     @property
     def networks(self):
         return [self.discriminator] + self.policy_optimizer.networks

@@ -1,36 +1,34 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: batch_norm_disc_65_iters_correct_grind_zero_I_beg_of_you
+  exp_name: fucking_correct_zero_single_task_dac_256_disc
+  # exp_name: traj_based_gail_32_trajs_per_update_subsample_4
   description: searching over the SAC hyperparameters
   use_gpu: false
-  num_workers: 32
+  num_workers: 48
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  use_traj_batches: [false]
+  use_traj_batches: [true]
 
   gail_params:
     no_terminal: [false]
     replay_buffer_size: [1000000]
 
-    num_reward_updates: [65]
-    # num_reward_updates: [65, 130]
+    num_trajs_per_update: [8]
+    batch_size: [520] # this mean expert batch size and policy batch size each this much
+
+    num_reward_updates: [130]
     num_policy_updates: [65]
-    grad_pen_weight: [5.0, 10.0]
-    # grad_pen_weight: [5.0, 10.0, 15.0]
-    # grad_pen_weight: [5.0, 10.0, 15.0, 20.0]
-    # grad_pen_weight: [1.0, 5.0, 10.0]
+
+    grad_pen_weight: [1.0, 5.0, 10.0]
   
   policy_params:
     # reward_scale: [10.0]
     # reward_scale: [1.0, 5.0, 10.0, 25.0]
     # reward_scale: [1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 750.0, 1000.0]
-    # reward_scale: [2.0, 4.0, 6.0, 8.0]
-    # reward_scale: [10.0, 15.0, 20.0, 40.0, 80.0, 120.0]
-    # reward_scale: [2.0, 4.0, 6.0, 8.0]
-    reward_scale: [4.0, 6.0, 8.0, 10.0]
+    reward_scale: [2.0, 4.0, 6.0, 8.0]
     # reward_scale: [1.0, 2.0, 4.0, 6.0, 8.0, 10.0]
     # reward_scale: [500.0, 750.0, 1000.0]
     # reward_scale: [50.0, 100.0, 250.0]
@@ -43,17 +41,18 @@ variables:
 
   disc_hidden_sizes: [
     # [100, 64],
+
     # [100, 100],
     [256, 256],
     # [100, 100, 100],
-    # [256, 256, 256],
+    [256, 256, 256],
   ]
   disc_uses_layer_norm: [false]
   # grad_pen_weight: [1.0, 3.0, 5.0, 7.0, 10.0]
   # grad_pen_weight: [10.0]
 
   # policy_net_size: [100, 256]
-  policy_net_size: [256, 512]
+  policy_net_size: [100]
   num_hidden_layers: [3]
   # policy_net_size: [100, 256]
   # num_hidden_layers: [2, 3]
@@ -67,7 +66,6 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
-  # expert_name: unscaled_zero_1000_demos
   expert_name: zero_1000_demos
   # expert_name: larger_object_range_easy_in_the_air_1000_demos
   expert_seed_run_idx: 0
@@ -79,8 +77,8 @@ constants:
     num_steps_per_eval: 3250 # 65 * 50
     max_path_length: 65
 
-    disc_optim_batch_size: 1024
-    policy_optim_batch_size: 1024
+    # disc_optim_batch_size: 1024
+    # policy_optim_batch_size: 1024
 
     policy_uses_pixels: false
     policy_uses_task_params: false
@@ -112,6 +110,4 @@ constants:
     soft_target_tau: 0.005
     
   env_specs:
-    # base_env_name: 'unscaled_zero_few_shot_fetch_env'
     base_env_name: 'zero_few_shot_fetch_env'
-    # base_env_name: 'scaled_and_wrapped_target_in_air_easy'

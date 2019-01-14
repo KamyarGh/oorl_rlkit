@@ -124,3 +124,6 @@ class TrivialNPEncoder(PyTorchModule):
         post_mean, post_log_sig_diag = self.r_to_z_map(r)
 
         return ReparamMultivariateNormalDiag(post_mean, post_log_sig_diag)
+
+        # c_len = len(context)
+        # return ReparamMultivariateNormalDiag(Variable(torch.zeros(c_len, 50), requires_grad=False), Variable(torch.ones(c_len, 50), requires_grad=False))

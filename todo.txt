@@ -1,3 +1,43 @@
+FOR MAKING THE REACH TASK WORK:
+    - generate demonstrations for the zero single reach task
+    - train it using the best big_gan_hyper_params model
+
+
+- Might need to turn off target disc
+
+
+- temp of the SAC algorithm maybe should be annealed and maybe need to try new temps
+
+
+
+- In the old version of the architectures must also clip the gradient of the grad pen loss!!!! (probably 10.0 or so)
+- Check if the noise in the beginning is actually necessary cause as is I have to run things for at least 100 epochs
+
+- try disc architecture with inductive bias
+    - try my initial version
+    - try my second version
+    - if not worked put exact attention mask on second version
+    - if not worked make the color be exactly -1-1-1 and the other exactly 111
+    - try with action embedding as well
+- try with policy also having a "target" policy
+
+
+
+
+
+
+
+
+- try with less disc iters
+- try more training data (4000)
+- try disc with other params changed
+- try disc with relus
+- make cuda traing + render possible
+
+- discriminator might be able to cheat just by memorizing the specific colors that show up in the
+    expert trajectory episodes
+- is it necessary that the policy batch for disc training is also sampled in a trajectory-oriented way?
+
 - make things work with last 5 and no KL
 - make things work without last 5 and just subsampling, no KL
 - make things work with the previous plus KL

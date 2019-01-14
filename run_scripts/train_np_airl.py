@@ -1,5 +1,7 @@
 import numpy as np
 import torch
+from torch import nn
+from torch.autograd import Variable
 
 from gym.spaces import Dict
 
@@ -147,6 +149,21 @@ def experiment(variant):
         traj_enc,
         r2z_map
     )
+    
+    # class StupidDistFormat():
+    #     def __init__(self, var):
+    #         self.mean = var
+    # class ZeroModule(nn.Module):
+    #     def __init__(self, z_dim):
+    #         super().__init__()
+    #         self.z_dim = z_dim
+    #         self.fc = nn.Linear(10,10)
+        
+    #     def forward(self, context):
+    #         c_len = len(context)
+    #         return StupidDistFormat(Variable(torch.zeros(c_len, self.z_dim), requires_grad=False))
+    # np_enc = ZeroModule(variant['algo_params']['np_params']['z_dim'])
+
 
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
     algorithm = NeuralProcessAIRL(

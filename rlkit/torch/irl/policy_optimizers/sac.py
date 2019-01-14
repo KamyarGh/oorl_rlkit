@@ -34,14 +34,23 @@ class NewSoftActorCritic():
             soft_target_tau=1e-2,
             eval_deterministic=True,
 
-            wrap_absorbing=True
+            use_policy_as_ema_policy=False,
+            soft_ema_policy_exp=0.005,
+
+            wrap_absorbing=False
     ):
         if eval_deterministic:
             eval_policy = MakeDeterministic(policy)
         else:
             eval_policy = policy
     
+        self.use_policy_as_ema_policy = use_policy_as_ema_policy
+        self.soft_ema_policy_exp = soft_ema_policy_exp
         self.policy = policy
+        if use_policy_as_ema_policy:
+            self.training_policy = policy.copy()
+        else:
+            self.training_policy = self.policy
         self.qf1 = qf1
         self.qf2 = qf2
         self.vf = vf
@@ -56,22 +65,26 @@ class NewSoftActorCritic():
         self.eval_statistics = None
         self.reward_scale = reward_scale
         self.discount = discount
-
+        
         self.policy_optimizer = optimizer_class(
-            self.policy.parameters(),
+            self.training_policy.parameters(),
             lr=policy_lr,
+            betas=(0.0, 0.999)
         )
         self.qf1_optimizer = optimizer_class(
             self.qf1.parameters(),
             lr=qf_lr,
+            betas=(0.0, 0.999)
         )
         self.qf2_optimizer = optimizer_class(
             self.qf2.parameters(),
             lr=qf_lr,
+            betas=(0.0, 0.999)
         )
         self.vf_optimizer = optimizer_class(
             self.vf.parameters(),
             lr=vf_lr,
+            betas=(0.0, 0.999)
         )
 
         self.wrap_absorbing = wrap_absorbing
@@ -83,23 +96,26 @@ class NewSoftActorCritic():
         obs = batch['observations']
         actions = batch['actions']
         next_obs = batch['next_observations']
+        absorbing = batch['absorbing']
 
-        # print('-'*50)
-        # print(obs[:10])
-        # print(next_obs[:10])
-        # print(rewards[:10])
+        if self.wrap_absorbing:
+            obs_with_absorbing = torch.cat([obs, absorbing[:,0:1]], dim=-1)
+            next_obs_with_absorbing = torch.cat([next_obs, absorbing[:,1:2]], dim=-1)
+        else:
+            obs_with_absorbing = obs
+            next_obs_with_absorbing = next_obs
 
-        q1_pred = self.qf1(obs, actions)
-        q2_pred = self.qf2(obs, actions)
-        v_pred = self.vf(obs)
+        q1_pred = self.qf1(obs_with_absorbing, actions)
+        q2_pred = self.qf2(obs_with_absorbing, actions)
+        v_pred = self.vf(obs_with_absorbing)
         # Make sure policy accounts for squashing functions like tanh correctly!
-        policy_outputs = self.policy(obs, return_log_prob=True)
+        policy_outputs = self.training_policy(obs, return_log_prob=True)
         new_actions, policy_mean, policy_log_std, log_pi = policy_outputs[:4]
 
         """
         QF Loss
         """
-        target_v_values = self.target_vf(next_obs)
+        target_v_values = self.target_vf(next_obs_with_absorbing)
         if self.wrap_absorbing:
             q_target = rewards + self.discount * target_v_values
         else:
@@ -110,8 +126,8 @@ class NewSoftActorCritic():
         """
         VF Loss
         """
-        q1_new_acts = self.qf1(obs, new_actions)
-        q2_new_acts = self.qf2(obs, new_actions)
+        q1_new_acts = self.qf1(obs_with_absorbing, new_actions)
+        q2_new_acts = self.qf2(obs_with_absorbing, new_actions)
         q_new_actions = torch.min(q1_new_acts, q2_new_acts)
         v_target = q_new_actions - log_pi
         vf_loss = 0.5 * torch.mean((v_pred - v_target.detach())**2)
@@ -148,6 +164,8 @@ class NewSoftActorCritic():
         self.policy_optimizer.zero_grad()
         policy_loss.backward()
         self.policy_optimizer.step()
+        if self.use_policy_as_ema_policy:
+            ptu.soft_update_from_to(self.training_policy, self.policy, self.soft_ema_policy_exp)
 
         self._update_target_network()
 
@@ -195,6 +213,7 @@ class NewSoftActorCritic():
     def networks(self):
         return [
             self.policy,
+            self.training_policy,
             self.qf1,
             self.qf2,
             self.vf,
@@ -209,6 +228,7 @@ class NewSoftActorCritic():
             qf1=self.qf1,
             qf2=self.qf2,
             policy=self.policy,
+            training_policy=self.training_policy,
             vf=self.vf,
             target_vf=self.target_vf,
         )

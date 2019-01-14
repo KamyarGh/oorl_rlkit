@@ -46,6 +46,7 @@ if __name__ == '__main__':
     # Arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--experiment', help='experiment specification file')
+    parser.add_argument('--nosrun', help='don\'t use srun', action='store_true')
     args = parser.parse_args()
     with open(args.experiment, 'r') as spec_file:
         spec_string = spec_file.read()
@@ -103,10 +104,14 @@ if __name__ == '__main__':
     running_processes = {}
     args_idx = 0
     if 'use_gpu' in exp_specs['meta_data'] and exp_specs['meta_data']['use_gpu']:
-        command = 'srun --gres=gpu:1 -c 4 --mem 15gb -p gpu python {script} -e {specs}'
+        if args.nosrun:
+            command = 'python {script} -e {specs}'
+        else:
+            command = 'srun --gres=gpu:1 -c 4 --mem 20gb -p gpu python {script} -e {specs}'
         # command = 'srun --gres=gpu:1 -x dgx1,guppy9 -p gpuc python {script} -e {specs}'
     else:
         command = 'taskset {aff} python {script} -e {specs}'
+        # command = 'srun --gres=gpu:0 -c 1 --mem 5gb -p cpu python {script} -e {specs}'
     while (args_idx < num_variants) or (len(running_processes) > 0):
         if (len(running_processes) < num_workers) and (args_idx < num_variants):
             aff = affinity_Q.get()

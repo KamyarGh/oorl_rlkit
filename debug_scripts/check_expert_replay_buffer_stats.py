@@ -3,12 +3,18 @@ import joblib
 import numpy as np
 from rlkit.core.vistools import plot_histogram
 
-path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_object_range_fetch_pick_and_place/extra_data.pkl'
-plot_dir = 'plots/expert_demos_stats/target_in_air_easy_larger_object_range'
+path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/scale_0p9_linear_10K_demos_zero_fetch_traj_gen/extra_data.pkl'
+# path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/larger_object_range_fetch_pick_and_place/extra_data.pkl'
+plot_dir = 'plots/expert_demos_stats/scaled_0p9_linear_10K_stats_plus_normal_0.055'
+os.makedirs(plot_dir, exist_ok=True)
+# plot_dir = 'plots/expert_demos_stats/target_in_air_easy_larger_object_range'
 print(path_to_expert_rb)
 rb = joblib.load(path_to_expert_rb)['replay_buffer']
-obs = rb._observations
+obs = rb._observations['obs']
+obs += np.random.normal(scale=0.055, size=obs.shape)
+# obs = rb._observations
 acts = rb._actions
+acts += np.random.normal(scale=0.055, size=acts.shape)
 
 print('obs')
 print(repr(np.mean(obs, axis=0)))

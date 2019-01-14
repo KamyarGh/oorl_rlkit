@@ -34,7 +34,6 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             training_env=None,
             num_epochs=100,
             num_rollouts_per_epoch=10,
-            num_rollouts_between_updates=10,
             num_initial_rollouts_for_all_train_tasks=0,
             min_rollouts_before_training=10,
             max_path_length=1000,
@@ -48,6 +47,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             policy_uses_pixels=False,
             wrap_absorbing=False,
             freq_saving=1,
+            freq_eval=1,
             do_not_train=False,
             do_not_eval=False,
             # some environment like halfcheetah_v2 have a timelimit that defines the terminal
@@ -83,7 +83,6 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self.test_test_expert_replay_buffer = test_test_expert_replay_buffer
         self.num_epochs = num_epochs
         self.num_rollouts_per_epoch = num_rollouts_per_epoch
-        self.num_rollouts_between_updates = num_rollouts_between_updates
         self.num_initial_rollouts_for_all_train_tasks = num_initial_rollouts_for_all_train_tasks
         self.min_rollouts_before_training = min_rollouts_before_training
         self.max_path_length = max_path_length
@@ -119,6 +118,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         if self.wrap_absorbing:
             assert isinstance(env, WrappedAbsorbingEnv), 'Env is not wrapped!'
         self.freq_saving = freq_saving
+        self.freq_eval = freq_eval
         self.no_terminal = no_terminal
 
         self.train_task_params_sampler = train_task_params_sampler
@@ -239,7 +239,6 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         # it that function it reverts it to False
         self.training_mode(False)
         self._current_path_builder = PathBuilder()
-        self._n_rollouts_total = 0
 
         for epoch in gt.timed_for(
             range(start_epoch, self.num_epochs),
@@ -250,13 +249,14 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
                 task_params, obs_task_params = self.train_task_params_sampler.sample()
                 self.generate_exploration_rollout(task_params=task_params, obs_task_params=obs_task_params)
 
-                if self._n_rollouts_total % self.num_rollouts_between_updates == 0:
-                    gt.stamp('sample')
-                    if not self.do_not_train: self._try_to_train()
-                    gt.stamp('train')
+            # essentially in each epoch we gather data then do a certain amount of training
+            gt.stamp('sample')
+            if not self.do_not_train: self._try_to_train()
+            gt.stamp('train')
 
-            if not self.do_not_eval:
-                self._try_to_eval(epoch)
+            if epoch % self.freq_eval == 0:
+                # and then we evaluate it
+                if not self.do_not_eval: self._try_to_eval(epoch)
                 gt.stamp('eval')
 
             self._end_epoch()

@@ -1,24 +1,46 @@
 meta_data:
-  script_path: /h/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_gail_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: batch_norm_disc_65_iters_correct_grind_zero_I_beg_of_you
+  exp_name: wrap_absorbing_state_only_traj_based
   description: searching over the SAC hyperparameters
   use_gpu: false
-  num_workers: 32
+  num_workers: 24
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  use_traj_batches: [false]
 
   gail_params:
+    wrap_absorbing: [true]
+    state_only: [true]
+
+    traj_based: [true]
+    disc_num_trajs_per_batch: [64]
+    disc_samples_per_traj: [16]
+
+    use_target_disc: [true]
+    soft_target_disc_tau: [0.005]
+
+    disc_ce_grad_clip: [0.5]
+    disc_gp_grad_clip: [10.0]
+
+    disc_momentum: [0.0]
+
+    use_disc_input_noise: [false]
+    disc_input_noise_scale_start: [0.1]
+    disc_input_noise_scale_end: [0.0]
+    epochs_till_end_scale: [50.0]
+
     no_terminal: [false]
     replay_buffer_size: [1000000]
 
-    num_reward_updates: [65]
+    num_reward_updates: [1]
+    # num_reward_updates: [16, 32, 65]
+    # num_reward_updates: [8, 16, 32]
+    # num_reward_updates: [65]
     # num_reward_updates: [65, 130]
-    num_policy_updates: [65]
-    grad_pen_weight: [5.0, 10.0]
+    num_policy_updates: [1]
+    grad_pen_weight: [2.5, 5.0, 10.0]
     # grad_pen_weight: [5.0, 10.0, 15.0]
     # grad_pen_weight: [5.0, 10.0, 15.0, 20.0]
     # grad_pen_weight: [1.0, 5.0, 10.0]
@@ -30,7 +52,13 @@ variables:
     # reward_scale: [2.0, 4.0, 6.0, 8.0]
     # reward_scale: [10.0, 15.0, 20.0, 40.0, 80.0, 120.0]
     # reward_scale: [2.0, 4.0, 6.0, 8.0]
-    reward_scale: [4.0, 6.0, 8.0, 10.0]
+    # reward_scale: [4.0, 6.0, 8.0, 10.0]
+    # reward_scale: [6.0, 8.0, 10.0]
+    reward_scale: [2.0, 4.0, 8.0, 10.0]
+    # reward_scale: [2.0, 4.0, 6.0, 8.0]
+    use_policy_as_ema_policy: [true]
+    soft_ema_policy_exp: [0.005]
+    # reward_scale: [8.0, 10.0]
     # reward_scale: [1.0, 2.0, 4.0, 6.0, 8.0, 10.0]
     # reward_scale: [500.0, 750.0, 1000.0]
     # reward_scale: [50.0, 100.0, 250.0]
@@ -41,19 +69,29 @@ variables:
   # disc_hid_dim: [256]
   # use_bn_in_disc: [false]
 
-  disc_hidden_sizes: [
-    # [100, 64],
-    # [100, 100],
-    [256, 256],
-    # [100, 100, 100],
-    # [256, 256, 256],
-  ]
-  disc_uses_layer_norm: [false]
+  # disc_hidden_sizes: [
+  #   # [100, 64],
+  #   # [100, 100],
+  #   # [64, 64],
+  #   [128, 128],
+  #   # [256, 256],
+  #   # [100, 100, 100],
+  #   # [256, 256, 256],
+  # ]
+  # disc_hid_act: ['relu']
+  # disc_clamp_magnitude: [10.0]
+  # disc_uses_batch_norm: [true]
+  # disc_uses_layer_norm: [false]
+
+  disc_clamp_magnitude: [10.0]
+  
   # grad_pen_weight: [1.0, 3.0, 5.0, 7.0, 10.0]
   # grad_pen_weight: [10.0]
 
   # policy_net_size: [100, 256]
-  policy_net_size: [256, 512]
+  # policy_net_size: [256, 512]
+  # policy_net_size: [128, 256]
+  policy_net_size: [256]
   num_hidden_layers: [3]
   # policy_net_size: [100, 256]
   # num_hidden_layers: [2, 3]
@@ -68,12 +106,18 @@ variables:
 # -----------------------------------------------------------------------------
 constants:
   # expert_name: unscaled_zero_1000_demos
-  expert_name: zero_1000_demos
+  # expert_name: zero_1000_demos
+  # expert_name: scale_0p9_zero_1000_demos
+  # expert_name: scale_0p9_linear_demos_zero_1000_demos
   # expert_name: larger_object_range_easy_in_the_air_1000_demos
+
+  # expert_name: scale_0p9_linear_10K_demos_zero_1000_demos
+  expert_name: scale_0p9_wrap_absorbing_linear_fetch_zero_10K_demos
   expert_seed_run_idx: 0
-  wrap_absorbing_state: false
   
   gail_params:
+    eval_deterministic: false
+    
     num_epochs: 1011 # to match HER, they run for 1000 epochs, 50 each epoch
     num_steps_per_epoch: 1625 # 65 * 25
     num_steps_per_eval: 3250 # 65 * 50
@@ -87,31 +131,41 @@ constants:
     concat_task_params_to_policy_obs: false
 
     # the interaction between these two numbers matters
-    num_steps_between_updates: 65
+    num_steps_between_updates: 1
     # replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
-    min_steps_before_training: 650 # 65 * 10, the variability is so small that 10 is probably enough
+    min_steps_before_training: 1040 # 65 * 16, the variability is so small that 10 is probably enough
     
     save_replay_buffer: true
     render: false
 
-    disc_lr: 0.0003
+    # disc_lr: 0.00005
+    disc_lr: 0.0002
+    # disc_lr: 0.0003
+    # disc_lr: 0.00005
     use_grad_pen: true
 
-    freq_saving: 5
+    freq_saving: 10
   
   # bad naming but policy_net_size and num_hidden_layers are also
   # for the value function and the Q function
   policy_params:
     # policy always has 2 hidden layers
     discount: 0.99
-    policy_lr: 0.0003
-    qf_lr: 0.0003
-    vf_lr: 0.0003
+    policy_lr: 0.00005
+    qf_lr: 0.00005
+    vf_lr: 0.00005
+    # policy_lr: 0.0003
+    # qf_lr: 0.0003
+    # vf_lr: 0.0003
     policy_mean_reg_weight: 0.001
     policy_std_reg_weight: 0.001
     soft_target_tau: 0.005
     
   env_specs:
     # base_env_name: 'unscaled_zero_few_shot_fetch_env'
-    base_env_name: 'zero_few_shot_fetch_env'
+    # base_env_name: 'zero_few_shot_fetch_env'
+    # base_env_name: 'zero_0p9_scale_few_shot_fetch_env'
     # base_env_name: 'scaled_and_wrapped_target_in_air_easy'
+
+    # base_env_name: 'zero_0p9_linear_scale_few_shot_fetch_env'
+    base_env_name: 'wrap_abs_0p9_linear_scale_few_shot_fetch_env'

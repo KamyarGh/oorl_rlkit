@@ -1,7 +1,7 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: batch_norm_disc_65_iters_correct_grind_zero_I_beg_of_you
+  exp_name: resnet_disc_correct_grind_zero_I_beg_of_you
   description: searching over the SAC hyperparameters
   use_gpu: false
   num_workers: 32
@@ -35,22 +35,9 @@ variables:
     # reward_scale: [500.0, 750.0, 1000.0]
     # reward_scale: [50.0, 100.0, 250.0]
   
-  # disc_num_blocks: [2, 3]
-  # disc_hid_dim: [100, 256]
-  # disc_num_blocks: [2]
-  # disc_hid_dim: [256]
-  # use_bn_in_disc: [false]
 
-  disc_hidden_sizes: [
-    # [100, 64],
-    # [100, 100],
-    [256, 256],
-    # [100, 100, 100],
-    # [256, 256, 256],
-  ]
-  disc_uses_layer_norm: [false]
-  # grad_pen_weight: [1.0, 3.0, 5.0, 7.0, 10.0]
-  # grad_pen_weight: [10.0]
+  disc_hidden_size: [64]
+  disc_n_layers: [4]
 
   # policy_net_size: [100, 256]
   policy_net_size: [256, 512]

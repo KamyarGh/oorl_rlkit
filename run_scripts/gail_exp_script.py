@@ -9,9 +9,12 @@ from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
 from rlkit.torch.irl.gail import GAIL
+from rlkit.torch.irl.gail_with_traj_batches import GAILWithTrajBatches
 from rlkit.torch.networks import FlattenMlp, Mlp
 from rlkit.torch.irl.disc_models.gail_disc import Model as GAILDiscModel
 from rlkit.torch.irl.disc_models.gail_disc import MlpGAILDisc
+from rlkit.torch.irl.disc_models.gail_disc import ResnetDisc
+from rlkit.torch.irl.disc_models.gail_disc import SingleColorFetchCustomDisc, SecondVersionSingleColorFetchCustomDisc
 from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
 
 from rlkit.envs import get_env
@@ -29,6 +32,8 @@ import joblib
 from time import sleep
 
 EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
+
+assert False, 'DONT USE THIS FOR FETCH'
 
 def experiment(variant):
     # assert False, "This method sucks because your replay for pendulum is not full and you're just gonna get zeros now"
@@ -153,14 +158,52 @@ def experiment(variant):
     #     hid_dim=variant['disc_hid_dim'],
     #     use_bn=variant['use_bn_in_disc'],
     # )
-    disc_model = MlpGAILDisc(
-        hidden_sizes=variant['disc_hidden_sizes'],
-        output_size=1,
-        input_size=obs_dim+action_dim,
-        hidden_activation=torch.nn.functional.tanh,
-        layer_norm=variant['disc_uses_layer_norm']
-        # output_activation=identity,
+    # disc_model = MlpGAILDisc(
+    #     hidden_sizes=variant['disc_hidden_sizes'],
+    #     output_size=1,
+    #     input_size=obs_dim+action_dim,
+    #     # hidden_activation=torch.nn.functional.relu,
+    #     hidden_activation=torch.nn.functional.tanh,
+    #     layer_norm=variant['disc_uses_layer_norm']
+    #     # output_activation=identity,
+    # )
+    # disc_model = ResnetDisc(
+    #     variant['disc_hidden_size'],
+    #     variant['disc_n_layers'],
+    #     1,
+    #     obs_dim + action_dim,
+    #     hidden_activation=torch.nn.functional.tanh
+    # )
+    
+    # if variant['disc_hid_act'] == 'relu':
+    #     hid_act = torch.nn.functional.relu
+    # elif variant['disc_hid_act'] == 'tanh':
+    #     hid_act = torch.nn.functional.tanh
+    # else:
+    #     raise Exception()
+    # disc_model = MlpGAILDisc(
+    #     hidden_sizes=variant['disc_hidden_sizes'],
+    #     output_size=1,
+    #     input_size=obs_dim+action_dim,
+    #     hidden_activation=hid_act,
+    #     batch_norm=variant['disc_uses_batch_norm'],
+    #     clamp_magnitude=variant['disc_clamp_magnitude']
+    #     # output_activation=identity,
+    # )
+    # print(disc_model)
+    # print(disc_model.hidden_activation)
+    # print(disc_model.clamp_magnitude)
+
+    disc_model = SingleColorFetchCustomDisc(
+        clamp_magnitude=variant['disc_clamp_magnitude'],
+        state_only=variant['state_only_disc']
     )
+    print(disc_model)
+    print(disc_model.clamp_magnitude)
+
+    # disc_model = SecondVersionSingleColorFetchCustomDisc(clamp_magnitude=variant['disc_clamp_magnitude'])
+    # print(disc_model)
+    # print(disc_model.clamp_magnitude)
 
     policy_optimizer = NewSoftActorCritic(
         policy=policy,
@@ -169,7 +212,12 @@ def experiment(variant):
         vf=vf,
         **variant['policy_params']
     )
-    algorithm = GAIL(
+
+    if variant['use_traj_batches']:
+        gail_class = GAILWithTrajBatches
+    else:
+        gail_class = GAIL
+    algorithm = gail_class(
         env,
         policy,
         disc_model,
@@ -179,6 +227,17 @@ def experiment(variant):
         wrap_absorbing=variant['wrap_absorbing_state'],
         **variant['gail_params']
     )
+    print(algorithm.use_target_disc)
+    print(algorithm.soft_target_disc_tau)
+    print(algorithm.exploration_policy)
+    print(algorithm.eval_policy)
+    print(algorithm.policy_optimizer.policy_optimizer.defaults['lr'])
+    print(algorithm.policy_optimizer.qf1_optimizer.defaults['lr'])
+    print(algorithm.policy_optimizer.qf2_optimizer.defaults['lr'])
+    print(algorithm.policy_optimizer.vf_optimizer.defaults['lr'])
+    print(algorithm.disc_optimizer.defaults['lr'])
+
+    
     # assert False, "Have not added new sac yet!"
     if ptu.gpu_enabled():
         algorithm.cuda()
@@ -195,7 +254,10 @@ if __name__ == '__main__':
     with open(args.experiment, 'r') as spec_file:
         spec_string = spec_file.read()
         exp_specs = yaml.load(spec_string)
-    
+
+    if exp_specs['use_gpu']:
+        print('\n\nUSING GPU\n\n')
+        ptu.set_gpu_mode(True)
     exp_id = exp_specs['exp_id']
     exp_prefix = exp_specs['exp_name']
     seed = exp_specs['seed']

@@ -112,6 +112,9 @@ def plot_experiment_returns(
     arr_list = []
     names = []
 
+    dir_path = os.path.split(save_path)[0]
+    os.makedirs(dir_path, exist_ok=True)
+
     # print(exp_path)
 
     for sub_exp_dir in os.listdir(exp_path):
@@ -145,7 +148,14 @@ def plot_experiment_returns(
                 if isinstance(column_name, str):
                     column_name = [column_name]
                 for c_name in column_name:
-                    returns = progress_csv[c_name]
+                    if '+' in c_name:
+                        first, second = c_name.split('+')
+                        returns = progress_csv[first] + progress_csv[second]
+                    elif '-' in c_name:
+                        first, second = c_name.split('-')
+                        returns = progress_csv[first] - progress_csv[second]
+                    else:
+                        returns = progress_csv[c_name]
                     arr_list.append(returns)
                     names.append(c_name + '_' + sub_exp_dir)
             except:

@@ -1,15 +1,17 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/train_np_bc.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
-  exp_name: single_task_np_bc
+  exp_name: test_smaller_pol_color_is_zero_np_bc
   description: searching over the SAC hyperparameters
-  use_gpu: true
+  use_gpu: false
   num_workers: 4
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
+    # policy_net_size: [128]
+    # policy_num_layers: [2]
     policy_net_size: [100]
     policy_num_layers: [3, 4]
 
@@ -34,7 +36,8 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
-  expert_name: normalized_single_task_basic_few_shot_fetch_larger_object_range_expert_50_10_10
+  expert_name: for_meta_zero_1000_demos
+  # expert_name: normalized_single_task_basic_few_shot_fetch_larger_object_range_expert_50_10_10
   expert_seed_run_idx: 0
 
   algo_params:
@@ -97,9 +100,10 @@ constants:
     save_algorithm: true
     render: false
 
-    freq_saving: 50
+    freq_saving: 5
     
   env_specs:
-    base_env_name: 'debug_scaled_basic_few_shot_fetch_env'
+    base_env_name: 'zero_scaled_basic_few_shot_fetch_env'
+    # base_env_name: 'debug_scaled_basic_few_shot_fetch_env'
     normalized: false
     need_pixels: false

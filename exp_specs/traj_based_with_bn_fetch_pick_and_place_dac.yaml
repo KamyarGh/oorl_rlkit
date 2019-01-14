@@ -1,0 +1,99 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_gail_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
+  exp_name: traj_based_zero_fetch
+  description: searching over the SAC hyperparameters
+  use_gpu: false
+  num_workers: 24
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  use_traj_batches: [true]
+
+  gail_params:
+    use_target_disc: [true]
+    soft_target_disc_tau: [0.005]
+
+    disc_ce_grad_clip: [0.5]
+    disc_gp_grad_clip: [10.0]
+
+    disc_momentum: [0.0]
+
+    use_disc_input_noise: [false]
+    disc_input_noise_scale_start: [0.1]
+    disc_input_noise_scale_end: [0.0]
+    epochs_till_end_scale: [50.0]
+
+    no_terminal: [false]
+    replay_buffer_size: [1000000]
+
+    num_reward_updates: [1]
+    num_policy_updates: [1]
+    grad_pen_weight: [2.5, 5.0, 10.0]
+  
+  policy_params:
+    reward_scale: [2.0, 4.0, 6.0, 8.0]
+    use_policy_as_ema_policy: [true]
+    soft_ema_policy_exp: [0.005]
+
+  disc_clamp_magnitude: [10.0]
+
+  policy_net_size: [256]
+  num_hidden_layers: [3]
+
+  env_specs:
+    normalized: [false]
+    train_test_env: [false]
+  
+  seed: [9783, 5914]
+
+# -----------------------------------------------------------------------------
+constants:
+  expert_name: scale_0p9_linear_10K_demos_zero_1000_demos
+  expert_seed_run_idx: 0
+  wrap_absorbing_state: false
+  
+  gail_params:
+    eval_deterministic: false
+    
+    num_epochs: 1011 # to match HER, they run for 1000 epochs, 50 each epoch
+    num_steps_per_epoch: 1625 # 65 * 25
+    num_steps_per_eval: 3250 # 65 * 50
+    max_path_length: 65
+
+    disc_num_expert_trajs_per_batch: 16
+    disc_policy_batch_size: 1040 # 16*65
+    policy_optim_batch_size: 1024
+
+    policy_uses_pixels: false
+    policy_uses_task_params: false
+    concat_task_params_to_policy_obs: false
+
+    # the interaction between these two numbers matters
+    num_steps_between_updates: 1
+    # replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
+    min_steps_before_training: 650 # 65 * 10, the variability is so small that 10 is probably enough
+    
+    save_replay_buffer: true
+    render: false
+
+    disc_lr: 0.0002
+    use_grad_pen: true
+
+    freq_saving: 10
+  
+  # bad naming but policy_net_size and num_hidden_layers are also
+  # for the value function and the Q function
+  policy_params:
+    # policy always has 2 hidden layers
+    discount: 0.99
+    policy_lr: 0.00005
+    qf_lr: 0.00005
+    vf_lr: 0.00005
+    policy_mean_reg_weight: 0.001
+    policy_std_reg_weight: 0.001
+    soft_target_tau: 0.005
+    
+  env_specs:
+    base_env_name: 'zero_0p9_linear_scale_few_shot_fetch_env'

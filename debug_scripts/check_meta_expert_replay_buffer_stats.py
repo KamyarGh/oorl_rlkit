@@ -3,11 +3,16 @@ import joblib
 import numpy as np
 from rlkit.core.vistools import plot_histogram
 
-path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/single-task-1000-total-demos-few-shot-larger-object-range-expert/single_task_1000_total_demos_few_shot_larger_object_range_expert_2018_12_28_19_03_11_0000--s-0/extra_data.pkl'
+# path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/single-task-1000-total-demos-few-shot-larger-object-range-expert/single_task_1000_total_demos_few_shot_larger_object_range_expert_2018_12_28_19_03_11_0000--s-0/extra_data.pkl'
+# path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/linear-demos-zero-few-shot-fetch-traj-gen/linear_demos_zero_few_shot_fetch_traj_gen_2019_01_04_18_22_15_0000--s-0/extra_data.pkl'
+# path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/scale_0p9_linear_10K_demos_zero_fetch_traj_gen/extra_data.pkl'
+# path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/final-correct-1K-linear-demos-zero-few-shot-reach-traj-gen/final_correct_1K_linear_demos_zero_few_shot_reach_traj_gen_2019_01_09_20_56_48_0000--s-0/extra_data.pkl'
+path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/final-10K-wrap-absorbing-linear-demos-zero-few-shot-fetch-traj-gen/final_10K_wrap_absorbing_linear_demos_zero_few_shot_fetch_traj_gen_2019_01_13_23_15_41_0000--s-0/extra_data.pkl'
 print(path_to_expert_rb)
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/normalized_basic_few_shot_fetch_demos/extra_data.pkl'
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-basic-few-shot-fetch-traj-gen/correct_basic_few_shot_fetch_traj_gen_2018_12_19_08_57_56_0000--s-0/extra_data.pkl'
-plot_dir = 'plots/expert_demos_stats/basic_few_shot_fetch'
+# plot_dir = 'plots/expert_demos_stats/basic_few_shot_fetch'
+# plot_dir = 'plots/expert_demos_stats/scaled_0p9_linear_10K_stats'
 
 # we should only use the train set to find the scaling factors
 meta_train_rb = joblib.load(path_to_expert_rb)['meta_train']
@@ -93,3 +98,18 @@ print(repr(np.min(acts, axis=0)))
 # for i in range(acts.shape[1]):
 #     plot_histogram(acts[:,i], 100, 'acts dim %d' % i, os.path.join(plot_dir, 'acts_%d.png'%i))
 #     plot_histogram(norm_acts[:,i], 100, 'norm acts dim %d' % i, os.path.join(plot_dir, 'norm_acts_%d.png'%i))
+
+
+def print_extra(array, name):
+    print('\n\nExtra Stats for %s ----------------------' % name)
+    print('\nMean')
+    print(np.mean(array, axis=0))
+    print('\nStd')
+    print(np.std(array, axis=0))
+    print('\nMax')
+    print(np.max(array, axis=0))
+    print('\nMin')
+    print(np.min(array, axis=0))
+
+print_extra(obs, 'Obs')
+print_extra(acts, 'Acts')

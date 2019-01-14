@@ -76,7 +76,7 @@ class Mlp(PyTorchModule):
 
         if self.batch_norm_before_output_activation:
             bn = BatchNorm1d(output_size)
-            self.__setattr__("batch_norm{}".format(len(hidden_sizes)), bn)
+            self.__setattr__("batch_norm_last", bn)
             self.batch_norms.append(bn)
 
         self.last_fc = nn.Linear(in_size, output_size)
@@ -87,9 +87,9 @@ class Mlp(PyTorchModule):
         h = input
         for i, fc in enumerate(self.fcs):
             h = fc(h)
-            if self.layer_norm and i < len(self.fcs) - 1:
+            if self.layer_norm:
                 h = self.layer_norms[i](h)
-            if self.batch_norm and i < len(self.fcs) - 1:
+            if self.batch_norm:
                 h = self.batch_norms[i](h)
             h = self.hidden_activation(h)
         preactivation = self.last_fc(h)

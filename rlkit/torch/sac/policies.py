@@ -350,7 +350,58 @@ class PostCondMLPPolicyWrapper(ExplorationPolicy):
     def get_action(self, obs_np):
         obs = np.concatenate((obs_np, self.np_z), axis=0)
         return self.policy.get_action(obs)
-     
+
+
+class ObsPreprocessedReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):
+    '''
+        This is a weird thing and I didn't know what to call.
+        Basically I wanted this so that if you need to preprocess
+        your inputs somehow (attention, gating, etc.) with an external module
+        before passing to the policy you could do so.
+        Assumption is that you do not want to update the parameters of the preprocessing
+        module so its output is always detached.
+    '''
+    def __init__(self, preprocess_model, *args, **kwargs):
+        self.save_init_params(locals())
+        super().__init__(*args, **kwargs)
+        # this is a hack so that it is not added as a submodule
+        self.preprocess_model_list = [preprocess_model]
+    
+
+    @property
+    def preprocess_model(self):
+        # this is a hack so that it is not added as a submodule
+        return self.preprocess_model_list[0]
+
+
+    def preprocess_fn(self, obs_batch):
+        mode = self.preprocess_model.training
+        self.preprocess_model.eval()
+        processed_obs_batch = self.preprocess_model(obs_batch, False).detach()
+        self.preprocess_model.train(mode)
+        return processed_obs_batch
+    
+
+    def forward(
+        self,
+        obs,
+        deterministic=False,
+        return_log_prob=False,
+        return_tanh_normal=False
+    ):
+        obs = self.preprocess_fn(obs).detach()
+        return super().forward(
+            obs,
+            deterministic=deterministic,
+            return_log_prob=return_log_prob,
+            return_tanh_normal=return_tanh_normal
+        )
+
+
+    def get_log_prob(self, obs, acts):
+        obs = self.preprocess_fn(obs).detach()
+        return super().get_log_prob(obs, acts)
+
 
 # class PostCondReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):
 #     '''

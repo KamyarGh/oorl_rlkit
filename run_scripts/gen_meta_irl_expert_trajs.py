@@ -34,14 +34,16 @@ def fill_buffer(
     num_rollouts_per_task,
     max_path_length,
     no_terminal=False,
-    wrap_absorbing=False,
     policy_is_scripted=False,
     render=False,
-    check_for_success=False
+    check_for_success=False,
+    wrap_absorbing=False
 ):
     expert_uses_pixels = expert_policy_specs['policy_uses_pixels']
     expert_uses_task_params = expert_policy_specs['policy_uses_task_params']
     concat_task_params_to_policy_obs = expert_policy_specs['concat_task_params_to_policy_obs']
+
+    first_complete_list = []
 
     for task_params, obs_task_params in task_params_sampler:
         print('Doing Task {}...'.format(task_params))
@@ -77,10 +79,16 @@ def fill_buffer(
                     action, agent_info = expert_policy.get_action(agent_obs, meta_env, len(cur_path_builder))
                 else:
                     action, agent_info = expert_policy.get_action(agent_obs)
+
                 next_ob, raw_reward, terminal, env_info = (meta_env.step(action))
+
                 if no_terminal: terminal = False
+                if wrap_absorbing:
+                    terminal_array = np.array([False])
+                else:
+                    terminal_array = np.array([terminal])
+                
                 reward = raw_reward
-                terminal = np.array([terminal])
                 reward = np.array([reward])
 
                 cur_path_builder.add_all(
@@ -88,36 +96,57 @@ def fill_buffer(
                     actions=action,
                     rewards=reward,
                     next_observations=next_ob,
-                    terminals=terminal,
+                    terminals=terminal_array,
+                    absorbing=np.array([0.0, 0.0]),
                     agent_infos=agent_info,
                     env_infos=env_info
                 )
                 observation = next_ob
 
             if terminal and wrap_absorbing:
-                raise NotImplementedError("I think they used 0 actions for this")
+                '''
+                If we wrap absorbing states, two additional
+                transitions must be added: (s_T, s_abs) and
+                (s_abs, s_abs). In Disc Actor Critic paper
+                they make s_abs be a vector of 0s with last
+                dim set to 1. Here we are going to add the following:
+                ([next_ob,0], random_action, [next_ob, 1]) and
+                ([next_ob,1], random_action, [next_ob, 1])
+                This way we can handle varying types of terminal states.
+                '''
+                # next_ob is the absorbing state
+                # for now just sampling random action
+                cur_path_builder.add_all(
+                    observations=next_ob,
+                    actions=action,
+                    # the reward doesn't matter
+                    rewards=0.0,
+                    next_observations=next_ob,
+                    terminals=np.array([False]),
+                    absorbing=np.array([0.0, 1.0]),
+                    agent_infos=agent_info,
+                    env_infos=env_info
+                )
+                cur_path_builder.add_all(
+                    observations=next_ob,
+                    actions=action,
+                    # the reward doesn't matter
+                    rewards=0.0,
+                    next_observations=next_ob,
+                    terminals=np.array([False]),
+                    absorbing=np.array([1.0, 1.0]),
+                    agent_infos=agent_info,
+                    env_infos=env_info
+                )
             
             # if necessary check if it was successful
             if check_for_success:
                 was_successful = np.sum([e_info['is_success'] for e_info in cur_path_builder['env_infos']]) > 0
                 if was_successful:
-                    for timestep in range(len(cur_path_builder)):
-                        buffer.add_sample(
-                            cur_path_builder['observations'][timestep],
-                            cur_path_builder['actions'][timestep],
-                            cur_path_builder['rewards'][timestep],
-                            cur_path_builder['terminals'][timestep],
-                            cur_path_builder['next_observations'][timestep],
-                            task_id,
-                            agent_info=cur_path_builder['agent_infos'][timestep],
-                            env_info=cur_path_builder['env_infos'][timestep]
-                        )
-                    buffer.terminate_episode(task_id)                
-                    num_rollouts_completed += 1
                     print('\t\tSuccessful')
                 else:
                     print('\t\tNot Successful')
-            else:
+            if (check_for_success and was_successful) or (not check_for_success):
                 for timestep in range(len(cur_path_builder)):
                     buffer.add_sample(
                         cur_path_builder['observations'][timestep],
@@ -127,11 +156,15 @@ def fill_buffer(
                         cur_path_builder['next_observations'][timestep],
                         task_id,
                         agent_info=cur_path_builder['agent_infos'][timestep],
-                        env_info=cur_path_builder['env_infos'][timestep]
+                        env_info=cur_path_builder['env_infos'][timestep],
+                        absorbing=cur_path_builder['absorbing'][timestep]
                     )
                 buffer.terminate_episode(task_id)                
                 num_rollouts_completed += 1
-
+            
+            print(expert_policy.first_time_all_complete)
+            first_complete_list.append(expert_policy.first_time_all_complete)
+    print(np.histogram(first_complete_list, bins=100))
 
 
 def experiment(specs):
@@ -139,6 +172,7 @@ def experiment(specs):
     # the specific experiment run (with a particular seed etc.) of the expert policy
     # to use for generating trajectories
     if not specs['use_scripted_policy']:
+        raise NotImplementedError('Outdated')
         with open(path.join(specs['specific_exp_dir'], 'variant.json'), 'r') as f:
             variant = json.load(f)
         max_path_length = variant['algo_params']['max_path_length']
@@ -173,8 +207,12 @@ def experiment(specs):
     meta_train_params_sampler, meta_test_params_sampler = get_meta_env_params_iters(env_specs)
 
     # make the replay buffers
+    if specs['wrap_absorbing']:
+        _max_buffer_size = (max_path_length+2) * specs['num_rollouts_per_task']        
+    else:
+        _max_buffer_size = max_path_length * specs['num_rollouts_per_task']
     buffer_constructor = lambda env_for_buffer: MetaEnvReplayBuffer(
-        max_path_length * specs['num_rollouts_per_task'],
+        _max_buffer_size,
         env_for_buffer,
         policy_uses_pixels=specs['student_policy_uses_pixels'],
         # we don't want the student policy to be looking at true task parameters
@@ -191,14 +229,14 @@ def experiment(specs):
     fill_buffer(
         train_context_buffer, meta_train_env, policy, expert_policy_specs,
         meta_train_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-        no_terminal=no_terminal, wrap_absorbing=wrap_absorbing,
+        no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success
     )
     fill_buffer(
         train_test_buffer, meta_train_env, policy, expert_policy_specs,
         meta_train_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-        no_terminal=no_terminal, wrap_absorbing=wrap_absorbing,
+        no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success
     )
@@ -207,14 +245,14 @@ def experiment(specs):
     fill_buffer(
         test_context_buffer, meta_train_env, policy, expert_policy_specs,
         meta_test_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-        no_terminal=no_terminal, wrap_absorbing=wrap_absorbing,
+        no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success
     )
     fill_buffer(
         test_test_buffer, meta_train_env, policy, expert_policy_specs,
         meta_test_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-        no_terminal=no_terminal, wrap_absorbing=wrap_absorbing,
+        no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success
     )

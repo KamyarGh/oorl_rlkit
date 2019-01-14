@@ -979,68 +979,2459 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     column_name=['Percent_Solved_meta_train', 'Percent_Solved_meta_test'],
 # )
 
-plot_experiment_returns(
-    '/scratch/gobi2/kamyar/oorl_rlkit/output/test-gpu-sum-dist-last-30-more-info-normal-try-few-shot-np-bc',
-    'gpu sum dist percent good reach',
-    '/h/kamyar/oorl_rlkit/plots/gpu_sum_dist_percent_good_reach.png',
-    x_axis_lims=[0, 600],
-    y_axis_lims=[-0.05, 1.05],
-    plot_mean=False,
-    column_name=[
-        'Percent_Solved_meta_train',
-        'Percent_Good_Reach_meta_train',
-        'Percent_Solved_meta_test',
-        'Percent_Good_Reach_meta_test',
-    ],
-)
+# -------
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/test-gpu-sum-dist-last-30-more-info-normal-try-few-shot-np-bc',
+#     'gpu sum dist percent good reach',
+#     '/h/kamyar/oorl_rlkit/plots/gpu_sum_dist_percent_good_reach.png',
+#     x_axis_lims=[0, 600],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved_meta_train',
+#         'Percent_Good_Reach_meta_train',
+#         'Percent_Solved_meta_test',
+#         'Percent_Good_Reach_meta_test',
+#     ],
+# )
 
-def plot_meta_train_meta_test(name):
-    N = 100
+# def plot_meta_train_meta_test(name):
+#     N = 100
+#     plot_experiment_returns(
+#         '/scratch/gobi2/kamyar/oorl_rlkit/output/'+name,
+#         'meta-train ' + name,
+#         '/h/kamyar/oorl_rlkit/plots/{}_meta_train.png'.format(name),
+#         x_axis_lims=[0, N],
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=[
+#             'Percent_Solved_meta_train',
+#             'Percent_Good_Reach_meta_train',
+#         ],
+#     )
+#     plot_experiment_returns(
+#         '/scratch/gobi2/kamyar/oorl_rlkit/output/'+name,
+#         'meta-test {}'.format(name),
+#         '/h/kamyar/oorl_rlkit/plots/{}_meta_test.png'.format(name),
+#         x_axis_lims=[0, N],
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=[
+#             'Percent_Solved_meta_test',
+#             'Percent_Good_Reach_meta_test',
+#         ],
+#     )
+
+# exp_names = ['correct-samples-np-bc', 'test-more-correct-samples-np-bc',
+#             'pol-and-z-256-correct-samples-np-bc', 'pol-100-dim-5-6-layers-and-z-100-dim-correct-samples-np-bc',
+#             'smaller-models-np-bc', 'even-smaller-models-np-bc',
+#             'crazy-even-smaller-models-np-bc']
+# for name in exp_names: plot_meta_train_meta_test(name)
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/first-try-best-enc-size-models-np-airl',
+#     'first_try_np_airl',
+#     '/h/kamyar/oorl_rlkit/plots/first_try_np_airl.png',
+#     x_axis_lims=[0, 1500],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         # 'Percent_Solved_meta_train',
+#         'Percent_Good_Reach_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         'Percent_Good_Reach_meta_test',
+#     ],
+# )
+
+
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
+#     'fucker percent solved',
+#     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_percent_solved.png',
+#     x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved_meta_train',
+#         # 'Percent_Good_Reach_meta_train',
+#         'Percent_Solved_meta_test',
+#         # 'Percent_Good_Reach_meta_test',
+#     ],
+# )
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
+#     'fucker good reach',
+#     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_good_reach.png',
+#     x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+        # # 'Percent_Solved_meta_train',
+        # 'Percent_Good_Reach_meta_train',
+        # # 'Percent_Solved_meta_test',
+        # 'Percent_Good_Reach_meta_test',
+#     ],
+# )
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
+#     'fucker disc stats',
+#     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_disc_stats.png',
+#     x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Disc_Loss',
+#         'Disc_Acc'
+#     ],
+# )
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
+#     'fucker other stats',
+#     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_other_stats.png',
+#     x_axis_lims=[0, 200],
+#     # y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Avg_Min_Dist_to_Cor',
+#         'Avg_Min_Cor_Z'
+#     ],
+# )
+
+# for grad_pen_weight in [1.0, 5.0, 10.0]:
+#     for rew_scale in [2.0, 4.0, 6.0, 8.0]:
+#         for pol_num_layers in [3, 4]:
+#             for disc_hid in [
+#                 [100, 100],
+#                 [256, 256],
+#                 [100, 100, 100],
+#             ]:
+#                 constraints = {
+#                     'algo_params.grad_pen_weight': grad_pen_weight,
+#                     'algo_params.policy_params.reward_scale': rew_scale,
+#                     'algo_params.policy_num_layers': pol_num_layers,
+#                     'disc_hidden_sizes': disc_hid
+#                 }
+#                 name = 'pol_num_layers_{}_disc_hid_{}_rew_scale_{}_grad_pen_{}'.format(pol_num_layers, disc_hid, rew_scale, grad_pen_weight)
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
+#                     name,
+#                     '/h/kamyar/oorl_rlkit/plots/single_task/{}.png'.format(name),
+#                     x_axis_lims=[0, 200],
+#                     y_axis_lims=[-0.05, 1.05],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Percent_Solved_meta_train',
+#                         'Percent_Good_Reach_meta_train',
+#                         'Percent_Solved_meta_test',
+#                         'Percent_Good_Reach_meta_test',
+#                     ],
+#                     constraints=constraints
+#                 )
+
+
+# for grad_pen_weight in [1.0, 5.0, 10.0]:
+#     for rew_scale in [4.0, 6.0, 10.0, 20.0, 40.0, 80.0]:
+#         for pol_num_layers in [3, 4]:
+#             for disc_hid in [
+#                 [100, 100],
+#                 [256, 256],
+#                 [100, 100, 100],
+#             ]:
+#                 constraints = {
+#                     'algo_params.grad_pen_weight': grad_pen_weight,
+#                     'algo_params.policy_params.reward_scale': rew_scale,
+#                     'algo_params.policy_num_layers': pol_num_layers,
+#                     'disc_hidden_sizes': disc_hid
+#                 }
+#                 name = 'pol_num_layers_{}_disc_hid_{}_rew_scale_{}_grad_pen_{}'.format(pol_num_layers, disc_hid, rew_scale, grad_pen_weight)
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/np-airl-single-task-with-zero-z',
+#                     # '/scratch/gobi2/kamyar/oorl_rlkit/output/new-grad-pen-more-rew-scale-search-fully-specified-train-single-task-np-airl',
+#                     # '/scratch/gobi2/kamyar/oorl_rlkit/output/rerun-more-rew-scale-search-fully-specified-train-single-task-np-airl',
+#                     name,
+#                     '/h/kamyar/oorl_rlkit/plots/single_task_zero_z/{}.png'.format(name),
+#                     x_axis_lims=[0, 200],
+#                     y_axis_lims=[-0.05, 1.05],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Percent_Solved_meta_train',
+#                         'Percent_Good_Reach_meta_train',
+#                         'Disc_Acc',
+#                         'Disc_Loss',
+#                         # 'Avg_Min_Dist_to_Cor_meta_train',
+#                         # 'Avg_Min_Cor_Z_meta_train'
+#                         # 'Percent_Solved_meta_test',
+#                         # 'Percent_Good_Reach_meta_test',
+#                     ],
+#                     constraints=constraints
+#                 )
+
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/zero-np-bc',
+#     'zero-np-bc',
+#     '/h/kamyar/oorl_rlkit/plots/zero_np_bc.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved_meta_train',
+#         'Percent_Solved_meta_test',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/zero-single-task-dac-not-traj-based',
+#     'zero_single_task_dac_not_traj_based',
+#     '/h/kamyar/oorl_rlkit/plots/zero_single_task_dac_not_traj_based.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved'
+#         # 'Percent_Solved_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/zero-single-task-dac',
+#     'zero-single-task-dac-not-traj-based',
+#     '/h/kamyar/oorl_rlkit/plots/zero_single_task_dac_traj_based.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved'
+#         # 'Percent_Solved_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/color-is-zero-np-bc',
+#     'fucking color is zero-np-bc',
+#     '/h/kamyar/oorl_rlkit/plots/fucking_color_is_zero_np_bc.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved_meta_train',
+#         'Percent_Solved_meta_test',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-not-traj-based',
+#     'fucking zero_single_task_dac_not_traj_based',
+#     '/h/kamyar/oorl_rlkit/plots/fucking_zero_single_task_dac_not_traj_based.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved'
+#         # 'Percent_Solved_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac',
+#     'fucking zero-single-task-dac-not-traj-based',
+#     '/h/kamyar/oorl_rlkit/plots/fucking_zero_single_task_dac_traj_based.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved'
+#         # 'Percent_Solved_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-not-traj-based-256-disc',
+#     'fucking 256 disc zero_single_task_dac_not_traj_based',
+#     '/h/kamyar/oorl_rlkit/plots/fucking_256_disc_zero_single_task_dac_not_traj_based.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved',
+#         # 'Percent_Solved_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         'Disc_Acc',
+#         'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-256-disc',
+#     'fucking 256 disc zero-single-task-dac traj based',
+#     '/h/kamyar/oorl_rlkit/plots/fucking_256_disc_zero_single_task_dac_traj_based.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved',
+#         # 'Percent_Solved_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         'Disc_Acc',
+#         'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/truly-final-zero-I-beg-of-you',
+#     'truly-final-zero-I-beg-of-you',
+#     '/h/kamyar/oorl_rlkit/plots/truly_final_zero_I_beg_of-you.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved',
+#         # 'Percent_Solved_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+# for rew in [10.0, 15.0, 20.0, 40.0, 80.0, 120.0]:
+#     for grad_pen_weight in [5.0, 10.0, 15.0, 20.0]:
+#         for pol_size in [100, 256]:
+#             constraints = {
+#                 'policy_params.reward_scale': rew,
+#                 'gail_params.grad_pen_weight': grad_pen_weight,
+#                 'policy_net_size': pol_size
+#             }
+#             save_path = '/h/kamyar/oorl_rlkit/plots/truly_final_zero/truly_final_zero_I_beg_of_you_rew_{}_grad_pen_{}_pol_size_{}.png'.format(rew, grad_pen_weight, pol_size)
+#             # print(save_path)
+#             plot_experiment_returns(
+#                 '/scratch/gobi2/kamyar/oorl_rlkit/output/truly-final-zero-I-beg-of-you',
+#                 'truly-final-zero-I-beg-of-you {}'.format(str(constraints)),
+#                 save_path,
+#                 x_axis_lims=[0, 100],
+#                 y_axis_lims=[-0.05, 1.05],
+#                 plot_mean=False,
+#                 column_name=[
+#                     'Percent_Solved',
+#                     'Percent_Good_Reach',
+#                     # 'Percent_Solved_meta_train',
+#                     # 'Percent_Solved_meta_test',
+#                     'Disc_Acc',
+#                     'Disc_Loss'
+#                 ],
+#                 constraints=constraints
+#             )
+
+# for rew in [2.0, 4.0, 6.0, 8.0]:
+#     for grad_pen_weight in [1.0, 5.0, 10.0]:
+#         constraints = {
+#             'policy_params.reward_scale': rew,
+#             'gail_params.grad_pen_weight': grad_pen_weight
+#         }
+        # plot_experiment_returns(
+        #     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-256-disc',
+        #     'rew % d grad pen %.4f fucking 256 disc zero-single-task-dac traj based' % (rew, grad_pen_weight),
+        #     '/h/kamyar/oorl_rlkit/plots/fucking_256_disc_zero_traj_based/fucking_256_disc_zero_single_task_dac_traj_based_rew_%d_%.4f_grad_pen.png' % (rew, grad_pen_weight),
+        #     # x_axis_lims=[0, 200],
+        #     y_axis_lims=[-0.05, 1.05],
+        #     plot_mean=False,
+        #     column_name=[
+        #         'Percent_Solved',
+        #         'Percent_Good_Reach',
+        #         # 'Percent_Solved_meta_train',
+        #         # 'Percent_Solved_meta_test',
+        #         'Disc_Acc',
+        #         'Disc_Loss'
+        #     ],
+        #     constraints=constraints
+        # )
+
+
+
+# for n_rew in [8, 16, 32, 65, 130]:
+# for n_rew in [1, 2, 16, 32, 65]:
+#     for grad_pen in [5.0, 10.0, 15.0]:
+#         # for rew in [4.0, 6.0, 8.0, 10.0]:
+#         for rew in [6.0, 8.0, 10.0]:
+#             for pol_size in [128, 256]:
+#                 constraints = {
+#                     'gail_params.num_reward_updates': n_rew,
+#                     'gail_params.grad_pen_weight': grad_pen,
+#                     'policy_params.reward_scale': rew,
+#                     'policy_net_size': pol_size 
+#                 }
+#                 name = 'disc_iters_{}_rew_{}_grad_pen_{}_pol_size_{}'.format(n_rew, rew, grad_pen, pol_size)
+                
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/rew-upd-16-final-disc-noise-0p1-to-0-over-25-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_25_epochs_grad_clip_10_linear_10K_demos/{}_16.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         # 'Percent_Solved_meta_train',
+                #         # 'Percent_Solved_meta_test',
+                #         'Disc_Acc',
+                #         'Disc_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/rew-upd-16-final-disc-noise-0p1-to-0-over-25-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_25_epochs_grad_clip_10_linear_10K_demos/rewards_{}_16.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #         'Disc_Avg_Grad_Norm_this_epoch',
+                #         'Disc_Max_Grad_Norm_this_epoch'
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/rew-upd-32-final-disc-noise-0p1-to-0-over-25-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_25_epochs_grad_clip_10_linear_10K_demos/{}_32.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         # 'Percent_Solved_meta_train',
+                #         # 'Percent_Solved_meta_test',
+                #         'Disc_Acc',
+                #         'Disc_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/rew-upd-32-final-disc-noise-0p1-to-0-over-25-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_25_epochs_grad_clip_10_linear_10K_demos/rewards_{}_32.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #         'Disc_Avg_Grad_Norm_this_epoch',
+                #         'Disc_Max_Grad_Norm_this_epoch'
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/rew-upd-65-final-disc-noise-0p1-to-0-over-25-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_25_epochs_grad_clip_10_linear_10K_demos/{}_65.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         # 'Percent_Solved_meta_train',
+                #         # 'Percent_Solved_meta_test',
+                #         'Disc_Acc',
+                #         'Disc_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/rew-upd-65-final-disc-noise-0p1-to-0-over-25-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_25_epochs_grad_clip_10_linear_10K_demos/rewards_{}_65.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #         'Disc_Avg_Grad_Norm_this_epoch',
+                #         'Disc_Max_Grad_Norm_this_epoch'
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         # 'Percent_Solved_meta_train',
+                #         # 'Percent_Solved_meta_test',
+                #         'Disc_Acc',
+                #         'Disc_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #         'Disc_Avg_Grad_Norm_this_epoch',
+                #         'Disc_Max_Grad_Norm_this_epoch'
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-lr-5en5-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/disc_lr_5en5_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-lr-5en5-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/disc_lr_5en5_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #         'Disc_Avg_Grad_Norm_this_epoch',
+                #         'Disc_Max_Grad_Norm_this_epoch'
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-clip-100-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/clip_100_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-clip-100-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/clip_100_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-clip-100-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/clip_100_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         # 'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         # 'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-final-clip-10-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/clip_10_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-final-clip-10-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/clip_10_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-final-clip-10-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-grad-clip-10-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/clip_10_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_grad_clip_10_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         # 'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         # 'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-1-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_1_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-1-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_1_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-1-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_1_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-0p25-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_0p25_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-0p25-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_0p25_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-0p25-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_0p25_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-0p5-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_0p5_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-0p5-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_0p5_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/ce-grad-clip-0p5-disc-lr-3en4-disc-noise-0p1-to-0-over-50-epochs-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/ce_grad_clip_0p5_disc_lr_3en4_disc_noise_0p1_to_0_over_50_epochs_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-2-1-iters-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_2_1_iters_clip_0p5_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-2-1-iters-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_2_1_iters_clip_0p5_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-2-1-iters-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_2_1_iters_clip_0p5_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-1-1-iters-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_1_1_iters_clip_0p5_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-1-1-iters-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_1_1_iters_clip_0p5_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-1-1-iters-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_1_1_iters_clip_0p5_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_clip_0p5_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_clip_0p5_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_clip_0p5_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-clip-10-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_clip_10_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-clip-10-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_clip_10_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/big-gan-hypers-clip-10-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/big_gan_hypers_clip_10_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/better-gating-smaller-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/better_gating_smaller_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/better-gating-smaller-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/better_gating_smaller_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/better-gating-smaller-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/better_gating_smaller_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-ema-policy-better-gating-smaller-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/with_ema_policy_better_gating_smaller_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-ema-policy-better-gating-smaller-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/with_ema_policy_better_gating_smaller_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-ema-policy-better-gating-smaller-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/with_ema_policy_better_gating_smaller_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/second-version-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/second_version_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/second-version-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/second_version_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/second-version-custom-single-color-fetch-disc-big-gan-hypers-ce-grad-clip-0p5-with-input-noise-linear-10K-demos',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/second_version_custom_single_color_fetch_disc_big_gan_hypers_ce_grad_clip_0p5_with_input_noise_linear_10K_demos/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-first-version-larger-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/correct_first_version_larger_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-first-version-larger-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/correct_first_version_larger_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-first-version-larger-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/correct_first_version_larger_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/first-version-smaller-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/first-version-smaller-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/first-version-smaller-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-ema-policy-first-version-smaller-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/with_ema_policy_first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-ema-policy-first-version-smaller-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/with_ema_policy_first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-ema-policy-first-version-smaller-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/with_ema_policy_first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-second-version-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_second_version_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         'Disc_Acc',
+                #         'Disc_CE_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-second-version-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_second_version_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #     ],
+                #     constraints=constraints
+                # )
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-second-version-custom-disc-no-noise-0p5-ce-grad-clip-10-gp-grad-clip',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/final_second_version_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip/grads_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Avg_CE_Grad_Norm_this_epoch',
+                #         'Disc_Max_CE_Grad_Norm_this_epoch',
+                #         'Disc_Avg_Total_Grad_Norm_this_epoch',
+                #         'Disc_Max_Total_Grad_Norm_this_epoch',
+                #     ],
+                #     constraints=constraints
+                # )
+
+
+def plot_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
     plot_experiment_returns(
-        '/scratch/gobi2/kamyar/oorl_rlkit/output/'+name,
-        'meta-train ' + name,
-        '/h/kamyar/oorl_rlkit/plots/{}_meta_train.png'.format(name),
-        x_axis_lims=[0, N],
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}.png'.format(name)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=False,
         column_name=[
-            'Percent_Solved_meta_train',
-            'Percent_Good_Reach_meta_train',
+            'Percent_Solved',
+            'Percent_Good_Reach',
+            'Disc_Acc',
+            'Disc_CE_Loss'
         ],
+        constraints=constraints
     )
     plot_experiment_returns(
-        '/scratch/gobi2/kamyar/oorl_rlkit/output/'+name,
-        'meta-test {}'.format(name),
-        '/h/kamyar/oorl_rlkit/plots/{}_meta_test.png'.format(name),
-        x_axis_lims=[0, N],
-        y_axis_lims=[-0.05, 1.05],
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'rewards_{}.png'.format(name)),
+        x_axis_lims=x_axis_lims,
         plot_mean=False,
         column_name=[
-            'Percent_Solved_meta_test',
-            'Percent_Good_Reach_meta_test',
+            'Disc_Rew_Max',
+            'Disc_Rew_Min',
+            'Disc_Rew_Mean', 
+            'Disc_Rew_Mean+Disc_Rew_Std',
+            'Disc_Rew_Mean-Disc_Rew_Std'
         ],
+        constraints=constraints
+    )
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grads_{}.png'.format(name)),
+        x_axis_lims=x_axis_lims,
+        plot_mean=False,
+        column_name=[
+            'Disc_Avg_CE_Grad_Norm_this_epoch',
+            'Disc_Max_CE_Grad_Norm_this_epoch',
+            'Disc_Avg_GP_Grad_Norm_this_epoch',
+            'Disc_Max_GP_Grad_Norm_this_epoch',
+        ],
+        constraints=constraints
     )
 
-exp_names = ['correct-samples-np-bc', 'test-more-correct-samples-np-bc',
-            'pol-and-z-256-correct-samples-np-bc', 'pol-100-dim-5-6-layers-and-z-100-dim-correct-samples-np-bc',
-            'smaller-models-np-bc', 'even-smaller-models-np-bc',
-            'crazy-even-smaller-models-np-bc']
-for name in exp_names: plot_meta_train_meta_test(name)
 
-plot_experiment_returns(
-    '/scratch/gobi2/kamyar/oorl_rlkit/output/first-try-best-enc-size-models-np-airl',
-    'first_try_np_airl',
-    '/h/kamyar/oorl_rlkit/plots/first_try_np_airl.png',
-    x_axis_lims=[0, 1500],
-    y_axis_lims=[-0.05, 1.05],
-    plot_mean=False,
-    column_name=[
-        # 'Percent_Solved_meta_train',
-        'Percent_Good_Reach_meta_train',
-        # 'Percent_Solved_meta_test',
-        'Percent_Good_Reach_meta_test',
-    ],
-)
+# for n_rew in [1, 2, 16, 32, 65]:
+#     for grad_pen in [5.0, 10.0, 15.0]:
+#         # for rew in [4.0, 6.0, 8.0, 10.0]:
+#         for rew in [6.0, 8.0, 10.0]:
+#             for pol_size in [128, 256]:
+#                 # for ema_pol in [True, False]:
+#                 constraints = {
+#                     'gail_params.num_reward_updates': n_rew,
+#                     'gail_params.grad_pen_weight': grad_pen,
+#                     'policy_params.reward_scale': rew,
+#                     'policy_net_size': pol_size,
+#                     # 'policy_params.use_policy_as_ema_policy': ema_pol
+#                 }
+#                 name = 'disc_iters_{}_rew_{}_grad_pen_{}_pol_size_{}'.format(n_rew, rew, grad_pen, pol_size)
+#                 # name = 'ema_policy_{}_disc_iters_{}_rew_{}_grad_pen_{}_pol_size_{}'.format(ema_pol, n_rew, rew, grad_pen, pol_size)
+                
+#                 # plot_exp_v0(
+#                 #     'correct_first_version_larger_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 #     name,
+#                 #     x_axis_lims=[0,200],
+#                 #     constraints=constraints
+#                 # )
+#                 # plot_exp_v0(
+#                 #     'first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 #     name,
+#                 #     x_axis_lims=[0,200],
+#                 #     constraints=constraints
+#                 # )
+#                 # plot_exp_v0(
+#                 #     'with_ema_policy_first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 #     name,
+#                 #     x_axis_lims=[0,200],
+#                 #     constraints=constraints
+#                 # )
+#                 # plot_exp_v0(
+#                 #     'final_second_version_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 #     name,
+#                 #     x_axis_lims=[0,200],
+#                 #     constraints=constraints
+#                 # )
+
+#                 plot_exp_v0(
+#                     'correct_with_ema_policy_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                     name,
+#                     x_axis_lims=[0,200],
+#                     constraints=constraints
+#                 )
+#                 plot_exp_v0(
+#                     'without_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                     name,
+#                     x_axis_lims=[0,200],
+#                     constraints=constraints
+#                 )
+#                 plot_exp_v0(
+#                     'without_ema_policy_2_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                     name,
+#                     x_axis_lims=[0,200],
+#                     constraints=constraints
+#                 )
+
+# for gp in [0.5, 2.5, 10.0]:
+#     for rew in [8.0, 10.0]:
+#         for pol_size in [128, 256]:
+#             constraints = {
+#                 'gail_params.grad_pen_weight': gp,
+#                 'policy_params.reward_scale': rew,
+#                 'policy_net_size': pol_size
+#             }
+#             name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+#             plot_exp_v0(
+#                 'final_correct_other_gp_loss_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 name,
+#                 x_axis_lims=[0,200],
+#                 constraints=constraints
+#             )
+
+# for gp in [5.0, 10.0, 15.0]:
+#     for rew in [15.0]:
+#         for pol_size in [128, 256]:
+#             constraints = {
+#                 'gail_params.grad_pen_weight': gp,
+#                 'policy_params.reward_scale': rew,
+#                 'policy_net_size': pol_size
+#             }
+#             name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+#             plot_exp_v0(
+#                 'SAC_temp_15_temps_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 name,
+#                 x_axis_lims=[0,200],
+#                 constraints=constraints
+#             )
+
+# for gp in [5.0, 10.0, 15.0]:
+#     for rew in [2.0]:
+#         for pol_size in [128, 256]:
+#             constraints = {
+#                 'gail_params.grad_pen_weight': gp,
+#                 'policy_params.reward_scale': rew,
+#                 'policy_net_size': pol_size
+#             }
+#             name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+#             plot_exp_v0(
+#                 'SAC_temp_2_temps_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 name,
+#                 x_axis_lims=[0,200],
+#                 constraints=constraints
+#             )
+
+# for gp in [5.0, 10.0, 15.0]:
+#     for rew in [0.5, 1.0]:
+#         for pol_size in [128, 256]:
+#             constraints = {
+#                 'gail_params.grad_pen_weight': gp,
+#                 'policy_params.reward_scale': rew,
+#                 'policy_net_size': pol_size
+#             }
+#             name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+#             plot_exp_v0(
+#                 'correct_lower_SAC_temp_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 name,
+#                 x_axis_lims=[0,200],
+#                 constraints=constraints
+#             )
+
+# for gp in [5.0, 10.0, 15.0]:
+#     for rew in [8.0, 10.0]:
+#         for pol_size in [128, 256]:
+#             for disc_mom in [-0.1, -0.25]:
+#                 constraints = {
+#                     'gail_params.grad_pen_weight': gp,
+#                     'policy_params.reward_scale': rew,
+#                     'policy_net_size': pol_size,
+#                     'gail_params.disc_momentum': disc_mom
+#                 }
+#                 name = 'disc_mom_{}_rew_{}_gp_{}_pol_size_{}'.format(disc_mom, rew, gp, pol_size)
+#                 plot_exp_v0(
+#                     'disc_neg_mom_disc_lr_2en4_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                     name,
+#                     x_axis_lims=[0,200],
+#                     constraints=constraints
+#                 )
+
+# for gp in [5.0, 10.0, 15.0]:
+#     for rew in [8.0, 10.0]:
+#         for pol_size in [128, 256]:
+#             constraints = {
+#                 'gail_params.grad_pen_weight': gp,
+#                 'policy_params.reward_scale': rew,
+#                 'policy_net_size': pol_size
+#             }
+#             name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+#             plot_exp_v0(
+#                 'final_disc_lr_5en5_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
+#                 name,
+#                 x_axis_lims=[0,200],
+#                 constraints=constraints
+#             )
+
+
+for gp in [2.5, 5.0, 10.0]:
+    for rew in [2.0, 4.0, 6.0, 10.0]:
+        for pol_size in [256]:
+            constraints = {
+                'gail_params.grad_pen_weight': gp,
+                'policy_params.reward_scale': rew,
+                'policy_net_size': pol_size
+            }
+            name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+            plot_exp_v0(
+                'state_only_zero_fetch',
+                name,
+                x_axis_lims=[0,300],
+                constraints=constraints
+            )
+
+
+for gp in [2.5, 5.0, 10.0]:
+    for rew in [15.0, 20.0, 25.0, 30.0]:
+        for pol_size in [256]:
+            constraints = {
+                'gail_params.grad_pen_weight': gp,
+                'policy_params.reward_scale': rew,
+                'policy_net_size': pol_size
+            }
+            name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+            plot_exp_v0(
+                'more_state_only_zero_fetch',
+                name,
+                x_axis_lims=[0,300],
+                constraints=constraints
+            )
+
+
+for gp in [2.5, 5.0, 10.0]:
+    for rew in [2.0, 4.0, 6.0, 8.0]:
+        for pol_size in [256]:
+            constraints = {
+                'gail_params.grad_pen_weight': gp,
+                'policy_params.reward_scale': rew,
+                'policy_net_size': pol_size
+            }
+            name = 'rew_{}_gp_{}_pol_size_{}'.format(rew, gp, pol_size)
+            plot_exp_v0(
+                'traj_based_zero_fetch',
+                name,
+                x_axis_lims=[0,300],
+                constraints=constraints
+            )
+            plot_exp_v0(
+                'correct_fully_traj_based_disc_zero_fetch',
+                name,
+                x_axis_lims=[0,300],
+                constraints=constraints
+            )
+            plot_exp_v0(
+                'subsampled_8_128_trajs_based_zero_fetch',
+                name,
+                x_axis_lims=[0,300],
+                constraints=constraints
+            )
+            plot_exp_v0(
+                'subsampled_16_64_trajs_based_zero_fetch',
+                name,
+                x_axis_lims=[0,300],
+                constraints=constraints
+            )
+
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-correct-relu-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/relu_grind_zero/{}.png'.format(name),
+#                 #     # x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-unscaled-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/unscaled_grind_zero/{}.png'.format(name),
+#                 #     # x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grind_zero/{}.png'.format(name),
+#                 #     # x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/resnet-disc-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/resnet_disc_grind_zero/{}.png'.format(name),
+#                 #     # x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/batchnorm_disc_grind_zero/{}.png'.format(name),
+#                 #     # x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/cpu_relu_batchnorm_disc_grind_zero/{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/cpu_relu_batchnorm_disc_grind_zero/disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/with_target_disc_cpu_relu_batchnorm_disc_grind_zero/{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-correct-scale-0p9-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/final-correct-scale-0p9-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/clamped-rew-less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/clamped_4_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/clamped-rew-less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/clamped_4_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-lr-1en4-clamped-rew-less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/lr_1en4_clamped_4_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-lr-1en4-clamped-rew-less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/lr_1en4_clamped_4_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/omfg-correct-lr-1en4-clamped-rew-less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/omfg_lr_1en4_clamped_4_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/omfg-correct-lr-1en4-clamped-rew-less-rew-iters-disc-64-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 64 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/omfg_lr_1en4_clamped_4_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_64_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-128-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-128-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-256-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 256 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/disc_256_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/disc-256-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 256 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/disc_256_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-grad-log-rew-updates-65-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-grad-log-rew-updates-65-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min',
+#                 #         'Disc_Avg_Grad_Norm_this_epoch',
+#                 #         'Disc_Max_Grad_Norm_this_epoch'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-grad-log-rew-updates-32-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_32_disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-grad-log-rew-updates-32-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_32_disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min',
+#                 #         'Disc_Avg_Grad_Norm_this_epoch',
+#                 #         'Disc_Max_Grad_Norm_this_epoch'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-grad-log-rew-updates-16-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_16_disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/with-grad-log-rew-updates-16-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_16_disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min',
+#                 #         'Disc_Avg_Grad_Norm_this_epoch',
+#                 #         'Disc_Max_Grad_Norm_this_epoch'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-5-rew-updates-65-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_5_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-5-rew-updates-65-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_5_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min',
+#                 #         'Disc_Avg_Grad_Norm_this_epoch',
+#                 #         'Disc_Max_Grad_Norm_this_epoch'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-5-rew-updates-32-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_5_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_32_disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-5-rew-updates-32-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_5_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_32_disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min',
+#                 #         'Disc_Avg_Grad_Norm_this_epoch',
+#                 #         'Disc_Max_Grad_Norm_this_epoch'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-5-rew-updates-16-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_5_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_16_disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-5-rew-updates-16-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_5_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_16_disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min',
+#                 #         'Disc_Avg_Grad_Norm_this_epoch',
+#                 #         'Disc_Max_Grad_Norm_this_epoch'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-rew-updates-all-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     y_axis_lims=[-0.05, 1.05],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Percent_Solved',
+#                 #         'Percent_Good_Reach',
+#                 #         # 'Percent_Solved_meta_train',
+#                 #         # 'Percent_Solved_meta_test',
+#                 #         'Disc_Acc',
+#                 #         'Disc_Loss'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 # plot_experiment_returns(
+#                 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-rew-updates-all-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                 #     'disc 128 '+name,
+#                 #     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_disc_rewards_{}.png'.format(name),
+#                 #     x_axis_lims=[0, 100],
+#                 #     plot_mean=False,
+#                 #     column_name=[
+#                 #         'Disc_Rew_Max',
+#                 #         'Disc_Rew_Min',
+#                 #         'Disc_Avg_Grad_Norm_this_epoch',
+#                 #         'Disc_Max_Grad_Norm_this_epoch'
+#                 #     ],
+#                 #     constraints=constraints
+#                 # )
+
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/no-bn-grad-clip-10-rew-updates-65-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/no_bn_grad_clip_10_rew_updates_65_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_{}.png'.format(name),
+#                     x_axis_lims=[0, 100],
+#                     y_axis_lims=[-0.05, 1.05],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Percent_Solved',
+#                         'Percent_Good_Reach',
+#                         # 'Percent_Solved_meta_train',
+#                         # 'Percent_Solved_meta_test',
+#                         'Disc_Acc',
+#                         'Disc_Loss'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/no-bn-grad-clip-10-rew-updates-65-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/no_bn_grad_clip_10_rew_updates_65_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_disc_rewards_{}.png'.format(name),
+#                     x_axis_lims=[0, 100],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Disc_Rew_Max',
+#                         'Disc_Rew_Min',
+#                         'Disc_Avg_Grad_Norm_this_epoch',
+#                         'Disc_Max_Grad_Norm_this_epoch'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-1-rew-updates-all-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/grad_clip_1_rew_updates_all_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     y_axis_lims=[-0.05, 1.05],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Percent_Solved',
+                #         'Percent_Good_Reach',
+                #         # 'Percent_Solved_meta_train',
+                #         # 'Percent_Solved_meta_test',
+                #         'Disc_Acc',
+                #         'Disc_Loss'
+                #     ],
+                #     constraints=constraints
+                # )
+
+                # plot_experiment_returns(
+                #     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-1-rew-updates-all-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+                #     'disc 128 '+name,
+                #     '/h/kamyar/oorl_rlkit/plots/grad_clip_1_rew_updates_all_10K_demos_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/disc_128_disc_rewards_{}.png'.format(name),
+                #     x_axis_lims=[0, 100],
+                #     plot_mean=False,
+                #     column_name=[
+                #         'Disc_Rew_Max',
+                #         'Disc_Rew_Min',
+                #         'Disc_Avg_Grad_Norm_this_epoch',
+                #         'Disc_Max_Grad_Norm_this_epoch'
+                #     ],
+                #     constraints=constraints
+                # )
+
+# for n_rew in [1, 2]:
+#     for grad_pen in [5.0, 10.0, 15.0]:
+#         for rew in [4.0, 6.0, 8.0, 10.0]:
+#             for pol_size in [128, 256, 512]:
+#                 constraints = {
+#                     'gail_params.num_reward_updates': n_rew,
+#                     'gail_params.grad_pen_weight': grad_pen,
+#                     'policy_params.reward_scale': rew,
+#                     'policy_net_size': pol_size 
+#                 }
+#                 name = 'disc_iters_{}_rew_{}_grad_pen_{}_pol_size_{}'.format(n_rew, rew, grad_pen, pol_size)
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-1-1-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_1_1_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_{}.png'.format(name),
+#                     x_axis_lims=[0, 200],
+#                     y_axis_lims=[-0.05, 1.05],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Percent_Solved',
+#                         'Percent_Good_Reach',
+#                         # 'Percent_Solved_meta_train',
+#                         # 'Percent_Solved_meta_test',
+#                         'Disc_Acc',
+#                         'Disc_Loss'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-1-1-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_1_1_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_disc_rewards_{}.png'.format(name),
+#                     x_axis_lims=[0, 200],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Disc_Rew_Max',
+#                         'Disc_Rew_Min',
+#                         'Disc_Avg_Grad_Norm_this_epoch',
+#                         'Disc_Max_Grad_Norm_this_epoch'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-2-1-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_2_1_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_32_disc_128_{}.png'.format(name),
+#                     x_axis_lims=[0, 100],
+#                     y_axis_lims=[-0.05, 1.05],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Percent_Solved',
+#                         'Percent_Good_Reach',
+#                         # 'Percent_Solved_meta_train',
+#                         # 'Percent_Solved_meta_test',
+#                         'Disc_Acc',
+#                         'Disc_Loss'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-2-1-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_2_1_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_32_disc_128_disc_rewards_{}.png'.format(name),
+#                     x_axis_lims=[0, 100],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Disc_Rew_Max',
+#                         'Disc_Rew_Min',
+#                         'Disc_Avg_Grad_Norm_this_epoch',
+#                         'Disc_Max_Grad_Norm_this_epoch'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-1-2-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_1_2_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_16_disc_128_{}.png'.format(name),
+#                     x_axis_lims=[0, 100],
+#                     y_axis_lims=[-0.05, 1.05],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Percent_Solved',
+#                         'Percent_Good_Reach',
+#                         # 'Percent_Solved_meta_train',
+#                         # 'Percent_Solved_meta_test',
+#                         'Disc_Acc',
+#                         'Disc_Loss'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+#                 plot_experiment_returns(
+#                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-1-2-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
+#                     'disc 128 '+name,
+#                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_1_2_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_16_disc_128_disc_rewards_{}.png'.format(name),
+#                     x_axis_lims=[0, 100],
+#                     plot_mean=False,
+#                     column_name=[
+#                         'Disc_Rew_Max',
+#                         'Disc_Rew_Min',
+#                         'Disc_Avg_Grad_Norm_this_epoch',
+#                         'Disc_Max_Grad_Norm_this_epoch'
+#                     ],
+#                     constraints=constraints
+#                 )
+
+
+
+
+
+
+#     plot_experiment_returns(
+#         '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac',
+#         'rew %d fucking zero-single-task-dac-not-traj-based' % rew,
+#         '/h/kamyar/oorl_rlkit/plots/fucking_zero_single_task_dac_traj_based_rew_%d.png' % rew,
+#         # x_axis_lims=[0, 200],
+#         y_axis_lims=[-0.05, 1.05],
+#         plot_mean=False,
+#         column_name=[
+#             'Percent_Solved'
+#             # 'Percent_Solved_meta_train',
+#             # 'Percent_Solved_meta_test',
+#             # 'Disc_Acc',
+#             # 'Disc_Loss'
+#         ],
+#         constraints=constraints
+#     )
+
+
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-traj-based-gail-8-trajs-per-update',
+#     'dac 8 trajs',
+#     '/h/kamyar/oorl_rlkit/plots/dac_8_trajs.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/traj-based-gail-32-trajs-per-update-subsample-4',
+#     'dac 32 trajs subsample 4',
+#     '/h/kamyar/oorl_rlkit/plots/dac_32_trajs_sub_4.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved',
+#         # 'Disc_Acc',
+#         # 'Disc_Loss'
+#     ],
+# )
+
+# plot_experiment_returns(
+#     '/scratch/gobi2/kamyar/oorl_rlkit/output/single-task-np-bc',
+#     'single task np bc',
+#     '/h/kamyar/oorl_rlkit/plots/single_task_np_bc.png',
+#     # x_axis_lims=[0, 200],
+#     y_axis_lims=[-0.05, 1.05],
+#     plot_mean=False,
+#     column_name=[
+#         'Percent_Solved_meta_train',
+#         'Percent_Good_Reach_meta_train',
+#         # 'Percent_Solved_meta_test',
+#         # 'Percent_Good_Reach_meta_test',
+#     ],
+# )
 # ----------------------------------------------------------------------------------------------
 
 

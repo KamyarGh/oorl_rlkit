@@ -44,7 +44,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             replay_buffer_size=10000,
             render=False,
             save_replay_buffer=False,
-            save_algorithm=False,
+            save_algorithm=True,
             save_environment=True,
             eval_sampler=None,
             eval_policy=None,
@@ -141,8 +141,6 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         self._current_path_builder = PathBuilder()
         self._exploration_paths = []
         self.wrap_absorbing = wrap_absorbing
-        if self.wrap_absorbing:
-            assert isinstance(env, WrappedAbsorbingEnv), 'Env is not wrapped!'
         self.freq_saving = freq_saving
         self.no_terminal = no_terminal
 
@@ -210,23 +208,45 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                         reward,
                         next_ob,
                         np.array([False]) if self.wrap_absorbing else terminal,
+                        absorbing=np.array([0., 0.]),
                         agent_info=agent_info,
                         env_info=env_info,
                     )
                     if terminal:
                         if self.wrap_absorbing:
+                            '''
+                            If we wrap absorbing states, two additional
+                            transitions must be added: (s_T, s_abs) and
+                            (s_abs, s_abs). In Disc Actor Critic paper
+                            they make s_abs be a vector of 0s with last
+                            dim set to 1. Here we are going to add the following:
+                            ([next_ob,0], random_action, [next_ob, 1]) and
+                            ([next_ob,1], random_action, [next_ob, 1])
+                            This way we can handle varying types of terminal states.
+                            '''
                             # next_ob is the absorbing state
-                            # for now just using the action from the previous timesteps
-                            # as well as agent info and env info
+                            # for now just taking the previous action
                             self._handle_step(
                                 next_ob,
                                 action,
-                                # the reward doesn't matter cause it will be
-                                # overwritten by the model that defines the reward
-                                # e.g. the discriminator in GAIL
-                                reward,
+                                # env.action_space.sample(),
+                                # the reward doesn't matter
+                                0.0,
                                 next_ob,
-                                terminal,
+                                np.array([False]),
+                                absorbing=np.array([0.0, 1.0]),
+                                agent_info=agent_info,
+                                env_info=env_info
+                            )
+                            self._handle_step(
+                                next_ob,
+                                action,
+                                # env.action_space.sample(),
+                                # the reward doesn't matter
+                                0.0,
+                                next_ob,
+                                np.array([False]),
+                                absorbing=np.array([1.0, 1.0]),
                                 agent_info=agent_info,
                                 env_info=env_info
                             )
@@ -241,21 +261,21 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                     steps_this_epoch += 1
 
                 gt.stamp('sample')
-                self._try_to_train()
+                self._try_to_train(epoch)
                 gt.stamp('train')
 
             self._try_to_eval(epoch)
             gt.stamp('eval')
             self._end_epoch()
 
-    def _try_to_train(self):
+    def _try_to_train(self, epoch):
         if self._can_train():
             self.training_mode(True)
             for i in range(self.num_reward_updates_per_train_call):
-                self._do_reward_training()
+                self._do_reward_training(epoch)
                 self._n_reward_train_steps_total += 1
             for i in range(self.num_policy_updates_per_train_call):
-                self._do_policy_training()
+                self._do_policy_training(epoch)
                 self._n_policy_train_steps_total += 1
             self.training_mode(False)
 
@@ -366,6 +386,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         return self.training_env.reset()
 
     def _handle_path(self, path):
+        raise NotImplementedError('Does not handle absorbing states')
         """
         Naive implementation: just loop through each transition.
         :param path:
@@ -406,6 +427,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             reward,
             next_observation,
             terminal,
+            absorbing,
             agent_info,
             env_info,
     ):
@@ -419,6 +441,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             rewards=reward,
             next_observations=next_observation,
             terminals=terminal,
+            absorbing=absorbing,
             agent_infos=agent_info,
             env_infos=env_info,
         )
@@ -428,6 +451,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             reward=reward,
             terminal=terminal,
             next_observation=next_observation,
+            absorbing=absorbing,
             agent_info=agent_info,
             env_info=env_info,
         )

@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from random import sample
 
 import numpy as np
 
@@ -11,15 +10,10 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 
 import rlkit.torch.pytorch_util as ptu
-from rlkit.torch.torch_meta_irl_algorithm import np_to_pytorch_batch
 from rlkit.core.eval_util import create_stats_ordered_dict
 from rlkit.torch.torch_meta_irl_algorithm import TorchMetaIRLAlgorithm
 from rlkit.torch.sac.policies import MakeDeterministic
-from rlkit.samplers.util import rollout
-from rlkit.torch.sac.policies import PostCondMLPPolicyWrapper
-from rlkit.data_management.path_builder import PathBuilder
-
-from gym.spaces import Dict
+from rlkit.core.train_util import linear_schedule
 
 
 def concat_trajs(trajs):
@@ -32,103 +26,105 @@ def concat_trajs(trajs):
     return new_dict
 
 
-class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
-    '''
-        Meta-AIRL using a neural process
-
-        assuming the context trajectories all have the same length and flat and everything nice
-    '''
+class NeuralProcessAIRL(TorchIRLAlgorithm):
     def __init__(
             self,
             env,
-
-            # this is the main policy network that we wrap with
-            # PostCondWrapperPolicy for get_exploration policy
-            main_policy,
-            disc,
+            policy,
+            discriminator,
 
             train_context_expert_replay_buffer,
             train_test_expert_replay_buffer,
             test_context_expert_replay_buffer,
             test_test_expert_replay_buffer,
-
+            
             np_encoder,
 
-            policy_optimizer, # the RL algorith that updates the policy
+            policy_optimizer,
 
-            num_disc_updates_per_epoch=160,
-            num_policy_updates_per_epoch=80,
+            state_only=False,
+
             num_tasks_used_per_update=5,
-            num_context_trajs_for_training=3,
-            num_test_trajs_for_training=3,
-            policy_batch_size_per_task=256,
+            num_context_trajs_for_training=5,
+            num_test_trajs_for_training=5,
+            num_context_trajs_for_eval=5,
+            num_test_trajs_for_eval=5,
+            disc_num_trajs_per_batch=128,
+            disc_samples_per_traj=8,
 
-            # for each task, for each context, infer post, for each post sample, generate some eval trajs
-            num_tasks_per_eval=10,
-            num_diff_context_per_eval_task=2,
-            num_context_trajs_for_eval=3,
-            num_eval_trajs_per_post_sample=2,
+            disc_optim_batch_size=1024,
+            policy_optim_batch_size=1024,
 
-            num_context_trajs_for_exploration=3,
-
-            encoder_lr=1e-3,
-            encoder_optimizer_class=optim.Adam,
+            num_update_loops_per_train_call=65,
+            num_disc_updates_per_loop=1,
+            num_policy_updates_per_loop=1,
 
             disc_lr=1e-3,
+            disc_momentum=0.0,
             disc_optimizer_class=optim.Adam,
 
             use_grad_pen=True,
             grad_pen_weight=10,
 
+            disc_ce_grad_clip=0.5,
+            disc_gp_grad_clip=10.0,
+
+            use_target_disc=False,
+            target_disc=None,
+            soft_target_disc_tau=0.005,
+
             plotter=None,
             render_eval_paths=False,
+            eval_deterministic=True,
+
+            use_disc_input_noise=False,
+            disc_input_noise_scale_start=0.1,
+            disc_input_noise_scale_end=0.0,
+            epochs_till_end_scale=50.0,
             **kwargs
     ):
+        assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
+        if eval_deterministic:
+            eval_policy = MakeDeterministic(policy)
+        else:
+            eval_policy = policy
+        
         super().__init__(
             env=env,
-            train_context_expert_replay_buffer=train_context_expert_replay_buffer,
-            train_test_expert_replay_buffer=train_test_expert_replay_buffer,
-            test_context_expert_replay_buffer=test_context_expert_replay_buffer,
-            test_test_expert_replay_buffer=test_test_expert_replay_buffer,
+            exploration_policy=policy,
+            eval_policy=eval_policy,
+            expert_replay_buffer=expert_replay_buffer,
+            policy_optimizer=policy_optimizer,
             **kwargs
         )
 
-        self.main_policy = main_policy
-        self.encoder = np_encoder
-        self.disc = disc
+        self.state_only = state_only
+
+        self.traj_based = traj_based
+        self.disc_num_trajs_per_batch = disc_num_trajs_per_batch
+        self.disc_samples_per_traj = disc_samples_per_traj
+
+        self.discriminator = discriminator
         self.rewardf_eval_statistics = None
-
-        self.policy_optimizer = policy_optimizer
-        self.encoder_optimizer = encoder_optimizer_class(
-            self.encoder.parameters(),
-            lr=encoder_lr,
-        )
         self.disc_optimizer = disc_optimizer_class(
-            self.disc.parameters(),
+            self.discriminator.parameters(),
             lr=disc_lr,
+            betas=(disc_momentum, 0.999)
         )
+        print('\n\nDISC MOMENTUM: %f\n\n' % disc_momentum)
 
-        self.num_policy_updates_per_epoch = num_policy_updates_per_epoch
-        self.num_disc_updates_per_epoch = num_disc_updates_per_epoch
-        self.num_tasks_used_per_update = num_tasks_used_per_update
-        self.num_context_trajs_for_training = num_context_trajs_for_training
-        self.num_test_trajs_for_training = num_test_trajs_for_training
-        self.policy_batch_size_per_task = policy_batch_size_per_task
+        self.disc_optim_batch_size = disc_optim_batch_size
+        self.policy_optim_batch_size = policy_optim_batch_size
 
-        self.num_tasks_per_eval = num_tasks_per_eval
-        self.num_diff_context_per_eval_task = num_diff_context_per_eval_task
-        self.num_context_trajs_for_eval = num_context_trajs_for_eval
-        self.num_eval_trajs_per_post_sample = num_eval_trajs_per_post_sample
-
-        self.num_context_trajs_for_exploration = num_context_trajs_for_exploration
-
-        # things we need for computing the discriminator objective
         self.bce = nn.BCEWithLogitsLoss()
-        total_samples = self.max_path_length * self.num_tasks_used_per_update * (self.num_context_trajs_for_training + self.num_test_trajs_for_training)
+        if self.traj_based:
+            target_batch_size = self.disc_num_trajs_per_batch * self.disc_samples_per_traj
+        else:
+            target_batch_size = self.disc_optim_batch_size
         self.bce_targets = torch.cat(
             [
-                torch.ones(total_samples, 1),
-                torch.zeros(total_samples, 1)
+                torch.ones(target_batch_size, 1),
+                torch.zeros(target_batch_size, 1)
             ],
             dim=0
         )
@@ -140,354 +136,349 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         self.use_grad_pen = use_grad_pen
         self.grad_pen_weight = grad_pen_weight
 
+        self.disc_ce_grad_clip = disc_ce_grad_clip
+        self.disc_gp_grad_clip = disc_gp_grad_clip
+        self.disc_grad_buffer = {}
+        self.disc_grad_buffer_is_empty = True
 
-    def get_exploration_policy(self, task_identifier):
-        list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
-            task_identifier,
-            self.num_context_trajs_for_exploration,
-        )
-        post_dist = self.encoder([list_of_trajs])
-        # z = post_dist.sample()
-        z = post_dist.mean
-        z = z.cpu().data.numpy()[0]
-        return PostCondMLPPolicyWrapper(self.main_policy, z)
-    
+        self.use_target_disc = use_target_disc
+        self.soft_target_disc_tau = soft_target_disc_tau
 
-    def get_eval_policy(self, task_identifier, mode='meta_test'):
-        if mode == 'meta_train':
-            rb = self.train_context_expert_replay_buffer
-        else:
-            rb = self.test_context_expert_replay_buffer
-        list_of_trajs = rb.sample_trajs_from_task(
-            task_identifier,
-            self.num_context_trajs_for_eval,
-        )
-        post_dist = self.encoder([list_of_trajs])
-        # z = post_dist.sample()
-        z = post_dist.mean
-        z = z.cpu().data.numpy()[0]
-        return PostCondMLPPolicyWrapper(self.main_policy, z)
-    
-
-    def _get_disc_training_batch(self):
-        # context batch is a list of list of dicts
-        context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
-            self.num_context_trajs_for_training,
-            num_tasks=self.num_tasks_used_per_update,
-            keys=['observations', 'actions']
-        )
-
-        flat_context_batch = [traj for task_trajs in context_batch for traj in task_trajs]
-        context_pred_batch = concat_trajs(flat_context_batch)
-
-        test_batch, _ = self.train_test_expert_replay_buffer.sample_trajs(
-            self.num_test_trajs_for_training,
-            task_identifiers=task_identifiers_list,
-            keys=['observations', 'actions']
-        )
-        flat_test_batch = [traj for task_trajs in test_batch for traj in task_trajs]
-        test_pred_batch = concat_trajs(flat_test_batch)
-
-        # get the test batch for the tasks from policy buffer
-        policy_test_batch_0, _ = self.replay_buffer.sample_trajs(
-            self.num_context_trajs_for_training,
-            task_identifiers=task_identifiers_list,
-            keys=['observations', 'actions']
-        )
-        flat_policy_batch_0 = [traj for task_trajs in policy_test_batch_0 for traj in task_trajs]
-        policy_test_pred_batch_0 = concat_trajs(flat_policy_batch_0)
-
-        policy_test_batch_1, _ = self.replay_buffer.sample_trajs(
-            self.num_test_trajs_for_training,
-            task_identifiers=task_identifiers_list,
-            keys=['observations', 'actions']
-        )
-        flat_policy_batch_1 = [traj for task_trajs in policy_test_batch_1 for traj in task_trajs]
-        policy_test_pred_batch_1 = concat_trajs(flat_policy_batch_1)
-
-        policy_test_pred_batch = {
-            'observations': np.concatenate((policy_test_pred_batch_0['observations'], policy_test_pred_batch_1['observations']), axis=0),
-            'actions': np.concatenate((policy_test_pred_batch_0['actions'], policy_test_pred_batch_1['actions']), axis=0)
-        }
-
-        # if we want to handle envs with different traj lengths we need to do
-        # something smarter with how we repeat z
-        traj_len = flat_context_batch[0]['observations'].shape[0]
-        assert all(t['observations'].shape[0] == traj_len for t in flat_context_batch), "Not handling different traj lens"
-        assert all(t['observations'].shape[0] == traj_len for t in flat_test_batch), "Not handling different traj lens"
-        assert all(t['observations'].shape[0] == traj_len for t in flat_policy_batch_0), "Not handling different traj lens"
-        assert all(t['observations'].shape[0] == traj_len for t in flat_policy_batch_1), "Not handling different traj lens"
-
-        return context_batch, context_pred_batch, test_pred_batch, policy_test_pred_batch, traj_len
-    
-
-    def _get_policy_training_batch(self):
-        # context batch is a list of list of dicts
-        context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
-            self.num_context_trajs_for_training,
-            num_tasks=self.num_tasks_used_per_update,
-            keys=['observations', 'actions']
-        )
+        if use_target_disc:
+            if target_disc is None:
+                print('\n\nMAKING TARGET DISC\n\n')
+                self.target_disc = self.discriminator.copy()
+            else:
+                print('\n\nUSING GIVEN TARGET DISC\n\n')
+                self.target_disc = target_disc
         
-        # get the test batch for the tasks from policy buffer
-        policy_batch, _ = self.replay_buffer.sample_random_batch(
-            self.policy_batch_size_per_task,
-            task_identifiers_list=task_identifiers_list
-        )
-        policy_obs = np.concatenate([d['observations'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
-        policy_acts = np.concatenate([d['actions'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
-        policy_terminals = np.concatenate([d['terminals'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
-        policy_next_obs = np.concatenate([d['next_observations'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
-        policy_batch = dict(
-            observations=policy_obs,
-            actions=policy_acts,
-            terminals=policy_terminals,
-            next_observations=policy_next_obs
-        )
+        self.disc_ce_grad_norm = 0.0
+        self.disc_ce_grad_norm_counter = 0.0
+        self.max_disc_ce_grad = 0.0
 
-        return context_batch, policy_batch
+        self.disc_gp_grad_norm = 0.0
+        self.disc_gp_grad_norm_counter = 0.0
+        self.max_disc_gp_grad = 0.0
+
+        self.use_disc_input_noise = use_disc_input_noise
+        self.disc_input_noise_scale_start = disc_input_noise_scale_start
+        self.disc_input_noise_scale_end = disc_input_noise_scale_end
+        self.epochs_till_end_scale = epochs_till_end_scale
 
 
-    def _do_training(self):
+    def get_batch(self, batch_size, from_expert):
+        if from_expert:
+            buffer = self.expert_replay_buffer
+        else:
+            buffer = self.replay_buffer
+        batch = buffer.random_batch(batch_size)
+        batch = np_to_pytorch_batch(batch)
+        return batch
+
+
+    def get_traj_based_batch(self, num_trajs, from_expert, samples_per_traj=None):
+        if from_expert:
+            buffer = self.expert_replay_buffer
+        else:
+            buffer = self.replay_buffer
+        batch = buffer.sample_trajs(num_trajs, keys=['observations', 'actions'], samples_per_traj=samples_per_traj)
+        batch = concat_trajs(batch)
+        batch = np_to_pytorch_batch(batch)
+        return batch
+
+
+    def _do_reward_training(self, epoch):
         '''
+            Train the discriminator
         '''
-        # train the discriminator (and the encoder)
-        # print('$$$$$$$$$')
-        # print(self.num_disc_updates_per_epoch)
-        for i in range(self.num_disc_updates_per_epoch):
-            self.encoder_optimizer.zero_grad()
-            self.disc_optimizer.zero_grad()
+        self.disc_optimizer.zero_grad()
 
-            context_batch, context_pred_batch, test_pred_batch, policy_test_pred_batch, traj_len = self._get_disc_training_batch()
+        if self.traj_based:
+            expert_batch = self.get_traj_based_batch(self.disc_num_trajs_per_batch, True, samples_per_traj=self.disc_samples_per_traj)
+            expert_obs = expert_batch['observations']
+            if not self.state_only: expert_actions = expert_batch['actions']
 
-            # convert it to a pytorch tensor
-            # note that our objective says we should maximize likelihood of
-            # BOTH the context_batch and the test_batch
-            exp_obs_batch = np.concatenate((context_pred_batch['observations'], test_pred_batch['observations']), axis=0)
-            exp_obs_batch = Variable(ptu.from_numpy(exp_obs_batch), requires_grad=False)
-            exp_acts_batch = np.concatenate((context_pred_batch['actions'], test_pred_batch['actions']), axis=0)
-            exp_acts_batch = Variable(ptu.from_numpy(exp_acts_batch), requires_grad=False)
+            policy_batch = self.get_traj_based_batch(self.disc_num_trajs_per_batch, False, samples_per_traj=self.disc_samples_per_traj)
+            policy_obs = policy_batch['observations']
+            if not self.state_only: policy_actions = policy_batch['actions']
+        else:
+            expert_batch = self.get_batch(self.disc_optim_batch_size, True)
+            expert_obs = expert_batch['observations']
+            if not self.state_only: expert_actions = expert_batch['actions']
 
-            policy_obs_batch = Variable(ptu.from_numpy(policy_test_pred_batch['observations']), requires_grad=False)
-            policy_acts_batch = Variable(ptu.from_numpy(policy_test_pred_batch['actions']), requires_grad=False)
+            policy_batch = self.get_batch(self.disc_optim_batch_size, False)
+            policy_obs = policy_batch['observations']
+            if not self.state_only: policy_actions = policy_batch['actions']
 
-            post_dist = self.encoder(context_batch)
-            # z = post_dist.sample() # N_tasks x Dim
-            z = post_dist.mean
-
-            # z_reg_loss = 0.0001 * z.norm(2, dim=1).mean()
-            z_reg_loss = 0.0
-
-            # make z's for expert samples
-            z_context_batch = z.repeat(1, traj_len * self.num_context_trajs_for_training).view(
-                self.num_tasks_used_per_update * self.num_context_trajs_for_training * traj_len,
-                -1
+        if self.use_disc_input_noise:
+            noise_scale = linear_schedule(
+                epoch,
+                self.disc_input_noise_scale_start,
+                self.disc_input_noise_scale_end,
+                self.epochs_till_end_scale
             )
-            z_test_batch = z.repeat(1, traj_len * self.num_test_trajs_for_training).view(
-                self.num_tasks_used_per_update * self.num_test_trajs_for_training * traj_len,
-                -1
-            )
-            z_expert = torch.cat([z_context_batch, z_test_batch], dim=0)
-            positive_obs_batch = torch.cat([exp_obs_batch, z_expert], dim=1)
-            positive_acts_batch = exp_acts_batch
+            if noise_scale > 0.0:
+                expert_obs = expert_obs + noise_scale * Variable(torch.randn(expert_obs.size()))
+                if not self.state_only: expert_actions = expert_actions + noise_scale * Variable(torch.randn(expert_actions.size()))
 
-            # make z's for policy samples
-            total_trajs_per_task = self.num_context_trajs_for_training + self.num_test_trajs_for_training
-            z_policy = z_expert
-            # z_policy = z.repeat(1, traj_len * total_trajs_per_task).view(
-            #     self.num_tasks_used_per_update * total_trajs_per_task * traj_len,
-            #     -1
-            # )
-            negative_obs_batch = torch.cat([policy_obs_batch, z_policy], dim=1)
-            negative_acts_batch = policy_acts_batch
+                policy_obs = policy_obs + noise_scale * Variable(torch.randn(policy_obs.size()))
+                if not self.state_only: policy_actions = policy_actions + noise_scale * Variable(torch.randn(policy_actions.size()))
+        
+        obs = torch.cat([expert_obs, policy_obs], dim=0)
+        if not self.state_only: actions = torch.cat([expert_actions, policy_actions], dim=0)
+        
+        if self.state_only:
+            disc_logits = self.discriminator(obs, None)
+        else:
+            disc_logits = self.discriminator(obs, actions)
+        disc_preds = (disc_logits > 0).type(torch.FloatTensor)
+        disc_ce_loss = self.bce(disc_logits, self.bce_targets)
+        accuracy = (disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 
-            # compute the loss for the discriminator
-            obs_batch = torch.cat([positive_obs_batch, negative_obs_batch], dim=0)
-            acts_batch = torch.cat([positive_acts_batch, negative_acts_batch], dim=0)
-            disc_logits = self.disc(obs_batch, acts_batch)
-            disc_preds = (disc_logits > 0).type(torch.FloatTensor)
-            # disc_percent_policy_preds_one = disc_preds[z.size(0):].mean()
-            disc_loss = self.bce(disc_logits, self.bce_targets)
-            accuracy = (disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
+        disc_ce_loss.backward()
 
-            if self.use_grad_pen:
-                eps = Variable(torch.rand(positive_obs_batch.size(0), 1), requires_grad=True)
-                if ptu.gpu_enabled(): eps = eps.cuda()
+        ce_grad_norm = 0.0
+        for name, param in self.discriminator.named_parameters():
+            if param.grad is not None:
+                if self.disc_grad_buffer_is_empty:
+                    self.disc_grad_buffer[name] = param.grad.data.clone()
+                else:
+                    self.disc_grad_buffer[name].copy_(param.grad.data)
                 
-                interp_obs = eps*positive_obs_batch + (1-eps)*negative_obs_batch
-                interp_obs.detach()
-                # interp_obs.requires_grad = True
-                interp_actions = eps*positive_acts_batch + (1-eps)*negative_acts_batch
-                interp_actions.detach()
-                # interp_actions.requires_grad = True
+                param_norm = param.grad.data.norm(2)
+                ce_grad_norm += param_norm ** 2
+        ce_grad_norm = ce_grad_norm ** 0.5
+        self.disc_grad_buffer_is_empty = False
+
+        ce_clip_coef = self.disc_ce_grad_clip / (ce_grad_norm + 1e-6)
+        if ce_clip_coef < 1.:
+            for name, grad in self.disc_grad_buffer.items():
+                grad.mul_(ce_clip_coef)
+        
+        if ce_clip_coef < 1.0: ce_grad_norm *= ce_clip_coef
+        self.max_disc_ce_grad = max(ce_grad_norm, self.max_disc_ce_grad)
+        self.disc_ce_grad_norm += ce_grad_norm
+        self.disc_ce_grad_norm_counter += 1
+        
+        self.disc_optimizer.zero_grad()
+        
+        if self.use_grad_pen:
+            eps = Variable(torch.rand(expert_obs.size(0), 1))
+            if ptu.gpu_enabled(): eps = eps.cuda()
+            
+            interp_obs = eps*expert_obs + (1-eps)*policy_obs
+            interp_obs.detach()
+            interp_obs.requires_grad = True
+            if self.state_only:
                 gradients = autograd.grad(
-                    outputs=self.disc(interp_obs, interp_actions).sum(),
+                    outputs=self.discriminator(interp_obs, None).sum(),
+                    inputs=[interp_obs],
+                    # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                    create_graph=True, retain_graph=True, only_inputs=True
+                )
+                total_grad = gradients[0]
+            else:
+                interp_actions = eps*expert_actions + (1-eps)*policy_actions
+                interp_actions.detach()
+                interp_actions.requires_grad = True
+                gradients = autograd.grad(
+                    outputs=self.discriminator(interp_obs, interp_actions).sum(),
                     inputs=[interp_obs, interp_actions],
                     # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
                     create_graph=True, retain_graph=True, only_inputs=True
                 )
                 total_grad = torch.cat([gradients[0], gradients[1]], dim=1)
-                gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
 
-                disc_loss = disc_loss + gradient_penalty * self.grad_pen_weight
+            # GP from Gulrajani et al.
+            gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
+            disc_grad_pen_loss = gradient_penalty * self.grad_pen_weight
 
-            total_reward_loss = z_reg_loss + disc_loss
+            # # GP from Mescheder et al.
+            # gradient_penalty = (total_grad.norm(2, dim=1) ** 2).mean()
+            # disc_grad_pen_loss = gradient_penalty * 0.5 * self.grad_pen_weight
 
-            total_reward_loss.backward()
-            self.disc_optimizer.step()
-            self.encoder_optimizer.step()
+            disc_grad_pen_loss.backward()
 
-            # print(self.disc.fc0.bias[0])
-            # print(self.encoder.traj_encoder.traj_enc_mlp.fc0.bias[0])
+            gp_grad_norm = 0.0
+            for p in list(filter(lambda p: p.grad is not None, self.discriminator.parameters())):
+                param_norm = p.grad.data.norm(2)
+                gp_grad_norm += param_norm ** 2
+            gp_grad_norm = gp_grad_norm ** 0.5
 
+            gp_clip_coef = self.disc_gp_grad_clip / (gp_grad_norm + 1e-6)
+            if gp_clip_coef < 1.:
+                for p in self.discriminator.parameters():
+                    p.grad.data.mul_(gp_clip_coef)
+            
+            if gp_clip_coef < 1.: gp_grad_norm *= gp_clip_coef
+            self.max_disc_gp_grad = max(gp_grad_norm, self.max_disc_gp_grad)
+            self.disc_gp_grad_norm += gp_grad_norm
+            self.disc_gp_grad_norm_counter += 1
+        
+        # now add back the gradients from the CE loss
+        for name, param in self.discriminator.named_parameters():
+            param.grad.data.add_(self.disc_grad_buffer[name])
 
-        # train the policy
-        # print('--------')
-        # print(self.num_policy_updates_per_epoch)
-        for i in range(self.num_policy_updates_per_epoch):
-            context_batch, policy_batch = self._get_policy_training_batch()
-            policy_batch = np_to_pytorch_batch(policy_batch)
+        self.disc_optimizer.step()
 
-            post_dist = self.encoder(context_batch)
-            # z = post_dist.sample() # N_tasks x Dim
-            z = post_dist.mean
-            z = z.detach()
+        if self.use_target_disc:
+            ptu.soft_update_from_to(self.discriminator, self.target_disc, self.soft_target_disc_tau)
 
-            # repeat z to have the right size
-            z = z.repeat(1, self.policy_batch_size_per_task).view(
-                self.num_tasks_used_per_update * self.policy_batch_size_per_task,
-                -1
-            ).detach()
-
-            # now augment the obs with the latent sample z
-            policy_batch['observations'] = torch.cat([policy_batch['observations'], z], dim=1)
-            policy_batch['next_observations'] = torch.cat([policy_batch['next_observations'], z], dim=1)
-
-            # compute the rewards
-            # If you compute log(D) - log(1-D) then you just get the logits
-            policy_rewards = self.disc(policy_batch['observations'], policy_batch['actions']).detach()
-            policy_batch['rewards'] = policy_rewards
-            # rew_more_than_zero = (rewards > 0).type(torch.FloatTensor).mean()
-            # print(rew_more_than_zero.data[0])
-
-            # do a policy update (the zeroing of grads etc. should be handled internally)
-            # print(policy_rewards.size())
-            self.policy_optimizer.train_step(policy_batch)
-            # print(self.main_policy.fc0.bias[0])
-
-        if self.eval_statistics is None:
+        """
+        Save some statistics for eval
+        """
+        if self.rewardf_eval_statistics is None:
             """
             Eval should set this to None.
             This way, these statistics are only computed for one batch.
             """
-            self.eval_statistics = OrderedDict()
-            self.eval_statistics['Disc Loss'] = np.mean(ptu.get_numpy(disc_loss))
-            self.eval_statistics['Disc Acc'] = np.mean(ptu.get_numpy(accuracy))
-            # self.eval_statistics['Disc Percent Policy Preds 1'] = np.mean(ptu.get_numpy(disc_percent_policy_preds_one))
-            self.eval_statistics['Disc Rewards Mean'] = np.mean(ptu.get_numpy(policy_rewards))
-            self.eval_statistics['Disc Rewards Std'] = np.std(ptu.get_numpy(policy_rewards))
-            self.eval_statistics['Disc Rewards Max'] = np.max(ptu.get_numpy(policy_rewards))
-            self.eval_statistics['Disc Rewards Min'] = np.min(ptu.get_numpy(policy_rewards))
-            # self.eval_statistics['Disc Rewards GT Zero'] = np.mean(ptu.get_numpy(rew_more_than_zero))
+            self.rewardf_eval_statistics = OrderedDict()
+            
+            if self.use_target_disc:
+                if self.state_only:
+                    target_disc_logits = self.target_disc(obs, None)
+                else:
+                    target_disc_logits = self.target_disc(obs, actions)
+                target_disc_preds = (target_disc_logits > 0).type(torch.FloatTensor)
+                target_disc_ce_loss = self.bce(target_disc_logits, self.bce_targets)
+                target_accuracy = (target_disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 
-            z_norm = z.norm(2, dim=1).mean()
-            self.eval_statistics['Z Norm'] = np.mean(ptu.get_numpy(z_norm))
-
-            if self.policy_optimizer.eval_statistics is not None:
-                self.eval_statistics.update(self.policy_optimizer.eval_statistics)
-
-
-    def evaluate(self, epoch):
-        super().evaluate(epoch)
-        self.policy_optimizer.eval_statistics = None
-
-
-    def obtain_eval_samples(self, epoch, mode='meta_train'):
-        self.training_mode(False)
-
-        if mode == 'meta_train':
-            params_samples = self.train_task_params_sampler.sample_unique(self.num_tasks_per_eval)
-        else:
-            params_samples = self.test_task_params_sampler.sample_unique(self.num_tasks_per_eval)
-        all_eval_tasks_paths = []
-        for task_params, obs_task_params in params_samples:
-            cur_eval_task_paths = []
-            self.env.reset(task_params=task_params, obs_task_params=obs_task_params)
-            task_identifier = self.env.task_identifier
-
-            for _ in range(self.num_diff_context_per_eval_task):
-                eval_policy = self.get_eval_policy(task_identifier, mode=mode)
-
-                for _ in range(self.num_eval_trajs_per_post_sample):
-                    cur_eval_path_builder = PathBuilder()
-                    observation = self.env.reset(task_params=task_params, obs_task_params=obs_task_params)
-                    terminal = False
-
-                    while (not terminal) and len(cur_eval_path_builder) < self.max_path_length:
-                        if isinstance(self.obs_space, Dict):
-                            if self.policy_uses_pixels:
-                                agent_obs = observation['pixels']
-                            else:
-                                agent_obs = observation['obs']
-                        else:
-                            agent_obs = observation
-                        action, agent_info = eval_policy.get_action(agent_obs)
-                        
-                        next_ob, raw_reward, terminal, env_info = (self.env.step(action))
-                        if self.no_terminal:
-                            terminal = False
-                        
-                        reward = raw_reward
-                        terminal = np.array([terminal])
-                        reward = np.array([reward])
-                        cur_eval_path_builder.add_all(
-                            observations=observation,
-                            actions=action,
-                            rewards=reward,
-                            next_observations=next_ob,
-                            terminals=terminal,
-                            agent_infos=agent_info,
-                            env_infos=env_info,
-                            task_identifiers=task_identifier
-                        )
-                        observation = next_ob
-
-                    if terminal and self.wrap_absorbing:
-                        raise NotImplementedError("I think they used 0 actions for this")
-                        cur_eval_path_builder.add_all(
-                            observations=next_ob,
-                            actions=action,
-                            rewards=reward,
-                            next_observations=next_ob,
-                            terminals=terminal,
-                            agent_infos=agent_info,
-                            env_infos=env_info,
-                            task_identifiers=task_identifier
-                        )
+                if self.use_grad_pen:
+                    eps = Variable(torch.rand(expert_obs.size(0), 1))
+                    if ptu.gpu_enabled(): eps = eps.cuda()
                     
-                    if len(cur_eval_path_builder) > 0:
-                        cur_eval_task_paths.append(
-                            cur_eval_path_builder.get_all_stacked()
+                    interp_obs = eps*expert_obs + (1-eps)*policy_obs
+                    interp_obs.detach()
+                    interp_obs.requires_grad = True
+                    if self.state_only:
+                        target_gradients = autograd.grad(
+                            outputs=self.target_disc(interp_obs, None).sum(),
+                            inputs=[interp_obs],
+                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                            create_graph=True, retain_graph=True, only_inputs=True
                         )
-            all_eval_tasks_paths.extend(cur_eval_task_paths)
-        
-        # flatten the list of lists
-        return all_eval_tasks_paths
-                
+                        total_target_grad = target_gradients[0]
+                    else:
+                        interp_actions = eps*expert_actions + (1-eps)*policy_actions
+                        interp_actions.detach()
+                        interp_actions.requires_grad = True
+                        target_gradients = autograd.grad(
+                            outputs=self.target_disc(interp_obs, interp_actions).sum(),
+                            inputs=[interp_obs, interp_actions],
+                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                            create_graph=True, retain_graph=True, only_inputs=True
+                        )
+                        total_target_grad = torch.cat([target_gradients[0], target_gradients[1]], dim=1)
 
+                    # GP from Gulrajani et al.
+                    target_gradient_penalty = ((total_target_grad.norm(2, dim=1) - 1) ** 2).mean()
+
+                    # # GP from Mescheder et al.
+                    # target_gradient_penalty = (total_target_grad.norm(2, dim=1) ** 2).mean()
+
+                self.rewardf_eval_statistics['Target Disc CE Loss'] = np.mean(ptu.get_numpy(target_disc_ce_loss))
+                self.rewardf_eval_statistics['Target Disc Acc'] = np.mean(ptu.get_numpy(target_accuracy))
+                self.rewardf_eval_statistics['Target Grad Pen'] = np.mean(ptu.get_numpy(target_gradient_penalty))
+                self.rewardf_eval_statistics['Target Grad Pen W'] = np.mean(self.grad_pen_weight)
+            
+            self.rewardf_eval_statistics['Disc CE Loss'] = np.mean(ptu.get_numpy(disc_ce_loss))
+            self.rewardf_eval_statistics['Disc Acc'] = np.mean(ptu.get_numpy(accuracy))
+            self.rewardf_eval_statistics['Grad Pen'] = np.mean(ptu.get_numpy(gradient_penalty))
+            self.rewardf_eval_statistics['Grad Pen W'] = np.mean(self.grad_pen_weight)
+            self.rewardf_eval_statistics['Disc Avg CE Grad Norm this epoch'] = np.mean(self.disc_ce_grad_norm / self.disc_ce_grad_norm_counter)
+            self.rewardf_eval_statistics['Disc Max CE Grad Norm this epoch'] = np.mean(self.max_disc_ce_grad)
+            self.rewardf_eval_statistics['Disc Avg GP Grad Norm this epoch'] = np.mean(self.disc_gp_grad_norm / self.disc_gp_grad_norm_counter)
+            self.rewardf_eval_statistics['Disc Max GP Grad Norm this epoch'] = np.mean(self.max_disc_gp_grad)
+            if self.use_disc_input_noise:
+                self.rewardf_eval_statistics['Disc Input Noise Scale'] = noise_scale
+
+            self.max_disc_ce_grad = 0.0
+            self.disc_ce_grad_norm = 0.0
+            self.disc_ce_grad_norm_counter = 0.0
+            self.max_disc_gp_grad = 0.0
+            self.disc_gp_grad_norm = 0.0
+            self.disc_gp_grad_norm_counter = 0.0
+
+
+    def _do_policy_training(self, epoch):
+        policy_batch = self.get_batch(self.policy_optim_batch_size, False)
+        if self.use_target_disc:
+            self.target_disc.eval()
+            # If you compute log(D) - log(1-D) then you just get the logits
+            if self.state_only:
+                policy_batch['rewards'] = self.target_disc(policy_batch['observations'], None).detach()
+            else:
+                policy_batch['rewards'] = self.target_disc(policy_batch['observations'], policy_batch['actions']).detach()
+            self.target_disc.train()
+        else:
+            self.discriminator.eval()
+            # If you compute log(D) - log(1-D) then you just get the logits
+            if self.state_only:
+                policy_batch['rewards'] = self.discriminator(policy_batch['observations'], None).detach()
+            else:
+                policy_batch['rewards'] = self.discriminator(policy_batch['observations'], policy_batch['actions']).detach()
+            self.discriminator.train()
+
+        self.policy_optimizer.train_step(policy_batch)
+
+        self.rewardf_eval_statistics['Disc Rew Mean'] = np.mean(ptu.get_numpy(policy_batch['rewards']))
+        self.rewardf_eval_statistics['Disc Rew Std'] = np.std(ptu.get_numpy(policy_batch['rewards']))
+        self.rewardf_eval_statistics['Disc Rew Max'] = np.max(ptu.get_numpy(policy_batch['rewards']))
+        self.rewardf_eval_statistics['Disc Rew Min'] = np.min(ptu.get_numpy(policy_batch['rewards']))
+    
+    
     @property
     def networks(self):
-        return [
-            self.encoder,
-            self.main_policy
-        ] + self.policy_optimizer.networks
-
+        return [self.discriminator] + self.policy_optimizer.networks
 
     def get_epoch_snapshot(self, epoch):
         snapshot = super().get_epoch_snapshot(epoch)
-        snapshot.update(
-            encoder=self.encoder,
-            main_policy=self.main_policy
-        )
+        snapshot.update(disc=self.discriminator)
         snapshot.update(self.policy_optimizer.get_snapshot())
         return snapshot
+
+
+def _elem_or_tuple_to_variable(elem_or_tuple):
+    if isinstance(elem_or_tuple, tuple):
+        return tuple(
+            _elem_or_tuple_to_variable(e) for e in elem_or_tuple
+        )
+    return Variable(ptu.from_numpy(elem_or_tuple).float(), requires_grad=False)
+
+
+def _filter_batch(np_batch):
+    for k, v in np_batch.items():
+        if v.dtype == np.bool:
+            yield k, v.astype(int)
+        else:
+            yield k, v
+
+
+def np_to_pytorch_batch(np_batch):
+    return {
+        k: _elem_or_tuple_to_variable(x)
+        for k, x in _filter_batch(np_batch)
+        if x.dtype != np.dtype('O')  # ignore object (e.g. dictionaries)
+    }
+
+
+def log_sum_exp(value, dim=None, keepdim=False):
+    """Numerically stable implementation of the operation
+
+    value.exp().sum(dim, keepdim).log()
+    """
+    # TODO: torch.max(value, dim=None) threw an error at time of writing
+    if dim is not None:
+        m, _ = torch.max(value, dim=dim, keepdim=True)
+        value0 = value - m
+        if keepdim is False:
+            m = m.squeeze(dim)
+        return m + torch.log(torch.sum(torch.exp(value0),
+                                       dim=dim, keepdim=keepdim))
+    else:
+        m = torch.max(value)
+        sum_exp = torch.sum(torch.exp(value - m))
+        if isinstance(sum_exp, Number):
+            return m + math.log(sum_exp)
+        else:
+            return m + torch.log(sum_exp)

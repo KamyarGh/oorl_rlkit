@@ -1,3 +1,6 @@
+- document the parameters of GAIL
+- change the name from GAIL to DAC
+- merge fetch_custom with gail_exp script
 - gen_meta_irl_expert_trajs.py
     - assuming the policy was trained with rl so it has an exploration policy
 - init for envs
@@ -21,5 +24,10 @@
 - you really need to sort out the yaml files... the nesting structure makes no sense at this point
 - in meta-irl-algorithm freq_eval stuff is ugly
 - fix normalize meta-expert-demos and other normalization scripts
+- need to rethink how meta tasks and meta task samplers are defined, their interfaces, etc.
+- Fully Specific Params Sampler for Fetch has too much copy-paste
+- make gen_meta_irl_expert_trajs more general
+- clean up few_shot_fetch_env.py
+- remove the Wrapped Absorbing Env wrapper
 
 - need to remove the copy of wrapped_goal.....

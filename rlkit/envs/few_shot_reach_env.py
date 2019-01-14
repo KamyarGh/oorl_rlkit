@@ -185,7 +185,7 @@ class _BaseParamsSampler(MetaTaskParamsSampler):
         return {'goal_color_center': color}, color
 
 
-class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
+class FewShotReachEnv(few_shot_robot_env.FewShotRobotEnv):
     """Superclass for all Fetch environments.
     I think easy fetch env is the one where you only need to lift up
     """
@@ -195,8 +195,7 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         has_object, target_in_the_air, target_offset, obj_range, target_range,
         distance_threshold, initial_qpos, reward_type, goal_high_prob,
         min_goal_extra_height=0.0, max_goal_extra_height=0.45,
-        min_dist_between_objs=0.1, same_color_radius=0.1,
-        terminate_on_success=False
+        min_dist_between_objs=0.1, same_color_radius=0.1
     ):
         """Initializes a new Fetch environment.
 
@@ -232,7 +231,7 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
 
         few_shot_robot_env.FewShotRobotEnv.__init__(
             self, model_path=model_path, n_substeps=n_substeps, n_actions=4,
-            initial_qpos=initial_qpos, terminate_on_success=terminate_on_success
+            initial_qpos=initial_qpos
         )
 
 
@@ -240,8 +239,8 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
     # ----------------------------
 
     def compute_reward(self, obs, goal, info):
-        correct_obj_rel_to_goal = obs['obs'][3*self.correct_obj_idx:3*self.correct_obj_idx+3].copy()
-        d = np.linalg.norm(correct_obj_rel_to_goal, axis=-1)
+        grip_pos = self.sim.data.get_site_xpos('robot0:grip')
+        d = np.linalg.norm(grip_pos - goal, axis=-1)
         if self.reward_type == 'sparse':
             return -(d > self.distance_threshold).astype(np.float32)
         else:
@@ -343,9 +342,11 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         return True
 
     def _sample_goal(self):
-        goal = self.initial_gripper_xpos[:3] + self.np_random.uniform(-self.target_range, self.target_range, size=3)
-        goal += self.target_offset
-        goal[2] = self.height_offset
+        if self.correct_obj_idx == 0:
+            target_pos = self.sim.data.get_site_xpos('object0')
+        else:
+            target_pos = self.sim.data.get_site_xpos('object1')
+        goal = target_pos + self.np_random.uniform(-self.target_range, self.target_range, size=3)
         if self.target_in_the_air and self.np_random.uniform() < self.goal_high_prob:
             goal[2] += self.np_random.uniform(self.min_goal_extra_height, self.max_goal_extra_height)
         return goal.copy()
@@ -419,8 +420,8 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         return tuple(self.goal_color_center)
 
     def _is_success(self, obs):
-        correct_obj_rel_to_goal = obs['obs'][3*self.correct_obj_idx:3*self.correct_obj_idx+3].copy()
-        d = np.linalg.norm(correct_obj_rel_to_goal, axis=-1)
+        grip_pos = self.sim.data.get_site_xpos('robot0:grip')
+        d = np.linalg.norm(grip_pos - self.goal, axis=-1)
         return (d < self.distance_threshold).astype(np.float32)
 
     def _env_setup(self, initial_qpos):
@@ -489,8 +490,8 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
 
 
 FEW_SHOT_ENV_XML_PATH = os.path.join(os.path.split(few_shot_robot_env.__file__)[0], 'assets', 'fetch', 'few_shot_pick_and_place.xml')
-class BasicFewShotFetchEnv(FewShotFetchEnv, gym_utils.EzPickle):
-    def __init__(self, reward_type='sparse', terminate_on_success=False):
+class BasicFewShotReachEnv(FewShotReachEnv, gym_utils.EzPickle):
+    def __init__(self, reward_type='sparse'):
         initial_qpos = {
             'robot0:slide0': 0.405,
             'robot0:slide1': 0.48,
@@ -499,21 +500,21 @@ class BasicFewShotFetchEnv(FewShotFetchEnv, gym_utils.EzPickle):
             'object1:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
         }
 
-        FewShotFetchEnv.__init__(
+        FewShotReachEnv.__init__(
             self, FEW_SHOT_ENV_XML_PATH, has_object=True, block_gripper=False, n_substeps=20,
             gripper_extra_height=0.2, target_in_the_air=True, target_offset=0.0,
-            obj_range=0.15, target_range=0.05, distance_threshold=0.05,
+            obj_range=0.15, target_range=0.0, distance_threshold=0.05,
             initial_qpos=initial_qpos, reward_type=reward_type, goal_high_prob=1.0,
-            min_goal_extra_height=0.15, max_goal_extra_height=0.2,
-            min_dist_between_objs=0.1, same_color_radius=0.3,
-            terminate_on_success=terminate_on_success
+            min_goal_extra_height=0.05, max_goal_extra_height=0.05,
+            min_dist_between_objs=0.1, same_color_radius=0.3
         )
         gym_utils.EzPickle.__init__(self)
-        self._max_episode_steps = 65
+        self._max_episode_steps = 30
 
 
-class ScaledBasicFewShotFetchEnv(BasicFewShotFetchEnv):
+class ScaledBasicFewShotReachEnv(BasicFewShotReachEnv):
     def __init__(self, reward_type='sparse'):
+        assert False, 'Invalid Statistics'
         self.obs_max = np.array([0.19673975, 0.19944288, 0.20234512, 0.19673975, 0.19944288,
             0.20234512, 0.28635685, 0.29541265, 0.00469703, 0.28635685,
             0.29541265, 0.00469703, 1.3, 1.3, 1.3,
@@ -528,7 +529,7 @@ class ScaledBasicFewShotFetchEnv(BasicFewShotFetchEnv):
         self.acts_max = np.array([0.24999889, 0.2499995 , 0.2499997 , 0.01499927])
         self.acts_min = np.array([-0.24999355, -0.24999517, -0.24999965, -0.01499985])
         self.SCALE = 0.99    
-        super(ScaledBasicFewShotFetchEnv, self).__init__()
+        super(ScaledBasicFewShotReachEnv, self).__init__()
 
 
     def _normalize_obs(self, observation):
@@ -555,7 +556,7 @@ class ScaledBasicFewShotFetchEnv(BasicFewShotFetchEnv):
         return obs, reward, done, info
 
 
-class ZeroScaledFewShotFetchEnv(ScaledBasicFewShotFetchEnv):
+class ZeroScaledFewShotReachEnv(ScaledBasicFewShotReachEnv):
     '''
     This is a debug env, do not use!
     '''
@@ -567,7 +568,7 @@ class ZeroScaledFewShotFetchEnv(ScaledBasicFewShotFetchEnv):
         return super().reset(task_params={'goal_color_center': np.zeros(3)}, obs_task_params=np.zeros(3))
 
 
-class ZeroUnscaledFewShotFetchEnv(BasicFewShotFetchEnv):
+class ZeroUnscaledFewShotReachEnv(BasicFewShotReachEnv):
     '''
     This is a debug env, do not use!
     '''
@@ -579,8 +580,9 @@ class ZeroUnscaledFewShotFetchEnv(BasicFewShotFetchEnv):
         return super().reset(task_params={'goal_color_center': np.zeros(3)}, obs_task_params=np.zeros(3))
 
 
-class Scaled0p9BasicFewShotFetchEnv(BasicFewShotFetchEnv):
+class Scaled0p9BasicFewShotReachEnv(BasicFewShotReachEnv):
     def __init__(self, reward_type='sparse'):
+        assert False, 'Invalid Statistics'
         self.SCALE = 0.90
         self.obs_max = np.array([0.19673975, 0.19944288, 0.20234512, 0.19673975, 0.19944288,
             0.20234512, 0.28635685, 0.29541265, 0.00469703, 0.28635685,
@@ -595,7 +597,7 @@ class Scaled0p9BasicFewShotFetchEnv(BasicFewShotFetchEnv):
             -9.42624227e-03, -9.39642018e-03])
         self.acts_max = np.array([0.24999889, 0.2499995 , 0.2499997 , 0.01499927])
         self.acts_min = np.array([-0.24999355, -0.24999517, -0.24999965, -0.01499985])
-        super(Scaled0p9BasicFewShotFetchEnv, self).__init__()
+        super(Scaled0p9BasicFewShotReachEnv, self).__init__()
 
 
     def _normalize_obs(self, observation):
@@ -622,7 +624,7 @@ class Scaled0p9BasicFewShotFetchEnv(BasicFewShotFetchEnv):
         return obs, reward, done, info
 
 
-class ZeroScaled0p9FewShotFetchEnv(Scaled0p9BasicFewShotFetchEnv):
+class ZeroScaled0p9FewShotReachEnv(Scaled0p9BasicFewShotReachEnv):
     '''
     This is a debug env, do not use!
     '''
@@ -634,23 +636,24 @@ class ZeroScaled0p9FewShotFetchEnv(Scaled0p9BasicFewShotFetchEnv):
         return super().reset(task_params={'goal_color_center': np.zeros(3)}, obs_task_params=np.zeros(3))
 
 
-class Scaled0p9LinearBasicFewShotFetchEnv(BasicFewShotFetchEnv):
+class Scaled0p9LinearBasicFewShotReachEnv(BasicFewShotReachEnv):
     def __init__(self, reward_type='sparse'):
         self.SCALE = 0.90
-        self.obs_max = np.array([0.22051651, 0.22935722, 0.20480309, 0.22051651, 0.22935722,
-            0.20480309, 0.30151219, 0.29303502, 0.00444365, 0.30151219,
-            0.29303502, 0.00444365, 1.3, 1.3, 1.3,
-            1.3, 1.3, 1.3, 0.05099135, 0.05091496,
-            0.01034575, 0.0103919 ])
-        self.obs_min = np.array([-1.98124936e-01, -2.04234846e-01, -8.51241789e-03, -1.98124936e-01,
-            -2.04234846e-01, -8.51241789e-03, -3.03874692e-01, -3.00712133e-01,
-            -2.30561716e-01, -3.03874692e-01, -3.00712133e-01, -2.30561716e-01,
+        self.obs_max = np.array([ 2.96110769e-01,  2.89824382e-01,  5.00027539e-02,  2.96110769e-01,
+            2.89824382e-01,  5.00027539e-02,  2.91497603e-01,  2.98248790e-01,
+            -4.82176644e-02,  2.91497603e-01,  2.98248790e-01, -4.82176644e-02,
+            1.3, 1.3, 1.3, 1.3,
+            1.3, 1.3,  3.49485219e-04,  4.44059408e-04,
+            2.06717618e-04,  2.27631923e-04])
+        self.obs_min = np.array([-2.93748042e-01, -2.98049287e-01,  4.99170965e-02, -2.93748042e-01,
+            -2.98049287e-01,  4.99170965e-02, -2.97426647e-01, -2.92919821e-01,
+            -1.15507540e-01, -2.97426647e-01, -2.92919821e-01, -1.15507540e-01,
             -1.3, -1.3, -1.3, -1.3,
-            -1.3, -1.3,  2.55108763e-06, -8.67902630e-08,
-            -1.20198677e-02, -9.60486720e-03])
-        self.acts_max = np.array([0.3667496 , 0.3676551 , 0.37420813, 0.015])
-        self.acts_min = np.array([-0.27095875, -0.26862562, -0.27479879, -0.015])
-        super(Scaled0p9LinearBasicFewShotFetchEnv, self).__init__()
+            -1.3, -1.3, -2.58833534e-05, -2.61153351e-05,
+            -2.76764282e-04, -3.55273460e-04])
+        self.acts_max = np.array([ 0.36886871,  0.36598542,  0.11753301, -0.005])
+        self.acts_min = np.array([-0.26792828, -0.26727201, -0.27240187, -0.015])
+        super(Scaled0p9LinearBasicFewShotReachEnv, self).__init__()
 
 
     def _normalize_obs(self, observation):
@@ -677,64 +680,7 @@ class Scaled0p9LinearBasicFewShotFetchEnv(BasicFewShotFetchEnv):
         return obs, reward, done, info
 
 
-class ZeroScaled0p9LinearFewShotFetchEnv(Scaled0p9LinearBasicFewShotFetchEnv):
-    '''
-    This is a debug env, do not use!
-    '''
-    def __init__(self):
-        super().__init__()
-    
-
-    def reset(self):
-        return super().reset(task_params={'goal_color_center': np.zeros(3)}, obs_task_params=np.zeros(3))
-
-
-
-class WrapAbsScaled0p9LinearBasicFewShotFetchEnv(BasicFewShotFetchEnv):
-    def __init__(self, reward_type='sparse'):
-        self.SCALE = 0.90
-        self.obs_max = np.array([0.22691067, 0.24073516, 0.20616085, 0.22691067, 0.24073516,
-            0.20616085, 0.30655007, 0.31246556, 0.00573548, 0.30655007,
-            0.31246556, 0.00573548, 1.3, 1.3, 1.3,
-            1.3, 1.3, 1.3, 0.05101679, 0.05100176,
-            0.01049234, 0.01052882])
-        self.obs_min = np.array([-2.07510251e-01, -2.21086958e-01, -3.47862349e-03, -2.07510251e-01,
-            -2.21086958e-01, -3.47862349e-03, -3.12571681e-01, -3.14835529e-01,
-            -2.17068484e-01, -3.12571681e-01, -3.14835529e-01, -2.17068484e-01,
-            -1.3, -1.3, -1.3, -1.3,
-            -1.3, -1.3,  0.00000000e+00, -8.67902630e-08,
-            -1.23168940e-02, -1.09300949e-02])
-        self.acts_max = np.array([0.36900074, 0.36956025, 0.37478169, 0.015])
-        self.acts_min = np.array([-0.26874253, -0.27001242, -0.27486427, -0.015])
-
-        super(WrapAbsScaled0p9LinearBasicFewShotFetchEnv, self).__init__(terminate_on_success=True)
-
-
-    def _normalize_obs(self, observation):
-        observation = (observation - self.obs_min) / (self.obs_max - self.obs_min)
-        observation *= 2 * self.SCALE
-        observation -= self.SCALE
-        return observation
-    
-
-    def _unnormalize_act(self, act):
-        return self.acts_min + (act + self.SCALE)*(self.acts_max - self.acts_min) / (2 * self.SCALE)
-    
-
-    def reset(self, task_params=None, obs_task_params=None):
-        obs = super().reset(task_params=task_params, obs_task_params=obs_task_params)
-        obs['obs'] = self._normalize_obs(obs['obs'].copy())
-        return obs
-
-
-    def step(self, action):
-        action = self._unnormalize_act(action.copy())
-        obs, reward, done, info = super().step(action)
-        obs['obs'] = self._normalize_obs(obs['obs'].copy())
-        return obs, reward, done, info
-
-
-class WrapAbsZeroScaled0p9LinearFewShotFetchEnv(WrapAbsScaled0p9LinearBasicFewShotFetchEnv):
+class ZeroScaled0p9LinearFewShotReachEnv(Scaled0p9LinearBasicFewShotReachEnv):
     '''
     This is a debug env, do not use!
     '''
@@ -757,7 +703,7 @@ if __name__ == '__main__':
         'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
         'object1:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
     }
-    env = FewShotFetchEnv(
+    env = FewShotReachEnv(
         FEW_SHOT_ENV_XML_PATH, has_object=True, block_gripper=False, n_substeps=20,
         gripper_extra_height=0.2, target_in_the_air=True, target_offset=0.0,
         obj_range=0.15, target_range=0.01, distance_threshold=0.05,

@@ -13,7 +13,7 @@ except ImportError as e:
 
 
 class FewShotRobotEnv(gym.Env):
-    def __init__(self, model_path, initial_qpos, n_actions, n_substeps):
+    def __init__(self, model_path, initial_qpos, n_actions, n_substeps, terminate_on_success=False):
         if model_path.startswith('/'):
             fullpath = model_path
         else:
@@ -42,6 +42,8 @@ class FewShotRobotEnv(gym.Env):
             obs_task_params=spaces.Box(-np.inf, np.inf, shape=obs['obs_task_params'].shape, dtype='float32'),
         ))
 
+        self.terminate_on_success = terminate_on_success
+
 
     @property
     def dt(self):
@@ -60,11 +62,14 @@ class FewShotRobotEnv(gym.Env):
         self.sim.step()
         self._step_callback()
         obs = self._get_obs()
-        done = False
         info = {
             'is_success': self._is_success(obs),
         }
         reward = self.compute_reward(obs, self.goal, info)
+        if self.terminate_on_success:
+            done = info['is_success']
+        else:
+            done = False
         return obs, reward, done, info
 
     def reset(self):
