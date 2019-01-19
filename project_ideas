@@ -11,3 +11,4 @@
 - learning mutually independent functions, i.e. mutually independent {(x,y)} sets so that if you know how one function
     looks like you don't know anything about the other functions. This could be useful for model-based RL. In that
     case wanna have mutually independent {(s,a,s')} so maybe you want to cluster actions, or cluster action dimensions????
+- learning from demonstrations plus reward (maybe sparse) and treat the problem as annealed importance sampling

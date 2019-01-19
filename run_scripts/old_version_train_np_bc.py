@@ -1,7 +1,5 @@
 import numpy as np
 import torch
-from torch import nn
-from torch.autograd import Variable
 
 from gym.spaces import Dict
 
@@ -9,16 +7,11 @@ from rllab.misc.instrument import VariantGenerator
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
+from rlkit.torch.networks import MlpPolicy
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
 
-# from rlkit.torch.irl.disc_models.gail_disc import Model as GAILDiscModel
-from rlkit.torch.irl.disc_models.gail_disc import MlpGAILDisc
-from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
-from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
-from rlkit.torch.networks import FlattenMlp
-
-from rlkit.torch.irl.np_airl import NeuralProcessAIRL
+from rlkit.torch.irl.np_bc import NeuralProcessBC
 from rlkit.torch.irl.encoders.trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder
 
 import yaml
@@ -49,6 +42,16 @@ def experiment(variant):
     env_specs = variant['env_specs']
     meta_train_env, meta_test_env = get_meta_env(env_specs)
 
+    # student policy should not have access to any task information
+    print(variant['algo_params'].keys())
+    meta_train_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
+    meta_train_env.policy_uses_task_params = False
+    meta_train_env.concat_task_params_to_policy_obs = False
+
+    meta_test_env.policy_uses_pixels = variant['algo_params']['policy_uses_pixels']
+    meta_test_env.policy_uses_task_params = False
+    meta_test_env.concat_task_params_to_policy_obs = False
+
     # set up the policy and training algorithm
     if isinstance(meta_train_env.observation_space, Dict):
         if variant['algo_params']['policy_uses_pixels']:
@@ -63,46 +66,25 @@ def experiment(variant):
     print('act dim: %d' % action_dim)
     sleep(3)
 
-    # make the policy and policy optimizer
-    hidden_sizes = [variant['algo_params']['policy_net_size']] * variant['algo_params']['policy_num_layers']
-    z_dim = variant['algo_params']['np_params']['z_dim']
-    qf1 = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim + z_dim + action_dim,
-        output_size=1,
-    )
-    qf2 = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim + z_dim + action_dim,
-        output_size=1,
-    )
-    vf = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim + z_dim,
-        output_size=1,
-    )
-    policy = ReparamTanhMultivariateGaussianPolicy(
-        hidden_sizes=hidden_sizes,
-        obs_dim=obs_dim + z_dim,
-        action_dim=action_dim,
-    )
-    
-    # disc_model = GAILDiscModel(obs_dim + action_dim + z_dim, hid_dim=variant['algo_params']['disc_net_size'])
-    disc_model = MlpGAILDisc(
-        hidden_sizes=variant['disc_hidden_sizes'],
-        output_size=1,
-        input_size=obs_dim + action_dim + z_dim,
+    policy_net_size = variant['algo_params']['policy_net_size']
+    policy_num_layers = variant['algo_params']['policy_num_layers']
+    hidden_sizes = [policy_net_size] * policy_num_layers
+    # policy = MlpPolicy(
+    #     [policy_net_size, policy_net_size],
+    #     action_dim,
+    #     obs_dim + variant['algo_params']['np_params']['z_dim'],
+    #     hidden_activation=torch.nn.functional.tanh,
+    #     layer_norm=variant['algo_params']['use_layer_norm']
+    # )
+    policy = MlpPolicy(
+        hidden_sizes,
+        action_dim,
+        obs_dim + variant['algo_params']['np_params']['z_dim'],
+        # hidden_activation=torch.nn.functional.relu,
         hidden_activation=torch.nn.functional.tanh,
-        layer_norm=variant['disc_uses_layer_norm']
-        # output_activation=identity,
-    )
-
-    policy_optimizer = NewSoftActorCritic(
-        policy=policy,
-        qf1=qf1,
-        qf2=qf2,
-        vf=vf,
-        **variant['algo_params']['policy_params']
+        output_activation=torch.nn.functional.tanh,
+        layer_norm=variant['algo_params']['use_layer_norm']
+        # batch_norm=True
     )
 
     # Make the neural process
@@ -112,7 +94,7 @@ def experiment(variant):
     timestep_enc_params['input_size'] = obs_dim + action_dim
     
     traj_samples, _ = train_context_buffer.sample_trajs(1, num_tasks=1)
-    # len_context_traj = traj_samples[0][0]['observations'].shape[0]
+    len_context_traj = traj_samples[0][0]['observations'].shape[0]
     len_context_traj = 5
     traj_enc_params['input_size'] = timestep_enc_params['output_size'] * len_context_traj
 
@@ -138,29 +120,11 @@ def experiment(variant):
         traj_enc,
         r2z_map
     )
-    
-    # class StupidDistFormat():
-    #     def __init__(self, var):
-    #         self.mean = var
-    # class ZeroModule(nn.Module):
-    #     def __init__(self, z_dim):
-    #         super().__init__()
-    #         self.z_dim = z_dim
-    #         self.fc = nn.Linear(10,10)
-        
-    #     def forward(self, context):
-    #         c_len = len(context)
-    #         return StupidDistFormat(Variable(torch.zeros(c_len, self.z_dim), requires_grad=False))
-    # np_enc = ZeroModule(variant['algo_params']['np_params']['z_dim'])
-
 
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
-    algorithm = NeuralProcessAIRL(
+    algorithm = NeuralProcessBC(
         meta_test_env, # env is the test env, training_env is the training env (following rlkit original setup)
-        
         policy,
-        disc_model,
-
         train_context_buffer,
         train_test_buffer,
         test_context_buffer,
@@ -168,11 +132,11 @@ def experiment(variant):
 
         np_enc,
 
-        policy_optimizer,
-
-        training_env=meta_train_env, # the env used for generating trajectories
         train_task_params_sampler=train_task_params_sampler,
         test_task_params_sampler=test_task_params_sampler,
+
+        training_env=meta_train_env, # the env used for generating trajectories
+
         **variant['algo_params']
     )
 
@@ -192,6 +156,8 @@ if __name__ == '__main__':
         spec_string = spec_file.read()
         exp_specs = yaml.load(spec_string)
     
+    if exp_specs['use_gpu']:
+        ptu.set_gpu_mode(True)
     exp_id = exp_specs['exp_id']
     exp_prefix = exp_specs['exp_name']
     seed = exp_specs['seed']

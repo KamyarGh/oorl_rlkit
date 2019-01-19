@@ -1,20 +1,22 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_gail_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: wrap_absorbing_state_only_traj_based
+  exp_name: using_expert_demos_for_policy_traning
   description: searching over the SAC hyperparameters
   use_gpu: false
-  num_workers: 24
+  num_workers: 32
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
 
   gail_params:
-    wrap_absorbing: [true]
-    state_only: [true]
+    wrap_absorbing: [false]
+    state_only: [false]
 
-    traj_based: [true]
+    policy_optim_batch_size_from_expert: [32, 64, 128, 256]
+
+    traj_based: [false]
     disc_num_trajs_per_batch: [64]
     disc_samples_per_traj: [16]
 
@@ -40,7 +42,9 @@ variables:
     # num_reward_updates: [65]
     # num_reward_updates: [65, 130]
     num_policy_updates: [1]
-    grad_pen_weight: [2.5, 5.0, 10.0]
+    # grad_pen_weight: [0.5, 1.0]
+    grad_pen_weight: [2.5, 5.0]
+    # grad_pen_weight: [2.5, 5.0, 10.0]
     # grad_pen_weight: [5.0, 10.0, 15.0]
     # grad_pen_weight: [5.0, 10.0, 15.0, 20.0]
     # grad_pen_weight: [1.0, 5.0, 10.0]
@@ -54,7 +58,8 @@ variables:
     # reward_scale: [2.0, 4.0, 6.0, 8.0]
     # reward_scale: [4.0, 6.0, 8.0, 10.0]
     # reward_scale: [6.0, 8.0, 10.0]
-    reward_scale: [2.0, 4.0, 8.0, 10.0]
+    reward_scale: [2.0, 8.0]
+    # reward_scale: [2.0, 4.0, 8.0, 10.0]
     # reward_scale: [2.0, 4.0, 6.0, 8.0]
     use_policy_as_ema_policy: [true]
     soft_ema_policy_exp: [0.005]
@@ -111,8 +116,8 @@ constants:
   # expert_name: scale_0p9_linear_demos_zero_1000_demos
   # expert_name: larger_object_range_easy_in_the_air_1000_demos
 
-  # expert_name: scale_0p9_linear_10K_demos_zero_1000_demos
-  expert_name: scale_0p9_wrap_absorbing_linear_fetch_zero_10K_demos
+  expert_name: new_scale_0p9_linear_fetch_zero_10K_demos
+  # expert_name: scale_0p9_wrap_absorbing_linear_fetch_zero_10K_demos
   expert_seed_run_idx: 0
   
   gail_params:
@@ -167,5 +172,5 @@ constants:
     # base_env_name: 'zero_0p9_scale_few_shot_fetch_env'
     # base_env_name: 'scaled_and_wrapped_target_in_air_easy'
 
-    # base_env_name: 'zero_0p9_linear_scale_few_shot_fetch_env'
-    base_env_name: 'wrap_abs_0p9_linear_scale_few_shot_fetch_env'
+    base_env_name: 'zero_0p9_linear_scale_few_shot_fetch_env'
+    # base_env_name: 'wrap_abs_0p9_linear_scale_few_shot_fetch_env'

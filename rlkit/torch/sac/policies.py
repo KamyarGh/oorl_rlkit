@@ -403,6 +403,83 @@ class ObsPreprocessedReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivaria
         return super().get_log_prob(obs, acts)
 
 
+class WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):
+    '''
+        This is a weird thing and I didn't know what to call.
+        Basically I wanted this so that if you need to preprocess
+        your inputs somehow (attention, gating, etc.) with an external module
+        before passing to the policy you could do so.
+        Assumption is that you do not want to update the parameters of the preprocessing
+        module so its output is always detached.
+    '''
+    def __init__(self, preprocess_model, z_dim, *args, train_preprocess_model=False, **kwargs):
+        self.save_init_params(locals())
+        super().__init__(*args, **kwargs)
+        # this is a hack so that it is not added as a submodule
+        if train_preprocess_model:
+            self._preprocess_model = preprocess_model
+        else:
+            # this is a hack so that it is not added as a submodule
+            self.preprocess_model_list = [preprocess_model]
+        self.z_dim = z_dim
+        self.train_preprocess_model = train_preprocess_model
+    
+
+    @property
+    def preprocess_model(self):
+        if self.train_preprocess_model:
+            return self._preprocess_model
+        else:
+            # this is a hack so that it is not added as a submodule
+            return self.preprocess_model_list[0]
+
+
+    def preprocess_fn(self, obs_batch):
+        if self.train_preprocess_model:
+            processed_obs_batch = self.preprocess_model(
+                obs_batch[:,:-self.z_dim],
+                False,
+                obs_batch[:,-self.z_dim:]
+            )
+        else:
+            mode = self.preprocess_model.training
+            self.preprocess_model.eval()
+            processed_obs_batch = self.preprocess_model(
+                obs_batch[:,:-self.z_dim],
+                False,
+                obs_batch[:,-self.z_dim:]
+            ).detach()
+            self.preprocess_model.train(mode)
+        return processed_obs_batch
+    
+
+    def forward(
+        self,
+        obs,
+        deterministic=False,
+        return_log_prob=False,
+        return_tanh_normal=False
+    ):
+        if self.train_preprocess_model:
+            obs = self.preprocess_fn(obs)
+        else:
+            obs = self.preprocess_fn(obs).detach()
+        return super().forward(
+            obs,
+            deterministic=deterministic,
+            return_log_prob=return_log_prob,
+            return_tanh_normal=return_tanh_normal
+        )
+
+
+    def get_log_prob(self, obs, acts):
+        if self.train_preprocess_model:
+            obs = self.preprocess_fn(obs)
+        else:
+            obs = self.preprocess_fn(obs).detach()
+        return super().get_log_prob(obs, acts)
+
+
 # class PostCondReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):
 #     '''
 #         This is a very simple version of a policy that conditions on a sample from the posterior

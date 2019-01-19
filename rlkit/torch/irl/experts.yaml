@@ -224,6 +224,14 @@ scale_0p9_wrap_absorbing_linear_fetch_zero_10K_demos:
     scale_0p9_wrap_absorbing_linear_10K_demos_zero_fetch_traj_gen
   ]
 
+
+new_scale_0p9_linear_fetch_zero_10K_demos:
+  description: "10K demos no wrap absorbing, ep len 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_new_zero_fetch_linear_demos_10K
+  ]
+
 # META-EXPERTS ----------------------------------------------------------------
 meta_simple_meta_reacher_expert_no_subsampling:
   description: "meta simple meta reacher expert, 6 trajs per task"
@@ -291,4 +299,179 @@ for_meta_zero_1000_demos:
   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
   seed_runs: [
     for_meta_alg_final_zero_fetch_traj_gen
+  ]
+
+scale_0p9_linear_demos_50_tasks_25_each:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_50_tasks_25_each
+  ]
+
+# scale_0p9_linear_demos_50_tasks_5_each:
+#   description: "episode length 65"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+#   seed_runs: [
+#     scale_0p9_linear_demos_50_tasks_5_each
+#   ]
+
+scale_0p9_linear_demos_50_tasks_5_each_subsample_4:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_50_tasks_5_each_subsample_4
+  ]
+
+scale_0p9_linear_demos_16_tasks_5_each_subsample_4:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_16_tasks_5_each_subsample_4
+  ]
+
+unscaled_linear_demos_16_tasks_5_each_subsample_4:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/few-shot-fetch-linear-demos-16-tasks-5-each-subsample-4/
+  seed_runs: [
+    few_shot_fetch_linear_demos_16_tasks_5_each_subsample_4_2019_01_17_02_29_32_0000--s-0/
+  ]
+
+scale_0p9_linear_demos_8_tasks_5_each_subsample_4:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_8_tasks_5_each_subsample_4
+  ]
+
+scale_0p9_linear_demos_16_tasks_5_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_16_tasks_5_each_subsample_8
+  ]
+
+scale_0p9_linear_demos_32_tasks_5_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_32_tasks_5_each_subsample_8
+  ]
+
+scale_0p9_linear_demos_32_tasks_10_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_32_tasks_10_each_subsample_8
+  ]
+
+scale_0p9_linear_demos_32_tasks_10_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_32_tasks_10_each_subsample_8
+  ]
+
+scale_0p9_linear_demos_32_tasks_7_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_32_tasks_7_each_subsample_8
+  ]
+
+scale_0p9_linear_demos_16_tasks_10_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_linear_demos_16_tasks_10_each_subsample_8
+  ]
+
+another_scale_0p9_linear_demos_16_tasks_5_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_linear_demos_16_tasks_5_each_subsample_8
+  ]
+
+another_scale_0p9_linear_demos_32_tasks_5_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_linear_demos_32_tasks_5_each_subsample_8
+  ]
+
+scale_0p9_linear_demos_12_tasks_5_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_linear_demos_12_tasks_5_each_subsample_8
+  ]
+
+scale_0p9_new_gen_few_shot_fetch_linear_demos_12_tasks_10_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_new_gen_few_shot_fetch_linear_demos_12_tasks_10_total_each_subsample_8
+  ]
+
+scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_10_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_10_total_each_subsample_8
+  ]
+
+scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_20_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_20_total_each_subsample_8
+  ]
+
+scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_15_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_15_total_each_subsample_8
+  ]
+
+scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_16_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_16_total_each_subsample_8
+  ]
+
+scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8
+  ]
+
+another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8
+  ]
+
+another_scale_0p9_new_gen_few_shot_fetch_linear_demos_24_tasks_16_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_new_gen_few_shot_fetch_linear_demos_24_tasks_16_total_each_subsample_8
+  ]
+
+another_scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_16_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_16_total_each_subsample_8
+  ]
+
+another_scale_0p9_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8
   ]

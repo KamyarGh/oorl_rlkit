@@ -15,10 +15,19 @@ def goal_distance(goal_a, goal_b):
 
 
 # These random seeds are literally me typing random numbers
-# (I didn't tune my random seed LOL)
+# (I didn't tune my random seed for demo generation LOL)
+def get_some_task_params_iterator(train_env=True, num=50):
+    # when you fix this make sure really all the colors are correct
+    if train_env:
+        return _BaseParamsSampler(random=2497, num_colors=num)
+    else:
+        return _BaseParamsSampler(random=8384, num_colors=num)
+
+
+# These random seeds are literally me typing random numbers
+# (I didn't tune my random seed for demo generation LOL)
 def get_task_params_iterator(train_env=True):
     # when you fix this make sure really all the colors are correct
-    raise NotImplementedError()
     if train_env:
         return _BaseParamsSampler(random=2497)
     else:
@@ -460,13 +469,13 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
             cor_idx = path['env_infos'][0]['correct_obj_idx']
             incor_idx = 1-cor_idx
             
-            cor_rel_pos = np.array([obs_dict[6+3*cor_idx:9+3*cor_idx] for obs_dict in path['observations']])
-            incor_rel_pos = np.array([obs_dict[6+3*incor_idx:9+3*incor_idx] for obs_dict in path['observations']])
-            cor_z = np.array([obs_dict[3*cor_idx+2] for obs_dict in path['observations']])
+            # cor_rel_pos = np.array([obs_dict[6+3*cor_idx:9+3*cor_idx] for obs_dict in path['observations']])
+            # incor_rel_pos = np.array([obs_dict[6+3*incor_idx:9+3*incor_idx] for obs_dict in path['observations']])
+            # cor_z = np.array([obs_dict[3*cor_idx+2] for obs_dict in path['observations']])
 
-            # cor_rel_pos = np.array([obs_dict['obs'][6+3*cor_idx:9+3*cor_idx] for obs_dict in path['observations']])
-            # incor_rel_pos = np.array([obs_dict['obs'][6+3*incor_idx:9+3*incor_idx] for obs_dict in path['observations']])            
-            # cor_z = np.array([obs_dict['obs'][3*cor_idx+2] for obs_dict in path['observations']])
+            cor_rel_pos = np.array([obs_dict['obs'][6+3*cor_idx:9+3*cor_idx] for obs_dict in path['observations']])
+            incor_rel_pos = np.array([obs_dict['obs'][6+3*incor_idx:9+3*incor_idx] for obs_dict in path['observations']])            
+            cor_z = np.array([obs_dict['obs'][3*cor_idx+2] for obs_dict in path['observations']])
 
             # cor_min_norm = np.min(np.linalg.norm(cor_rel_pos, axis=-1))
             # incor_min_norm = np.min(np.linalg.norm(incor_rel_pos, axis=-1))
@@ -635,22 +644,26 @@ class ZeroScaled0p9FewShotFetchEnv(Scaled0p9BasicFewShotFetchEnv):
 
 
 class Scaled0p9LinearBasicFewShotFetchEnv(BasicFewShotFetchEnv):
-    def __init__(self, reward_type='sparse'):
+    def __init__(self, reward_type='sparse', obs_max=None, obs_min=None, acts_max=None, acts_min=None, terminate_on_success=False):
         self.SCALE = 0.90
-        self.obs_max = np.array([0.22051651, 0.22935722, 0.20480309, 0.22051651, 0.22935722,
-            0.20480309, 0.30151219, 0.29303502, 0.00444365, 0.30151219,
-            0.29303502, 0.00444365, 1.3, 1.3, 1.3,
-            1.3, 1.3, 1.3, 0.05099135, 0.05091496,
-            0.01034575, 0.0103919 ])
-        self.obs_min = np.array([-1.98124936e-01, -2.04234846e-01, -8.51241789e-03, -1.98124936e-01,
-            -2.04234846e-01, -8.51241789e-03, -3.03874692e-01, -3.00712133e-01,
-            -2.30561716e-01, -3.03874692e-01, -3.00712133e-01, -2.30561716e-01,
-            -1.3, -1.3, -1.3, -1.3,
-            -1.3, -1.3,  2.55108763e-06, -8.67902630e-08,
-            -1.20198677e-02, -9.60486720e-03])
-        self.acts_max = np.array([0.3667496 , 0.3676551 , 0.37420813, 0.015])
-        self.acts_min = np.array([-0.27095875, -0.26862562, -0.27479879, -0.015])
-        super(Scaled0p9LinearBasicFewShotFetchEnv, self).__init__()
+        self.obs_max = obs_max
+        self.obs_min = obs_min
+        self.acts_max = acts_max
+        self.acts_min = acts_min
+        # self.obs_max = np.array([0.22051651, 0.22935722, 0.20480309, 0.22051651, 0.22935722,
+        #     0.20480309, 0.30151219, 0.29303502, 0.00444365, 0.30151219,
+        #     0.29303502, 0.00444365, 1.3, 1.3, 1.3,
+        #     1.3, 1.3, 1.3, 0.05099135, 0.05091496,
+        #     0.01034575, 0.0103919 ])
+        # self.obs_min = np.array([-1.98124936e-01, -2.04234846e-01, -8.51241789e-03, -1.98124936e-01,
+        #     -2.04234846e-01, -8.51241789e-03, -3.03874692e-01, -3.00712133e-01,
+        #     -2.30561716e-01, -3.03874692e-01, -3.00712133e-01, -2.30561716e-01,
+        #     -1.3, -1.3, -1.3, -1.3,
+        #     -1.3, -1.3,  2.55108763e-06, -8.67902630e-08,
+        #     -1.20198677e-02, -9.60486720e-03])
+        # self.acts_max = np.array([0.3667496 , 0.3676551 , 0.37420813, 0.015])
+        # self.acts_min = np.array([-0.27095875, -0.26862562, -0.27479879, -0.015])
+        super(Scaled0p9LinearBasicFewShotFetchEnv, self).__init__(terminate_on_success=terminate_on_success)
 
 
     def _normalize_obs(self, observation):
@@ -677,12 +690,49 @@ class Scaled0p9LinearBasicFewShotFetchEnv(BasicFewShotFetchEnv):
         return obs, reward, done, info
 
 
+class StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(Scaled0p9LinearBasicFewShotFetchEnv):
+    def __init__(self, terminate_on_success=False):
+        obs_max = np.array([0.20873973, 0.21238721, 0.20497428, 0.20873973, 0.21238721,
+            0.20497428, 0.29729787, 0.29597882, 0.00660929, 0.29729787,
+            0.29597882, 0.00660929, 1.3, 1.3, 1.3,
+            1.3, 1.3, 1.3, 0.05099425, 0.05097209,
+            0.01045247, 0.01020353])
+        obs_min = np.array([-2.07733303e-01, -2.22872196e-01, -6.20862381e-03, -2.07733303e-01,
+            -2.22872196e-01, -6.20862381e-03, -3.02834854e-01, -3.18478521e-01,
+            -2.35453885e-01, -3.02834854e-01, -3.18478521e-01, -2.35453885e-01,
+            -1.3, -1.3, -1.3, -1.3,
+            -1.3, -1.3,  2.55108763e-06, -8.67902630e-08,
+            -1.12767104e-02, -1.15187468e-02])
+        acts_max = np.array([0.36385158, 0.36506858, 0.37287046, 0.015])
+        acts_min = np.array([-0.27378214, -0.27318582, -0.27457426, -0.015])
+        super().__init__(
+            obs_max=obs_max,
+            obs_min=obs_min,
+            acts_max=acts_max,
+            acts_min=acts_min,
+            terminate_on_success=terminate_on_success
+        )
+
+
 class ZeroScaled0p9LinearFewShotFetchEnv(Scaled0p9LinearBasicFewShotFetchEnv):
     '''
     This is a debug env, do not use!
     '''
     def __init__(self):
-        super().__init__()
+        self.obs_max = np.array([0.22392513, 0.23576041, 0.2074778 , 0.22392513, 0.23576041,
+            0.2074778 , 0.32363979, 0.32648092, 0.0049561 , 0.32363979,
+            0.32648092, 0.0049561 , 1.3, 1.3, 1.3,
+            1.3, 1.3, 1.3, 0.05101674, 0.05100188,
+            0.01055062, 0.01049931])
+        self.obs_min = np.array([-1.99576796e-01, -2.14964995e-01, -6.89937522e-03, -1.99576796e-01,
+            -2.14964995e-01, -6.89937522e-03, -3.09594735e-01, -3.15771113e-01,
+            -2.35295369e-01, -3.09594735e-01, -3.15771113e-01, -2.35295369e-01,
+            -1.3, -1.3, -1.3, -1.3,
+            -1.3, -1.3,  2.55108763e-06, -8.67902630e-08,
+            -1.26888212e-02, -1.02645506e-02])
+        self.acts_max = np.array([0.36875932, 0.36954177, 0.37465581, 0.015])
+        self.acts_min = np.array([-0.27403988, -0.27340838, -0.2749071 , -0.015])
+        super().__init__(obs_max=self.obs_max, obs_min=self.obs_min, acts_max=self.acts_max, acts_min=self.acts_min)
     
 
     def reset(self):

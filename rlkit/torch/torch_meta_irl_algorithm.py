@@ -51,7 +51,7 @@ class TorchMetaIRLAlgorithm(MetaIRLAlgorithm, metaclass=abc.ABCMeta):
         # ))
 
         for mode in ['meta_train', 'meta_test']:
-            # logger.log("Collecting samples for evaluation")
+            logger.log("Collecting samples for evaluation")
             test_paths = self.obtain_eval_samples(epoch, mode=mode)
 
             statistics.update(eval_util.get_generic_path_information(

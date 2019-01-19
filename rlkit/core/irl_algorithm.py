@@ -231,7 +231,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                                 action,
                                 # env.action_space.sample(),
                                 # the reward doesn't matter
-                                0.0,
+                                reward,
                                 next_ob,
                                 np.array([False]),
                                 absorbing=np.array([0.0, 1.0]),
@@ -243,7 +243,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
                                 action,
                                 # env.action_space.sample(),
                                 # the reward doesn't matter
-                                0.0,
+                                reward,
                                 next_ob,
                                 np.array([False]),
                                 absorbing=np.array([1.0, 1.0]),

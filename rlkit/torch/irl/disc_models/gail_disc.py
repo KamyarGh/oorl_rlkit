@@ -220,16 +220,17 @@ class SecondVersionSingleColorFetchCustomDisc(PyTorchModule):
 
 
 class ObsGatingV1(PyTorchModule):
-    def __init__(self, clamp_magnitude=10.0):
+    def __init__(self, clamp_magnitude=10.0, z_dim=0):
         self.save_init_params(locals())
         super().__init__()
 
+        self.z_dim = z_dim
         self.clamp_magnitude = clamp_magnitude
         assert clamp_magnitude > 0.0
 
-        C_EMB_HID = 32
+        C_EMB_HID = 128
         self.color_embed_mlp = nn.Sequential(
-            nn.Linear(3, C_EMB_HID),
+            nn.Linear(3 + z_dim, C_EMB_HID),
             nn.BatchNorm1d(C_EMB_HID),
             nn.ReLU(),
             nn.Linear(C_EMB_HID, C_EMB_HID),
@@ -239,7 +240,7 @@ class ObsGatingV1(PyTorchModule):
         )
     
 
-    def forward(self, obs_batch, wrap_absorbing):
+    def forward(self, obs_batch, wrap_absorbing, z_batch=None):
         obj_0_state = torch.cat([obs_batch[:,:3], obs_batch[:,6:9]], dim=-1)
         obj_1_state = torch.cat([obs_batch[:,3:6], obs_batch[:,9:12]], dim=-1)
         obj_0_color = obs_batch[:,12:15]
@@ -248,8 +249,12 @@ class ObsGatingV1(PyTorchModule):
         if wrap_absorbing:
             absorbing = obs_batch[:,22:23]
 
-        color_0_embed = self.color_embed_mlp(obj_0_color)
-        color_1_embed = self.color_embed_mlp(obj_1_color)
+        if z_batch is None:
+            color_0_embed = self.color_embed_mlp(obj_0_color)
+            color_1_embed = self.color_embed_mlp(obj_1_color)
+        else:
+            color_0_embed = self.color_embed_mlp(torch.cat([obj_0_color, z_batch], dim=1))
+            color_1_embed = self.color_embed_mlp(torch.cat([obj_1_color, z_batch], dim=1))
         color_logits = color_0_embed - color_1_embed
         color_logits = torch.clamp(color_logits, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
         color_gate = F.sigmoid(color_logits)
@@ -264,16 +269,17 @@ class ObsGatingV1(PyTorchModule):
 
 
 class ThirdVersionSingleColorFetchCustomDisc(PyTorchModule):
-    def __init__(self, clamp_magnitude=10.0, state_only=False, wrap_absorbing=False):
+    def __init__(self, clamp_magnitude=10.0, state_only=False, wrap_absorbing=False, z_dim=0):
         self.save_init_params(locals())
         super().__init__()
 
+        self.z_dim = z_dim
         self.state_only = state_only
         self.wrap_absorbing = wrap_absorbing
         self.clamp_magnitude = clamp_magnitude
         assert clamp_magnitude > 0.0
 
-        self.obs_processor = ObsGatingV1(clamp_magnitude=self.clamp_magnitude)
+        self.obs_processor = ObsGatingV1(clamp_magnitude=self.clamp_magnitude, z_dim=z_dim)
         DISC_HID = 128
         input_dim = 10 if state_only else 14
         if wrap_absorbing: input_dim += 1
@@ -288,8 +294,8 @@ class ThirdVersionSingleColorFetchCustomDisc(PyTorchModule):
         )
     
     
-    def forward(self, obs_batch, act_batch):
-        obs_batch = self.obs_processor(obs_batch, self.wrap_absorbing)
+    def forward(self, obs_batch, act_batch, z_batch=None):
+        obs_batch = self.obs_processor(obs_batch, self.wrap_absorbing, z_batch)
         if self.state_only:
             disc_logits = self.disc_part(obs_batch)
         else:

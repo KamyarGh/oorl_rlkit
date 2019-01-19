@@ -1,3 +1,23 @@
+IMPLEMENTATION STUFF:
+- implement few shot evaluation script
+- implement few shot np_encoder
+- fixing a broken ELBO KL term
+    - tune it on np_bc
+- 
+
+THINGS LEFT TO TRY:
+larger disc models
+disc having momentum in Adam
+expert demos for policy optimization
+(done) (made things more stable) Reduce disc learning rate
+adam optimizer for the gate
+
+
+
+
+
+
+
 FOR MAKING THE REACH TASK WORK:
     - generate demonstrations for the zero single reach task
     - train it using the best big_gan_hyper_params model

@@ -1,26 +1,25 @@
 import numpy as np
-from gym.envs.mujoco import HalfCheetahEnv, InvertedPendulumEnv, ReacherEnv
+import torch
+from torch import nn
+from torch.autograd import Variable
+
 from gym.spaces import Dict
 
 from rllab.misc.instrument import VariantGenerator
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
-from rlkit.torch.sac.policies import ObsPreprocessedReparamTanhMultivariateGaussianPolicy
+
+from rlkit.envs import get_meta_env, get_meta_env_params_iters
+
+from rlkit.torch.irl.disc_models.gail_disc import ThirdVersionSingleColorFetchCustomDisc
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
-from rlkit.torch.irl.gail import GAIL
-from rlkit.torch.irl.gail_with_traj_batches import GAILWithTrajBatches
-from rlkit.torch.networks import FlattenMlp, Mlp
-from rlkit.torch.irl.disc_models.gail_disc import Model as GAILDiscModel
-from rlkit.torch.irl.disc_models.gail_disc import MlpGAILDisc
-from rlkit.torch.irl.disc_models.gail_disc import ResnetDisc
-from rlkit.torch.irl.disc_models.gail_disc import SingleColorFetchCustomDisc, \
-    SecondVersionSingleColorFetchCustomDisc, ThirdVersionSingleColorFetchCustomDisc
-from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
+from rlkit.torch.sac.policies import WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.networks import FlattenMlp
 
-from rlkit.envs import get_env
-
-import torch
+from rlkit.torch.irl.np_airl import NeuralProcessAIRL
+from rlkit.torch.irl.encoders.conv_trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder
+# from rlkit.torch.irl.encoders.trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder
 
 import yaml
 import argparse
@@ -32,8 +31,8 @@ import argparse
 import joblib
 from time import sleep
 
-EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
+EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
 
 class ObsPreprocessedQFunc(FlattenMlp):
@@ -45,12 +44,13 @@ class ObsPreprocessedQFunc(FlattenMlp):
         Assumption is that you do not want to update the parameters of the preprocessing
         module so its output is always detached.
     '''
-    def __init__(self, preprocess_model, *args, wrap_absorbing=False, **kwargs):
+    def __init__(self, preprocess_model, z_dim, *args, wrap_absorbing=False, **kwargs):
         self.save_init_params(locals())
         super().__init__(*args, **kwargs)
         # this is a hack so that it is not added as a submodule
         self.preprocess_model_list = [preprocess_model]
         self.wrap_absorbing = wrap_absorbing
+        self.z_dim = z_dim
     
 
     @property
@@ -62,7 +62,11 @@ class ObsPreprocessedQFunc(FlattenMlp):
     def preprocess_fn(self, obs_batch):
         mode = self.preprocess_model.training
         self.preprocess_model.eval()
-        processed_obs_batch = self.preprocess_model(obs_batch, self.wrap_absorbing).detach()
+        processed_obs_batch = self.preprocess_model(
+            obs_batch[:,:-self.z_dim],
+            self.wrap_absorbing,
+            obs_batch[:,-self.z_dim:]
+        ).detach()
         self.preprocess_model.train(mode)
         return processed_obs_batch
     
@@ -81,12 +85,13 @@ class ObsPreprocessedVFunc(FlattenMlp):
         Assumption is that you do not want to update the parameters of the preprocessing
         module so its output is always detached.
     '''
-    def __init__(self, preprocess_model, *args, wrap_absorbing=False, **kwargs):
+    def __init__(self, preprocess_model, z_dim, *args, wrap_absorbing=False, **kwargs):
         self.save_init_params(locals())
         super().__init__(*args, **kwargs)
         # this is a hack so that it is not added as a submodule
         self.preprocess_model_list = [preprocess_model]
         self.wrap_absorbing = wrap_absorbing
+        self.z_dim = z_dim
     
 
     @property
@@ -98,7 +103,11 @@ class ObsPreprocessedVFunc(FlattenMlp):
     def preprocess_fn(self, obs_batch):
         mode = self.preprocess_model.training
         self.preprocess_model.eval()
-        processed_obs_batch = self.preprocess_model(obs_batch, self.wrap_absorbing).detach()
+        processed_obs_batch = self.preprocess_model(
+            obs_batch[:,:-self.z_dim],
+            self.wrap_absorbing,
+            obs_batch[:,-self.z_dim:]
+        ).detach()
         self.preprocess_model.train(mode)
         return processed_obs_batch
     
@@ -109,95 +118,83 @@ class ObsPreprocessedVFunc(FlattenMlp):
 
 
 def experiment(variant):
-    # NEW WAY OF DOING EXPERT REPLAY BUFFERS USING ExpertReplayBuffer class
     with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
         listings = yaml.load(f.read())
-    print(listings.keys())
     expert_dir = listings[variant['expert_name']]['exp_dir']
     specific_run = listings[variant['expert_name']]['seed_runs'][variant['expert_seed_run_idx']]
     file_to_load = path.join(expert_dir, specific_run, 'extra_data.pkl')
-    expert_replay_buffer = joblib.load(file_to_load)['replay_buffer']
+    extra_data = joblib.load(file_to_load)
+
     # this script is for the non-meta-learning GAIL
-    expert_replay_buffer.policy_uses_task_params = variant['gail_params']['policy_uses_task_params']
-    expert_replay_buffer.concat_task_params_to_policy_obs = variant['gail_params']['concat_task_params_to_policy_obs']
+    train_context_buffer, train_test_buffer = extra_data['meta_train']['context'], extra_data['meta_train']['test']
+    test_context_buffer, test_test_buffer = extra_data['meta_test']['context'], extra_data['meta_test']['test']
 
-    # Now determine how many trajectories you want to use
-    if 'num_expert_trajs' in variant: raise NotImplementedError('Not implemented during the transition away from ExpertReplayBuffer')
-    
-    # we have to generate the combinations for the env_specs
+    # set up the envs
     env_specs = variant['env_specs']
-    if env_specs['train_test_env']:
-        env, training_env = get_env(env_specs)
-    else:
-        env, _ = get_env(env_specs)
-        training_env, _ = get_env(env_specs)
-    env.seed(variant['seed'])
-    training_env.seed(variant['seed'])
+    meta_train_env, meta_test_env = get_meta_env(env_specs)
 
-    # if variant['wrap_absorbing_state']:
-    #     assert False, 'Not handling train_test_env'
-    #     env = WrappedAbsorbingEnv(env)
-
-    print(env.observation_space)
-
-    if isinstance(env.observation_space, Dict):
-        if not variant['gail_params']['policy_uses_pixels']:
-            obs_dim = int(np.prod(env.observation_space.spaces['obs'].shape))
-            if variant['gail_params']['policy_uses_task_params']:
-                if variant['gail_params']['concat_task_params_to_policy_obs']:
-                    obs_dim += int(np.prod(env.observation_space.spaces['obs_task_params'].shape))
-                else:
-                    raise NotImplementedError()
+    # set up the policy and training algorithm
+    if isinstance(meta_train_env.observation_space, Dict):
+        if variant['algo_params']['policy_uses_pixels']:
+            raise NotImplementedError('Not implemented pixel version of things!')
         else:
-            raise NotImplementedError()
+            obs_dim = int(np.prod(meta_train_env.observation_space.spaces['obs'].shape))
     else:
-        obs_dim = int(np.prod(env.observation_space.shape))
-    action_dim = int(np.prod(env.action_space.shape))
+        obs_dim = int(np.prod(meta_train_env.observation_space.shape))
+    action_dim = int(np.prod(meta_train_env.action_space.shape))
 
-    print(obs_dim, action_dim)
+    print('obs dim: %d' % obs_dim)
+    print('act dim: %d' % action_dim)
     sleep(3)
 
-    if variant['gail_params']['state_only']: print('\n\nUSING STATE ONLY DISC\n\n')
+    # make the disc model
+    if variant['algo_params']['state_only']: print('\n\nUSING STATE ONLY DISC\n\n')
     disc_model = ThirdVersionSingleColorFetchCustomDisc(
         clamp_magnitude=variant['disc_clamp_magnitude'],
-        state_only=variant['gail_params']['state_only'],
-        wrap_absorbing=variant['gail_params']['wrap_absorbing']
+        state_only=variant['algo_params']['state_only'],
+        wrap_absorbing=variant['algo_params']['wrap_absorbing'],
+        z_dim=variant['algo_params']['np_params']['z_dim']
     )
-    if variant['gail_params']['use_target_disc']:
+    if variant['algo_params']['use_target_disc']:
         target_disc = disc_model.copy()
     else:
         target_disc = None
     print(disc_model)
     print(disc_model.clamp_magnitude)
 
+    z_dim = variant['algo_params']['np_params']['z_dim']
     policy_net_size = variant['policy_net_size']
     hidden_sizes = [policy_net_size] * variant['num_hidden_layers']
     qf1 = ObsPreprocessedQFunc(
         target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
+        z_dim,
         hidden_sizes=hidden_sizes,
-        input_size=6 + 4 + 4 + 1*variant['gail_params']['wrap_absorbing'],
+        input_size=6 + 4 + 4 + 1*variant['algo_params']['wrap_absorbing'],
         output_size=1,
-        wrap_absorbing=variant['gail_params']['wrap_absorbing']
+        wrap_absorbing=variant['algo_params']['wrap_absorbing']
     )
     qf2 = ObsPreprocessedQFunc(
         target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
+        z_dim,
         hidden_sizes=hidden_sizes,
-        input_size=6 + 4 + 4 + 1*variant['gail_params']['wrap_absorbing'],
+        input_size=6 + 4 + 4 + 1*variant['algo_params']['wrap_absorbing'],
         output_size=1,
-        wrap_absorbing=variant['gail_params']['wrap_absorbing']
+        wrap_absorbing=variant['algo_params']['wrap_absorbing']
     )
     vf = ObsPreprocessedVFunc(
         target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
+        z_dim,
         hidden_sizes=hidden_sizes,
-        input_size=6 + 4 + 1*variant['gail_params']['wrap_absorbing'],
+        input_size=6 + 4 + 1*variant['algo_params']['wrap_absorbing'],
         output_size=1,
-        wrap_absorbing=variant['gail_params']['wrap_absorbing']
+        wrap_absorbing=variant['algo_params']['wrap_absorbing']
     )
-    policy = ObsPreprocessedReparamTanhMultivariateGaussianPolicy(
+    policy = WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy(
         target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
+        z_dim,
         hidden_sizes=hidden_sizes,
         obs_dim=6 + 4,
-        action_dim=4,
+        action_dim=4
     )
 
     policy_optimizer = NewSoftActorCritic(
@@ -205,35 +202,53 @@ def experiment(variant):
         qf1=qf1,
         qf2=qf2,
         vf=vf,
-        wrap_absorbing=variant['gail_params']['wrap_absorbing'],
+        wrap_absorbing=variant['algo_params']['wrap_absorbing'],
         **variant['policy_params']
     )
-    algorithm = GAIL(
-        env,
+
+    # Make the neural process
+    traj_enc = TrivialTrajEncoder()
+    r2z_map = TrivialR2ZMap(z_dim)
+    
+    np_enc = TrivialNPEncoder(
+        variant['algo_params']['np_params']['agg_type'],
+        traj_enc,
+        r2z_map
+    )
+    
+    train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
+
+    algorithm = NeuralProcessAIRL(
+        meta_test_env, # env is the test env, training_env is the training env (following rlkit original setup)
+        
         policy,
         disc_model,
-        policy_optimizer,
-        expert_replay_buffer,
-        training_env=training_env,
-        target_disc=target_disc,
-        **variant['gail_params']
-    )
-    print(algorithm.use_target_disc)
-    print(algorithm.soft_target_disc_tau)
-    print(algorithm.exploration_policy)
-    print(algorithm.eval_policy)
-    print(algorithm.policy_optimizer.policy_optimizer.defaults['lr'])
-    print(algorithm.policy_optimizer.qf1_optimizer.defaults['lr'])
-    print(algorithm.policy_optimizer.qf2_optimizer.defaults['lr'])
-    print(algorithm.policy_optimizer.vf_optimizer.defaults['lr'])
-    print(algorithm.disc_optimizer.defaults['lr'])
 
-    if variant['gail_params']['wrap_absorbing']:
-        print('\n\nWRAP ABSORBING\n\n')
-    
-    # assert False, "Have not added new sac yet!"
+        train_context_buffer,
+        train_test_buffer,
+        test_context_buffer,
+        test_test_buffer,
+
+        np_enc,
+
+        policy_optimizer,
+
+        training_env=meta_train_env, # the env used for generating trajectories
+        train_task_params_sampler=train_task_params_sampler,
+        test_task_params_sampler=test_task_params_sampler,
+
+        target_disc=target_disc,
+        **variant['algo_params']
+    )
+
     if ptu.gpu_enabled():
         algorithm.cuda()
+        # print(target_disc)
+        # print(next(algorithm.discriminator.obs_processor.parameters()).is_cuda)
+        # print(next(algorithm.main_policy.preprocess_model.parameters()).is_cuda)
+        # print(algorithm.main_policy.preprocess_model is algorithm.main_policy.copy().preprocess_model)
+        # print(algorithm.main_policy.preprocess_model is algorithm.main_policy.preprocess_model.copy())
+        # 1/0
     algorithm.train()
 
     return 1

@@ -1,7 +1,7 @@
 from collections import OrderedDict
+from random import sample
 
 import numpy as np
-from copy import deepcopy
 
 import torch
 import torch.optim as optim
@@ -14,10 +14,10 @@ import rlkit.torch.pytorch_util as ptu
 from rlkit.core.eval_util import create_stats_ordered_dict
 from rlkit.torch.torch_meta_irl_algorithm import TorchMetaIRLAlgorithm
 from rlkit.torch.sac.policies import MakeDeterministic
-from rlkit.core.train_util import linear_schedule
-
+from rlkit.samplers.util import rollout
 from rlkit.torch.sac.policies import PostCondMLPPolicyWrapper
 from rlkit.data_management.path_builder import PathBuilder
+
 from gym.spaces import Dict
 
 
@@ -31,18 +31,19 @@ def concat_trajs(trajs):
     return new_dict
 
 
-def subsample_traj(traj, num_samples):
-    traj_len = traj['observations'].shape[0]
-    idxs = np.random.choice(traj_len, size=num_samples, replace=traj_len<num_samples)
-    new_traj = {k: traj[k][idxs,...] for k in traj}
-    return new_traj
-
-
 class NeuralProcessBC(TorchMetaIRLAlgorithm):
+    '''
+        Meta-BC using a neural process
+
+        assuming the context trajectories all have the same length and flat and everything nice
+    '''
     def __init__(
             self,
             env,
-            policy,
+
+            # this is the main policy network that we wrap with
+            # PostCondWrapperPolicy for get_exploration policy
+            main_policy,
 
             train_context_expert_replay_buffer,
             train_test_expert_replay_buffer,
@@ -51,17 +52,20 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
 
             np_encoder,
 
-            num_tasks_used_per_update=5,
+            num_updates_per_epoch=1000,
+            num_policy_steps_per_update=0,
+            num_full_model_steps_per_update=1,
+            num_tasks_used_per_update=4,
             num_context_trajs_for_training=3,
-            num_test_trajs_for_training=5,
-            train_samples_per_traj=8,
+            num_test_trajs_for_training=3,
 
-            num_context_trajs_for_exploration=3,
-            
+            # for each task, for each context, infer post, for each post sample, generate some eval trajs
             num_tasks_per_eval=10,
             num_diff_context_per_eval_task=2,
-            num_eval_trajs_per_post_sample=2,
             num_context_trajs_for_eval=3,
+            num_eval_trajs_per_post_sample=2,
+
+            num_context_trajs_for_exploration=3,
 
             policy_lr=1e-3,
             policy_optimizer_class=optim.Adam,
@@ -69,28 +73,10 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             encoder_lr=1e-3,
             encoder_optimizer_class=optim.Adam,
 
-            num_update_loops_per_train_call=65,
-
-            use_target_policy=False,
-            target_policy=None,
-            soft_target_policy_tau=0.005,
-
-            use_target_enc=False,
-            target_enc=None,
-            soft_target_enc_tau=0.005,
-
-            objective='mse', # or coul be 'max_like'
-
             plotter=None,
             render_eval_paths=False,
-            eval_deterministic=False,
-
             **kwargs
     ):
-        if kwargs['policy_uses_pixels']: raise NotImplementedError('policy uses pixels')
-        if kwargs['wrap_absorbing']: raise NotImplementedError('wrap absorbing')
-        assert not eval_deterministic
-        
         super().__init__(
             env=env,
             train_context_expert_replay_buffer=train_context_expert_replay_buffer,
@@ -100,92 +86,47 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             **kwargs
         )
 
-        self.policy = policy
+        self.main_policy = main_policy
         self.encoder = np_encoder
-        self.eval_statistics = None
+        self.rewardf_eval_statistics = None
 
         self.policy_optimizer = policy_optimizer_class(
-            self.policy.parameters(),
+            self.main_policy.parameters(),
             lr=policy_lr,
-            betas=(0.9, 0.999)
         )
         self.encoder_optimizer = encoder_optimizer_class(
             self.encoder.parameters(),
             lr=encoder_lr,
-            betas=(0.9, 0.999)
         )
 
+        self.num_updates_per_epoch = num_updates_per_epoch
+        self.num_policy_steps_per_update = num_policy_steps_per_update
+        self.num_full_model_steps_per_update = num_full_model_steps_per_update
         self.num_tasks_used_per_update = num_tasks_used_per_update
         self.num_context_trajs_for_training = num_context_trajs_for_training
         self.num_test_trajs_for_training = num_test_trajs_for_training
-        self.train_samples_per_traj = train_samples_per_traj
 
-        self.num_context_trajs_for_exploration = num_context_trajs_for_exploration
-        
         self.num_tasks_per_eval = num_tasks_per_eval
         self.num_diff_context_per_eval_task = num_diff_context_per_eval_task
-        self.num_eval_trajs_per_post_sample = num_eval_trajs_per_post_sample
         self.num_context_trajs_for_eval = num_context_trajs_for_eval
+        self.num_eval_trajs_per_post_sample = num_eval_trajs_per_post_sample
 
-        self.use_target_enc = use_target_enc
-        self.soft_target_enc_tau = soft_target_enc_tau
+        self.num_context_trajs_for_exploration = num_context_trajs_for_exploration
 
-        self.use_target_policy = use_target_policy
-        self.soft_target_policy_tau = soft_target_policy_tau
-
-        if use_target_enc:
-            if target_enc is None:
-                print('\n\nMAKING TARGET ENC\n\n')
-                self.target_enc = deepcopy(self.encoder)
-            else:
-                print('\n\nUSING GIVEN TARGET ENC\n\n')
-                self.target_enc = target_enc
-        
-        if use_target_policy:
-            if target_policy is None:
-                print('\n\nMAKING TARGET ENC\n\n')
-                self.target_policy = deepcopy(self.policy)
-            else:
-                print('\n\nUSING GIVEN TARGET ENC\n\n')
-                self.target_policy = target_policy
-        
-        self.num_update_loops_per_train_call = num_update_loops_per_train_call
-
-        assert objective in ['mse', 'max_like']
-        self.use_mse_objective = objective == 'mse'
-        if self.use_mse_objective:
-            self.mse_loss = nn.MSELoss()
-            if ptu.gpu_enabled():
-                self.mse_loss.cuda()
-    
 
     def get_exploration_policy(self, task_identifier):
-        if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
         list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
             task_identifier,
             self.num_context_trajs_for_exploration,
         )
-        if self.use_target_enc:
-            enc_to_use = self.target_enc
-        else:
-            enc_to_use = self.encoder
-        
-        mode = enc_to_use.training
-        enc_to_use.eval()
-        post_dist = enc_to_use([list_of_trajs])
-        enc_to_use.train(mode)
-
+        post_dist = self.encoder([list_of_trajs])
         # z = post_dist.sample()
         z = post_dist.mean
         z = z.cpu().data.numpy()[0]
-        if self.use_target_policy:
-            return PostCondMLPPolicyWrapper(self.target_policy, z)
-        else:
-            return PostCondMLPPolicyWrapper(self.policy, z)
+        return PostCondMLPPolicyWrapper(self.main_policy, z)
     
 
     def get_eval_policy(self, task_identifier, mode='meta_test'):
-        if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
         if mode == 'meta_train':
             rb = self.train_context_expert_replay_buffer
         else:
@@ -194,135 +135,99 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             task_identifier,
             self.num_context_trajs_for_eval,
         )
-        if self.use_target_enc:
-            enc_to_use = self.target_enc
-        else:
-            enc_to_use = self.encoder
-        
-        mode = enc_to_use.training
-        enc_to_use.eval()
-        post_dist = enc_to_use([list_of_trajs])
-        enc_to_use.train(mode)
-
+        post_dist = self.encoder([list_of_trajs])
         # z = post_dist.sample()
         z = post_dist.mean
         z = z.cpu().data.numpy()[0]
-        if self.use_target_policy:
-            return PostCondMLPPolicyWrapper(self.target_policy, z)
-        else:
-            return PostCondMLPPolicyWrapper(self.policy, z)
-    
+        return PostCondMLPPolicyWrapper(self.main_policy, z)
+
 
     def _get_training_batch(self):
+        # context batch is a list of list of dicts
         context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
             self.num_context_trajs_for_training,
             num_tasks=self.num_tasks_used_per_update,
             keys=['observations', 'actions']
         )
 
-        # get the pred version of the context batch
-        # subsample the trajs
-        flat_context_batch = [subsample_traj(traj, self.train_samples_per_traj) for task_trajs in context_batch for traj in task_trajs]
+        flat_context_batch = [traj for task_trajs in context_batch for traj in task_trajs]
         context_pred_batch = concat_trajs(flat_context_batch)
 
         test_batch, _ = self.train_test_expert_replay_buffer.sample_trajs(
             self.num_test_trajs_for_training,
             task_identifiers=task_identifiers_list,
-            keys=['observations', 'actions'],
-            samples_per_traj=self.train_samples_per_traj
+            keys=['observations', 'actions']
         )
         flat_test_batch = [traj for task_trajs in test_batch for traj in task_trajs]
         test_pred_batch = concat_trajs(flat_test_batch)
 
-        return context_batch, context_pred_batch, test_pred_batch
+        # if we want to handle envs with different traj lengths we need to do
+        # something smarter with how we repeat z
+        traj_len = flat_context_batch[0]['observations'].shape[0]
+        assert all(t['observations'].shape[0] == traj_len for t in flat_context_batch), "Not handling different traj lens"
+        assert all(t['observations'].shape[0] == traj_len for t in flat_test_batch), "Not handling different traj lens"
 
+        return context_batch, context_pred_batch, test_pred_batch, traj_len
+    
 
-    def _do_training(self, epoch):
-        for _ in range(self.num_update_loops_per_train_call):
-            self._do_training_step(epoch)
-
-
-    def _do_training_step(self, epoch):
-        '''
-            Train the discriminator
-        '''
-        self.encoder_optimizer.zero_grad()
-        self.policy_optimizer.zero_grad()
-
-        # prep the batches
-        context_batch, context_pred_batch, test_pred_batch = self._get_training_batch()
+    def _compute_training_loss(self, training_encoder=True):
+        context_batch, context_pred_batch, test_pred_batch, traj_len = self._get_training_batch()
+        
+        post_dist = self.encoder(context_batch)
+        # z = post_dist.sample() # N_tasks x Dim
+        z = post_dist.mean
+        if not training_encoder: z = z.detach()
+        context_pred_z = z.repeat(1, traj_len * self.num_context_trajs_for_training).view(
+            -1,
+            z.size(1)
+        )
+        test_pred_z = z.repeat(1, traj_len * self.num_test_trajs_for_training).view(
+            -1,
+            z.size(1)
+        )
+        z_batch = torch.cat([context_pred_z, test_pred_z], dim=0)
 
         # convert it to a pytorch tensor
         # note that our objective says we should maximize likelihood of
         # BOTH the context_batch and the test_batch
         obs_batch = np.concatenate((context_pred_batch['observations'], test_pred_batch['observations']), axis=0)
         obs_batch = Variable(ptu.from_numpy(obs_batch), requires_grad=False)
-
         acts_batch = np.concatenate((context_pred_batch['actions'], test_pred_batch['actions']), axis=0)
         acts_batch = Variable(ptu.from_numpy(acts_batch), requires_grad=False)
 
-        post_dist = self.encoder(context_batch)
-        # z = post_dist.sample() # N_tasks x Dim
-        z = post_dist.mean
+        # get action predictions
+        pred_acts = self.main_policy(torch.cat([obs_batch, z_batch], dim=-1))
+        loss = torch.sum((acts_batch - pred_acts)**2, dim=1).mean()
 
-        # make z's for expert samples
-        context_pred_z = z.repeat(1, self.num_context_trajs_for_training * self.train_samples_per_traj).view(
-            -1,
-            z.size(1)
-        )
-        test_pred_z = z.repeat(1, self.num_test_trajs_for_training * self.train_samples_per_traj).view(
-            -1,
-            z.size(1)
-        )
-        z_batch = torch.cat([context_pred_z, test_pred_z], dim=0)
+        return loss
 
-        input_batch = torch.cat([obs_batch, z_batch], dim=-1)
+
+    def _do_training(self):
+        for i in range(self.num_updates_per_epoch):
+            # train just the policy for a certain number of iters
+            self.encoder_optimizer.zero_grad()
+
+            for _ in range(self.num_policy_steps_per_update):
+                self.policy_optimizer.zero_grad()
+                loss = self._compute_training_loss(training_encoder=False)
+                loss.backward()
+                self.policy_optimizer.step()
+            
+            for _ in range(self.num_full_model_steps_per_update):
+                self.encoder_optimizer.zero_grad()
+                self.policy_optimizer.zero_grad()
+                loss = self._compute_training_loss(training_encoder=True)
+                loss.backward()
+                self.encoder_optimizer.step()
+                self.policy_optimizer.step()
         
-        if self.use_mse_objective:
-            pred_acts = self.policy(input_batch)[1]
-            loss = self.mse_loss(pred_acts, acts_batch)
-        else:
-            loss = -1.0 * self.policy.get_log_prob(input_batch, acts_batch).mean()
-        loss.backward()
-
-
-        self.policy_optimizer.step()
-        self.encoder_optimizer.step()
-
-        if self.use_target_policy:
-            ptu.soft_update_from_to(self.policy, self.target_policy, self.soft_target_policy_tau)
-        if self.use_target_enc:
-            ptu.soft_update_from_to(self.encoder, self.target_enc, self.soft_target_enc_tau)
-
-        """
-        Save some statistics for eval
-        """
         if self.eval_statistics is None:
             """
             Eval should set this to None.
             This way, these statistics are only computed for one batch.
             """
             self.eval_statistics = OrderedDict()
-            if self.use_target_policy:
-                enc_to_use = self.target_enc if self.use_target_enc else self.encoder
-                pol_to_use = self.target_policy
-
-                if self.use_mse_objective:
-                    pred_acts = pol_to_use(input_batch)[1]
-                    target_loss = self.mse_loss(pred_acts, acts_batch)
-                    self.eval_statistics['Target MSE Loss'] = np.mean(ptu.get_numpy(target_loss))
-                else:
-                    target_loss = -1.0*pol_to_use.get_log_prob(input_batch, acts_batch).mean()
-                    self.eval_statistics['Target Neg Log Like'] = np.mean(ptu.get_numpy(target_loss))
-            
-            if self.use_mse_objective:
-                self.eval_statistics['Target MSE Loss'] = np.mean(ptu.get_numpy(loss))
-            else:
-                self.eval_statistics['Target Neg Log Like'] = np.mean(ptu.get_numpy(loss))
-    
-
-    def evaluate(self, epoch):
-        super().evaluate(epoch)
+            self.eval_statistics['Regr MSE Loss'] = np.mean(ptu.get_numpy(loss))
 
 
     def obtain_eval_samples(self, epoch, mode='meta_train'):
@@ -396,18 +301,20 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         
         # flatten the list of lists
         return all_eval_tasks_paths
-    
+                
+
     @property
     def networks(self):
-        networks_list = [self.encoder, self.policy]
-        if self.use_target_enc: networks_list += [self.target_enc]
-        if self.use_target_policy: networks_list += [self.target_policy]
-        return networks_list
+        return [
+            self.encoder,
+            self.main_policy
+        ]
+
 
     def get_epoch_snapshot(self, epoch):
         snapshot = super().get_epoch_snapshot(epoch)
-        snapshot.update(encoder=self.encoder)
-        snapshot.update(policy=self.policy)
-        if self.use_target_enc: snapshot.update(target_enc=self.target_enc)
-        if self.use_target_policy: snapshot.update(target_enc=self.target_policy)
+        snapshot.update(
+            encoder=self.encoder,
+            main_policy=self.main_policy
+        )
         return snapshot

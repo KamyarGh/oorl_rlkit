@@ -1,6 +1,9 @@
 import numpy as np
+from random import randint
 from gym.envs.mujoco import HalfCheetahEnv, InvertedPendulumEnv, ReacherEnv
 from gym.spaces import Dict
+
+from copy import deepcopy
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.torch.gen_exp_traj_algorithm import ExpertTrajGeneratorAlgorithm
@@ -37,7 +40,8 @@ def fill_buffer(
     policy_is_scripted=False,
     render=False,
     check_for_success=False,
-    wrap_absorbing=False
+    wrap_absorbing=False,
+    subsample_factor=1
 ):
     expert_uses_pixels = expert_policy_specs['policy_uses_pixels']
     expert_uses_task_params = expert_policy_specs['policy_uses_task_params']
@@ -60,7 +64,10 @@ def fill_buffer(
                 expert_policy.reset(meta_env)
             terminal = False
 
-            while (not terminal) and len(cur_path_builder) < max_path_length:
+            subsample_mod = randint(0, subsample_factor-1)
+            step_num = 0
+
+            while (not terminal) and step_num < max_path_length:
                 if render: meta_env.render()
                 if isinstance(meta_env.observation_space, Dict):
                     if expert_uses_pixels:
@@ -91,17 +98,19 @@ def fill_buffer(
                 reward = raw_reward
                 reward = np.array([reward])
 
-                cur_path_builder.add_all(
-                    observations=observation,
-                    actions=action,
-                    rewards=reward,
-                    next_observations=next_ob,
-                    terminals=terminal_array,
-                    absorbing=np.array([0.0, 0.0]),
-                    agent_infos=agent_info,
-                    env_infos=env_info
-                )
+                if step_num % subsample_factor == subsample_mod:
+                    cur_path_builder.add_all(
+                        observations=observation,
+                        actions=action,
+                        rewards=reward,
+                        next_observations=next_ob,
+                        terminals=terminal_array,
+                        absorbing=np.array([0.0, 0.0]),
+                        agent_infos=agent_info,
+                        env_infos=env_info
+                    )
                 observation = next_ob
+                step_num += 1
 
             if terminal and wrap_absorbing:
                 '''
@@ -220,8 +229,11 @@ def experiment(specs):
         concat_task_params_to_policy_obs=False
     )
 
-    train_context_buffer, train_test_buffer = buffer_constructor(meta_train_env), buffer_constructor(meta_train_env)
-    test_context_buffer, test_test_buffer = buffer_constructor(meta_test_env), buffer_constructor(meta_test_env)
+    # train_context_buffer, train_test_buffer = buffer_constructor(meta_train_env), buffer_constructor(meta_train_env)
+    # test_context_buffer, test_test_buffer = buffer_constructor(meta_test_env), buffer_constructor(meta_test_env)
+
+    train_context_buffer = buffer_constructor(meta_train_env)
+    test_context_buffer = buffer_constructor(meta_test_env)
 
     render = specs['render']
     check_for_success = specs['check_for_success']
@@ -231,15 +243,18 @@ def experiment(specs):
         meta_train_params_sampler, specs['num_rollouts_per_task'], max_path_length,
         no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
-        check_for_success=check_for_success
+        check_for_success=check_for_success,
+        subsample_factor=specs['subsample_factor']
     )
-    fill_buffer(
-        train_test_buffer, meta_train_env, policy, expert_policy_specs,
-        meta_train_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-        no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
-        policy_is_scripted=policy_is_scripted, render=render,
-        check_for_success=check_for_success
-    )
+    train_test_buffer = deepcopy(train_context_buffer)
+    # fill_buffer(
+    #     train_test_buffer, meta_train_env, policy, expert_policy_specs,
+    #     meta_train_params_sampler, specs['num_rollouts_per_task'], max_path_length,
+    #     no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
+    #     policy_is_scripted=policy_is_scripted, render=render,
+    #     check_for_success=check_for_success,
+    #     subsample_factor=specs['subsample_factor']
+    # )
 
     # fill the test buffers
     fill_buffer(
@@ -247,15 +262,18 @@ def experiment(specs):
         meta_test_params_sampler, specs['num_rollouts_per_task'], max_path_length,
         no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
-        check_for_success=check_for_success
+        check_for_success=check_for_success,
+        subsample_factor=specs['subsample_factor']
     )
-    fill_buffer(
-        test_test_buffer, meta_train_env, policy, expert_policy_specs,
-        meta_test_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-        no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
-        policy_is_scripted=policy_is_scripted, render=render,
-        check_for_success=check_for_success
-    )
+    test_test_buffer = deepcopy(test_context_buffer)
+    # fill_buffer(
+    #     test_test_buffer, meta_train_env, policy, expert_policy_specs,
+    #     meta_test_params_sampler, specs['num_rollouts_per_task'], max_path_length,
+    #     no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
+    #     policy_is_scripted=policy_is_scripted, render=render,
+    #     check_for_success=check_for_success,
+    #     subsample_factor=specs['subsample_factor']
+    # )
 
     # save the replay buffers
     d = {

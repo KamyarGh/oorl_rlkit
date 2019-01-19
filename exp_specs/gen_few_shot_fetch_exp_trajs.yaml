@@ -5,7 +5,8 @@ meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gen_meta_irl_expert_trajs.py
   # exp_dirs: /Users/kamyar/local_policies_dir/output
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
-  exp_name: final_10K_wrap_absorbing_linear_demos_zero_few_shot_fetch_traj_gen
+  exp_name: another_seed_correct_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8
+  # exp_name: new_zero_fetch_linear_demos_10K
   # exp_name: 10K_linear_demos_zero_few_shot_fetch_traj_gen
   # exp_name: final_zero_few_shot_fetch_traj_gen
   description: generating expert demos for few shot
@@ -16,19 +17,26 @@ meta_data:
 # -----------------------------------------------------------------------------
 variables:
   use_scripted_policy: [true]
-  wrap_absorbing: [true]
+  wrap_absorbing: [false]
   scripted_policy_name: [linear_few_shot_fetch_scripted_policy]
   render: [false]
   student_policy_uses_pixels: [false]
-  num_rollouts_per_task: [10000]
+  num_rollouts_per_task: [16]
+  subsample_factor: [8]
   # seed: [28043, 99381, 33478, 448293, 5739]
-  seed: [28043]
+  # seed: [28043]
+  seed: [77594]
 
 # -----------------------------------------------------------------------------
 constants:
   env_specs:
-    base_env_name: 'zero_unscaled_basic_few_shot_fetch_env_with_terminal'
+    # base_env_name: 'zero_unscaled_basic_few_shot_fetch_env_with_terminal'
     # base_env_name: 'zero_unscaled_basic_few_shot_fetch_env'
+    # base_env_name: 'unscaled_basic_few_shot_fetch_env'
+    base_env_name: 'unscaled_20_tasks_few_shot_fetch_env'
+    # base_env_name: 'unscaled_32_tasks_few_shot_fetch_env'
+    # base_env_name: 'unscaled_24_tasks_few_shot_fetch_env'
+    # base_env_name: 'unscaled_12_tasks_few_shot_fetch_env'
     normalized: false
     need_pixels: false
   max_path_length: 65

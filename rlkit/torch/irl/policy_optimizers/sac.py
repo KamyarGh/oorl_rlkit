@@ -66,25 +66,27 @@ class NewSoftActorCritic():
         self.reward_scale = reward_scale
         self.discount = discount
         
+        # beta_1 = 0.25
+        beta_1 = 0.9
         self.policy_optimizer = optimizer_class(
             self.training_policy.parameters(),
             lr=policy_lr,
-            betas=(0.0, 0.999)
+            betas=(beta_1, 0.999)
         )
         self.qf1_optimizer = optimizer_class(
             self.qf1.parameters(),
             lr=qf_lr,
-            betas=(0.0, 0.999)
+            betas=(beta_1, 0.999)
         )
         self.qf2_optimizer = optimizer_class(
             self.qf2.parameters(),
             lr=qf_lr,
-            betas=(0.0, 0.999)
+            betas=(beta_1, 0.999)
         )
         self.vf_optimizer = optimizer_class(
             self.vf.parameters(),
             lr=vf_lr,
-            betas=(0.0, 0.999)
+            betas=(beta_1, 0.999)
         )
 
         self.wrap_absorbing = wrap_absorbing
@@ -96,7 +98,8 @@ class NewSoftActorCritic():
         obs = batch['observations']
         actions = batch['actions']
         next_obs = batch['next_observations']
-        absorbing = batch['absorbing']
+        if self.wrap_absorbing:
+            absorbing = batch['absorbing']
 
         if self.wrap_absorbing:
             obs_with_absorbing = torch.cat([obs, absorbing[:,0:1]], dim=-1)
@@ -211,7 +214,7 @@ class NewSoftActorCritic():
 
     @property
     def networks(self):
-        return [
+        networks_list = [
             self.policy,
             self.training_policy,
             self.qf1,
@@ -219,6 +222,8 @@ class NewSoftActorCritic():
             self.vf,
             self.target_vf,
         ]
+        if self.use_policy_as_ema_policy: networks_list += [self.training_policy]
+        return networks_list
 
     def _update_target_network(self):
         ptu.soft_update_from_to(self.vf, self.target_vf, self.soft_target_tau)

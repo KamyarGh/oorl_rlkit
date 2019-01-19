@@ -39,7 +39,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             min_rollouts_before_training=10,
             max_path_length=1000,
             discount=0.99,
-            replay_buffer_size_per_task=10000,
+            replay_buffer_size_per_task=20000,
             render=False,
             save_replay_buffer=False,
             save_algorithm=False,
@@ -72,7 +72,6 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         :param save_algorithm:
         :param save_environment:
         :param eval_sampler:
-        :param eval_policy: Policy to evaluate with.
         :param replay_buffer:
         """
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
@@ -147,6 +146,8 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             self.generate_rollouts_for_all_train_tasks(
                 self.num_initial_rollouts_for_all_train_tasks
             )
+            print('\nGenerated Initial Task Rollouts\n')
+            gt.stamp('initial_task_rollouts')
     
 
     def generate_rollouts_for_all_train_tasks(self, num_rollouts_per_task):
@@ -156,11 +157,15 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         number of trajectories per train task.
         I will try to replace this with a better fix later.
         '''
+        i = 0
         for task_params, obs_task_params in self.train_task_params_sampler:
+            print('rollouts for task %d' % i)
+            # print('new task rollout')
             for _ in range(num_rollouts_per_task):
                 self.generate_exploration_rollout(
                     task_params=task_params, obs_task_params=obs_task_params
                 )
+            i += 1
         # exploration paths maintains the exploration paths in one epoch
         # so that we can analyze certain properties of the trajs if we
         # wanted. we don't want these trajs to count towards that really.
@@ -246,13 +251,17 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             save_itrs=True,
         ):
             self._start_epoch(epoch)
+            # print('epoch')
             for _ in range(self.num_rollouts_per_epoch):
+                # print('rollout')
                 task_params, obs_task_params = self.train_task_params_sampler.sample()
                 self.generate_exploration_rollout(task_params=task_params, obs_task_params=obs_task_params)
 
+                # print(self._n_rollouts_total)
                 if self._n_rollouts_total % self.num_rollouts_between_updates == 0:
                     gt.stamp('sample')
-                    if not self.do_not_train: self._try_to_train()
+                    # print('train')
+                    if not self.do_not_train: self._try_to_train(epoch)
                     gt.stamp('train')
 
             if not self.do_not_eval:
@@ -262,10 +271,10 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             self._end_epoch()
 
 
-    def _try_to_train(self):
+    def _try_to_train(self, epoch):
         if self._can_train():
             self.training_mode(True)
-            self._do_training()
+            self._do_training(epoch)
             self._n_train_steps_total += 1
             self.training_mode(False)
 
@@ -351,16 +360,15 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self._epoch_start_time = time.time()
         self._exploration_paths = []
         self._do_train_time = 0
-        # logger.push_prefix('Iteration #%d | ' % epoch)
+        logger.push_prefix('Iteration #%d | ' % epoch)
 
 
     def _end_epoch(self):
-        # logger.log("Epoch Duration: {0}".format(
-        #     time.time() - self._epoch_start_time
-        # ))
-        # logger.log("Started Training: {0}".format(self._can_train()))
-        # logger.pop_prefix()
-        pass
+        logger.log("Epoch Duration: {0}".format(
+            time.time() - self._epoch_start_time
+        ))
+        logger.log("Started Training: {0}".format(self._can_train()))
+        logger.pop_prefix()
 
 
     def _start_new_rollout(self, task_params=None, obs_task_params=None):

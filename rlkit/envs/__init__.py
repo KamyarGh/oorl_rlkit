@@ -28,8 +28,10 @@ from rlkit.envs.wrapped_goal_envs import ScaledWrappedFetchPickAndPlaceEnv, Scal
 
 from rlkit.envs.few_shot_fetch_env import BasicFewShotFetchEnv, ScaledBasicFewShotFetchEnv, ZeroScaledFewShotFetchEnv, ZeroUnscaledFewShotFetchEnv
 from rlkit.envs.few_shot_fetch_env import ZeroScaled0p9FewShotFetchEnv, ZeroScaled0p9LinearFewShotFetchEnv
+from rlkit.envs.few_shot_fetch_env import StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv
 from rlkit.envs.few_shot_fetch_env import WrapAbsZeroScaled0p9LinearFewShotFetchEnv
 from rlkit.envs.few_shot_fetch_env import get_task_params_iterator as few_shot_fetch_env_get_task_params_iterator
+from rlkit.envs.few_shot_fetch_env import get_some_task_params_iterator as few_shot_fetch_env_get_some_task_params_iterator
 from rlkit.envs.few_shot_fetch_env import get_debug_task_params_iterator as debug_few_shot_fetch_env_get_task_params_iterator
 from rlkit.envs.few_shot_fetch_env import get_zero_task_params_iterator as zero_few_shot_fetch_env_get_task_params_iterator
 
@@ -263,6 +265,90 @@ meta_envs = {
             'is_dmcs_env': False
         }
     },
+    'scale_0p9_linear_demos_50_tasks_25_each': {
+        'meta_train': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'meta_test': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'unscaled_16_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: BasicFewShotFetchEnv(),
+        'meta_test': lambda: BasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'unscaled_32_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: BasicFewShotFetchEnv(),
+        'meta_test': lambda: BasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'unscaled_24_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: BasicFewShotFetchEnv(),
+        'meta_test': lambda: BasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'unscaled_20_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: BasicFewShotFetchEnv(),
+        'meta_test': lambda: BasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'unscaled_12_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: BasicFewShotFetchEnv(),
+        'meta_test': lambda: BasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'scale_0p9_linear_demos_16_tasks': {
+        'meta_train': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'meta_test': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'unscaled_linear_demos_16_tasks': {
+        'meta_train': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'meta_test': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'scale_0p9_linear_demos_32_tasks': {
+        'meta_train': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'meta_test': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'scale_0p9_linear_demos_24_tasks': {
+        'meta_train': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'meta_test': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'scale_0p9_linear_demos_20_tasks': {
+        'meta_train': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'meta_test': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'scale_0p9_linear_demos_12_tasks': {
+        'meta_train': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'meta_test': lambda: StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(terminate_on_success=False),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
     # 'zero_unscaled_basic_few_shot_reach_env': {
     #     'meta_train': lambda: BasicFewShotReachEnv(),
     #     'meta_test': lambda: BasicFewShotReachEnv(),
@@ -304,6 +390,54 @@ meta_env_task_params_iterators = {
     'zero_unscaled_basic_few_shot_fetch_env_with_terminal': {
         'meta_train': lambda: zero_few_shot_fetch_env_get_task_params_iterator(train_env=True),
         'meta_test': lambda: zero_few_shot_fetch_env_get_task_params_iterator(train_env=False)
+    },
+    'scale_0p9_linear_demos_50_tasks_25_each': {
+        'meta_train': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=True),
+        'meta_test': lambda: few_shot_fetch_env_get_task_params_iterator(train_env=False)
+    },
+    'unscaled_16_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=16),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=16)
+    },
+    'unscaled_32_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=32),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=32)
+    },
+    'unscaled_24_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=24),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=24)
+    },
+    'unscaled_20_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=20),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=20)
+    },
+    'unscaled_12_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=12),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=12)
+    },
+    'scale_0p9_linear_demos_32_tasks': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=32),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=32)
+    },
+    'scale_0p9_linear_demos_24_tasks': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=24),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=24)
+    },
+    'scale_0p9_linear_demos_20_tasks': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=20),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=20)
+    },
+    'scale_0p9_linear_demos_12_tasks': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=12),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=12)
+    },
+    'scale_0p9_linear_demos_16_tasks': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=16),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=16)
+    },
+    'unscaled_linear_demos_16_tasks': {
+        'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=16),
+        'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=16)
     },
     # 'zero_unscaled_basic_few_shot_reach_env': {
     #     'meta_train': lambda: zero_few_shot_reach_env_get_task_params_iterator(train_env=True),

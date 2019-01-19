@@ -351,7 +351,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
                 # print(gradients[0][:,-50:].size())
                 # o_norm = gradients[0][:,:-50].norm(2, dim=1)
 
-                o_norm = gradients[0].norm(2, dim=1)
+                # o_norm = gradients[0].norm(2, dim=1)
                 # print('Obs grad norm: %.4f +/- %.4f' % (torch.mean(o_norm), torch.std(o_norm)))
                 # print(gradients[0].size())
                 

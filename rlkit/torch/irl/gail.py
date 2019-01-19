@@ -51,6 +51,7 @@ class GAIL(TorchIRLAlgorithm):
 
             disc_optim_batch_size=1024,
             policy_optim_batch_size=1024,
+            policy_optim_batch_size_from_expert=0,
 
             disc_lr=1e-3,
             disc_momentum=0.0,
@@ -108,6 +109,7 @@ class GAIL(TorchIRLAlgorithm):
 
         self.disc_optim_batch_size = disc_optim_batch_size
         self.policy_optim_batch_size = policy_optim_batch_size
+        self.policy_optim_batch_size_from_expert = policy_optim_batch_size_from_expert
 
         self.bce = nn.BCEWithLogitsLoss()
         if self.traj_based:
@@ -261,7 +263,7 @@ class GAIL(TorchIRLAlgorithm):
             if ptu.gpu_enabled(): eps = eps.cuda()
             
             interp_obs = eps*expert_obs + (1-eps)*policy_obs
-            interp_obs.detach()
+            interp_obs = interp_obs.detach()
             interp_obs.requires_grad = True
             if self.state_only:
                 gradients = autograd.grad(
@@ -273,7 +275,7 @@ class GAIL(TorchIRLAlgorithm):
                 total_grad = gradients[0]
             else:
                 interp_actions = eps*expert_actions + (1-eps)*policy_actions
-                interp_actions.detach()
+                interp_actions = interp_actions.detach()
                 interp_actions.requires_grad = True
                 gradients = autograd.grad(
                     outputs=self.discriminator(interp_obs, interp_actions).sum(),
@@ -342,7 +344,7 @@ class GAIL(TorchIRLAlgorithm):
                     if ptu.gpu_enabled(): eps = eps.cuda()
                     
                     interp_obs = eps*expert_obs + (1-eps)*policy_obs
-                    interp_obs.detach()
+                    interp_obs = interp_obs.detach()
                     interp_obs.requires_grad = True
                     if self.state_only:
                         target_gradients = autograd.grad(
@@ -354,7 +356,7 @@ class GAIL(TorchIRLAlgorithm):
                         total_target_grad = target_gradients[0]
                     else:
                         interp_actions = eps*expert_actions + (1-eps)*policy_actions
-                        interp_actions.detach()
+                        interp_actions = interp_actions.detach()
                         interp_actions.requires_grad = True
                         target_gradients = autograd.grad(
                             outputs=self.target_disc(interp_obs, interp_actions).sum(),
@@ -395,7 +397,14 @@ class GAIL(TorchIRLAlgorithm):
 
 
     def _do_policy_training(self, epoch):
-        policy_batch = self.get_batch(self.policy_optim_batch_size, False)
+        if self.policy_optim_batch_size_from_expert > 0:
+            policy_batch_from_policy_buffer = self.get_batch(self.policy_optim_batch_size - self.policy_optim_batch_size_from_expert, False)
+            policy_batch_from_expert_buffer = self.get_batch(self.policy_optim_batch_size_from_expert, True)
+            policy_batch = {}
+            for k in policy_batch_from_policy_buffer:
+                policy_batch[k] = torch.cat([policy_batch_from_policy_buffer[k], policy_batch_from_expert_buffer[k]], dim=0)
+        else:
+            policy_batch = self.get_batch(self.policy_optim_batch_size, False)
         obs = policy_batch['observations']
         acts = policy_batch['actions']
         if self.wrap_absorbing:

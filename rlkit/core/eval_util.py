@@ -168,9 +168,10 @@ def plot_experiment_returns(
         arr_list = list(map(lambda a: a[:min_len], arr_list))
         returns = np.stack(arr_list)
         mean = np.mean(returns, 0)
-        # std = np.std(returns, 0)
+        std = np.std(returns, 0)
         x = np.arange(min_len)
-        save_plot(x, mean, title, save_path, color='cyan', x_axis_lims=x_axis_lims, y_axis_lims=y_axis_lims)
+        # save_plot(x, mean, title, save_path, color='cyan', x_axis_lims=x_axis_lims, y_axis_lims=y_axis_lims)
+        plot_returns_on_same_plot([mean, mean+std, mean-std], ['mean', 'mean+std', 'mean-std'], title, save_path, x_axis_lims=x_axis_lims, y_axis_lims=y_axis_lims)
     else:
         if len(arr_list) == 0: print(0)
         if plot_horizontal_lines_at is not None:
@@ -181,6 +182,8 @@ def plot_experiment_returns(
             plot_returns_on_same_plot(arr_list, names, title, save_path, x_axis_lims=x_axis_lims, y_axis_lims=y_axis_lims)
         except Exception as e:
             print('Failed to plot:')
+            print(arr_list)
+            print(title)
             print(exp_path)
             print(constraints)
             # raise e

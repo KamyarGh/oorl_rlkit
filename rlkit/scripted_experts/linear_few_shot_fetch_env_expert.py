@@ -144,7 +144,9 @@ class ScriptedLinearFewShotFetchPolicy(ScriptedPolicy):
             action = [0, 0, 0, 0]
             # print(np.linalg.norm(correct_obj_rel_target, axis=-1))
             if np.linalg.norm(correct_obj_rel_target, axis=-1) < SLOW_DOWN_RADIUS:
-                pos_act = correct_obj_rel_target
+                # previous version: pos_act = correct_obj_rel_target
+                # new version that looks smoother:
+                pos_act = 0.25*get_linear_pos_act(np.zeros(3), correct_obj_rel_target)
                 pos_act += np.random.uniform(0.0, ACT_SLOW_NOISE_SCALE, 3)
             else:
                 pos_act = get_linear_pos_act(np.zeros(3), correct_obj_rel_target)
