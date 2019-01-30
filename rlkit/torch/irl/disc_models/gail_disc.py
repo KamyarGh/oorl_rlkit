@@ -7,6 +7,8 @@ from rlkit.torch.core import PyTorchModule
 from rlkit.torch.networks import Mlp, identity
 from rlkit.torch import pytorch_util as ptu
 
+from copy import deepcopy
+
 
 class Model(nn.Module):
     def __init__(self, input_dim, num_layer_blocks=2, hid_dim=100, use_bn=True):
@@ -280,11 +282,15 @@ class ThirdVersionSingleColorFetchCustomDisc(PyTorchModule):
         assert clamp_magnitude > 0.0
 
         self.obs_processor = ObsGatingV1(clamp_magnitude=self.clamp_magnitude, z_dim=z_dim)
-        DISC_HID = 128
+        DISC_HID = 512
+        print('\n\nDISC HID IS %d\n\n' % DISC_HID)
         input_dim = 10 if state_only else 14
         if wrap_absorbing: input_dim += 1
         self.disc_part = nn.Sequential(
             nn.Linear(input_dim, DISC_HID),
+            nn.BatchNorm1d(DISC_HID),
+            nn.ReLU(),
+            nn.Linear(DISC_HID, DISC_HID),
             nn.BatchNorm1d(DISC_HID),
             nn.ReLU(),
             nn.Linear(DISC_HID, DISC_HID),
@@ -303,3 +309,134 @@ class ThirdVersionSingleColorFetchCustomDisc(PyTorchModule):
             disc_logits = self.disc_part(concat_input)
         clamped_disc_logits = torch.clamp(disc_logits, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
         return clamped_disc_logits
+
+
+class TransferVersionSingleColorFetchCustomDisc(PyTorchModule):
+    def __init__(self, clamp_magnitude=10.0, z_dim=0, gamma=0.99, soft_target_V_tau=0.005):
+        self.save_init_params(locals())
+        super().__init__()
+
+        self.gamma = gamma
+        self.z_dim = z_dim
+        self.clamp_magnitude = clamp_magnitude
+        assert clamp_magnitude > 0.0
+
+        self.obs_processor = ObsGatingV1(clamp_magnitude=self.clamp_magnitude, z_dim=z_dim)
+        
+        # R_HID = 64
+        # print('\n\nR HID IS %d\n\n' % R_HID)
+        # input_dim = 10
+        # self.r_part = nn.Sequential(
+        #     nn.Linear(input_dim, R_HID),
+        #     nn.BatchNorm1d(R_HID),
+        #     nn.ReLU(),
+        #     nn.Linear(R_HID, R_HID),
+        #     nn.BatchNorm1d(R_HID),
+        #     nn.ReLU(),
+        #     nn.Linear(R_HID, 1)
+        # )
+
+        # V_HID = 128
+        # print('\n\nR HID IS %d\n\n' % V_HID)
+        # input_dim = 10
+        # V_net = nn.Sequential(
+        #     nn.Linear(input_dim, V_HID),
+        #     nn.BatchNorm1d(V_HID),
+        #     nn.ReLU(),
+        #     nn.Linear(V_HID, V_HID),
+        #     nn.BatchNorm1d(V_HID),
+        #     nn.ReLU(),
+        #     nn.Linear(V_HID, 1)
+        # )
+
+        R_HID = 256
+        print('\n\nR HID IS %d\n\n' % R_HID)
+        input_dim = 10
+        self.r_part = nn.Sequential(
+            nn.Linear(input_dim, R_HID),
+            nn.BatchNorm1d(R_HID),
+            nn.ReLU(),
+            nn.Linear(R_HID, R_HID),
+            nn.BatchNorm1d(R_HID),
+            nn.ReLU(),
+            nn.Linear(R_HID, R_HID),
+            nn.BatchNorm1d(R_HID),
+            nn.ReLU(),
+            nn.Linear(R_HID, 1)
+        )
+
+        V_HID = 256
+        print('\n\nR HID IS %d\n\n' % V_HID)
+        input_dim = 10
+        V_net = nn.Sequential(
+            nn.Linear(input_dim, V_HID),
+            nn.BatchNorm1d(V_HID),
+            nn.ReLU(),
+            nn.Linear(V_HID, V_HID),
+            nn.BatchNorm1d(V_HID),
+            nn.ReLU(),
+            nn.Linear(V_HID, V_HID),
+            nn.BatchNorm1d(V_HID),
+            nn.ReLU(),
+            nn.Linear(V_HID, 1)
+        )
+
+        self.V_part = V_net
+        self.target_V_part = deepcopy(V_net)
+        self.soft_target_V_tau = soft_target_V_tau
+    
+    
+    def forward(self, obs_batch, act_batch, z_batch=None, pol_log_prob=None, next_obs_batch=None):
+        pol_log_prob = torch.clamp(pol_log_prob, min=-10.0, max=10.0)
+
+        obs_batch = self.obs_processor(obs_batch, False, z_batch)
+        next_obs_batch = self.obs_processor(next_obs_batch, False, z_batch)
+
+        r = self.r_part(obs_batch)
+        V_s = self.V_part(obs_batch)
+        V_s_prime = self.target_V_part(next_obs_batch).detach()
+        shaping = self.gamma*V_s_prime - V_s
+        f = r + shaping
+
+        disc_logits = f - pol_log_prob
+        clamped_disc_logits = torch.clamp(disc_logits, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
+        return clamped_disc_logits, r, shaping, V_s
+
+
+    def _update_target_V_part(self):
+        ptu.soft_update_from_to(self.V_part, self.target_V_part, self.soft_target_V_tau)
+
+
+
+
+
+
+
+    #     self.V_part = V_net
+    #     # this is a hack so it's not added as a submodule
+    #     self.target_V_part = [deepcopy(V_net)]
+    #     self.soft_target_V_tau = soft_target_V_tau
+    
+
+    # def cuda(self, *args, **kwargs):
+    #     super().cuda(*args, **kwargs)
+    #     self.target_V_part[0].cuda()
+    
+
+    # def forward(self, obs_batch, act_batch, z_batch=None, pol_log_prob=None, next_obs_batch=None):
+    #     obs_batch = self.obs_processor(obs_batch, False, z_batch)
+    #     next_obs_batch = self.obs_processor(next_obs_batch, False, z_batch)
+
+    #     r = self.r_part(obs_batch)
+    #     V_s = self.V_part(obs_batch)
+    #     V_s_prime = self.target_V_part[0](next_obs_batch).detach()
+    #     shaping = self.gamma*V_s_prime - V_s
+    #     f = r + shaping
+
+    #     disc_logits = f - pol_log_prob
+    #     clamped_disc_logits = torch.clamp(disc_logits, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
+    #     return clamped_disc_logits, r, shaping
+
+
+    # def _update_target_V_part(self):
+    #     ptu.soft_update_from_to(self.V_part, self.target_V_part[0], self.soft_target_V_tau)

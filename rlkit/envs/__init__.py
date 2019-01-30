@@ -34,6 +34,7 @@ from rlkit.envs.few_shot_fetch_env import get_task_params_iterator as few_shot_f
 from rlkit.envs.few_shot_fetch_env import get_some_task_params_iterator as few_shot_fetch_env_get_some_task_params_iterator
 from rlkit.envs.few_shot_fetch_env import get_debug_task_params_iterator as debug_few_shot_fetch_env_get_task_params_iterator
 from rlkit.envs.few_shot_fetch_env import get_zero_task_params_iterator as zero_few_shot_fetch_env_get_task_params_iterator
+from rlkit.envs.few_shot_fetch_env import _BaseParamsSampler as FewShotFetchBaseParamsSampler
 
 from rlkit.envs.few_shot_reach_env import BasicFewShotReachEnv, ZeroScaled0p9LinearFewShotReachEnv
 from rlkit.envs.few_shot_reach_env import get_zero_task_params_iterator as zero_few_shot_reach_env_get_task_params_iterator
@@ -286,6 +287,13 @@ meta_envs = {
             'is_dmcs_env': False
         }
     },
+    'unscaled_16_eval_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: BasicFewShotFetchEnv(),
+        'meta_test': lambda: BasicFewShotFetchEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
     'unscaled_24_tasks_few_shot_fetch_env': {
         'meta_train': lambda: BasicFewShotFetchEnv(),
         'meta_test': lambda: BasicFewShotFetchEnv(),
@@ -402,6 +410,10 @@ meta_env_task_params_iterators = {
     'unscaled_32_tasks_few_shot_fetch_env': {
         'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=32),
         'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=32)
+    },
+    'unscaled_16_eval_tasks_few_shot_fetch_env': {
+        'meta_train': lambda: FewShotFetchBaseParamsSampler(random=52269, num_colors=16),
+        'meta_test': lambda: FewShotFetchBaseParamsSampler(random=52269, num_colors=16)
     },
     'unscaled_24_tasks_few_shot_fetch_env': {
         'meta_train': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=True, num=24),

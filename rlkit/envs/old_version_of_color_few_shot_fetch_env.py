@@ -36,11 +36,11 @@ def get_task_params_iterator(train_env=True):
 # this debug one uses only a few tasks so we can make sure things are actually working first
 def get_debug_task_params_iterator(train_env=True):
     if train_env:
-        return _FullySpecifiedParamsSampler(random=7342, num_colors=1, num_random_samples_per_color=1000, same_color_radius=0.5)
+        return _FullySpecifiedParamsSampler(random=7342, num_colors=1, num_random_samples_per_color=1000, same_color_radius=0.3)
     else:
-        return _FullySpecifiedParamsSampler(random=7342, num_colors=1, num_random_samples_per_color=1000, same_color_radius=0.5)
+        return _FullySpecifiedParamsSampler(random=7342, num_colors=1, num_random_samples_per_color=1000, same_color_radius=0.3)
         # return _BaseParamsSampler(random=7342, num_colors=1)
-        # return _FullySpecifiedParamsSampler(random=7342, num_colors=1, num_random_samples_per_color=500, same_color_radius=0.5)
+        # return _FullySpecifiedParamsSampler(random=7342, num_colors=1, num_random_samples_per_color=500, same_color_radius=0.3)
 
 # another debug one
 def get_zero_task_params_iterator(train_env=True):
@@ -85,7 +85,7 @@ class _ZeroParamsSampler(MetaTaskParamsSampler):
 #     'specific_color_from_other_radius': np.array (optional)
 # }
 class _FullySpecifiedParamsSampler(MetaTaskParamsSampler):
-    def __init__(self, random=None, num_colors=50, num_random_samples_per_color=10, same_color_radius=0.5):
+    def __init__(self, random=None, num_colors=50, num_random_samples_per_color=10, same_color_radius=0.3):
         super().__init__()
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
@@ -101,9 +101,8 @@ class _FullySpecifiedParamsSampler(MetaTaskParamsSampler):
         for goal_color in self.goal_color_centers:
             for _ in range(self.num_random_samples_per_color):
                 goal_specific_color = self._sample_color_within_radius(goal_color, self.same_color_radius)
-                other_center = self._sample_color_with_min_dist(goal_color, self.same_color_radius)
-                # other_specific_color = self._sample_color_within_radius(other_center, self.same_color_radius)
-                other_specific_color = other_center
+                other_center = self._sample_color_with_min_dist(goal_color, 2 * self.same_color_radius)
+                other_specific_color = self._sample_color_within_radius(other_center, self.same_color_radius)
                 self.specific_params[tuple(goal_color)].append({
                     'goal_color_center': goal_color,
                     'specific_color_from_goal_radius': goal_specific_color,
@@ -133,8 +132,7 @@ class _FullySpecifiedParamsSampler(MetaTaskParamsSampler):
         x /= np.linalg.norm(x, axis=-1)
         r = radius
         u = self._random.uniform()
-        sampled_color = r * (u**(1.0/3.0)) * x + center
-        return np.clip(sampled_color, -1.0, 1.0)
+        return r * (u**(1.0/3.0)) * x + center
     
     def _sample_color_with_min_dist(self, color, min_dist):
         new_color = self._random.uniform(-1.0, 1.0, size=3)
@@ -206,7 +204,7 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         has_object, target_in_the_air, target_offset, obj_range, target_range,
         distance_threshold, initial_qpos, reward_type, goal_high_prob,
         min_goal_extra_height=0.0, max_goal_extra_height=0.45,
-        min_dist_between_objs=0.1, same_color_radius=0.5,
+        min_dist_between_objs=0.1, same_color_radius=0.1,
         terminate_on_success=False
     ):
         """Initializes a new Fetch environment.
@@ -362,17 +360,16 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         return goal.copy()
 
     def _sample_color_within_radius(self, center, radius):
-        x = self.np_random.normal(size=3)
+        x = np.random.normal(size=3)
         x /= np.linalg.norm(x, axis=-1)
         r = radius
-        u = self.np_random.uniform()
-        sampled_color = r * (u**(1.0/3.0)) * x + center
-        return np.clip(sampled_color, -1.0, 1.0)
+        u = np.random.uniform()
+        return r * (u**(1.0/3.0)) * x + center
     
     def _sample_color_with_min_dist(self, color, min_dist):
-        new_color = self.np_random.uniform(-1.0, 1.0, size=3)
+        new_color = np.random.uniform(-1.0, 1.0, size=3)
         while np.linalg.norm(new_color - color, axis=-1) < min_dist:
-            new_color = self.np_random.uniform(-1.0, 1.0, size=3)
+            new_color = np.random.uniform(-1.0, 1.0, size=3)
         return new_color
 
     def reset(self, task_params=None, obs_task_params=None):
@@ -387,10 +384,10 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         obs_task_params = np.array([r,g,b]) describing the goal_color_center
         '''
         if task_params is None:
-            self.goal_color_center = self.np_random.uniform(-1.0, 1.0, size=3)
+            self.goal_color_center = np.random.uniform(-1.0, 1.0, size=3)
             self.goal_specific_color = self._sample_color_within_radius(self.goal_color_center, self.same_color_radius)
-            other_center = self._sample_color_with_min_dist(self.goal_color_center, self.same_color_radius)
-            self.other_specific_color = other_center
+            other_center = self._sample_color_with_min_dist(self.goal_color_center, 2 * self.same_color_radius)
+            self.other_specific_color = self._sample_color_within_radius(other_center, self.same_color_radius)
         else:
             # handle the goal color
             self.goal_color_center = task_params['goal_color_center']
@@ -407,10 +404,10 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
                 if 'other_color_center' in task_params:
                     self.other_specific_color = self._sample_color_within_radius(task_params['other_color_center'], self.same_color_radius)
                 else:
-                    other_center = self._sample_color_with_min_dist(self.goal_color_center, self.same_color_radius)
-                    self.other_specific_color = other_center
+                    other_center = self._sample_color_with_min_dist(self.goal_color_center, 2*self.same_color_radius)
+                    self.other_specific_color = self._sample_color_within_radius(other_center, self.same_color_radius)
         
-        self.correct_obj_idx = self.np_random.randint(0, 2)
+        self.correct_obj_idx = np.random.randint(0, 2)
         if self.correct_obj_idx == 0:
             self.object0_color = self.goal_specific_color
             self.object1_color = self.other_specific_color
@@ -517,7 +514,7 @@ class BasicFewShotFetchEnv(FewShotFetchEnv, gym_utils.EzPickle):
             obj_range=0.15, target_range=0.05, distance_threshold=0.05,
             initial_qpos=initial_qpos, reward_type=reward_type, goal_high_prob=1.0,
             min_goal_extra_height=0.15, max_goal_extra_height=0.2,
-            min_dist_between_objs=0.1, same_color_radius=0.5,
+            min_dist_between_objs=0.1, same_color_radius=0.3,
             terminate_on_success=terminate_on_success
         )
         gym_utils.EzPickle.__init__(self)
@@ -695,48 +692,19 @@ class Scaled0p9LinearBasicFewShotFetchEnv(BasicFewShotFetchEnv):
 
 class StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv(Scaled0p9LinearBasicFewShotFetchEnv):
     def __init__(self, terminate_on_success=False):
-        # obs_max = np.array([0.20873973, 0.21238721, 0.20497428, 0.20873973, 0.21238721,
-        #     0.20497428, 0.29729787, 0.29597882, 0.00660929, 0.29729787,
-        #     0.29597882, 0.00660929, 1.0, 1.0, 1.0,
-        #     1.0, 1.0, 1.0, 0.05099425, 0.05097209,
-        #     0.01045247, 0.01020353])
-        # obs_min = np.array([-2.07733303e-01, -2.22872196e-01, -6.20862381e-03, -2.07733303e-01,
-        #     -2.22872196e-01, -6.20862381e-03, -3.02834854e-01, -3.18478521e-01,
-        #     -2.35453885e-01, -3.02834854e-01, -3.18478521e-01, -2.35453885e-01,
-        #     -1.0, -1.0, -1.0, -1.0,
-        #     -1.0, -1.0,  2.55108763e-06, -8.67902630e-08,
-        #     -1.12767104e-02, -1.15187468e-02])
-        # acts_max = np.array([0.36385158, 0.36506858, 0.37287046, 0.015])
-        # acts_min = np.array([-0.27378214, -0.27318582, -0.27457426, -0.015])
-        
-        # obs_max = np.array([0.19732151, 0.19501755, 0.2032467 , 0.19732151, 0.19501755,
-        #     0.2032467 , 0.28952909, 0.27034638, 0.00461512, 0.28952909,
-        #     0.27034638, 0.00461512, 1.        , 1.        , 1.        ,
-        #     1.        , 1.        , 1.        , 0.05084346, 0.05089836,
-        #     0.01020451, 0.01024073])
-        # obs_min = np.array([-1.94163008e-01, -2.06672946e-01, -4.34817497e-03, -1.94163008e-01,
-        #     -2.06672946e-01, -4.34817497e-03, -2.57836261e-01, -3.02357607e-01,
-        #     -2.26000082e-01, -2.57836261e-01, -3.02357607e-01, -2.26000082e-01,
-        #     -1., -1., -1., -1.,
-        #     -1., -1.,  2.55108763e-06, -8.67902630e-08,
-        #     -9.79891841e-03, -9.23147216e-03])
-        # acts_max = np.array([0.36071754, 0.35800805, 0.37175567, 0.015])
-        # acts_min = np.array([-0.26463221, -0.26663373, -0.27413371, -0.015])
-
-        obs_max = np.array([0.20061923, 0.19781174, 0.20549539, 0.20061923, 0.19781174,
-            0.20549539, 0.29141252, 0.28891717, 0.00129714, 0.29141252,
-            0.28891717, 0.00129714, 1.0        , 1.0        , 1.0        ,
-            1.0        , 1.0        , 1.0        , 0.05096386, 0.05090749,
-            0.01046458, 0.01028522])
-        obs_min = np.array([-1.83014661e-01, -2.07445100e-01, -4.79934195e-03, -1.83014661e-01,
-            -2.07445100e-01, -4.79934195e-03, -2.89125464e-01, -2.96987424e-01,
-            -2.30655094e-01, -2.89125464e-01, -2.96987424e-01, -2.30655094e-01,
-            -1.0, -1.0, -1.0, -1.0,
-            -1.0, -1.0,  2.55108763e-06, -8.67902630e-08,
-            -1.11994283e-02, -9.10341004e-03])
-        acts_max = np.array([0.36051396, 0.36032055, 0.37415428, 0.015])
-        acts_min = np.array([-0.2696256 , -0.27399028, -0.27453274, -0.015])
-
+        obs_max = np.array([0.20873973, 0.21238721, 0.20497428, 0.20873973, 0.21238721,
+            0.20497428, 0.29729787, 0.29597882, 0.00660929, 0.29729787,
+            0.29597882, 0.00660929, 1.3, 1.3, 1.3,
+            1.3, 1.3, 1.3, 0.05099425, 0.05097209,
+            0.01045247, 0.01020353])
+        obs_min = np.array([-2.07733303e-01, -2.22872196e-01, -6.20862381e-03, -2.07733303e-01,
+            -2.22872196e-01, -6.20862381e-03, -3.02834854e-01, -3.18478521e-01,
+            -2.35453885e-01, -3.02834854e-01, -3.18478521e-01, -2.35453885e-01,
+            -1.3, -1.3, -1.3, -1.3,
+            -1.3, -1.3,  2.55108763e-06, -8.67902630e-08,
+            -1.12767104e-02, -1.15187468e-02])
+        acts_max = np.array([0.36385158, 0.36506858, 0.37287046, 0.015])
+        acts_min = np.array([-0.27378214, -0.27318582, -0.27457426, -0.015])
         super().__init__(
             obs_max=obs_max,
             obs_min=obs_min,
@@ -845,7 +813,7 @@ if __name__ == '__main__':
         obj_range=0.15, target_range=0.01, distance_threshold=0.05,
         initial_qpos=initial_qpos, reward_type='sparse', goal_high_prob=1.0,
         min_goal_extra_height=0.15, max_goal_extra_height=0.2,
-        min_dist_between_objs=0.1, same_color_radius=0.5
+        min_dist_between_objs=0.1, same_color_radius=0.3
     )
 
     # while True:
@@ -926,8 +894,7 @@ if __name__ == '__main__':
         x /= np.linalg.norm(x, axis=-1)
         r = radius
         u = np.random.uniform()
-        sampled_color = r * (u**(1.0/3.0)) * x + center
-        return np.clip(sampled_color, -1.0, 1.0)
+        return r * (u**(1.0/3.0)) * x + center
     
     def _sample_color_with_min_dist(color, min_dist):
         new_color = np.random.uniform(-1.0, 1.0, size=3)
@@ -971,7 +938,7 @@ if __name__ == '__main__':
             plot_sphere(ax, specific_color, env.same_color_radius, 'yellow', 0.5)
         
         for i in range(20):
-            other_center = _sample_color_with_min_dist(goal_color_center, env.same_color_radius)
+            other_center = _sample_color_with_min_dist(goal_color_center, 2 * env.same_color_radius)
             # print(goal_color_center)
             # print(other_center)
             # print(np.linalg.norm(other_center - goal_color_center))

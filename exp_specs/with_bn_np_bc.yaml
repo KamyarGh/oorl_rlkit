@@ -1,18 +1,30 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_train_np_bc.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: another_many_seeds_eval_z_dim_25_np_bc_new_gen_20_tasks_16_total_each_subsample_8
+  # exp_name: test_np_bc_on_fixed_colors_0p5_eval_on_3_context
+  exp_name: np_bc_KL_0p2_FINAL_WITHOUT_TARGETS
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 12
+  num_workers: 4
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
+    save_best: [true]
+    save_best_after_epoch: [40]
+
     # objective: ['mse']
     objective: ['max_like']
+    max_KL_beta: [0.2]
+    # max_KL_beta: [0.1, 0.05]
+    KL_ramp_up_start_iter: [5000]
+    KL_ramp_up_end_iter: [10000]
     wrap_absorbing: [false]
+
+    few_shot_version: [true]
+    max_context_size: [3]
+    min_context_size: [1]
 
     # results in training batch size of 1024 for disc model
     num_tasks_used_per_update: [16]
@@ -59,7 +71,9 @@ variables:
   # seed: [9783, 5914, 6523, 5515]
   # seed: [2039, 9262, 6628, 8811]
   # seed: [9995, 1001, 3952, 6963]
-  seed: [1553, 2223, 9151, 5920, 1971, 7022, 1901, 7972, 8585, 5741, 9361, 4320]
+  # seed: [1553, 2223, 9151, 5920, 1971, 7022, 1901, 7972, 8585, 5741, 9361, 4320]
+  seed: [1553, 7972, 9361, 1901]
+  # seed: [1553, 7972]
   # seed: [9783]
 
 # -----------------------------------------------------------------------------
@@ -82,16 +96,19 @@ constants:
   # expert_name: scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_16_total_each_subsample_8
   # expert_name: scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8
   # expert_name: another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8
+  # expert_name: another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8
+  # expert_name: another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1
+  expert_name: fixed_colors_0p5_32_16_1
   # expert_name: another_scale_0p9_new_gen_few_shot_fetch_linear_demos_24_tasks_16_total_each_subsample_8
   # expert_name: another_scale_0p9_new_gen_few_shot_fetch_linear_demos_16_tasks_16_total_each_subsample_8
-  expert_name: another_scale_0p9_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8
+  # expert_name: another_scale_0p9_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8
   # expert_name: unscaled_linear_demos_16_tasks_5_each_subsample_4
   expert_seed_run_idx: 0
   
   algo_params:
     eval_deterministic: false
     
-    num_epochs: 1011
+    num_epochs: 101
     num_rollouts_per_epoch: 1
     num_rollouts_between_updates: 1
     num_initial_rollouts_for_all_train_tasks: 0
@@ -102,10 +119,10 @@ constants:
 
     replay_buffer_size_per_task: 20000
 
-    save_replay_buffer: true
+    save_replay_buffer: false
     render: false
 
-    freq_saving: 10
+    freq_saving: 1
 
     np_params: {}
   
@@ -113,10 +130,10 @@ constants:
     # base_env_name: 'scale_0p9_linear_demos_50_tasks_25_each'
     # base_env_name: 'scale_0p9_linear_demos_8_tasks_5_each'
     # base_env_name: 'scale_0p9_linear_demos_16_tasks_5_each'
-    # base_env_name: 'scale_0p9_linear_demos_32_tasks'
+    base_env_name: 'scale_0p9_linear_demos_32_tasks'
     # base_env_name: 'scale_0p9_linear_demos_24_tasks'
     # base_env_name: 'scale_0p9_linear_demos_16_tasks'
-    base_env_name: 'scale_0p9_linear_demos_20_tasks'
+    # base_env_name: 'scale_0p9_linear_demos_20_tasks'
     # base_env_name: 'scale_0p9_linear_demos_12_tasks'
     # base_env_name: 'scale_0p9_linear_demos_16_tasks_5_each'
     # base_env_name: 'unscaled_linear_demos_16_tasks_5_each'

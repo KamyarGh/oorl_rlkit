@@ -11,6 +11,7 @@ from rlkit.torch.networks import Mlp
 from rlkit.torch import pytorch_util as ptu
 from rlkit.torch.torch_meta_irl_algorithm import np_to_pytorch_batch
 from rlkit.torch.irl.encoders.aggregators import sum_aggregator_unmasked, tanh_sum_aggregator_unmasked
+from rlkit.torch.irl.encoders.aggregators import sum_aggregator, tanh_sum_aggregator
 from rlkit.torch.distributions import ReparamMultivariateNormalDiag
 
 
@@ -21,6 +22,7 @@ class TrivialTrajEncoder(PyTorchModule):
     '''
     def __init__(
         self,
+        state_only=False
     ):
         self.save_init_params(locals())
         super().__init__()
@@ -40,31 +42,31 @@ class TrivialTrajEncoder(PyTorchModule):
         # self.output_size = 50
 
         # V1
-        # self.conv_part = nn.Sequential(
-        #     nn.Conv1d(26, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
-        #     nn.BatchNorm1d(128),
-        #     nn.ReLU(),
-        #     nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
-        #     nn.BatchNorm1d(128),
-        #     nn.ReLU(),
-        #     nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
-        # )
+        self.conv_part = nn.Sequential(
+            nn.Conv1d(26 if not state_only else 22, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+        )
 
         # V1 for subsample 8
-        self.conv_part = nn.Sequential(
-            nn.Conv1d(26, 128, 4, stride=1, padding=0, dilation=1, groups=1, bias=True),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Conv1d(128, 128, 3, stride=1, padding=0, dilation=1, groups=1, bias=True),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Conv1d(128, 128, 3, stride=1, padding=0, dilation=1, groups=1, bias=True),
-        )
+        # self.conv_part = nn.Sequential(
+        #     nn.Conv1d(26, 128, 4, stride=1, padding=0, dilation=1, groups=1, bias=True),
+        #     nn.BatchNorm1d(128),
+        #     nn.ReLU(),
+        #     nn.Conv1d(128, 128, 3, stride=1, padding=0, dilation=1, groups=1, bias=True),
+        #     nn.BatchNorm1d(128),
+        #     nn.ReLU(),
+        #     nn.Conv1d(128, 128, 3, stride=1, padding=0, dilation=1, groups=1, bias=True),
+        # )
 
 
     def forward(self, all_timesteps):
-        # if traj len 16 comment the next line out
-        # all_timesteps = all_timesteps[:,:,::4,:]
+        # if traj len 65, subsample if by 4 so the len will be 17
+        all_timesteps = all_timesteps[:,:,::4,:]
 
         all_timesteps = all_timesteps.permute(0,1,3,2).contiguous()
 
@@ -88,7 +90,8 @@ class TrivialTrajEncoder(PyTorchModule):
 class TrivialR2ZMap(PyTorchModule):
     def __init__(
         self,
-        z_dim
+        z_dim,
+        LOG_STD_SUBTRACT_VALUE=2.0
     ):
         self.save_init_params(locals())
         super().__init__()
@@ -101,11 +104,15 @@ class TrivialR2ZMap(PyTorchModule):
         self.mean_fc = nn.Linear(128, z_dim)
         self.log_sig_fc = nn.Linear(128, z_dim)
 
+        self.LOG_STD_SUBTRACT_VALUE = LOG_STD_SUBTRACT_VALUE
+
+        print('LOG STD SUBTRACT VALUE IS FOR APPROX POSTERIOR IS %f' % LOG_STD_SUBTRACT_VALUE)
+
 
     def forward(self, r):
         trunk_output = self.trunk(r)
         mean = self.mean_fc(trunk_output)
-        log_sig = self.log_sig_fc(trunk_output)
+        log_sig = self.log_sig_fc(trunk_output) - self.LOG_STD_SUBTRACT_VALUE
         return mean, log_sig
 
 
@@ -114,7 +121,8 @@ class TrivialNPEncoder(PyTorchModule):
         self,
         agg_type,
         traj_encoder,
-        r_to_z_map
+        r_to_z_map,
+        state_only=False
     ):
         self.save_init_params(locals())
         super().__init__()
@@ -122,15 +130,19 @@ class TrivialNPEncoder(PyTorchModule):
         self.r_to_z_map = r_to_z_map
         self.traj_encoder = traj_encoder
 
+        self.state_only = state_only
+
         if agg_type == 'sum':
             self.agg = sum_aggregator_unmasked
+            self.agg_masked = sum_aggregator
         elif agg_type == 'tanh_sum':
             self.agg = tanh_sum_aggregator_unmasked
+            self.agg_masked = tanh_sum_aggregator
         else:
             raise Exception('Not a valid aggregator!')
     
 
-    def forward(self, context):
+    def forward(self, context, mask=None):
         '''
             For this first version of trivial encoder we are going
             to assume all tasks have the same number of trajs and
@@ -139,25 +151,31 @@ class TrivialNPEncoder(PyTorchModule):
         # first convert the list of list of dicts to a tensor of dims
         # N_tasks x N_trajs x Len x Dim
 
-        # obs = np.array([[d['observations'] for d in task_trajs] for task_trajs in context])
-        # acts = np.array([[d['actions'] for d in task_trajs] for task_trajs in context])
+        obs = np.array([[d['observations'] for d in task_trajs] for task_trajs in context])
+        acts = np.array([[d['actions'] for d in task_trajs] for task_trajs in context])
 
         # if traj len 16 use this instead of the above two lines
         # obs = np.array([[d['observations'][:16,...] for d in task_trajs] for task_trajs in context])
         # acts = np.array([[d['actions'][:16,...] for d in task_trajs] for task_trajs in context])
 
         # if traj len 8 use this instead of the above two lines
-        obs = np.array([[d['observations'][:8,...] for d in task_trajs] for task_trajs in context])
-        acts = np.array([[d['actions'][:8,...] for d in task_trajs] for task_trajs in context])
+        # obs = np.array([[d['observations'][:8,...] for d in task_trajs] for task_trajs in context])
+        # acts = np.array([[d['actions'][:8,...] for d in task_trajs] for task_trajs in context])
 
-        all_timesteps = np.concatenate([obs, acts], axis=-1)
+        if not self.state_only:
+            all_timesteps = np.concatenate([obs, acts], axis=-1)
+        else:
+            all_timesteps = obs
         # print('\n'*20)
         # print(all_timesteps)
         all_timesteps = Variable(ptu.from_numpy(all_timesteps), requires_grad=False)
 
         traj_embeddings = self.traj_encoder(all_timesteps)
 
-        r = self.agg(traj_embeddings)
+        if mask is None:
+            r = self.agg(traj_embeddings)
+        else:
+            r = self.agg_masked(traj_embeddings, mask)
         post_mean, post_log_sig_diag = self.r_to_z_map(r)
 
         return ReparamMultivariateNormalDiag(post_mean, post_log_sig_diag)

@@ -1,7 +1,8 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_train_np_airl.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: ACTUALLY_FINAL_RUN_final_correct_state_only_np_airl_KL_0p0_disc_512_dim_rew_4
+  # exp_name: disc_Adam_0p9_do_not_use_target_disc_with_target_V_check_regularization_test_transfer_version_num_initial_rollouts_1
+  exp_name: final_correct_pol_log_prob_clipped_Adam_0_L2_reg_logits_0_rew_6_8
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 4
@@ -9,21 +10,19 @@ meta_data:
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-
   algo_params:
-    save_best: [true]
-    save_best_after_epoch: [40]
-    
+    save_best: [false]
+    save_best_after_epoch: [20]
+
     max_KL_beta: [0.0]
-    KL_ramp_up_start_iter: [48750] # start at epoch 30
-    KL_ramp_up_end_iter: [65000] # when you change this also change best after epoch
+    KL_ramp_up_start_iter: [5000]
+    KL_ramp_up_end_iter: [10000]
 
     wrap_absorbing: [false]
-    state_only: [true]
+    state_only: [false]
+    transfer_version: [true]
 
-    transfer_version: [false]
-
-    few_shot_version: [true]
+    few_shot_version: [false]
     max_context_size: [3]
     min_context_size: [1]
 
@@ -62,9 +61,9 @@ variables:
     # grad_pen_weight: [5.0]
     grad_pen_weight: [0.5]
 
-    disc_ce_grad_clip: [4.0]
-    enc_ce_grad_clip: [1.0]
-    disc_gp_grad_clip: [1.0]
+    disc_ce_grad_clip: [10.0]
+    enc_ce_grad_clip: [2.0]
+    disc_gp_grad_clip: [2.0]
     # disc_ce_grad_clip: [100.0]
     # enc_ce_grad_clip: [100.0]
     # disc_gp_grad_clip: [100.0]
@@ -80,8 +79,10 @@ variables:
       agg_type: ['sum']
   
   policy_params:
-    reward_scale: [4.0]
-    # reward_scale: [6.0, 8.0]
+    # reward_scale: [2.0, 4.0]
+    # reward_scale: [8.0, 10.0]
+    # reward_scale: [14.0, 16.0]
+    reward_scale: [6.0, 8.0]
     # reward_scale: [10.0, 12.0]
     # reward_scale: [14.0, 16.0]
     # reward_scale: [2.0, 4.0]
@@ -101,8 +102,7 @@ variables:
     normalized: [false]
     train_test_env: [false]
   
-  # seed: [9783, 5914]
-  seed: [1553, 7972, 9361, 1901]
+  seed: [9783, 5914]
 
 # -----------------------------------------------------------------------------
 constants:
@@ -130,9 +130,10 @@ constants:
     replay_buffer_size_per_task: 20000
 
     save_replay_buffer: false
+    save_algorithm: true
     render: false
 
-    freq_saving: 25
+    freq_saving: 10
 
     np_params: {}
   

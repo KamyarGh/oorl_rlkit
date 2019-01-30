@@ -9,7 +9,9 @@ from rlkit.core.vistools import plot_histogram
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/final-correct-1K-linear-demos-zero-few-shot-reach-traj-gen/final_correct_1K_linear_demos_zero_few_shot_reach_traj_gen_2019_01_09_20_56_48_0000--s-0/extra_data.pkl'
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/final-10K-wrap-absorbing-linear-demos-zero-few-shot-fetch-traj-gen/final_10K_wrap_absorbing_linear_demos_zero_few_shot_fetch_traj_gen_2019_01_13_23_15_41_0000--s-0/extra_data.pkl'
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/new-zero-fetch-linear-demos-10K/new_zero_fetch_linear_demos_10K_2019_01_14_21_34_58_0000--s-0/extra_data.pkl'
-path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/fetch-linear-demos-50-tasks-25-each/fetch_linear_demos_50_tasks_25_each_2019_01_14_17_38_54_0000--s-0/extra_data.pkl'
+# path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/fetch-linear-demos-50-tasks-25-each/fetch_linear_demos_50_tasks_25_each_2019_01_14_17_38_54_0000--s-0/extra_data.pkl'
+# path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/fixed-colors-final-correct-another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-1/fixed_colors_final_correct_another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1_2019_01_22_06_38_48_0000--s-0/extra_data.pkl'
+path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/fixed-colors-0p5-radius-final-correct-another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-1/fixed_colors_0p5_radius_final_correct_another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1_2019_01_22_07_53_12_0000--s-0/extra_data.pkl'
 print(path_to_expert_rb)
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/normalized_basic_few_shot_fetch_demos/extra_data.pkl'
 # path_to_expert_rb = '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-basic-few-shot-fetch-traj-gen/correct_basic_few_shot_fetch_traj_gen_2018_12_19_08_57_56_0000--s-0/extra_data.pkl'

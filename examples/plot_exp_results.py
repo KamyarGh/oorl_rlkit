@@ -1049,7 +1049,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
 #     'fucker percent solved',
 #     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_percent_solved.png',
-#     x_axis_lims=[0, 200],
+#     x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1063,7 +1063,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
 #     'fucker good reach',
 #     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_good_reach.png',
-#     x_axis_lims=[0, 200],
+#     x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1077,7 +1077,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
 #     'fucker disc stats',
 #     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_disc_stats.png',
-#     x_axis_lims=[0, 200],
+#     x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1089,7 +1089,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
 #     'fucker other stats',
 #     '/h/kamyar/oorl_rlkit/plots/single_task_np_airl_other_stats.png',
-#     x_axis_lims=[0, 200],
+#     x_axis_lims=[0, 400],
 #     # y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1117,7 +1117,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #                     '/scratch/gobi2/kamyar/oorl_rlkit/output/please-work-fully-specified-train-single-task-np-airl',
 #                     name,
 #                     '/h/kamyar/oorl_rlkit/plots/single_task/{}.png'.format(name),
-#                     x_axis_lims=[0, 200],
+#                     x_axis_lims=[0, 400],
 #                     y_axis_lims=[-0.05, 1.05],
 #                     plot_mean=False,
 #                     column_name=[
@@ -1151,7 +1151,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #                     # '/scratch/gobi2/kamyar/oorl_rlkit/output/rerun-more-rew-scale-search-fully-specified-train-single-task-np-airl',
 #                     name,
 #                     '/h/kamyar/oorl_rlkit/plots/single_task_zero_z/{}.png'.format(name),
-#                     x_axis_lims=[0, 200],
+#                     x_axis_lims=[0, 400],
 #                     y_axis_lims=[-0.05, 1.05],
 #                     plot_mean=False,
 #                     column_name=[
@@ -1172,7 +1172,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/zero-np-bc',
 #     'zero-np-bc',
 #     '/h/kamyar/oorl_rlkit/plots/zero_np_bc.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1187,7 +1187,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/zero-single-task-dac-not-traj-based',
 #     'zero_single_task_dac_not_traj_based',
 #     '/h/kamyar/oorl_rlkit/plots/zero_single_task_dac_not_traj_based.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1203,7 +1203,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/zero-single-task-dac',
 #     'zero-single-task-dac-not-traj-based',
 #     '/h/kamyar/oorl_rlkit/plots/zero_single_task_dac_traj_based.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1220,7 +1220,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/color-is-zero-np-bc',
 #     'fucking color is zero-np-bc',
 #     '/h/kamyar/oorl_rlkit/plots/fucking_color_is_zero_np_bc.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1235,7 +1235,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-not-traj-based',
 #     'fucking zero_single_task_dac_not_traj_based',
 #     '/h/kamyar/oorl_rlkit/plots/fucking_zero_single_task_dac_not_traj_based.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1251,7 +1251,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac',
 #     'fucking zero-single-task-dac-not-traj-based',
 #     '/h/kamyar/oorl_rlkit/plots/fucking_zero_single_task_dac_traj_based.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1268,7 +1268,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-not-traj-based-256-disc',
 #     'fucking 256 disc zero_single_task_dac_not_traj_based',
 #     '/h/kamyar/oorl_rlkit/plots/fucking_256_disc_zero_single_task_dac_not_traj_based.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1284,7 +1284,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-256-disc',
 #     'fucking 256 disc zero-single-task-dac traj based',
 #     '/h/kamyar/oorl_rlkit/plots/fucking_256_disc_zero_single_task_dac_traj_based.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1300,7 +1300,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/truly-final-zero-I-beg-of-you',
 #     'truly-final-zero-I-beg-of-you',
 #     '/h/kamyar/oorl_rlkit/plots/truly_final_zero_I_beg_of-you.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -1350,7 +1350,7 @@ def plot_results(exp_name, variables_to_permute, plot_mean=False, y_axis_lims=No
         #     '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac-256-disc',
         #     'rew % d grad pen %.4f fucking 256 disc zero-single-task-dac traj based' % (rew, grad_pen_weight),
         #     '/h/kamyar/oorl_rlkit/plots/fucking_256_disc_zero_traj_based/fucking_256_disc_zero_single_task_dac_traj_based_rew_%d_%.4f_grad_pen.png' % (rew, grad_pen_weight),
-        #     # x_axis_lims=[0, 200],
+        #     # x_axis_lims=[0, 400],
         #     y_axis_lims=[-0.05, 1.05],
         #     plot_mean=False,
         #     column_name=[
@@ -2371,44 +2371,44 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #                 # plot_exp_v0(
 #                 #     'correct_first_version_larger_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 #     name,
-#                 #     x_axis_lims=[0,200],
+#                 #     x_axis_lims=[0,400],
 #                 #     constraints=constraints
 #                 # )
 #                 # plot_exp_v0(
 #                 #     'first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 #     name,
-#                 #     x_axis_lims=[0,200],
+#                 #     x_axis_lims=[0,400],
 #                 #     constraints=constraints
 #                 # )
 #                 # plot_exp_v0(
 #                 #     'with_ema_policy_first_version_smaller_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 #     name,
-#                 #     x_axis_lims=[0,200],
+#                 #     x_axis_lims=[0,400],
 #                 #     constraints=constraints
 #                 # )
 #                 # plot_exp_v0(
 #                 #     'final_second_version_custom_disc_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 #     name,
-#                 #     x_axis_lims=[0,200],
+#                 #     x_axis_lims=[0,400],
 #                 #     constraints=constraints
 #                 # )
 
 #                 plot_exp_v0(
 #                     'correct_with_ema_policy_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                     name,
-#                     x_axis_lims=[0,200],
+#                     x_axis_lims=[0,400],
 #                     constraints=constraints
 #                 )
 #                 plot_exp_v0(
 #                     'without_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                     name,
-#                     x_axis_lims=[0,200],
+#                     x_axis_lims=[0,400],
 #                     constraints=constraints
 #                 )
 #                 plot_exp_v0(
 #                     'without_ema_policy_2_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                     name,
-#                     x_axis_lims=[0,200],
+#                     x_axis_lims=[0,400],
 #                     constraints=constraints
 #                 )
 
@@ -2424,7 +2424,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_exp_v0(
 #                 'final_correct_other_gp_loss_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2440,7 +2440,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_exp_v0(
 #                 'SAC_temp_15_temps_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2456,7 +2456,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_exp_v0(
 #                 'SAC_temp_2_temps_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2472,7 +2472,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_exp_v0(
 #                 'correct_lower_SAC_temp_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2490,7 +2490,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #                 plot_exp_v0(
 #                     'disc_neg_mom_disc_lr_2en4_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                     name,
-#                     x_axis_lims=[0,200],
+#                     x_axis_lims=[0,400],
 #                     constraints=constraints
 #                 )
 
@@ -2506,7 +2506,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_exp_v0(
 #                 'final_disc_lr_5en5_with_ema_policy_1_1_policy_uses_disc_gating_no_noise_0p5_ce_grad_clip_10_gp_grad_clip',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2605,7 +2605,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_exp_v0(
 #                 'sanity_check_standard',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2621,7 +2621,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_exp_v0(
 #                 'sanity_check_standard_less_gp',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2655,7 +2655,7 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
 #             plot_meta_exp_v0(
 #                 'final_correct_np_airl_first_try_more_varied',
 #                 name,
-#                 x_axis_lims=[0,200],
+#                 x_axis_lims=[0,400],
 #                 constraints=constraints
 #             )
 
@@ -2712,42 +2712,42 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
         # plot_meta_exp_v0(
         #     'np_airl_enc_adam_0p9_gp_0p5',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_enc_adam_0p9_gp_1',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_enc_adam_0p9_gp_2p5',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'correct_np_airl_enc_adam_0p9_gp_1_gp_clip_100',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_enc_adam_0p9_gp_1_pol_adam_0p5',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_enc_adam_0p9_gp_1_pol_adam_0p9',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
@@ -2764,49 +2764,49 @@ def plot_meta_exp_v0(exp_name, title, x_axis_lims=None, constraints=None):
         # plot_meta_exp_v0(
         #     'np_airl_new_12_demos_10_each_sub_8_pol_adam_0_gp_0p5_ce_clip_5_gp_clip_10_z_dim_25',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_new_12_demos_10_each_sub_8_pol_adam_0_gp_0p5_ce_clip_5_gp_clip_10_z_dim_50',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_new_12_demos_10_each_sub_8_pol_adam_0p5_gp_0p5_ce_clip_5_gp_clip_10_z_dim_25',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_new_12_demos_10_each_sub_8_pol_adam_0p5_gp_0p5_ce_clip_5_gp_clip_10_z_dim_50',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'correct_with_8_exp_samples_np_airl_new_12_demos_10_each_sub_8_pol_adam_0_gp_0p5_ce_clip_5_gp_clip_10_z_dim_50',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'correct_with_4_exp_samples_np_airl_new_12_demos_10_each_sub_8_pol_adam_0_gp_0p5_ce_clip_5_gp_clip_10_z_dim_50',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
         # plot_meta_exp_v0(
         #     'np_airl_new_12_demos_10_each_sub_8_pol_adam_0p25_gp_0p5_all_clip_100_z_dim_50',
         #     name,
-        #     x_axis_lims=[0,200],
+        #     x_axis_lims=[0,400],
         #     constraints=constraints
         # )
 
@@ -2815,7 +2815,8 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
-        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_train_{}.png'.format(title)),
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_train_solved_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=True,
         column_name=[
@@ -2824,12 +2825,14 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             # 'Percent_Solved_meta_test',
             # 'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
 
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
-        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_test_{}.png'.format(title)),
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_test_solved_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=True,
         column_name=[
@@ -2838,12 +2841,14 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             'Percent_Solved_meta_test',
             # 'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
 
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'good_reach_meta_train_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=True,
         column_name=[
@@ -2852,12 +2857,14 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             # 'Percent_Solved_meta_test',
             # 'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
 
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'good_reach_meta_test_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=True,
         column_name=[
@@ -2866,12 +2873,14 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             # 'Percent_Solved_meta_test',
             'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
     
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
-        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'all_meta_train_{}.png'.format(title)),
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'all_meta_train_solved_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=False,
         column_name=[
@@ -2880,12 +2889,14 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             # 'Percent_Solved_meta_test',
             # 'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
 
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
-        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'all_meta_test_{}.png'.format(title)),
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'all_meta_test_solved_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=False,
         column_name=[
@@ -2894,12 +2905,14 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             'Percent_Solved_meta_test',
             # 'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
 
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'all_good_reach_meta_train_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=False,
         column_name=[
@@ -2908,12 +2921,14 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             # 'Percent_Solved_meta_test',
             # 'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
 
     plot_experiment_returns(
         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
         title,
         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'all_good_reach_meta_test_{}.png'.format(title)),
+        x_axis_lims=x_axis_lims,
         y_axis_lims=[-0.05, 1.05],
         plot_mean=False,
         column_name=[
@@ -2922,6 +2937,7 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
             # 'Percent_Solved_meta_test',
             'Percent_Good_Reach_meta_test',
         ],
+        constraints=constraints
     )
 
 # plot_np_bc_results(
@@ -2999,55 +3015,1255 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
 #     '16 tasks 16 trajs each z 25'
 # )
 
-plot_np_bc_results(
-    'another_many_seeds_eval_z_dim_25_np_bc_new_gen_20_tasks_16_total_each_subsample_8',
-    '20 tasks 16 trajs each z 25'
-)
+# plot_np_bc_results(
+#     'another_many_seeds_eval_z_dim_25_np_bc_new_gen_20_tasks_16_total_each_subsample_8',
+#     '20 tasks 16 trajs each z 25',
+#     x_axis_lims=[0,25]
+# )
 
-for seed in [9783, 5914]:
-    for rew in [2.0, 4.0]:
-        constraints = {
-            'seed': seed,
-            'policy_params.reward_scale': rew
-        }
-        name = 'rew_{}_seed_{}'.format(rew, seed)
 
-        plot_meta_exp_v0(
-            'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_64',
-            name,
-            x_axis_lims=[0,200],
-            constraints=constraints
-        )
-        plot_meta_exp_v0(
-            'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_64',
-            name,
-            x_axis_lims=[0,200],
-            constraints=constraints
-        )
-        plot_meta_exp_v0(
-            'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_96',
-            name,
-            x_axis_lims=[0,200],
-            constraints=constraints
-        )
-        plot_meta_exp_v0(
-            'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_96',
-            name,
-            x_axis_lims=[0,200],
-            constraints=constraints
-        )
-        plot_meta_exp_v0(
-            'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_128',
-            name,
-            x_axis_lims=[0,200],
-            constraints=constraints
-        )
-        plot_meta_exp_v0(
-            'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_128',
-            name,
-            x_axis_lims=[0,200],
-            constraints=constraints
-        )
+
+
+
+# plot_np_bc_results(
+#     'test_KL_0',
+#     'testing_KL',
+#     x_axis_lims=[0,40]
+# )
+# plot_np_bc_results(
+#     'test_KL_2',
+#     'testing_KL',
+#     x_axis_lims=[0,40]
+# )
+# plot_np_bc_results(
+#     'test_KL_4',
+#     'testing_KL',
+#     x_axis_lims=[0,70]
+# )
+
+
+
+
+
+# JACKFRUIT KOFTA
+
+# for seed in [9783, 5914]:
+#     for rew in [14.0, 16.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_14_16_from_expert_8',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_14_16_from_expert_8_disc_size_192',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_14_16_from_expert_8_disc_updates_2',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'not_state_only_actually_correct_reparam_sanity_check_rew_14_16_from_expert_8_disc_size_128',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         # plot_meta_exp_v0(
+#         #     'reparam_sanity_check_disc_128_from_expert_0_rew_14_16',
+#         #     name,
+#         #     x_axis_lims=[0,100],
+#         #     constraints=constraints
+#         # )
+
+# for seed in [9783, 5914]:
+#     for rew in [10.0, 12.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_10_12_from_expert_8',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_10_12_from_expert_8_disc_size_192',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_10_12_from_expert_8_disc_updates_2',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'not_state_only_actually_correct_reparam_sanity_check_rew_10_12_from_expert_8_disc_size_128',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         # plot_meta_exp_v0(
+#         #     'reparam_sanity_check_disc_128_from_expert_0_rew_10_12',
+#         #     name,
+#         #     x_axis_lims=[0,100],
+#         #     constraints=constraints
+#         # )
+
+# for seed in [9783, 5914]:
+#     for rew in [6.0, 8.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_6_8_pol_momentum_0p5',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_6_8_disc_momentum_0p25',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_6_8',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_6_8_disc_192',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_6_8_from_expert_8',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_6_8_from_expert_8_disc_size_192',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_6_8_from_expert_8_disc_updates_2',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'not_state_only_actually_correct_reparam_sanity_check_rew_6_8_from_expert_8_disc_size_128',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'not_state_only_actually_correct_reparam_sanity_check_rew_6_8_from_expert_8_disc_size_128_disc_updates_2',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         # plot_meta_exp_v0(
+#         #     'reparam_sanity_check_disc_128_from_expert_0_rew_6_8',
+#         #     name,
+#         #     x_axis_lims=[0,100],
+#         #     constraints=constraints
+#         # )
+
+# for seed in [1553, 7972, 9361, 1901]:
+#     constraints = {
+#         'seed': seed,
+#     }
+#     name = 'seed_{}'.format(seed)
+#     plot_np_bc_results(
+#         'np_bc_KL_0_FINAL',
+#         'np bc'
+#     )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0_FINAL',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p05_FINAL',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p1_FINAL',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p15_FINAL',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p2_FINAL',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0_FINAL_WITH_SAVING',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p05_FINAL_WITH_SAVING',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p1_FINAL_WITH_SAVING',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p15_FINAL_WITH_SAVING',
+    #     'np bc'
+    # )
+    # plot_np_bc_results(
+    #     'np_bc_KL_0p2_FINAL_WITH_SAVING',
+    #     'np bc'
+    # )
+
+for seed in [1553, 7972, 9361, 1901]:
+    constraints = {
+        'seed': seed,
+    }
+    name = 'seed_{}'.format(seed)
+    
+    plot_meta_exp_v0(
+        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_2_over_10_epochs',
+        name,
+        x_axis_lims=[0,200],
+        constraints=constraints
+    )
+    plot_meta_exp_v0(
+        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_4_over_10_epochs',
+        name,
+        x_axis_lims=[0,200],
+        constraints=constraints
+    )
+    plot_meta_exp_v0(
+        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_6_over_10_epochs',
+        name,
+        x_axis_lims=[0,200],
+        constraints=constraints
+    )
+    plot_meta_exp_v0(
+        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_8_over_10_epochs',
+        name,
+        x_axis_lims=[0,200],
+        constraints=constraints
+    )
+
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p2_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_5_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p15_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_5_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p1_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_5_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p05_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_5_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_5_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p2_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_10_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p15_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_10_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p1_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_10_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0p05_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_10_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'correct_saving_np_airl_KL_0_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_10_epochs',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'np-airl-KL-0-disc-512-dim-rew-1-NO-TARGET-ANYTHING',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'np-airl-KL-0-disc-512-dim-rew-2-NO-TARGET-ANYTHING',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'np-airl-KL-0-disc-512-dim-rew-3-NO-TARGET-ANYTHING',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+    # plot_meta_exp_v0(
+    #     'np_airl_KL_4_disc_512_dim_rew_4_NO_TARGET_ANYTHING',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+
+
+
+# for seed in [1553, 7972, 9361, 1901]:
+#     for rew in [4.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         plot_meta_exp_v0(
+#             'np_airl_KL_0_disc_512_dim_rew_4_FINAL',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_KL_0_disc_256_dim_rew_4_FINAL',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+# for seed in [1553, 7972, 9361, 1901]:
+#     for rew in [6.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         plot_meta_exp_v0(
+#             'np_airl_KL_0_disc_512_dim_rew_6_FINAL',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_KL_0_disc_256_dim_rew_6_FINAL',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+
+
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_2_4_pol_momentum_0p5',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_2_4_disc_momentum_0p25',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_2_4',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'np_airl_32_16_1_rew_2_4_disc_192',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_2_4_from_expert_8',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_2_4_from_expert_8_disc_size_192',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'actually_correct_reparam_sanity_check_rew_2_4_from_expert_8_disc_updates_2',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'not_state_only_actually_correct_reparam_sanity_check_rew_2_4_from_expert_8_disc_size_128',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'not_state_only_actually_correct_reparam_sanity_check_rew_2_4_from_expert_8_disc_size_128_disc_updates_2',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         # plot_meta_exp_v0(
+#         #     'reparam_sanity_check_disc_128_from_expert_8',
+#         #     name,
+#         #     x_axis_lims=[0,100],
+#         #     constraints=constraints
+#         # )
+
+
+
+
+# MASALA
+
+def plot_transfer_disc_training_results(exp_name, title, x_axis_lims=None, constraints=None):
+    # constraints = None
+    
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_disc_stats.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=[-0.05, 1.05],
+        plot_mean=False,
+        column_name=[
+            'Disc_CE_Loss',
+            'Disc_Acc',
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_r_stats.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=None,
+        plot_mean=False,
+        column_name=[
+            'Avg_R',
+            'Avg_R+Std_R',
+            'Avg_R-Std_R',
+            'Max_R',
+            'Min_R'
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_V_s_stats.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=None,
+        plot_mean=False,
+        column_name=[
+            'Avg_V_s',
+            'Avg_V_s+Std_V_s',
+            'Avg_V_s-Std_V_s',
+            'Max_V_s',
+            'Min_V_s'
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_shaping_stats.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=None,
+        plot_mean=False,
+        column_name=[
+            'Avg_Shaping',
+            'Avg_Shaping+Std_Shaping',
+            'Avg_Shaping-Std_Shaping',
+            'Max_Shaping',
+            'Min_Shaping'
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_f_stats.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=None,
+        plot_mean=False,
+        column_name=[
+            'Avg_f',
+            'Avg_f+Std_f',
+            'Avg_f-Std_f',
+            'Max_f',
+            'Min_f'
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_rew_stats.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=None,
+        plot_mean=False,
+        column_name=[
+            'Disc_Rew_Mean',
+            'Disc_Rew_Mean+Disc_Rew_Std',
+            'Disc_Rew_Mean-Disc_Rew_Std',
+            'Disc_Rew_Max',
+            'Disc_Rew_Min'
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_logprob_for_exp.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=None,
+        plot_mean=False,
+        column_name=[
+            'Avg_Pol_LogProb_for_Exp',
+            'Avg_Pol_LogProb_for_Exp+Std_Pol_LogProb_for_Exp',
+            'Avg_Pol_LogProb_for_Exp-Std_Pol_LogProb_for_Exp',
+            'Max_Pol_LogProb_for_Exp',
+            'Min_Pol_LogProb_for_Exp'
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_logprob_for_pol.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=None,
+        plot_mean=False,
+        column_name=[
+            'Avg_Pol_LogProb_for_Pol',
+            'Avg_Pol_LogProb_for_Pol+Std_Pol_LogProb_for_Pol',
+            'Avg_Pol_LogProb_for_Pol-Std_Pol_LogProb_for_Pol',
+            'Max_Pol_LogProb_for_Pol',
+            'Min_Pol_LogProb_for_Pol'
+        ],
+        constraints=constraints
+    )
+    
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_solve_stats.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        y_axis_lims=[-0.05, 1.05],
+        plot_mean=False,
+        column_name=[
+            'Percent_Solved_meta_train',
+            'Percent_Good_Reach_meta_train',
+            'Percent_Solved_meta_test',
+            'Percent_Good_Reach_meta_test',
+        ],
+        constraints=constraints
+    )
+
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '{}_grads.png'.format(title)),
+        x_axis_lims=x_axis_lims,
+        plot_mean=False,
+        column_name=[
+            'Disc_Avg_CE_Grad_Norm_this_epoch',
+            'Disc_Max_CE_Grad_Norm_this_epoch',
+            'Enc_Avg_CE_Grad_Norm_this_epoch',
+            'Enc_Max_CE_Grad_Norm_this_epoch',
+            'Disc_Avg_GP_Grad_Norm_this_epoch',
+            'Disc_Max_GP_Grad_Norm_this_epoch'
+        ],
+        constraints=constraints
+    )
+
+
+
+# for rew in [2.0, 4.0]:
+#     constraints = {
+#         'policy_params.reward_scale': rew
+#     }
+#     name = 'rew_{}'.format(rew)
+#     plot_transfer_disc_training_results(
+#         'final_correct_pol_log_prob_clipped_Adam_0_L2_reg_logits_0p005_rew_2_4',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+#     plot_transfer_disc_training_results(
+#         'final_correct_pol_log_prob_clipped_Adam_0_L2_reg_logits_0_rew_2_4',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+# for rew in [6.0, 8.0]:
+#     constraints = {
+#         'policy_params.reward_scale': rew
+#     }
+#     name = 'rew_{}'.format(rew)
+#     plot_transfer_disc_training_results(
+#         'final_correct_pol_log_prob_clipped_Adam_0_L2_reg_logits_0p005_rew_6_8',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+#     plot_transfer_disc_training_results(
+#         'final_correct_pol_log_prob_clipped_Adam_0_L2_reg_logits_0_rew_6_8',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+
+
+# for seed in [9783, 5914]:
+#     for rew in [2.0, 4.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         # name = 'rew_{}'.format(rew)
+#         plot_meta_exp_v0(
+#             'correct_np_airl_32_16_1_rew_2_4_disc_3_layer_256',
+#             name,
+#             x_axis_lims=[0,200],
+#             constraints=constraints
+#         )
+
+# for seed in [9783, 5914]:
+# for rew in [2.0, 4.0]:
+#     constraints = {
+#         'policy_params.reward_scale': rew
+#     }
+#     name = 'rew_{}'.format(rew)
+#     plot_transfer_disc_training_results(
+#         'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p005_rew_2_4',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+    # plot_transfer_disc_training_results(
+    #     'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p01_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p05_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+
+    # GOOD ONES!!!!!
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0p5_L2_reg_logits_0p005_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0p25_L2_reg_logits_0p005_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0_L2_reg_logits_0_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0_L2_reg_logits_0p005_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0_L2_reg_logits_0p01_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0_L2_reg_logits_0p05_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p05_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p01_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p005_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'fixed_grad_pen_r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0_rew_2_4',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    
+    
+
+
+# for rew in [8.0, 10.0]:
+#     constraints = {
+#         'policy_params.reward_scale': rew
+#     }
+#     name = 'rew_{}'.format(rew)
+#     plot_transfer_disc_training_results(
+#         'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p005_rew_8_10',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+#     plot_transfer_disc_training_results(
+#         'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p01_rew_8_10',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+#     plot_transfer_disc_training_results(
+#         'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p05_rew_8_10',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+
+# for rew in [14.0, 16.0]:
+#     constraints = {
+#         'policy_params.reward_scale': rew
+#     }
+#     name = 'rew_{}'.format(rew)
+#     plot_transfer_disc_training_results(
+#         'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p005_rew_14_16',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+#     plot_transfer_disc_training_results(
+#         'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p01_rew_14_16',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+#     plot_transfer_disc_training_results(
+#         'r_3_512_V_3_512_disc_Adam_0p9_L2_reg_logits_0p05_rew_14_16',
+#         name,
+#         x_axis_lims=[0,100],
+#         constraints=constraints
+#     )
+    # plot_transfer_disc_training_results(
+    #     'r_3_128_V_3_256_disc_Adam_0p9_L2_reg_logits_0p1',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p005',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_128_V_3_256_disc_Adam_0p9_L2_reg_logits_0p05',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p001',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_128_V_3_256_disc_Adam_0p9_L2_reg_logits_0p01',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_128_V_3_256_disc_Adam_0p9_L2_reg_logits_0p5',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p5',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p1',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p05',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+    # plot_transfer_disc_training_results(
+    #     'r_3_256_V_3_256_disc_Adam_0p9_L2_reg_logits_0p01',
+    #     name,
+    #     x_axis_lims=[0,100],
+    #     constraints=constraints
+    # )
+
+        # np_airl stuff
+    # plot_meta_exp_v0(
+    #     'correct_np_airl_32_16_1_rew_2_4_disc_3_layer_128',
+    #     name,
+    #     x_axis_lims=[0,200],
+    #     constraints=constraints
+    # )
+        # plot_meta_exp_v0(
+        #     'correct_np_airl_32_16_1_rew_2_4_disc_3_layer_192',
+        #     name,
+        #     x_axis_lims=[0,200],
+        #     constraints=constraints
+        # )
+        # plot_meta_exp_v0(
+        #     'correct_np_airl_32_16_1_rew_2_4_disc_2_layer_256',
+        #     name,
+        #     x_axis_lims=[0,200],
+        #     constraints=constraints
+        # )
+
+        # # transfer stuff
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_weight_1_ratio_1_to_10',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_weight_0p5_ratio_1_to_10',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_weight_0p1_ratio_1_to_10',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_weight_5_ratio_1_to_10',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_weight_1_ratio_1_to_1',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_logits_0p1',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_logits_0p5',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_logits_1',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+        # plot_transfer_disc_training_results(
+        #     'r_64_V_128_disc_Adam_0p9_L2_reg_logits_5',
+        #     name,
+        #     x_axis_lims=[0,100],
+        #     constraints=constraints
+        # )
+
+
+# PHO
+
+
+# plot_np_bc_results(
+#     'test_few_shot_on_subsample_1_no_KL',
+#     'np_bc few shot no KL'
+# )
+
+# for kl in [0.0, 0.25]:
+#     constraints = {'algo_params.max_KL_beta': kl}
+#     # plot_np_bc_results(
+#     #     'test_few_shot_with_bunch_of_KLs_with_cont_1_eval',
+#     #     'np_bc 1 context eval KL %f' % kl,
+#     #     constraints=constraints
+#     # )
+#     # plot_np_bc_results(
+#     #     'test_few_shot_with_bunch_of_KLs_with_cont_3_eval',
+#     #     'np_bc 3 context eval KL %f' % kl,
+#     #     constraints=constraints
+#     # )
+#     plot_np_bc_results(
+#         'test_np_bc_on_fixed_colors',
+#         'np_bc 1 context eval KL %f' % kl,
+#         constraints=constraints
+#     )
+#     plot_np_bc_results(
+#         'test_np_bc_on_fixed_colors_0p5_eval_on_1_context',
+#         'np_bc 1 context eval KL %f' % kl,
+#         constraints=constraints
+#     )
+#     plot_np_bc_results(
+#         'test_np_bc_on_fixed_colors_0p5_eval_on_3_context',
+#         'np_bc 3 context eval KL %f' % kl,
+#         constraints=constraints
+#     )
+
+
+# for seed in [9783, 5914]:
+#     for rew in [2.0, 4.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         plot_meta_exp_v0(
+#             'reparam_sanity_check_disc_128_from_expert_0_rew_2_4_slower_disc',
+#             name,
+#             x_axis_lims=[0,100],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'reparam_sanity_check_disc_128_from_expert_8_rew_2_4_slower_disc',
+#             name,
+#             x_axis_lims=[0,100],
+#             constraints=constraints
+#         )
+
+# for seed in [9783, 5914]:
+#     for rew in [6.0, 8.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+#         plot_meta_exp_v0(
+#             'reparam_sanity_check_disc_128_from_expert_0_rew_6_8_slower_disc',
+#             name,
+#             x_axis_lims=[0,100],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'reparam_sanity_check_disc_128_from_expert_8_rew_6_8_slower_disc',
+#             name,
+#             x_axis_lims=[0,100],
+#             constraints=constraints
+#         )
+
+
+
+
+
+
+
+
+
+# for seed in [9783, 5914]:
+#     for rew in [2.0, 4.0]:
+#         constraints = {
+#             'seed': seed,
+#             'policy_params.reward_scale': rew
+#         }
+#         name = 'rew_{}_seed_{}'.format(rew, seed)
+
+#         plot_meta_exp_v0(
+#             'demos_20_0_expert_disc_128_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_20_4_expert_disc_128_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_20_8_expert_disc_128_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_20_0_expert_disc_96_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_20_4_expert_disc_96_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'correct_state_only_disc_128_from_expert_8_pol_beta_0p25_demos_32_16_1',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_20_8_expert_disc_96_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_16_0_expert_disc_128_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_16_4_expert_disc_128_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_16_8_expert_disc_128_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_16_0_expert_disc_96_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_16_4_expert_disc_96_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'demos_16_8_expert_disc_96_pol_beta_0p25_np_airl',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'correct_state_only_disc_128_from_expert_0_pol_beta_0p25_demos_32_16_1',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'correct_state_only_disc_128_from_expert_8_pol_beta_0p25_demos_32_16_1',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'correct_state_only_disc_128_from_expert_4_pol_beta_0p25_demos_32_16_1',
+#             name,
+#             x_axis_lims=[0,400],
+#             constraints=constraints
+#         )
+
+#         plot_meta_exp_v0(
+#             'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_64',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_64',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_96',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_96',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_128',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_128',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+
+#         plot_meta_exp_v0(
+#             'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_160',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_160',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'final_lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_192',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'final_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_192',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p9_z_dim_25_rew_2_and_4_disc_128',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+#         plot_meta_exp_v0(
+#             'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p9_z_dim_25_rew_2_and_4_disc_128',
+#             name,
+#             x_axis_lims=[0,300],
+#             constraints=constraints
+#         )
+
+        # plot_meta_exp_v0(
+        #     'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_160',
+        #     name,
+        #     x_axis_lims=[0,300],
+        #     constraints=constraints
+        # )
+        # plot_meta_exp_v0(
+        #     'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_160',
+        #     name,
+        #     x_axis_lims=[0,300],
+        #     constraints=constraints
+        # )
+        # plot_meta_exp_v0(
+        #     'final_lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_192',
+        #     name,
+        #     x_axis_lims=[0,300],
+        #     constraints=constraints
+        # )
+        # plot_meta_exp_v0(
+        #     'final_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p25_z_dim_25_rew_2_and_4_disc_192',
+        #     name,
+        #     x_axis_lims=[0,300],
+        #     constraints=constraints
+        # )
+        # plot_meta_exp_v0(
+        #     'no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p9_z_dim_25_rew_2_and_4_disc_128',
+        #     name,
+        #     x_axis_lims=[0,300],
+        #     constraints=constraints
+        # )
+        # plot_meta_exp_v0(
+        #     'lower_disc_lr_no_clip_np_airl_another_32_demos_16_each_sub_8_pol_adam_0p9_z_dim_25_rew_2_and_4_disc_128',
+        #     name,
+        #     x_axis_lims=[0,300],
+        #     constraints=constraints
+        # )
 
         
 #         plot_meta_exp_v0(
@@ -4088,7 +5304,7 @@ for seed in [9783, 5914]:
 #                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-1-1-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
 #                     'disc 128 '+name,
 #                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_1_1_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_{}.png'.format(name),
-#                     x_axis_lims=[0, 200],
+#                     x_axis_lims=[0, 400],
 #                     y_axis_lims=[-0.05, 1.05],
 #                     plot_mean=False,
 #                     column_name=[
@@ -4106,7 +5322,7 @@ for seed in [9783, 5914]:
 #                     '/scratch/gobi2/kamyar/oorl_rlkit/output/grad-clip-10-updates-1-1-disc-128-10K-demos-lr-3en4-clamped-rew-less-rew-iters-scale-0p9-linear-demos-with-target-disc-cpu-relu-batch-norm-disc-65-iters-correct-grind-zero-I-beg-of-you',
 #                     'disc 128 '+name,
 #                     '/h/kamyar/oorl_rlkit/plots/grad_clip_10_updates_1_1_disc_128_lr_3en4_clamped_10_scale_0p9_less_rew_iters_linear_demos_with_target_disc_cpu_relu_batchnorm_disc_grind_zero/rew_upd_65_disc_128_disc_rewards_{}.png'.format(name),
-#                     x_axis_lims=[0, 200],
+#                     x_axis_lims=[0, 400],
 #                     plot_mean=False,
 #                     column_name=[
 #                         'Disc_Rew_Max',
@@ -4192,7 +5408,7 @@ for seed in [9783, 5914]:
 #         '/scratch/gobi2/kamyar/oorl_rlkit/output/fucking-correct-zero-single-task-dac',
 #         'rew %d fucking zero-single-task-dac-not-traj-based' % rew,
 #         '/h/kamyar/oorl_rlkit/plots/fucking_zero_single_task_dac_traj_based_rew_%d.png' % rew,
-#         # x_axis_lims=[0, 200],
+#         # x_axis_lims=[0, 400],
 #         y_axis_lims=[-0.05, 1.05],
 #         plot_mean=False,
 #         column_name=[
@@ -4211,7 +5427,7 @@ for seed in [9783, 5914]:
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-traj-based-gail-8-trajs-per-update',
 #     'dac 8 trajs',
 #     '/h/kamyar/oorl_rlkit/plots/dac_8_trajs.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -4225,7 +5441,7 @@ for seed in [9783, 5914]:
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/traj-based-gail-32-trajs-per-update-subsample-4',
 #     'dac 32 trajs subsample 4',
 #     '/h/kamyar/oorl_rlkit/plots/dac_32_trajs_sub_4.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -4239,7 +5455,7 @@ for seed in [9783, 5914]:
 #     '/scratch/gobi2/kamyar/oorl_rlkit/output/single-task-np-bc',
 #     'single task np bc',
 #     '/h/kamyar/oorl_rlkit/plots/single_task_np_bc.png',
-#     # x_axis_lims=[0, 200],
+#     # x_axis_lims=[0, 400],
 #     y_axis_lims=[-0.05, 1.05],
 #     plot_mean=False,
 #     column_name=[
@@ -4435,8 +5651,8 @@ for seed in [9783, 5914]:
 
 
 # FOR PLOTTING GEARS SEARCH
-# for gear_0 in [[50], [100], [150], [200], [250], [300]]:
-#     for gear_1 in [[50], [100], [150], [200], [250], [300]]:
+# for gear_0 in [[50], [100], [150], [400], [250], [300]]:
+#     for gear_1 in [[50], [100], [150], [400], [250], [300]]:
 #         constraints = {
 #             'env_specs.gear_0': gear_0,
 #             'env_specs.gear_1': gear_1,
@@ -4512,7 +5728,7 @@ for seed in [9783, 5914]:
 #         # for context_size_range in [[1, 21], [1, 51], [1, 101], [50, 101]]:
 #             # for aggregator in ['mean_aggregator']:
 #             for aggregator in ['sum_aggregator', 'mean_aggregator', 'tanh_sum_aggregator']:
-#             # for num_train in: [50, 100, 200]:
+#             # for num_train in: [50, 100, 400]:
 #                 for num_train in [50]:
 #                     for num_encoder_hidden_layers in [2]:
 #                         for z_dim in [2, 5, 10, 20]:
@@ -4617,9 +5833,9 @@ for seed in [9783, 5914]:
 # for reward_scale in [1.0, 5.0, 10.0]:
 #     for num_updates_per_env_step in [1, 4]:
 #         for soft_target in [0.01, 0.005]:
-#             for gear_0 in [[50], [100], [200]]:
-#                 for gear_1 in [[50], [100], [200]]:
-#                     for gear_2 in [[50], [100], [200]]:
+#             for gear_0 in [[50], [100], [400]]:
+#                 for gear_1 in [[50], [100], [400]]:
+#                     for gear_2 in [[50], [100], [400]]:
 #                         constraints = {
 #                             'algo_params.reward_scale': reward_scale,
 #                             'algo_params.num_updates_per_env_step': num_updates_per_env_step,
@@ -4705,9 +5921,9 @@ for seed in [9783, 5914]:
 
 
 # Hopper gears
-# for gear_0 in [[50.], [100.], [200.]]:
-#     for gear_1 in [[50.], [100.], [200.]]:
-#         for gear_2 in [[50.], [100.], [200.]]:
+# for gear_0 in [[50.], [100.], [400.]]:
+#     for gear_1 in [[50.], [100.], [400.]]:
+#         for gear_2 in [[50.], [100.], [400.]]:
 #             constraints = {
 #                 'env_specs.gear_0': gear_0,
 #                 'env_specs.gear_1': gear_1,

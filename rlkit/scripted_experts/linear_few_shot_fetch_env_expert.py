@@ -4,7 +4,8 @@ import numpy as np
 import gym
 from rlkit.scripted_experts.scripted_policy import ScriptedPolicy
 
-ACT_MAG = 0.275
+ACT_MAG = 0.4125
+# ACT_MAG = 0.275
 ACT_NOISE_SCALE = 0.1
 ACT_SLOW_NOISE_SCALE = 0.05
 SLOW_DOWN_RADIUS = 0.01

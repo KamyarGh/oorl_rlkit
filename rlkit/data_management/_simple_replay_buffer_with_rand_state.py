@@ -81,20 +81,20 @@ class SimpleReplayBuffer(ReplayBuffer):
 
 
     def _np_randint(self, *args, **kwargs):
-        # prev_np_state = np.random.get_state()
-        # np.random.set_state(self._np_rand_state)
+        prev_np_state = np.random.get_state()
+        np.random.set_state(self._np_rand_state)
         rets = np.random.randint(*args, **kwargs)
-        # self._np_rand_state = np.random.get_state()
-        # np.random.set_state(prev_np_state)
+        self._np_rand_state = np.random.get_state()
+        np.random.set_state(prev_np_state)
         return rets
     
 
     def _np_choice(self, *args, **kwargs):
-        # prev_np_state = np.random.get_state()
-        # np.random.set_state(self._np_rand_state)
+        prev_np_state = np.random.get_state()
+        np.random.set_state(self._np_rand_state)
         rets = np.random.choice(*args, **kwargs)
-        # self._np_rand_state = np.random.get_state()
-        # np.random.set_state(prev_np_state)
+        self._np_rand_state = np.random.get_state()
+        np.random.set_state(prev_np_state)
         return rets
 
 

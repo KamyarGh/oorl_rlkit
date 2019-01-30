@@ -53,6 +53,8 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             # some environment like halfcheetah_v2 have a timelimit that defines the terminal
             # this is used as a minor hack to turn off time limits
             no_terminal=False,
+            save_best=False,
+            save_best_after_epoch=0,
             **kwargs
         ):
         """
@@ -124,6 +126,9 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self.test_task_params_sampler = test_task_params_sampler
         self.do_not_train = do_not_train
         self.do_not_eval = do_not_eval
+        self.best_meta_test_percent_solved = 0.0
+        self.save_best = save_best
+        self.save_best_after_epoch = save_best_after_epoch
 
 
     def train(self, start_epoch=0):

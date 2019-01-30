@@ -138,11 +138,12 @@ class ReparamMultivariateNormalDiag():
         self.log_sig_diag = log_sig_diag
         self.log_cov = 2.*log_sig_diag
         self.cov = torch.exp(self.log_cov)
+        self.sig = torch.exp(self.log_sig_diag)
 
     def sample(self):
         eps = Variable(torch.randn(self.mean.size()))
         if ptu.gpu_enabled(): eps = eps.cuda()
-        samples = eps*self.cov + self.mean
+        samples = eps*self.sig + self.mean
         return samples
 
     def sample_n(self, n):
@@ -153,9 +154,9 @@ class ReparamMultivariateNormalDiag():
             else:
                 return v.expand(n, *v.size())
         expanded_mean = expand(self.mean)
-        expanded_cov = expand(self.cov)
+        expanded_sig = expand(self.sig)
         eps = Variable(torch.randn(expanded_mean.size()))
-        return eps*expanded_cov + expanded_mean
+        return eps*expanded_sig + expanded_mean
 
     def log_prob(self, value):
         assert value.dim() == 2, 'Where is the batch dimension?'

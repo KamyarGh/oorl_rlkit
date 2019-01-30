@@ -222,3 +222,85 @@ class TanhMlpPolicy(MlpPolicy):
         self.save_init_params(locals())
         super().__init__(*args, output_activation=torch.tanh, **kwargs)
         raise NotImplementedError()
+
+
+class ObsPreprocessedQFunc(FlattenMlp):
+    '''
+        This is a weird thing and I didn't know what to call.
+        Basically I wanted this so that if you need to preprocess
+        your inputs somehow (attention, gating, etc.) with an external module
+        before passing to the policy you could do so.
+        Assumption is that you do not want to update the parameters of the preprocessing
+        module so its output is always detached.
+    '''
+    def __init__(self, preprocess_model, z_dim, *args, wrap_absorbing=False, **kwargs):
+        self.save_init_params(locals())
+        super().__init__(*args, **kwargs)
+        # this is a hack so that it is not added as a submodule
+        self.preprocess_model_list = [preprocess_model]
+        self.wrap_absorbing = wrap_absorbing
+        self.z_dim = z_dim
+    
+
+    @property
+    def preprocess_model(self):
+        # this is a hack so that it is not added as a submodule
+        return self.preprocess_model_list[0]
+
+
+    def preprocess_fn(self, obs_batch):
+        mode = self.preprocess_model.training
+        self.preprocess_model.eval()
+        processed_obs_batch = self.preprocess_model(
+            obs_batch[:,:-self.z_dim],
+            self.wrap_absorbing,
+            obs_batch[:,-self.z_dim:]
+        ).detach()
+        self.preprocess_model.train(mode)
+        return processed_obs_batch
+    
+
+    def forward(self, obs, actions):
+        obs = self.preprocess_fn(obs).detach()
+        return super().forward(obs, actions)
+
+
+class ObsPreprocessedVFunc(FlattenMlp):
+    '''
+        This is a weird thing and I didn't know what to call.
+        Basically I wanted this so that if you need to preprocess
+        your inputs somehow (attention, gating, etc.) with an external module
+        before passing to the policy you could do so.
+        Assumption is that you do not want to update the parameters of the preprocessing
+        module so its output is always detached.
+    '''
+    def __init__(self, preprocess_model, z_dim, *args, wrap_absorbing=False, **kwargs):
+        self.save_init_params(locals())
+        super().__init__(*args, **kwargs)
+        # this is a hack so that it is not added as a submodule
+        self.preprocess_model_list = [preprocess_model]
+        self.wrap_absorbing = wrap_absorbing
+        self.z_dim = z_dim
+    
+
+    @property
+    def preprocess_model(self):
+        # this is a hack so that it is not added as a submodule
+        return self.preprocess_model_list[0]
+
+
+    def preprocess_fn(self, obs_batch):
+        mode = self.preprocess_model.training
+        self.preprocess_model.eval()
+        processed_obs_batch = self.preprocess_model(
+            obs_batch[:,:-self.z_dim],
+            self.wrap_absorbing,
+            obs_batch[:,-self.z_dim:]
+        ).detach()
+        self.preprocess_model.train(mode)
+        return processed_obs_batch
+    
+
+    def forward(self, obs):
+        obs = self.preprocess_fn(obs).detach()
+        return super().forward(obs)

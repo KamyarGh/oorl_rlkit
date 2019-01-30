@@ -27,8 +27,13 @@ import joblib
 # path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-8/another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_8_2019_01_19_02_02_47_0000--s-0/extra_data.pkl'
 # path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/another-seed-correct-new-gen-few-shot-fetch-linear-demos-24-tasks-16-total-each-subsample-8/another_seed_correct_new_gen_few_shot_fetch_linear_demos_24_tasks_16_total_each_subsample_8_2019_01_19_12_03_03_0000--s-0/extra_data.pkl'
 # path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/another-seed-correct-new-gen-few-shot-fetch-linear-demos-16-tasks-16-total-each-subsample-8/another_seed_correct_new_gen_few_shot_fetch_linear_demos_16_tasks_16_total_each_subsample_8_2019_01_19_12_44_18_0000--s-0/extra_data.pkl'
-path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/another-seed-correct-new-gen-few-shot-fetch-linear-demos-20-tasks-16-total-each-subsample-8/another_seed_correct_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8_2019_01_19_13_17_45_0000--s-0/extra_data.pkl'
-save_path = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/another_scale_0p9_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8/extra_data.pkl'
+# path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/another-seed-correct-new-gen-few-shot-fetch-linear-demos-20-tasks-16-total-each-subsample-8/another_seed_correct_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8_2019_01_19_13_17_45_0000--s-0/extra_data.pkl'
+# path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/final-correct-another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-1/final_correct_another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1_2019_01_20_04_51_13_0000--s-0/extra_data.pkl'
+# path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/fixed-colors-final-correct-another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-1/fixed_colors_final_correct_another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1_2019_01_22_06_38_48_0000--s-0/extra_data.pkl'
+# path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/fixed-colors-0p5-radius-final-correct-another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-1/fixed_colors_0p5_radius_final_correct_another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1_2019_01_22_07_53_12_0000--s-0/extra_data.pkl'
+# path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/final-few-shot-fetch-eval-expert-trajs/final_few_shot_fetch_eval_expert_trajs_2019_01_23_02_22_12_0000--s-0/extra_data.pkl'
+path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/faster-final-few-shot-fetch-eval-expert-trajs/faster_final_few_shot_fetch_eval_expert_trajs_2019_01_23_13_32_04_0000--s-0/extra_data.pkl'
+save_path = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/faster_few_shot_fetch_eval_expert_trajs/extra_data.pkl'
 
 # SCALE = 0.99
 SCALE = 0.9
@@ -64,20 +69,48 @@ SCALE = 0.9
 
 
 
-obs_max = np.array([0.20873973, 0.21238721, 0.20497428, 0.20873973, 0.21238721,
-    0.20497428, 0.29729787, 0.29597882, 0.00660929, 0.29729787,
-    0.29597882, 0.00660929, 1.3, 1.3, 1.3,
-    1.3, 1.3, 1.3, 0.05099425, 0.05097209,
-    0.01045247, 0.01020353])
-obs_min = np.array([-2.07733303e-01, -2.22872196e-01, -6.20862381e-03, -2.07733303e-01,
-    -2.22872196e-01, -6.20862381e-03, -3.02834854e-01, -3.18478521e-01,
-    -2.35453885e-01, -3.02834854e-01, -3.18478521e-01, -2.35453885e-01,
-    -1.3, -1.3, -1.3, -1.3,
-    -1.3, -1.3,  2.55108763e-06, -8.67902630e-08,
-    -1.12767104e-02, -1.15187468e-02])
-acts_max = np.array([0.36385158, 0.36506858, 0.37287046, 0.015])
-acts_min = np.array([-0.27378214, -0.27318582, -0.27457426, -0.015])
+# obs_max = np.array([0.20873973, 0.21238721, 0.20497428, 0.20873973, 0.21238721,
+#     0.20497428, 0.29729787, 0.29597882, 0.00660929, 0.29729787,
+#     0.29597882, 0.00660929, 1.0, 1.0, 1.0,
+#     1.0, 1.0, 1.0, 0.05099425, 0.05097209,
+#     0.01045247, 0.01020353])
+# obs_min = np.array([-2.07733303e-01, -2.22872196e-01, -6.20862381e-03, -2.07733303e-01,
+#     -2.22872196e-01, -6.20862381e-03, -3.02834854e-01, -3.18478521e-01,
+#     -2.35453885e-01, -3.02834854e-01, -3.18478521e-01, -2.35453885e-01,
+#     -1.0, -1.0, -1.0, -1.0,
+#     -1.0, -1.0,  2.55108763e-06, -8.67902630e-08,
+#     -1.12767104e-02, -1.15187468e-02])
+# acts_max = np.array([0.36385158, 0.36506858, 0.37287046, 0.015])
+# acts_min = np.array([-0.27378214, -0.27318582, -0.27457426, -0.015])
 
+
+# obs_max = np.array([0.19732151, 0.19501755, 0.2032467 , 0.19732151, 0.19501755,
+#     0.2032467 , 0.28952909, 0.27034638, 0.00461512, 0.28952909,
+#     0.27034638, 0.00461512, 1.        , 1.        , 1.        ,
+#     1.        , 1.        , 1.        , 0.05084346, 0.05089836,
+#     0.01020451, 0.01024073])
+# obs_min = np.array([-1.94163008e-01, -2.06672946e-01, -4.34817497e-03, -1.94163008e-01,
+#     -2.06672946e-01, -4.34817497e-03, -2.57836261e-01, -3.02357607e-01,
+#     -2.26000082e-01, -2.57836261e-01, -3.02357607e-01, -2.26000082e-01,
+#     -1., -1., -1., -1.,
+#     -1., -1.,  2.55108763e-06, -8.67902630e-08,
+#     -9.79891841e-03, -9.23147216e-03])
+# acts_max = np.array([0.36071754, 0.35800805, 0.37175567, 0.015])
+# acts_min = np.array([-0.26463221, -0.26663373, -0.27413371, -0.015])
+
+obs_max = np.array([0.20061923, 0.19781174, 0.20549539, 0.20061923, 0.19781174,
+    0.20549539, 0.29141252, 0.28891717, 0.00129714, 0.29141252,
+    0.28891717, 0.00129714, 1.0        , 1.0        , 1.0        ,
+    1.0        , 1.0        , 1.0        , 0.05096386, 0.05090749,
+    0.01046458, 0.01028522])
+obs_min = np.array([-1.83014661e-01, -2.07445100e-01, -4.79934195e-03, -1.83014661e-01,
+    -2.07445100e-01, -4.79934195e-03, -2.89125464e-01, -2.96987424e-01,
+    -2.30655094e-01, -2.89125464e-01, -2.96987424e-01, -2.30655094e-01,
+    -1.0, -1.0, -1.0, -1.0,
+    -1.0, -1.0,  2.55108763e-06, -8.67902630e-08,
+    -1.11994283e-02, -9.10341004e-03])
+acts_max = np.array([0.36051396, 0.36032055, 0.37415428, 0.015])
+acts_min = np.array([-0.2696256 , -0.27399028, -0.27453274, -0.015])
 
 
 

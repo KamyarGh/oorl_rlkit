@@ -57,6 +57,10 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             train_samples_per_traj=8,
 
             num_context_trajs_for_exploration=3,
+
+            few_shot_version=False,
+            min_context_size=1,
+            max_context_size=5,
             
             num_tasks_per_eval=10,
             num_diff_context_per_eval_task=2,
@@ -80,6 +84,9 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             soft_target_enc_tau=0.005,
 
             objective='mse', # or coul be 'max_like'
+            max_KL_beta = 1.0,
+            KL_ramp_up_start_iter=0,
+            KL_ramp_up_end_iter=100,
 
             plotter=None,
             render_eval_paths=False,
@@ -89,7 +96,6 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
     ):
         if kwargs['policy_uses_pixels']: raise NotImplementedError('policy uses pixels')
         if kwargs['wrap_absorbing']: raise NotImplementedError('wrap absorbing')
-        assert not eval_deterministic
         
         super().__init__(
             env=env,
@@ -157,14 +163,35 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             self.mse_loss = nn.MSELoss()
             if ptu.gpu_enabled():
                 self.mse_loss.cuda()
+        self.max_KL_beta = max_KL_beta
+        self.KL_ramp_up_start_iter = KL_ramp_up_start_iter
+        self.KL_ramp_up_end_iter = KL_ramp_up_end_iter
+
+        self.few_shot_version = few_shot_version
+        self.max_context_size = max_context_size
+        self.min_context_size = min_context_size
+        assert num_context_trajs_for_training == max_context_size
+
+        self.eval_deterministic = eval_deterministic
     
 
     def get_exploration_policy(self, task_identifier):
         if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
-        list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
-            task_identifier,
-            self.num_context_trajs_for_exploration,
-        )
+        if self.few_shot_version:
+            # no need for this if/else statement like this, make it cleaner
+            this_context_size = np.random.randint(self.min_context_size, self.max_context_size+1)
+            list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
+                task_identifier,
+                this_context_size
+            )
+            mask = None
+        else:
+            list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
+                task_identifier,
+                self.num_context_trajs_for_exploration,
+            )
+            mask = None
+
         if self.use_target_enc:
             enc_to_use = self.target_enc
         else:
@@ -172,11 +199,11 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         
         mode = enc_to_use.training
         enc_to_use.eval()
-        post_dist = enc_to_use([list_of_trajs])
+        post_dist = enc_to_use([list_of_trajs], mask)
         enc_to_use.train(mode)
 
-        # z = post_dist.sample()
-        z = post_dist.mean
+        z = post_dist.sample()
+        # z = post_dist.mean
         z = z.cpu().data.numpy()[0]
         if self.use_target_policy:
             return PostCondMLPPolicyWrapper(self.target_policy, z)
@@ -190,10 +217,17 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             rb = self.train_context_expert_replay_buffer
         else:
             rb = self.test_context_expert_replay_buffer
+        
         list_of_trajs = rb.sample_trajs_from_task(
             task_identifier,
-            self.num_context_trajs_for_eval,
+            np.random.randint(self.min_context_size, self.max_context_size+1) \
+                if self.few_shot_version else self.num_context_trajs_for_eval,
         )
+        # list_of_trajs = rb.sample_trajs_from_task(
+        #     task_identifier,
+        #     3 if self.few_shot_version else self.num_context_trajs_for_eval,
+        # )
+        
         if self.use_target_enc:
             enc_to_use = self.target_enc
         else:
@@ -204,21 +238,33 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         post_dist = enc_to_use([list_of_trajs])
         enc_to_use.train(mode)
 
-        # z = post_dist.sample()
-        z = post_dist.mean
+        z = post_dist.sample()
+        # z = post_dist.mean
         z = z.cpu().data.numpy()[0]
         if self.use_target_policy:
-            return PostCondMLPPolicyWrapper(self.target_policy, z)
+            return PostCondMLPPolicyWrapper(self.target_policy, z, deterministic=self.eval_deterministic)
         else:
-            return PostCondMLPPolicyWrapper(self.policy, z)
+            return PostCondMLPPolicyWrapper(self.policy, z, deterministic=self.eval_deterministic)
     
 
     def _get_training_batch(self):
-        context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
-            self.num_context_trajs_for_training,
-            num_tasks=self.num_tasks_used_per_update,
-            keys=['observations', 'actions']
-        )
+        if self.few_shot_version:
+            context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
+                self.max_context_size,
+                num_tasks=self.num_tasks_used_per_update,
+                keys=['observations', 'actions']
+            )
+            mask = ptu.Variable(torch.ones(self.num_tasks_used_per_update, self.max_context_size, 1))
+            this_context_sizes = np.random.randint(self.min_context_size, self.max_context_size+1, size=self.num_tasks_used_per_update)
+            for i, c_size in enumerate(this_context_sizes):
+                mask[i,:c_size,:] = 1.0
+        else:
+            context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
+                self.num_context_trajs_for_training,
+                num_tasks=self.num_tasks_used_per_update,
+                keys=['observations', 'actions']
+            )
+            mask = None
 
         # get the pred version of the context batch
         # subsample the trajs
@@ -234,15 +280,28 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         flat_test_batch = [traj for task_trajs in test_batch for traj in task_trajs]
         test_pred_batch = concat_trajs(flat_test_batch)
 
-        return context_batch, context_pred_batch, test_pred_batch
+        return context_batch, context_pred_batch, test_pred_batch, mask
 
 
     def _do_training(self, epoch):
-        for _ in range(self.num_update_loops_per_train_call):
-            self._do_training_step(epoch)
+        for t in range(self.num_update_loops_per_train_call):
+            self._do_training_step(epoch, t)
+        
+    
+    def _compute_KL_loss(self, post_dist):
+        # computting the KL of a Gaussian posterior from the spherical prior
+        z_means = post_dist.mean
+        z_log_covs = post_dist.log_cov
+        z_covs = post_dist.cov
+        KL = torch.mean(
+            1.0 + z_log_covs - z_means**2 - z_covs,
+            dim=-1
+        )
+        KL =  -0.5 * torch.sum(KL)
+        return KL
 
 
-    def _do_training_step(self, epoch):
+    def _do_training_step(self, epoch, loop_iter):
         '''
             Train the discriminator
         '''
@@ -250,7 +309,7 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         self.policy_optimizer.zero_grad()
 
         # prep the batches
-        context_batch, context_pred_batch, test_pred_batch = self._get_training_batch()
+        context_batch, context_pred_batch, test_pred_batch, mask = self._get_training_batch()
 
         # convert it to a pytorch tensor
         # note that our objective says we should maximize likelihood of
@@ -261,9 +320,9 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         acts_batch = np.concatenate((context_pred_batch['actions'], test_pred_batch['actions']), axis=0)
         acts_batch = Variable(ptu.from_numpy(acts_batch), requires_grad=False)
 
-        post_dist = self.encoder(context_batch)
-        # z = post_dist.sample() # N_tasks x Dim
-        z = post_dist.mean
+        post_dist = self.encoder(context_batch, mask)
+        z = post_dist.sample() # N_tasks x Dim
+        # z = post_dist.mean
 
         # make z's for expert samples
         context_pred_z = z.repeat(1, self.num_context_trajs_for_training * self.train_samples_per_traj).view(
@@ -280,11 +339,22 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         
         if self.use_mse_objective:
             pred_acts = self.policy(input_batch)[1]
-            loss = self.mse_loss(pred_acts, acts_batch)
+            recon_loss = self.mse_loss(pred_acts, acts_batch)
         else:
-            loss = -1.0 * self.policy.get_log_prob(input_batch, acts_batch).mean()
-        loss.backward()
+            recon_loss = -1.0 * self.policy.get_log_prob(input_batch, acts_batch).mean()
+        
+        # add KL loss term
+        cur_KL_beta = linear_schedule(
+            self._n_train_steps_total*self.num_update_loops_per_train_call + loop_iter - self.KL_ramp_up_start_iter,
+            0.0,
+            self.max_KL_beta,
+            self.KL_ramp_up_end_iter - self.KL_ramp_up_start_iter
+        )
+        KL_loss = self._compute_KL_loss(post_dist)
+        if cur_KL_beta == 0.0: KL_loss = KL_loss.detach()
 
+        loss = recon_loss + cur_KL_beta * KL_loss
+        loss.backward()
 
         self.policy_optimizer.step()
         self.encoder_optimizer.step()
@@ -314,12 +384,17 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
                 else:
                     target_loss = -1.0*pol_to_use.get_log_prob(input_batch, acts_batch).mean()
                     self.eval_statistics['Target Neg Log Like'] = np.mean(ptu.get_numpy(target_loss))
-            
-            if self.use_mse_objective:
-                self.eval_statistics['Target MSE Loss'] = np.mean(ptu.get_numpy(loss))
             else:
-                self.eval_statistics['Target Neg Log Like'] = np.mean(ptu.get_numpy(loss))
-    
+                if self.use_mse_objective:
+                    self.eval_statistics['Target MSE Loss'] = np.mean(ptu.get_numpy(recon_loss))
+                else:
+                    self.eval_statistics['Target Neg Log Like'] = np.mean(ptu.get_numpy(recon_loss))
+            self.eval_statistics['Target KL'] = np.mean(ptu.get_numpy(KL_loss))
+            self.eval_statistics['Cur KL Beta'] = cur_KL_beta
+            self.eval_statistics['Max KL Beta'] = self.max_KL_beta
+
+            self.eval_statistics['Avg Post Mean Abs'] = np.mean(np.abs(ptu.get_numpy(post_dist.mean)))
+            self.eval_statistics['Avg Post Cov Abs'] = np.mean(np.abs(ptu.get_numpy(post_dist.cov)))
 
     def evaluate(self, epoch):
         super().evaluate(epoch)

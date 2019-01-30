@@ -475,3 +475,24 @@ another_scale_0p9_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_sub
   seed_runs: [
     another_scale_0p9_new_gen_few_shot_fetch_linear_demos_20_tasks_16_total_each_subsample_8
   ]
+
+another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1
+  ]
+
+fixed_colors_32_16_1:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    fixed_colors_32_16_1
+  ]
+
+fixed_colors_0p5_32_16_1:
+  description: "episode length 65"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    fixed_colors_0p5_32_16_1
+  ]

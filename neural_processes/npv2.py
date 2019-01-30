@@ -258,9 +258,9 @@ class NeuralProcessV2(BaseNeuralProcess):
 
 
     def compute_ELBO_KL(self, posteriors_1, posteriors_2, detach_posteriors_2=True):
-        '''
-            We always deal with spherical Gaussian prior
-        '''
+        # '''
+        #     We always deal with spherical Gaussian prior
+        # '''
         if detach_posteriors_2:
             posteriors_2 = [p.detach() for p in posteriors_2]
 

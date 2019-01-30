@@ -248,6 +248,7 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             init_w=init_w,
             **kwargs
         )
+        self.LOG_STD_SUBTRACT_VALUE = 0.0
         self.log_std = None
         self.std = std
         if std is None:
@@ -285,7 +286,7 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             h = self.hidden_activation(fc(h))
         mean = self.last_fc(h)
         if self.std is None:
-            log_std = self.last_fc_log_std(h)
+            log_std = self.last_fc_log_std(h) - self.LOG_STD_SUBTRACT_VALUE
             log_std = torch.clamp(log_std, LOG_SIG_MIN, LOG_SIG_MAX)
             std = torch.exp(log_std)
         else:
@@ -328,7 +329,7 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             h = self.hidden_activation(fc(h))
         mean = self.last_fc(h)
         if self.std is None:
-            log_std = self.last_fc_log_std(h)
+            log_std = self.last_fc_log_std(h) - self.LOG_STD_SUBTRACT_VALUE
             log_std = torch.clamp(log_std, LOG_SIG_MIN, LOG_SIG_MAX)
             std = torch.exp(log_std)
         else:
@@ -341,15 +342,16 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
 
      
 class PostCondMLPPolicyWrapper(ExplorationPolicy):
-    def __init__(self, policy, np_post_sample):
+    def __init__(self, policy, np_post_sample, deterministic=False):
         super().__init__()
         self.policy = policy
         self.np_z = np_post_sample # assuming it is a flat np array
+        self.deterministic = deterministic
 
 
     def get_action(self, obs_np):
         obs = np.concatenate((obs_np, self.np_z), axis=0)
-        return self.policy.get_action(obs)
+        return self.policy.get_action(obs, deterministic=self.deterministic)
 
 
 class ObsPreprocessedReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):

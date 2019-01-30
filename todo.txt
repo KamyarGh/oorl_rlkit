@@ -1,17 +1,39 @@
+- (done) implement getting next obs batch
+- (done) implement it in disc training
+- (done) implement it in policy training
+- (done) log the statistics of the r and V functions
+- (done) implement the discriminator
+- check if they used any regularization terms
+- run experiments
+
+
+
+
+CODE CLEANUP:
+- remove my name from anywhere (CONFIG FILES ETC.)
+
+WRITING:
+- 
+- start the supplementary
+- Look at Kelvin's openreview submission and see what they did wrong
+
 IMPLEMENTATION STUFF:
-- implement few shot evaluation script
-- implement few shot np_encoder
+- implement few shot evaluation script (without few shot option for now)
 - fixing a broken ELBO KL term
     - tune it on np_bc
-- 
+- implement few shot np_encoder
+- implement few shot version of evaluation script
+- !!!!! script for evaluating whether you can further fine-tune things !!!!!
+- baseline that takes the frozen encoder of np_bc and runs airl using that
 
 THINGS LEFT TO TRY:
-larger disc models
-disc having momentum in Adam
-expert demos for policy optimization
-(done) (made things more stable) Reduce disc learning rate
-adam optimizer for the gate
-
+- train with a lot of data in state-only mode and show that you can do better than the expert demos in terms of reward
+- also trying version of the model where I don't use the fancy gating mechanism
+- larger disc models
+- disc having momentum in Adam
+- expert demos for policy optimization
+- (done) (made things more stable) Reduce disc learning rate
+- adam optimizer for the gate
 
 
 

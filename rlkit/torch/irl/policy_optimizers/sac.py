@@ -66,8 +66,8 @@ class NewSoftActorCritic():
         self.reward_scale = reward_scale
         self.discount = discount
         
-        # beta_1 = 0.25
-        beta_1 = 0.9
+        beta_1 = 0.25
+        # beta_1 = 0.9
         self.policy_optimizer = optimizer_class(
             self.training_policy.parameters(),
             lr=policy_lr,
