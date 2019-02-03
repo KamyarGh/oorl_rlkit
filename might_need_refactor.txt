@@ -1,3 +1,4 @@
+- separate rl algorithm from meta-rl algorithm
 - document the parameters of GAIL
 - change the name from GAIL to DAC
 - merge fetch_custom with gail_exp script

@@ -4,7 +4,7 @@ from gym.spaces import Dict
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
-from rlkit.launchers.launcher_util import setup_logger, build_nested_variant_generator
+from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.sac.sac import NewSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
@@ -20,26 +20,6 @@ import argparse
 
 
 def experiment(variant):
-    # env = NormalizedBoxEnv(HalfCheetahEnv())
-    # env = NormalizedBoxEnv(InvertedPendulumEnv())
-    # ---------
-    # env = NormalizedBoxEnv(get_meta_env(variant['env_specs']))
-    # training_env = NormalizedBoxEnv(get_meta_env(variant['env_specs']))
-
-    # env = ReacherEnv()
-    # training_env = ReacherEnv()
-
-    # env = NormalizedBoxEnv(ReacherEnv())
-    # training_env = NormalizedBoxEnv(ReacherEnv())
-    
-    # Or for a specific version:
-    # import gym
-    # env = NormalizedBoxEnv(gym.make('HalfCheetah-v1'))
-
-    if variant['use_gpu']:
-        ptu.set_gpu_mode(True)
-
-    # we have to generate the combinations for the env_specs
     env_specs = variant['env_specs']
     if env_specs['train_test_env']:
         env, training_env = get_env(env_specs)
@@ -100,29 +80,6 @@ def experiment(variant):
     return 1
 
 
-def exp_fn(variant):
-    exp_id = variant['exp_id']
-    # affinity_Q = arg[2]
-
-    # # set the affinity
-    # affinity = affinity_Q.get()
-    # psutil.Process().cpu_affinity(affinity)
-    # print('Affinity set to {}\n'.format(psutil.Process().cpu_affinity()))
-
-    # os.system("taskset -p -c 0,1 %d" % os.getpid())
-
-    print(variant.keys())
-    exp_prefix = variant['exp_name']
-    setup_logger(exp_prefix=exp_prefix, exp_id=exp_id, variant=variant)
-
-    # run the experiment
-    exp_return = experiment(variant)
-    
-    # # release the affinity
-    # affinity_Q.put(psutil.Process().cpu_affinity())
-    return exp_return
-
-
 if __name__ == '__main__':
     # Arguments
     parser = argparse.ArgumentParser()
@@ -132,4 +89,13 @@ if __name__ == '__main__':
         spec_string = spec_file.read()
         exp_specs = yaml.load(spec_string)
     
-    exp_fn(exp_specs)
+    if exp_specs['use_gpu']:
+        print('\n\nUSING GPU\n\n')
+        ptu.set_gpu_mode(True)
+    exp_id = exp_specs['exp_id']
+    exp_prefix = exp_specs['exp_name']
+    seed = exp_specs['seed']
+    set_seed(seed)
+    setup_logger(exp_prefix=exp_prefix, exp_id=exp_id, variant=exp_specs)
+
+    experiment(exp_specs)

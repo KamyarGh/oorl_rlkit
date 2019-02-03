@@ -34,7 +34,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             render=False,
             save_replay_buffer=False,
             save_algorithm=False,
-            save_environment=True,
+            save_environment=False,
             eval_sampler=None,
             eval_policy=None,
             replay_buffer=None,
@@ -48,7 +48,7 @@ class RLAlgorithm(metaclass=abc.ABCMeta):
             freq_saving=1,
             # for meta-learning
             policy_uses_task_params=False, # whether the policy uses the task parameters
-            concat_task_params_to_policy_obs=True, # how the policy sees the task parameters
+            concat_task_params_to_policy_obs=False, # how the policy sees the task parameters
             # this is useful when you want to generate trajectories from the expert using the
             # exploration policy
             do_not_train=False,
