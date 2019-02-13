@@ -26,7 +26,7 @@ def concat_trajs(trajs):
     return new_dict
 
 
-class GAILWithTrajBatches(TorchIRLAlgorithm):
+class AIRLWithTrajBatches(TorchIRLAlgorithm):
     '''
         This is actually AIRL / DAC, sorry!
         

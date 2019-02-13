@@ -26,14 +26,13 @@ def concat_trajs(trajs):
     return new_dict
 
 
-class GAIL(TorchIRLAlgorithm):
+class AIRL(TorchIRLAlgorithm):
     '''
-        This is actually AIRL / DAC, sorry!
+        AIRL / DAC depending on how big the replay buffer size is
         
         I did not implement the reward-wrapping mentioned in
         https://arxiv.org/pdf/1809.02925.pdf though
     '''
-
     def __init__(
             self,
             env,
@@ -77,7 +76,6 @@ class GAIL(TorchIRLAlgorithm):
             epochs_till_end_scale=50.0,
             **kwargs
     ):
-        assert False, 'This is not GAIL, this is AIRL!'
         assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
         if eval_deterministic:
             eval_policy = MakeDeterministic(policy)
