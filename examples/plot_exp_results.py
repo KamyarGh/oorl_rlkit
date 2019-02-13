@@ -3241,36 +3241,36 @@ def plot_np_bc_results(exp_name, title, x_axis_lims=None, constraints=None):
     #     'np bc'
     # )
 
-for seed in [1553, 7972, 9361, 1901]:
-    constraints = {
-        'seed': seed,
-    }
-    name = 'seed_{}'.format(seed)
+# for seed in [1553, 7972, 9361, 1901]:
+#     constraints = {
+#         'seed': seed,
+#     }
+#     name = 'seed_{}'.format(seed)
     
-    plot_meta_exp_v0(
-        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_2_over_10_epochs',
-        name,
-        x_axis_lims=[0,200],
-        constraints=constraints
-    )
-    plot_meta_exp_v0(
-        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_4_over_10_epochs',
-        name,
-        x_axis_lims=[0,200],
-        constraints=constraints
-    )
-    plot_meta_exp_v0(
-        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_6_over_10_epochs',
-        name,
-        x_axis_lims=[0,200],
-        constraints=constraints
-    )
-    plot_meta_exp_v0(
-        'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_8_over_10_epochs',
-        name,
-        x_axis_lims=[0,200],
-        constraints=constraints
-    )
+#     plot_meta_exp_v0(
+#         'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_2_over_10_epochs',
+#         name,
+#         x_axis_lims=[0,200],
+#         constraints=constraints
+#     )
+#     plot_meta_exp_v0(
+#         'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_4_over_10_epochs',
+#         name,
+#         x_axis_lims=[0,200],
+#         constraints=constraints
+#     )
+#     plot_meta_exp_v0(
+#         'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_6_over_10_epochs',
+#         name,
+#         x_axis_lims=[0,200],
+#         constraints=constraints
+#     )
+#     plot_meta_exp_v0(
+#         'final_correct_state_only_np_airl_KL_0_disc_512_dim_rew_8_over_10_epochs',
+#         name,
+#         x_axis_lims=[0,200],
+#         constraints=constraints
+#     )
 
     # plot_meta_exp_v0(
     #     'correct_saving_np_airl_KL_0p2_disc_512_dim_rew_2_NO_TARGET_ANYTHING_over_5_epochs',
@@ -3635,6 +3635,21 @@ def plot_transfer_disc_training_results(exp_name, title, x_axis_lims=None, const
         ],
         constraints=constraints
     )
+
+
+
+
+title = 'new_sac_halfcheetah'
+exp_name = 'correct-normalized-new-sac-halfcheetah'
+plot_experiment_returns(
+    os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+    title,
+    os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '%s.png'%title),
+    plot_mean=False,
+    column_name=[
+        'Test_Returns_Mean'
+    ]
+)
 
 
 

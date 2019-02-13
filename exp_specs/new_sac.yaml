@@ -1,7 +1,7 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/sac.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: correct_new_sac_halfcheetah
+  exp_name: correct_normalized_new_sac_halfcheetah
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 4
@@ -41,5 +41,5 @@ constants:
 
   env_specs:
     base_env_name: 'halfcheetah_v2'
-    normalized: false
+    normalized: true
     train_test_env: false

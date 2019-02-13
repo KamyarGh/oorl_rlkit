@@ -1,3 +1,18 @@
+- (done) generate data using different amounts of expert demos
+- run AIRL for different amounts of expert demos (make the replay buffer size worth 20 episodes)
+- implement a cleaner BC algorithm
+- run BC on different amounts of data
+- implement alpha divergence AIRL
+- run experiments for different amounts of data for different alpha values including alpha inf
+
+
+
+
+
+
+
+
+
 - (done) implement getting next obs batch
 - (done) implement it in disc training
 - (done) implement it in policy training

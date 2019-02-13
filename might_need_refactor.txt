@@ -30,5 +30,7 @@
 - make gen_meta_irl_expert_trajs more general
 - clean up few_shot_fetch_env.py
 - remove the Wrapped Absorbing Env wrapper
+- remove gen_expert_trajs old version
+- remove the need for train_test_env
 
 - need to remove the copy of wrapped_goal.....

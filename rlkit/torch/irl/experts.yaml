@@ -232,6 +232,43 @@ new_scale_0p9_linear_fetch_zero_10K_demos:
     scale_0p9_new_zero_fetch_linear_demos_10K
   ]
 
+
+halfcheetah_4_demos_subsample_20:
+  description: "4 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-4/
+  seed_runs: [
+    correct_halfcheetah_demos_4_2019_02_13_13_44_44_0000--s-0,
+    correct_halfcheetah_demos_4_2019_02_13_13_45_06_0001--s-0
+  ]
+
+
+halfcheetah_11_demos_subsample_20:
+  description: "11 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-11/
+  seed_runs: [
+    correct_halfcheetah_demos_11_2019_02_13_13_45_52_0000--s-0,
+  correct_halfcheetah_demos_11_2019_02_13_13_46_21_0001--s-0
+  ]
+
+
+halfcheetah_18_demos_subsample_20:
+  description: "18 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-18/
+  seed_runs: [
+    correct_halfcheetah_demos_18_2019_02_13_13_46_58_0000--s-0,
+    correct_halfcheetah_demos_18_2019_02_13_13_47_30_0001--s-0
+  ]
+
+
+halfcheetah_25_demos_subsample_20:
+  description: "25 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-25/
+  seed_runs: [
+    correct_halfcheetah_demos_25_2019_02_13_13_47_37_0000--s-0,
+    correct_halfcheetah_demos_25_2019_02_13_13_48_17_0001--s-0
+  ]
+
+
 # META-EXPERTS ----------------------------------------------------------------
 meta_simple_meta_reacher_expert_no_subsampling:
   description: "meta simple meta reacher expert, 6 trajs per task"
