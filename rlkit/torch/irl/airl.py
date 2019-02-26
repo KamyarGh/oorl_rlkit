@@ -34,47 +34,51 @@ class AIRL(TorchIRLAlgorithm):
         https://arxiv.org/pdf/1809.02925.pdf though
     '''
     def __init__(
-            self,
-            env,
-            policy,
-            discriminator,
+        self,
+        env,
+        policy,
+        discriminator,
 
-            policy_optimizer,
-            expert_replay_buffer,
+        policy_optimizer,
+        expert_replay_buffer,
 
-            state_only=False,
+        state_only=False,
 
-            traj_based=False,
-            disc_num_trajs_per_batch=128,
-            disc_samples_per_traj=8,
+        traj_based=False,
+        disc_num_trajs_per_batch=128,
+        disc_samples_per_traj=8,
 
-            disc_optim_batch_size=1024,
-            policy_optim_batch_size=1024,
-            policy_optim_batch_size_from_expert=0,
+        disc_optim_batch_size=1024,
+        policy_optim_batch_size=1024,
+        policy_optim_batch_size_from_expert=0,
 
-            disc_lr=1e-3,
-            disc_momentum=0.0,
-            disc_optimizer_class=optim.Adam,
+        num_update_loops_per_train_call=1000,
+        num_disc_updates_per_loop_iter=1,
+        num_policy_updates_per_loop_iter=1,
 
-            use_grad_pen=True,
-            grad_pen_weight=10,
+        disc_lr=1e-3,
+        disc_momentum=0.0,
+        disc_optimizer_class=optim.Adam,
 
-            disc_ce_grad_clip=0.5,
-            disc_gp_grad_clip=10.0,
+        use_grad_pen=True,
+        grad_pen_weight=10,
 
-            use_target_disc=False,
-            target_disc=None,
-            soft_target_disc_tau=0.005,
+        disc_ce_grad_clip=0.5,
+        disc_gp_grad_clip=10.0,
 
-            plotter=None,
-            render_eval_paths=False,
-            eval_deterministic=True,
+        use_target_disc=False,
+        target_disc=None,
+        soft_target_disc_tau=0.005,
 
-            use_disc_input_noise=False,
-            disc_input_noise_scale_start=0.1,
-            disc_input_noise_scale_end=0.0,
-            epochs_till_end_scale=50.0,
-            **kwargs
+        plotter=None,
+        render_eval_paths=False,
+        eval_deterministic=True,
+
+        use_disc_input_noise=False,
+        disc_input_noise_scale_start=0.1,
+        disc_input_noise_scale_end=0.0,
+        epochs_till_end_scale=50.0,
+        **kwargs
     ):
         assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
         if eval_deterministic:
@@ -87,7 +91,6 @@ class AIRL(TorchIRLAlgorithm):
             exploration_policy=policy,
             eval_policy=eval_policy,
             expert_replay_buffer=expert_replay_buffer,
-            policy_optimizer=policy_optimizer,
             **kwargs
         )
 
@@ -97,6 +100,8 @@ class AIRL(TorchIRLAlgorithm):
         self.disc_num_trajs_per_batch = disc_num_trajs_per_batch
         self.disc_samples_per_traj = disc_samples_per_traj
 
+        self.policy_optimizer = policy_optimizer
+        
         self.discriminator = discriminator
         self.rewardf_eval_statistics = None
         self.disc_optimizer = disc_optimizer_class(
@@ -159,6 +164,10 @@ class AIRL(TorchIRLAlgorithm):
         self.disc_input_noise_scale_end = disc_input_noise_scale_end
         self.epochs_till_end_scale = epochs_till_end_scale
 
+        self.num_update_loops_per_train_call = num_update_loops_per_train_call
+        self.num_disc_updates_per_loop_iter = num_disc_updates_per_loop_iter
+        self.num_policy_updates_per_loop_iter = num_policy_updates_per_loop_iter
+
 
     def get_batch(self, batch_size, from_expert):
         if from_expert:
@@ -181,6 +190,14 @@ class AIRL(TorchIRLAlgorithm):
         batch = concat_trajs(batch)
         batch = np_to_pytorch_batch(batch)
         return batch
+
+
+    def _do_training(self, epoch):
+        for t in range(self.num_update_loops_per_train_call):
+            for _ in range(self.num_disc_updates_per_loop_iter):
+                self._do_reward_training(epoch)
+            for _ in range(self.num_policy_updates_per_loop_iter):
+                self._do_policy_training(epoch)
 
 
     def _do_reward_training(self, epoch):
@@ -226,7 +243,7 @@ class AIRL(TorchIRLAlgorithm):
             disc_logits = self.discriminator(obs, None)
         else:
             disc_logits = self.discriminator(obs, actions)
-        disc_preds = (disc_logits > 0).type(torch.FloatTensor)
+        disc_preds = (disc_logits > 0).type(disc_logits.data.type())
         disc_ce_loss = self.bce(disc_logits, self.bce_targets)
         accuracy = (disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 
@@ -334,7 +351,7 @@ class AIRL(TorchIRLAlgorithm):
                     target_disc_logits = self.target_disc(obs, None)
                 else:
                     target_disc_logits = self.target_disc(obs, actions)
-                target_disc_preds = (target_disc_logits > 0).type(torch.FloatTensor)
+                target_disc_preds = (target_disc_logits > 0).type(target_disc_logits.data.type())
                 target_disc_ce_loss = self.bce(target_disc_logits, self.bce_targets)
                 target_accuracy = (target_disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 

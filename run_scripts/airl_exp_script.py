@@ -1,18 +1,3 @@
-import numpy as np
-from gym.spaces import Dict
-
-import rlkit.torch.pytorch_util as ptu
-from rlkit.launchers.launcher_util import setup_logger, set_seed
-from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
-from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
-from rlkit.torch.irl.airl import AIRL
-from rlkit.torch.irl.airl_with_traj_batches import AIRLWithTrajBatches
-from rlkit.torch.networks import FlattenMlp, Mlp
-
-from rlkit.envs import get_env
-
-import torch
-
 import yaml
 import argparse
 import importlib
@@ -23,21 +8,31 @@ import argparse
 import joblib
 from time import sleep
 
+import numpy as np
+from gym.spaces import Dict
+
+from rlkit.envs import get_env
+import rlkit.torch.pytorch_util as ptu
+from rlkit.launchers.launcher_util import setup_logger, set_seed
+from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
+from rlkit.torch.irl.airl import AIRL
+from rlkit.torch.networks import FlattenMlp, Mlp
+from rlkit.torch.irl.disc_models.airl_disc import StandardAIRLDisc
+
 EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
-assert False, 'DONT USE THIS FOR FETCH'
 
 def experiment(variant):
-    # get the expert data
     with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
         listings = yaml.load(f.read())
-    print(listings.keys())
     expert_dir = listings[variant['expert_name']]['exp_dir']
     specific_run = listings[variant['expert_name']]['seed_runs'][variant['expert_seed_run_idx']]
     file_to_load = path.join(expert_dir, specific_run, 'extra_data.pkl')
-    expert_replay_buffer = joblib.load(file_to_load)['replay_buffer']
-    expert_replay_buffer.policy_uses_task_params = variant['algo_params']['policy_uses_task_params']
-    expert_replay_buffer.concat_task_params_to_policy_obs = variant['algo_params']['concat_task_params_to_policy_obs']
+    extra_data = joblib.load(file_to_load)
+
+    # this script is for the non-meta-learning GAIL
+    expert_buffer = extra_data['train']
 
     # set up the env
     env_specs = variant['env_specs']
@@ -70,7 +65,7 @@ def experiment(variant):
 
     # set up the policy models
     policy_net_size = variant['policy_net_size']
-    hidden_sizes = [policy_net_size] * variant['num_hidden_layers']
+    hidden_sizes = [policy_net_size] * variant['policy_num_hidden_layers']
     qf1 = FlattenMlp(
         hidden_sizes=hidden_sizes,
         input_size=obs_dim + action_dim,
@@ -93,6 +88,14 @@ def experiment(variant):
     )
 
     # set up the discriminator models
+    disc_model = StandardAIRLDisc(
+        obs_dim + action_dim,
+        num_layer_blocks=variant['disc_num_blocks'],
+        hid_dim=variant['disc_hid_dim'],
+        hid_act=variant['disc_hid_act'],
+        use_bn=variant['disc_use_bn'],
+        clamp_magnitude=variant['disc_clamp_magnitude']
+    )
     print(disc_model)
     print(disc_model.clamp_magnitude)
 
@@ -106,16 +109,12 @@ def experiment(variant):
     )
 
     # set up the AIRL algorithm
-    if variant['use_traj_batches']:
-        airl_class = AIRLWithTrajBatches
-    else:
-        airl_class = AIRL
-    algorithm = airl_class(
+    algorithm = AIRL(
         env,
         policy,
         disc_model,
         policy_optimizer,
-        expert_replay_buffer,
+        expert_buffer,
         training_env=training_env,
         wrap_absorbing=variant['wrap_absorbing_state'],
         **variant['algo_params']

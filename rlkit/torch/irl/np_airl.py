@@ -274,8 +274,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         post_dist = enc_to_use([list_of_trajs], mask)
         enc_to_use.train(mode)
 
-        # z = post_dist.sample()
-        z = post_dist.mean
+        z = post_dist.sample()
+        # z = post_dist.mean
         z = z.cpu().data.numpy()[0]
         return PostCondMLPPolicyWrapper(self.main_policy, z)
     
@@ -303,8 +303,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         post_dist = enc_to_use([list_of_trajs])
         enc_to_use.train(mode)
 
-        # z = post_dist.sample()
-        z = post_dist.mean
+        z = post_dist.sample()
+        # z = post_dist.mean
         z = z.cpu().data.numpy()[0]
         return PostCondMLPPolicyWrapper(self.main_policy, z)
     
@@ -444,13 +444,13 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
 
     def _do_training(self, epoch):
         for t in range(self.num_update_loops_per_train_call):
-            for _ in range(self.num_disc_updates_per_loop_iter):
-                self._do_reward_training(epoch, t)
+            for t1 in range(self.num_disc_updates_per_loop_iter):
+                self._do_reward_training(epoch, t, t1)
             for _ in range(self.num_policy_updates_per_loop_iter):
                 self._do_policy_training(epoch)
 
 
-    def _do_reward_training(self, epoch, loop_iter):
+    def _do_reward_training(self, epoch, update_loop_iter, disc_update_iter):
         '''
             Train the discriminator
         '''
@@ -473,8 +473,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             policy_acts_batch = Variable(ptu.from_numpy(policy_test_pred_batch['actions']), requires_grad=False)
 
         post_dist = self.encoder(context_batch, mask)
-        # z = post_dist.sample() # N_tasks x Dim
-        z = post_dist.mean
+        z = post_dist.sample() # N_tasks x Dim
+        # z = post_dist.mean
 
         # make z's for expert samples
         context_pred_z = z.repeat(1, self.num_context_trajs_for_training * self.disc_samples_per_traj).view(
@@ -537,8 +537,11 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             loss_to_backprop = disc_ce_loss
 
         # add KL loss term
+        timestep = self._n_train_steps_total*self.num_update_loops_per_train_call*self.num_disc_updates_per_loop_iter\
+                 + update_loop_iter*self.num_disc_updates_per_loop_iter\
+                 + disc_update_iter - self.KL_ramp_up_start_iter
         cur_KL_beta = linear_schedule(
-            self._n_train_steps_total*self.num_disc_updates_per_loop_iter + loop_iter - self.KL_ramp_up_start_iter,
+            timestep,
             0.0,
             self.max_KL_beta,
             self.KL_ramp_up_end_iter - self.KL_ramp_up_start_iter
@@ -879,8 +882,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         post_dist = enc_to_use(context_batch, mask)
         enc_to_use.train(mode)
         
-        # z = post_dist.sample() # N_tasks x Dim
-        z = post_dist.mean
+        z = post_dist.sample() # N_tasks x Dim
+        # z = post_dist.mean
         if self.policy_optim_batch_mode_random:
             # repeat z to have the right size
             z = z.repeat(1, self.policy_optim_batch_size_per_task).view(

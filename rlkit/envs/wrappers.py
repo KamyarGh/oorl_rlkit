@@ -34,37 +34,65 @@ class ProxyEnv(Serializable, Env):
         return self._wrapped_env.horizon
 
     def terminate(self):
-        if hasattr(self.wrapped_env, "terminate"):
-            self.wrapped_env.terminate()
+        if hasattr(self._wrapped_env, "terminate"):
+            self._wrapped_env.terminate()
+    
+    def seed(self, seed):
+        return self._wrapped_env.seed(seed)
 
 
 class ScaledEnv(ProxyEnv, Serializable):
     '''
-        idk how to describe this right now.
-        if it turns out to be useful I will document it later.
+    Scale the obs if desired
+    Unscale the acts if desired
     '''
     def __init__(
         self,
         env,
-        acts_max,
-        acts_min,
-        obs_max,
-        obs_min,
-        SCALE
+        obs_mean=None,
+        obs_std=None,
+        acts_mean=None,
+        acts_std=None
     ):
-        raise NotImplementedError()
         self._wrapped_env = env
+        self._serializable_initialized = False
         Serializable.quick_init(self, locals())
         ProxyEnv.__init__(self, env)
-        self.SCALE = SCALE
-        a1 = (acts_max - acts_min) / (2.0 * SCALE) # a constant array we need
-        self.acts_min = acts_min
-        self.obs_max_minus_min = obs_max - obs_min
-        self.obs_min = obs_min
+
+        if obs_mean is not None:
+            assert obs_std is not None
+            self._scale_obs = True
+        else:
+            assert obs_std is None
+            self._scale_obs = False
+        
+        if acts_mean is not None:
+            assert acts_std is not None
+            self._unscale_acts = True
+        else:
+            assert acts_std is None
+            self._unscale_acts = False
+        
+        self.obs_mean = obs_mean
+        self.obs_std = obs_std
+        self.acts_mean = acts_mean
+        self.acts_std = acts_std
+
     
     def step(self, action):
-        action = a1 * (action + self.SCALE) + self.acts_min
-        return self._wrapped_env.step(action)
+        if self._unscale_acts:
+            action = actions * self.acts_std + self.acts_mean
+        obs, r, done, info = self._wrapped_env.step(action)
+        if self._scale_obs:
+            obs = (obs - self.obs_mean) / self.obs_std
+        return obs, r, done, info
+    
+
+    def reset(self):
+        obs = self._wrapped_env.reset()
+        if self._scale_obs:
+            obs = (obs - self.obs_mean) / self.obs_std
+        return obs
     
 
 class NormalizedBoxEnv(ProxyEnv, Serializable):

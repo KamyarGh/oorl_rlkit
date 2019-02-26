@@ -31,6 +31,8 @@ class NewSoftActorCritic():
             policy_pre_activation_weight=0.,
             optimizer_class=optim.Adam,
 
+            beta_1=0.25,
+
             soft_target_tau=1e-2,
             eval_deterministic=True,
 
@@ -65,9 +67,9 @@ class NewSoftActorCritic():
         self.eval_statistics = None
         self.reward_scale = reward_scale
         self.discount = discount
+
+        print('\n\nPOLICY OPTIMIZER BETA-1 IS %.2f\n\n' % beta_1)
         
-        beta_1 = 0.25
-        # beta_1 = 0.9
         self.policy_optimizer = optimizer_class(
             self.training_policy.parameters(),
             lr=policy_lr,

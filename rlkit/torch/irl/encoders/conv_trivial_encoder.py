@@ -14,6 +14,7 @@ from rlkit.torch.irl.encoders.aggregators import sum_aggregator_unmasked, tanh_s
 from rlkit.torch.irl.encoders.aggregators import sum_aggregator, tanh_sum_aggregator
 from rlkit.torch.distributions import ReparamMultivariateNormalDiag
 
+DIM = 32
 
 class TrivialTrajEncoder(PyTorchModule):
     '''
@@ -42,15 +43,28 @@ class TrivialTrajEncoder(PyTorchModule):
         # self.output_size = 50
 
         # V1
+        # self.conv_part = nn.Sequential(
+        #     nn.Conv1d(26 if not state_only else 22, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+        #     nn.BatchNorm1d(128),
+        #     nn.ReLU(),
+        #     nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+        #     nn.BatchNorm1d(128),
+        #     nn.ReLU(),
+        #     nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+        # )
+
+        # Similar to V1 just sharing params for the object specific parts
+        self.object_conv = nn.Conv1d(9, DIM, 3, stride=2, padding=0, dilation=1, groups=1, bias=True)
+        self.rest_conv = nn.Conv1d(4 if state_only else 8, DIM, 3, stride=2, padding=0, dilation=1, groups=1, bias=True)
         self.conv_part = nn.Sequential(
-            nn.Conv1d(26 if not state_only else 22, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
-            nn.BatchNorm1d(128),
+            nn.BatchNorm1d(DIM),
             nn.ReLU(),
-            nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
-            nn.BatchNorm1d(128),
+            nn.Conv1d(DIM, DIM, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+            nn.BatchNorm1d(DIM),
             nn.ReLU(),
-            nn.Conv1d(128, 128, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
+            nn.Conv1d(DIM, DIM, 3, stride=2, padding=0, dilation=1, groups=1, bias=True),
         )
+
 
         # V1 for subsample 8
         # self.conv_part = nn.Sequential(
@@ -80,8 +94,34 @@ class TrivialTrajEncoder(PyTorchModule):
         # embeddings = embeddings.view(N_tasks, N_trajs, -1)
 
         # V1
+        # all_timesteps = all_timesteps.view(N_tasks*N_trajs, dim, traj_len)
+        # embeddings = self.conv_part(all_timesteps)
+        # embeddings = embeddings.view(N_tasks, N_trajs, -1)
+
+        # V1 with weight sharing for object-specific parts
         all_timesteps = all_timesteps.view(N_tasks*N_trajs, dim, traj_len)
-        embeddings = self.conv_part(all_timesteps)
+        all_timesteps_obj0 = torch.cat(
+            [
+                all_timesteps[:,:3,:],
+                all_timesteps[:,6:9,:],
+                all_timesteps[:,12:15,:]
+            ],
+            dim=1
+        )
+        all_timesteps_obj1 = torch.cat(
+            [
+                all_timesteps[:,3:6,:],
+                all_timesteps[:,9:12,:],
+                all_timesteps[:,15:18,:]
+            ],
+            dim=1
+        )
+        all_timesteps_rest = all_timesteps[:,18:,:]
+        obj_0_emb = self.object_conv(all_timesteps_obj0)
+        obj_1_emb = self.object_conv(all_timesteps_obj1)
+        rest_emb = self.rest_conv(all_timesteps_rest)
+
+        embeddings = self.conv_part(obj_0_emb + obj_1_emb + rest_emb)
         embeddings = embeddings.view(N_tasks, N_trajs, -1)
 
         return embeddings
@@ -97,12 +137,12 @@ class TrivialR2ZMap(PyTorchModule):
         super().__init__()
 
         self.trunk = nn.Sequential(
-            nn.Linear(128, 128),
-            nn.BatchNorm1d(128),
+            nn.Linear(DIM, DIM),
+            nn.BatchNorm1d(DIM),
             nn.ReLU()
         )
-        self.mean_fc = nn.Linear(128, z_dim)
-        self.log_sig_fc = nn.Linear(128, z_dim)
+        self.mean_fc = nn.Linear(DIM, z_dim)
+        self.log_sig_fc = nn.Linear(DIM, z_dim)
 
         self.LOG_STD_SUBTRACT_VALUE = LOG_STD_SUBTRACT_VALUE
 

@@ -269,6 +269,33 @@ halfcheetah_25_demos_subsample_20:
   ]
 
 
+halfcheetah_250_demos_subsample_20:
+  description: "250 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-250/
+  seed_runs: [
+    correct_halfcheetah_demos_250_2019_02_16_15_31_30_0000--s-0,
+    correct_halfcheetah_demos_250_2019_02_16_15_36_50_0001--s-0
+  ]
+
+
+halfcheetah_250_demos_no_subsampling:
+  description: "250 demos, sub 1"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-250-no-subsampling/
+  seed_runs: [
+    correct_halfcheetah_demos_250_no_subsampling_2019_02_16_18_01_27_0000--s-0,
+    correct_halfcheetah_demos_250_no_subsampling_2019_02_16_18_07_09_0001--s-0
+  ]
+
+
+halfcheetah_125_demos_subsample_20:
+  description: "125 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-125/
+  seed_runs: [
+    correct_halfcheetah_demos_125_2019_02_16_15_32_43_0000--s-0,
+    correct_halfcheetah_demos_125_2019_02_16_15_35_36_0001--s-0
+  ]
+
+
 # META-EXPERTS ----------------------------------------------------------------
 meta_simple_meta_reacher_expert_no_subsampling:
   description: "meta simple meta reacher expert, 6 trajs per task"

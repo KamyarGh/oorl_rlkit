@@ -26,50 +26,66 @@ def concat_trajs(trajs):
     return new_dict
 
 
-class AIRLWithTrajBatches(TorchIRLAlgorithm):
+class AlphaAIRL(TorchIRLAlgorithm):
     '''
-        This is actually AIRL / DAC, sorry!
+        Alpha Divergence AIRL / DAC depending on how big the replay buffer size is
+
+        It is assumed that the discrminator model is given is the v(x) in the f-GAN
+        paper, meaning v: in_domain --> real. Then depending on the alpha chosen,
+        the activations, conjugates, etc. will be handled in this class.
         
         I did not implement the reward-wrapping mentioned in
         https://arxiv.org/pdf/1809.02925.pdf though
     '''
     def __init__(
-            self,
-            env,
-            policy,
-            discriminator,
+        self,
+        alpha,
+        env,
+        policy,
+        discriminator,
 
-            policy_optimizer,
-            expert_replay_buffer,
+        policy_optimizer,
+        expert_replay_buffer,
 
-            disc_num_expert_trajs_per_batch=16,
-            disc_policy_batch_size=1024,
-            policy_optim_batch_size=1000,
+        state_only=False,
 
-            disc_lr=1e-3,
-            disc_momentum=0.0,
-            disc_optimizer_class=optim.Adam,
+        traj_based=False,
+        disc_num_trajs_per_batch=128,
+        disc_samples_per_traj=8,
 
-            use_grad_pen=True,
-            grad_pen_weight=10,
+        disc_optim_batch_size=1024,
+        policy_optim_batch_size=1024,
+        policy_optim_batch_size_from_expert=0,
 
-            disc_ce_grad_clip=0.5,
-            disc_gp_grad_clip=10.0,
+        num_update_loops_per_train_call=1000,
+        num_disc_updates_per_loop_iter=1,
+        num_policy_updates_per_loop_iter=1,
 
-            use_target_disc=False,
-            target_disc=None,
-            soft_target_disc_tau=0.005,
+        disc_lr=1e-3,
+        disc_momentum=0.0,
+        disc_optimizer_class=optim.Adam,
 
-            plotter=None,
-            render_eval_paths=False,
-            eval_deterministic=True,
+        use_grad_pen=True,
+        grad_pen_weight=10,
 
-            use_disc_input_noise=False,
-            disc_input_noise_scale_start=0.1,
-            disc_input_noise_scale_end=0.0,
-            epochs_till_end_scale=50.0,
-            **kwargs
+        disc_ce_grad_clip=0.5,
+        disc_gp_grad_clip=10.0,
+
+        use_target_disc=False,
+        target_disc=None,
+        soft_target_disc_tau=0.005,
+
+        plotter=None,
+        render_eval_paths=False,
+        eval_deterministic=True,
+
+        use_disc_input_noise=False,
+        disc_input_noise_scale_start=0.1,
+        disc_input_noise_scale_end=0.0,
+        epochs_till_end_scale=50.0,
+        **kwargs
     ):
+        assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
         if eval_deterministic:
             eval_policy = MakeDeterministic(policy)
         else:
@@ -80,10 +96,19 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
             exploration_policy=policy,
             eval_policy=eval_policy,
             expert_replay_buffer=expert_replay_buffer,
-            policy_optimizer=policy_optimizer,
             **kwargs
         )
 
+        assert alpha >= 0, 'Negative alpha!'
+        self.alpha = alpha
+        self.state_only = state_only
+
+        self.traj_based = traj_based
+        self.disc_num_trajs_per_batch = disc_num_trajs_per_batch
+        self.disc_samples_per_traj = disc_samples_per_traj
+
+        self.policy_optimizer = policy_optimizer
+        
         self.discriminator = discriminator
         self.rewardf_eval_statistics = None
         self.disc_optimizer = disc_optimizer_class(
@@ -93,15 +118,19 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
         )
         print('\n\nDISC MOMENTUM: %f\n\n' % disc_momentum)
 
-        self.disc_num_expert_trajs_per_batch = disc_num_expert_trajs_per_batch
-        self.disc_policy_batch_size = disc_policy_batch_size
+        self.disc_optim_batch_size = disc_optim_batch_size
         self.policy_optim_batch_size = policy_optim_batch_size
+        self.policy_optim_batch_size_from_expert = policy_optim_batch_size_from_expert
 
         self.bce = nn.BCEWithLogitsLoss()
+        if self.traj_based:
+            target_batch_size = self.disc_num_trajs_per_batch * self.disc_samples_per_traj
+        else:
+            target_batch_size = self.disc_optim_batch_size
         self.bce_targets = torch.cat(
             [
-                torch.ones(self.max_path_length * self.disc_num_expert_trajs_per_batch, 1),
-                torch.zeros(self.max_path_length * self.disc_num_expert_trajs_per_batch, 1)
+                torch.ones(target_batch_size, 1),
+                torch.zeros(target_batch_size, 1)
             ],
             dim=0
         )
@@ -142,40 +171,53 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
         self.disc_input_noise_scale_end = disc_input_noise_scale_end
         self.epochs_till_end_scale = epochs_till_end_scale
 
+        self.num_update_loops_per_train_call = num_update_loops_per_train_call
+        self.num_disc_updates_per_loop_iter = num_disc_updates_per_loop_iter
+        self.num_policy_updates_per_loop_iter = num_policy_updates_per_loop_iter
 
-    def get_expert_batch(self, num_trajs):
-        batch = self.expert_replay_buffer.sample_trajs(num_trajs, keys=['observations', 'actions'])
-        # for b in batch:
-            # print(b['observations'].shape)
-            # b['observations'] = b['observations'][:self.max_path_length]
-            # b['actions'] = b['actions'][:self.max_path_length]
 
-        batch = concat_trajs(batch)
-        # if self.batch_size < batch['observations'].shape[0]:
-        #     idx = np.random.choice(batch['observations'].shape[0], size=self.batch_size, replace=False)
-        #     for k in batch:
-        #         batch[k] = batch[k][idx]
-        # elif self.batch_size > self.traj_len * self.num_trajs_per_update:
-        #     print('batch_size is larger than the sampled batch')
+    def T_w(self, x):
+        if self.alpha == 0:
+            pass
+        elif self.apha == 1:
+            pass
+        elif self.alpha < 1:
+            pass
+        elif self.alpha > 1:
+            pass
+        else:
+            raise Exception
+        return output
 
+    def get_batch(self, batch_size, from_expert):
+        if from_expert:
+            buffer = self.expert_replay_buffer
+        else:
+            buffer = self.replay_buffer
+        batch = buffer.random_batch(batch_size)
         batch = np_to_pytorch_batch(batch)
-
-        if self.wrap_absorbing:
-            if isinstance(batch['observations'], np.ndarray):
-                obs = batch['observations']
-                assert len(obs.shape) == 2
-                batch['observations'] = np.concatenate((obs, np.zeros((obs.shape[0],1))), -1)
-                if 'next_observations' in batch:
-                    next_obs = batch['next_observations']
-                    batch['next_observations'] = np.concatenate((next_obs, np.zeros((next_obs.shape[0],1))), -1)
-            else:
-                raise NotImplementedError()
         return batch
-    
 
-    def get_policy_batch(self, batch_size):
-        batch = self.replay_buffer.random_batch(batch_size)
-        return np_to_pytorch_batch(batch)
+
+    def get_traj_based_batch(self, num_trajs, from_expert, samples_per_traj=None):
+        if from_expert:
+            buffer = self.expert_replay_buffer
+        else:
+            buffer = self.replay_buffer
+        keys_list = ['observations', 'actions']
+        if self.wrap_absorbing: keys_list.append('absorbing')
+        batch = buffer.sample_trajs(num_trajs, keys=keys_list, samples_per_traj=samples_per_traj)
+        batch = concat_trajs(batch)
+        batch = np_to_pytorch_batch(batch)
+        return batch
+
+
+    def _do_training(self, epoch):
+        for t in range(self.num_update_loops_per_train_call):
+            for _ in range(self.num_disc_updates_per_loop_iter):
+                self._do_reward_training(epoch)
+            for _ in range(self.num_policy_updates_per_loop_iter):
+                self._do_policy_training(epoch)
 
 
     def _do_reward_training(self, epoch):
@@ -184,13 +226,21 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
         '''
         self.disc_optimizer.zero_grad()
 
-        expert_batch = self.get_expert_batch(self.disc_num_expert_trajs_per_batch)
-        expert_obs = expert_batch['observations']
-        expert_actions = expert_batch['actions']
+        if self.traj_based:
+            expert_batch = self.get_traj_based_batch(self.disc_num_trajs_per_batch, True, samples_per_traj=self.disc_samples_per_traj)
+            policy_batch = self.get_traj_based_batch(self.disc_num_trajs_per_batch, False, samples_per_traj=self.disc_samples_per_traj)
+        else:
+            expert_batch = self.get_batch(self.disc_optim_batch_size, True)
+            policy_batch = self.get_batch(self.disc_optim_batch_size, False)
 
-        policy_batch = self.get_policy_batch(self.disc_policy_batch_size)
+        expert_obs = expert_batch['observations']
         policy_obs = policy_batch['observations']
-        policy_actions = policy_batch['actions']
+        if self.wrap_absorbing:
+            expert_obs = torch.cat([expert_obs, expert_batch['absorbing'][:, 0:1]], dim=-1)
+            policy_obs = torch.cat([policy_obs, policy_batch['absorbing'][:, 0:1]], dim=-1)
+        if not self.state_only:
+            expert_actions = expert_batch['actions']
+            policy_actions = policy_batch['actions']
 
         if self.use_disc_input_noise:
             noise_scale = linear_schedule(
@@ -201,16 +251,19 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
             )
             if noise_scale > 0.0:
                 expert_obs = expert_obs + noise_scale * Variable(torch.randn(expert_obs.size()))
-                expert_actions = expert_actions + noise_scale * Variable(torch.randn(expert_actions.size()))
+                if not self.state_only: expert_actions = expert_actions + noise_scale * Variable(torch.randn(expert_actions.size()))
 
                 policy_obs = policy_obs + noise_scale * Variable(torch.randn(policy_obs.size()))
-                policy_actions = policy_actions + noise_scale * Variable(torch.randn(policy_actions.size()))
+                if not self.state_only: policy_actions = policy_actions + noise_scale * Variable(torch.randn(policy_actions.size()))
         
         obs = torch.cat([expert_obs, policy_obs], dim=0)
-        actions = torch.cat([expert_actions, policy_actions], dim=0)
-
-        disc_logits = self.discriminator(obs, actions)
-        disc_preds = (disc_logits > 0).type(torch.FloatTensor)
+        if not self.state_only: actions = torch.cat([expert_actions, policy_actions], dim=0)
+        
+        if self.state_only:
+            disc_logits = self.discriminator(obs, None)
+        else:
+            disc_logits = self.discriminator(obs, actions)
+        disc_preds = (disc_logits > 0).type(disc_logits.data.type())
         disc_ce_loss = self.bce(disc_logits, self.bce_targets)
         accuracy = (disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 
@@ -240,33 +293,33 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
         self.disc_ce_grad_norm_counter += 1
         
         self.disc_optimizer.zero_grad()
-
-        # # do gradient clipping for the cross-entropy loss gradients
-        # torch.nn.utils.clip_grad_norm(self.discriminator.parameters(), self.disc_grad_clip, norm_type=2)
-
-        # check the magnitude of the gradients
-        # this_ce_loss_grad = 0.0
-        # for p in list(filter(lambda p: p.grad is not None, self.discriminator.parameters())):
-        #     this_ce_loss_grad += p.grad.pow(2).sum()
-        # this_ce_loss_grad = this_ce_loss_grad ** 0.5
-
+        
         if self.use_grad_pen:
             eps = Variable(torch.rand(expert_obs.size(0), 1))
             if ptu.gpu_enabled(): eps = eps.cuda()
             
             interp_obs = eps*expert_obs + (1-eps)*policy_obs
-            interp_obs.detach()
+            interp_obs = interp_obs.detach()
             interp_obs.requires_grad = True
-            interp_actions = eps*expert_actions + (1-eps)*policy_actions
-            interp_actions.detach()
-            interp_actions.requires_grad = True
-            gradients = autograd.grad(
-                outputs=self.discriminator(interp_obs, interp_actions).sum(),
-                inputs=[interp_obs, interp_actions],
-                # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                create_graph=True, retain_graph=True, only_inputs=True
-            )
-            total_grad = torch.cat([gradients[0], gradients[1]], dim=1)
+            if self.state_only:
+                gradients = autograd.grad(
+                    outputs=self.discriminator(interp_obs, None).sum(),
+                    inputs=[interp_obs],
+                    # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                    create_graph=True, retain_graph=True, only_inputs=True
+                )
+                total_grad = gradients[0]
+            else:
+                interp_actions = eps*expert_actions + (1-eps)*policy_actions
+                interp_actions = interp_actions.detach()
+                interp_actions.requires_grad = True
+                gradients = autograd.grad(
+                    outputs=self.discriminator(interp_obs, interp_actions).sum(),
+                    inputs=[interp_obs, interp_actions],
+                    # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                    create_graph=True, retain_graph=True, only_inputs=True
+                )
+                total_grad = torch.cat([gradients[0], gradients[1]], dim=1)
 
             # GP from Gulrajani et al.
             gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
@@ -314,8 +367,11 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
             self.rewardf_eval_statistics = OrderedDict()
             
             if self.use_target_disc:
-                target_disc_logits = self.target_disc(obs, actions)
-                target_disc_preds = (target_disc_logits > 0).type(torch.FloatTensor)
+                if self.state_only:
+                    target_disc_logits = self.target_disc(obs, None)
+                else:
+                    target_disc_logits = self.target_disc(obs, actions)
+                target_disc_preds = (target_disc_logits > 0).type(target_disc_logits.data.type())
                 target_disc_ce_loss = self.bce(target_disc_logits, self.bce_targets)
                 target_accuracy = (target_disc_preds == self.bce_targets).type(torch.FloatTensor).mean()
 
@@ -324,18 +380,27 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
                     if ptu.gpu_enabled(): eps = eps.cuda()
                     
                     interp_obs = eps*expert_obs + (1-eps)*policy_obs
-                    interp_obs.detach()
+                    interp_obs = interp_obs.detach()
                     interp_obs.requires_grad = True
-                    interp_actions = eps*expert_actions + (1-eps)*policy_actions
-                    interp_actions.detach()
-                    interp_actions.requires_grad = True
-                    target_gradients = autograd.grad(
-                        outputs=self.target_disc(interp_obs, interp_actions).sum(),
-                        inputs=[interp_obs, interp_actions],
-                        # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                        create_graph=True, retain_graph=True, only_inputs=True
-                    )
-                    total_target_grad = torch.cat([target_gradients[0], target_gradients[1]], dim=1)
+                    if self.state_only:
+                        target_gradients = autograd.grad(
+                            outputs=self.target_disc(interp_obs, None).sum(),
+                            inputs=[interp_obs],
+                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                            create_graph=True, retain_graph=True, only_inputs=True
+                        )
+                        total_target_grad = target_gradients[0]
+                    else:
+                        interp_actions = eps*expert_actions + (1-eps)*policy_actions
+                        interp_actions = interp_actions.detach()
+                        interp_actions.requires_grad = True
+                        target_gradients = autograd.grad(
+                            outputs=self.target_disc(interp_obs, interp_actions).sum(),
+                            inputs=[interp_obs, interp_actions],
+                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                            create_graph=True, retain_graph=True, only_inputs=True
+                        )
+                        total_target_grad = torch.cat([target_gradients[0], target_gradients[1]], dim=1)
 
                     # GP from Gulrajani et al.
                     target_gradient_penalty = ((total_target_grad.norm(2, dim=1) - 1) ** 2).mean()
@@ -368,16 +433,33 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
 
 
     def _do_policy_training(self, epoch):
-        policy_batch = self.get_policy_batch(self.policy_optim_batch_size)
+        if self.policy_optim_batch_size_from_expert > 0:
+            policy_batch_from_policy_buffer = self.get_batch(self.policy_optim_batch_size - self.policy_optim_batch_size_from_expert, False)
+            policy_batch_from_expert_buffer = self.get_batch(self.policy_optim_batch_size_from_expert, True)
+            policy_batch = {}
+            for k in policy_batch_from_policy_buffer:
+                policy_batch[k] = torch.cat([policy_batch_from_policy_buffer[k], policy_batch_from_expert_buffer[k]], dim=0)
+        else:
+            policy_batch = self.get_batch(self.policy_optim_batch_size, False)
+        obs = policy_batch['observations']
+        acts = policy_batch['actions']
+        if self.wrap_absorbing:
+            obs = torch.cat([obs, policy_batch['absorbing'][:, 0:1]], dim=-1)
         if self.use_target_disc:
             self.target_disc.eval()
             # If you compute log(D) - log(1-D) then you just get the logits
-            policy_batch['rewards'] = self.target_disc(policy_batch['observations'], policy_batch['actions']).detach()
+            if self.state_only:
+                policy_batch['rewards'] = self.target_disc(obs, None).detach()
+            else:
+                policy_batch['rewards'] = self.target_disc(obs, acts).detach()
             self.target_disc.train()
         else:
             self.discriminator.eval()
             # If you compute log(D) - log(1-D) then you just get the logits
-            policy_batch['rewards'] = self.discriminator(policy_batch['observations'], policy_batch['actions']).detach()
+            if self.state_only:
+                policy_batch['rewards'] = self.discriminator(obs, None).detach()
+            else:
+                policy_batch['rewards'] = self.discriminator(obs, acts).detach()
             self.discriminator.train()
 
         self.policy_optimizer.train_step(policy_batch)
@@ -386,8 +468,8 @@ class AIRLWithTrajBatches(TorchIRLAlgorithm):
         self.rewardf_eval_statistics['Disc Rew Std'] = np.std(ptu.get_numpy(policy_batch['rewards']))
         self.rewardf_eval_statistics['Disc Rew Max'] = np.max(ptu.get_numpy(policy_batch['rewards']))
         self.rewardf_eval_statistics['Disc Rew Min'] = np.min(ptu.get_numpy(policy_batch['rewards']))
-
-
+    
+    
     @property
     def networks(self):
         return [self.discriminator] + self.policy_optimizer.networks
@@ -421,25 +503,3 @@ def np_to_pytorch_batch(np_batch):
         for k, x in _filter_batch(np_batch)
         if x.dtype != np.dtype('O')  # ignore object (e.g. dictionaries)
     }
-
-
-def log_sum_exp(value, dim=None, keepdim=False):
-    """Numerically stable implementation of the operation
-
-    value.exp().sum(dim, keepdim).log()
-    """
-    # TODO: torch.max(value, dim=None) threw an error at time of writing
-    if dim is not None:
-        m, _ = torch.max(value, dim=dim, keepdim=True)
-        value0 = value - m
-        if keepdim is False:
-            m = m.squeeze(dim)
-        return m + torch.log(torch.sum(torch.exp(value0),
-                                       dim=dim, keepdim=keepdim))
-    else:
-        m = torch.max(value)
-        sum_exp = torch.sum(torch.exp(value - m))
-        if isinstance(sum_exp, Number):
-            return m + math.log(sum_exp)
-        else:
-            return m + torch.log(sum_exp)

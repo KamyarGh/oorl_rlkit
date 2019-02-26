@@ -198,10 +198,12 @@ class ReparamTanhMultivariateNormal():
         """
         if pre_tanh_value is None:
             # assert False, 'Not handling this'
-            pre_tanh_value = torch.log(
-                (1+value) / (1-value)
-            ) / 2
+            # pre_tanh_value = torch.log(
+            #     (1+value) / (1-value)
+            # ) / 2
+            pre_tanh_value = 0.5 * (torch.log(1.0 + value + self.epsilon) - torch.log(1.0 - value + self.epsilon))
         normal_log_prob = self.normal.log_prob(pre_tanh_value)
+        # print(torch.max(normal_log_prob))
         jacobi_term = torch.sum(
             torch.log(
                 1 - value**2 + self.epsilon
@@ -209,7 +211,10 @@ class ReparamTanhMultivariateNormal():
             1,
             keepdim=True
         )
-        return normal_log_prob - jacobi_term
+        # print(torch.min(jacobi_term))
+        log_prob = normal_log_prob - jacobi_term
+        # print(torch.max(log_prob))
+        return log_prob
 
 
     def sample(self, return_pretanh_value=False):

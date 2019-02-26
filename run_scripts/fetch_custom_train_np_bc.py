@@ -13,7 +13,7 @@ from rlkit.launchers.launcher_util import setup_logger, set_seed
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
 
-from rlkit.torch.irl.disc_models.gail_disc import ObsGatingV1
+from rlkit.torch.irl.disc_models.airl_disc import ObsGatingV1
 from rlkit.torch.sac.policies import WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.networks import FlattenMlp
 
@@ -43,7 +43,7 @@ def experiment(variant):
     file_to_load = path.join(expert_dir, specific_run, 'extra_data.pkl')
     extra_data = joblib.load(file_to_load)
 
-    # this script is for the non-meta-learning GAIL
+    # this script is for the non-meta-learning airl
     train_context_buffer, train_test_buffer = extra_data['meta_train']['context'], extra_data['meta_train']['test']
     test_context_buffer, test_test_buffer = extra_data['meta_test']['context'], extra_data['meta_test']['test']
 

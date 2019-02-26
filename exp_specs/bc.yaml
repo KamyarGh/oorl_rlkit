@@ -1,0 +1,67 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/bc_train_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
+  exp_name: tanh_gauss_no_reg_no_norm_log_prob_halfcheetah_25_demos_subsample_20
+  description: searching over the SAC hyperparameters
+  use_gpu: false
+  num_workers: 40
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  policy_net_size: [32, 64, 128, 192, 256]
+  policy_num_hidden_layers: [2]
+  policy_uses_bn: [false]
+  policy_uses_layer_norm: [false]
+
+  normalize_expert_obs: [false]
+  normalize_expert_acts: [false]
+
+  algo_params:
+    no_terminal: [true]
+    replay_buffer_size: [20000]
+
+    num_update_loops_per_train_call: [1000]
+    num_policy_updates_per_loop_iter: [1]
+
+    optim_batch_size: [256]
+    policy_lr: [0.0003, 0.001]
+  
+  env_specs:
+    normalized: [false]
+  
+  # seed: [9783, 5914, 4865, 2135, 2349]
+  expert_seed_run_idx: [0, 1]
+  seed: [9783, 5914]
+
+# -----------------------------------------------------------------------------
+constants:
+  # expert_name: halfcheetah_250_demos_no_subsampling
+  expert_name: halfcheetah_25_demos_subsample_20
+  wrap_absorbing_state: false
+
+  algo_params:
+    num_epochs: 1001
+    num_steps_per_epoch: 1000
+    num_steps_per_eval: 10000
+    num_steps_between_updates: 1000
+    max_path_length: 1000
+    min_steps_before_training: 0
+
+    policy_uses_task_params: false
+    concat_task_params_to_policy_obs: false
+    policy_uses_pixels: false
+
+    policy_mean_reg_weight: 0.0
+    policy_std_reg_weight: 0.0
+    # policy_mean_reg_weight: 0.001
+    # policy_std_reg_weight: 0.001
+    
+    save_replay_buffer: false
+    render: false
+
+    freq_saving: 5
+    
+  env_specs:
+    base_env_name: 'halfcheetah_v2'
+    train_test_env: false

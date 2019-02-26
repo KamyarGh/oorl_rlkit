@@ -1,5 +1,7 @@
 - (done) generate data using different amounts of expert demos
 - run AIRL for different amounts of expert demos (make the replay buffer size worth 20 episodes)
+    - (done) First figure out initial hyper parameters
+    - Then run the full experiments
 - implement a cleaner BC algorithm
 - run BC on different amounts of data
 - implement alpha divergence AIRL

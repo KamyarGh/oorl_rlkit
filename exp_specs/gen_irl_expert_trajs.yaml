@@ -3,7 +3,7 @@ meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gen_irl_expert_trajs.py
   # exp_dirs: /Users/kamyar/local_policies_dir/output
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
-  exp_name: correct_halfcheetah_demos_25
+  exp_name: correct_halfcheetah_demos_250_no_subsampling
   description: generating expert demos
   use_gpu: true
   num_workers: 1
@@ -15,8 +15,8 @@ variables:
   wrap_absorbing: [false]
   render: [false]
   student_policy_uses_pixels: [false]
-  num_rollouts: [25]
-  subsample_factor: [20]
+  num_rollouts: [250]
+  subsample_factor: [1]
   # seed: [28043, 99381, 33478, 448293, 5739]
   # seed: [28043]
   seed: [99381, 77594]

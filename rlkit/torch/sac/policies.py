@@ -213,6 +213,38 @@ class DiscretePolicy(Mlp, ExplorationPolicy):
         return super().forward(obs)
 
 
+class MlpPolicy(Mlp, ExplorationPolicy):
+    def __init__(
+        self,
+        hidden_sizes,
+        obs_dim,
+        action_dim,
+        init_w=1e-3,
+        **kwargs
+    ):
+        self.save_init_params(locals())
+        super().__init__(
+            hidden_sizes,
+            input_size=obs_dim,
+            output_size=action_dim,
+            init_w=init_w,
+            **kwargs
+        )
+    
+    def get_action(self, obs_np, deterministic=False):
+        '''
+        deterministic=False makes no diff, just doing this for
+        consistency in interface for now
+        '''
+        actions = self.get_actions(obs_np[None], deterministic=deterministic)
+        actions = actions[None]
+        return actions[0, :], {}
+
+    def get_actions(self, obs_np, deterministic=False):
+        return self.eval_np(obs_np)[0]
+
+
+
 class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
     """
     Usage:
@@ -248,7 +280,6 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             init_w=init_w,
             **kwargs
         )
-        self.LOG_STD_SUBTRACT_VALUE = 0.0
         self.log_std = None
         self.std = std
         if std is None:
@@ -286,7 +317,7 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             h = self.hidden_activation(fc(h))
         mean = self.last_fc(h)
         if self.std is None:
-            log_std = self.last_fc_log_std(h) - self.LOG_STD_SUBTRACT_VALUE
+            log_std = self.last_fc_log_std(h)
             log_std = torch.clamp(log_std, LOG_SIG_MIN, LOG_SIG_MAX)
             std = torch.exp(log_std)
         else:
@@ -323,13 +354,13 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             mean_action_log_prob, pre_tanh_value,
         )
 
-    def get_log_prob(self, obs, acts):
+    def get_log_prob(self, obs, acts, return_normal_params=False):
         h = obs
         for i, fc in enumerate(self.fcs):
             h = self.hidden_activation(fc(h))
         mean = self.last_fc(h)
         if self.std is None:
-            log_std = self.last_fc_log_std(h) - self.LOG_STD_SUBTRACT_VALUE
+            log_std = self.last_fc_log_std(h)
             log_std = torch.clamp(log_std, LOG_SIG_MIN, LOG_SIG_MAX)
             std = torch.exp(log_std)
         else:
@@ -338,6 +369,9 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
         
         tanh_normal = ReparamTanhMultivariateNormal(mean, log_std)
         log_prob = tanh_normal.log_prob(acts)
+
+        if return_normal_params:
+            return log_prob, mean, log_std
         return log_prob
 
      

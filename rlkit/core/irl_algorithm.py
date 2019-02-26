@@ -29,15 +29,12 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             self,
             env,
             exploration_policy: ExplorationPolicy,
-            policy_optimizer,
             expert_replay_buffer,
             training_env=None,
             num_epochs=100,
             num_steps_per_epoch=10000,
             num_steps_per_eval=1000,
             num_steps_between_updates=1000,
-            num_reward_updates=50,
-            num_policy_updates=50,
             min_steps_before_training=1000,
             max_path_length=1000,
             discount=0.99,
@@ -45,7 +42,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             render=False,
             save_replay_buffer=False,
             save_algorithm=True,
-            save_environment=True,
+            save_environment=False,
             eval_sampler=None,
             eval_policy=None,
             replay_buffer=None,
@@ -84,13 +81,10 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
         # self.training_env = training_env or deepcopy(env)
         self.exploration_policy = exploration_policy
-        self.policy_optimizer = policy_optimizer
         self.expert_replay_buffer = expert_replay_buffer
         self.num_epochs = num_epochs
         self.num_env_steps_per_epoch = num_steps_per_epoch
         self.num_steps_per_eval = num_steps_per_eval
-        self.num_reward_updates_per_train_call = num_reward_updates
-        self.num_policy_updates_per_train_call = num_policy_updates
         self.num_steps_between_updates = num_steps_between_updates
         self.min_steps_before_training = min_steps_before_training
         self.max_path_length = max_path_length
@@ -131,8 +125,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         self.replay_buffer = replay_buffer
 
         self._n_env_steps_total = 0
-        self._n_reward_train_steps_total = 0
-        self._n_policy_train_steps_total = 0
+        self._n_train_steps_total = 0
         self._n_rollouts_total = 0
         self._do_train_time = 0
         self._epoch_start_time = None
@@ -271,12 +264,8 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
     def _try_to_train(self, epoch):
         if self._can_train():
             self.training_mode(True)
-            for i in range(self.num_reward_updates_per_train_call):
-                self._do_reward_training(epoch)
-                self._n_reward_train_steps_total += 1
-            for i in range(self.num_policy_updates_per_train_call):
-                self._do_policy_training(epoch)
-                self._n_policy_train_steps_total += 1
+            self._do_training(epoch)
+            self._n_train_steps_total += 1
             self.training_mode(False)
 
     def _try_to_eval(self, epoch):
@@ -303,12 +292,8 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             # self._old_table_keys = table_keys
 
             logger.record_tabular(
-                "Number of reward train steps total",
-                self._n_reward_train_steps_total,
-            )
-            logger.record_tabular(
-                "Number of policy train steps total",
-                self._n_policy_train_steps_total,
+                "Number of train steps total",
+                self._n_train_steps_total,
             )
             logger.record_tabular(
                 "Number of env steps total",
@@ -524,15 +509,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _do_reward_training(self):
-        """
-        Perform some update, e.g. perform one gradient step.
-        :return:
-        """
-        pass
-
-    @abc.abstractmethod
-    def _do_policy_training(self):
+    def _do_training(self):
         """
         Perform some update, e.g. perform one gradient step.
         :return:

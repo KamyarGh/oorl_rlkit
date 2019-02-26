@@ -35,10 +35,11 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
 
     def evaluate(self, epoch):
         statistics = OrderedDict()
-        statistics.update(self.rewardf_eval_statistics)
-        statistics.update(self.policy_optimizer.eval_statistics)
+        if self.rewardf_eval_statistics is not None:
+            statistics.update(self.rewardf_eval_statistics)
+        # statistics.update(self.policy_optimizer.eval_statistics)
         self.rewardf_eval_statistics = None
-        self.policy_optimizer.eval_statistics = None
+        # self.policy_optimizer.eval_statistics = None
 
         logger.log("Collecting samples for evaluation")
         test_paths = self.eval_sampler.obtain_samples()

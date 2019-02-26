@@ -2,7 +2,7 @@ meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_train_np_bc.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
   # exp_name: test_np_bc_on_fixed_colors_0p5_eval_on_3_context
-  exp_name: np_bc_KL_0p2_FINAL_WITHOUT_TARGETS
+  exp_name: final_better_np_bc_new_hype_search_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 4
@@ -12,14 +12,14 @@ meta_data:
 variables:
   algo_params:
     save_best: [true]
-    save_best_after_epoch: [40]
+    save_best_after_epoch: [10]
 
     # objective: ['mse']
     objective: ['max_like']
-    max_KL_beta: [0.2]
+    max_KL_beta: [0.01]
     # max_KL_beta: [0.1, 0.05]
-    KL_ramp_up_start_iter: [5000]
-    KL_ramp_up_end_iter: [10000]
+    KL_ramp_up_start_iter: [20000]
+    KL_ramp_up_end_iter: [50000]
     wrap_absorbing: [false]
 
     few_shot_version: [true]
@@ -46,7 +46,7 @@ variables:
     policy_lr: [0.001]
 
     # num_update_loops_per_train_call: [4000]
-    num_update_loops_per_train_call: [250]
+    num_update_loops_per_train_call: [5000]
 
     use_target_enc: [false]
     soft_target_enc_tau: [0.005]
@@ -55,13 +55,13 @@ variables:
     soft_target_policy_tau: [0.005]
 
     np_params:
-      z_dim: [25]
+      z_dim: [16]
       agg_type: ['sum']
       # agg_type: ['sum', 'tanh_sum']
 
   gate_logit_clamp_magnitude: [10.0]
 
-  policy_net_size: [256]
+  policy_net_size: [64]
   num_hidden_layers: [3]
 
   env_specs:
@@ -120,6 +120,7 @@ constants:
     replay_buffer_size_per_task: 20000
 
     save_replay_buffer: false
+    save_algorithm: true
     render: false
 
     freq_saving: 1

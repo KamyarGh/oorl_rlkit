@@ -1,70 +1,90 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/gail_exp_script.py
-  exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: halfcheetah_gail_sumsample_20
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/airl_exp_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
+  exp_name: fourth_halfcheetah_airl_hyper_search
   description: searching over the SAC hyperparameters
   use_gpu: false
-  num_workers: 20
-  cpu_range: [0,31]
+  num_workers: 64
+  cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  concat_env_params_to_obs: [false]
+  disc_num_blocks: [2]
+  disc_hid_dim: [48, 32]
+  disc_hid_act: [relu, tanh]
+  disc_use_bn: [false]
 
-  num_expert_trajs: [4, 11, 18, 25]
-
-  gail_params:
+  algo_params:
     no_terminal: [true]
-    replay_buffer_size: [10000]
+    replay_buffer_size: [20000]
 
-    num_reward_updates: [1]
-    num_policy_updates: [32]
+    num_update_loops_per_train_call: [1000, 100]
+    num_disc_updates_per_loop_iter: [1]
+    num_policy_updates_per_loop_iter: [1]
+
+    disc_optim_batch_size: [256]
+    grad_pen_weight: [10.0]
+    # grad_pen_weight: [1.0, 5.0, 10.0]
+    disc_ce_grad_clip: [1.0]
+    disc_gp_grad_clip: [1.0]
   
   policy_params:
-    reward_scale: [5.0]
-    # soft_target_tau: [0.005]
+    reward_scale: [2.0, 4.0, 8.0, 12.0]
+    # reward_scale: [2.0, 4.0, 8.0]
+    # reward_scale: [1.0, 2.0, 4.0]
+    beta_1: [0.25]
+    # beta_1: [0.0, 0.25, 0.5, 0.9]
   
   env_specs:
     normalized: [false]
   
-  seed: [9783, 5914, 4865, 2135, 2349]
+  # seed: [9783, 5914, 4865, 2135, 2349]
+  expert_seed_run_idx: [0]
+  seed: [9783, 5914]
 
 # -----------------------------------------------------------------------------
 constants:
-  # expert_save_dict: '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search/final_pendulum_new_sac_hyper_param_search_2018_10_12_19_11_09_0000--s-0/extra_data.pkl'
-  # last_k_expert_steps: 500
-  expert_name: gym_halfcheetah_25_trajs_20_subsampling
-  expert_seed_run_idx: 0
+  expert_name: halfcheetah_25_demos_subsample_20
   wrap_absorbing_state: false
   
-  gail_params:
-    num_epochs: 3001
-    num_steps_per_epoch: 1000
-    num_steps_per_eval: 1000
-    max_path_length: 1000
+  disc_clamp_magnitude: 10.0
 
-    # num_reward_updates: 3
-    # num_policy_updates: 32
-    disc_optim_batch_size: 1000
-    policy_optim_batch_size: 256
-
-    # the interaction between these two numbers matters
+  algo_params:
+    num_epochs: 3011
+    num_steps_per_epoch: 10000
+    num_steps_per_eval: 10000
     num_steps_between_updates: 1000
-    # replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
-    min_steps_before_training: 1000
+    max_path_length: 1000
+    min_steps_before_training: 5000
+
+
+    traj_based: false
+    state_only: false
+
+    # disc_optim_batch_size: 1024
+    policy_optim_batch_size: 256
+    policy_optim_batch_size_from_expert: 0
+
+    use_target_disc: false
+    use_disc_input_noise: false
+
+    policy_uses_task_params: false
+    concat_task_params_to_policy_obs: false
+    policy_uses_pixels: false
+
     
-    save_replay_buffer: true
+    save_replay_buffer: false
     render: false
 
     disc_lr: 0.0003
+    disc_momentum: 0.0
     use_grad_pen: true
-    grad_pen_weight: 10
 
-    freq_saving: 100
+    freq_saving: 10
   
   policy_net_size: 256
+  policy_num_hidden_layers: 2
   policy_params:
-    # policy always has 2 hidden layers
     discount: 0.99
     policy_lr: 0.0003
     qf_lr: 0.0003
@@ -76,3 +96,4 @@ constants:
     
   env_specs:
     base_env_name: 'halfcheetah_v2'
+    train_test_env: false
