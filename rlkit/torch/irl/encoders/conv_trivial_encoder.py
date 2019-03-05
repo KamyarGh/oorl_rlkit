@@ -156,20 +156,40 @@ class TrivialR2ZMap(PyTorchModule):
         return mean, log_sig
 
 
-class TrivialNPEncoder(PyTorchModule):
+class TrivialDiscDcEncoder(PyTorchModule):
+    def __init__(
+        self,
+        context_encoder,
+        D_c_repr_dim
+    ):
+        self.save_init_params(locals())
+        super().__init__()
+
+        self.context_encoder = context_encoder
+        self.trunk = nn.Sequential(
+            nn.Linear(DIM, DIM),
+            nn.BatchNorm1d(DIM),
+            nn.ReLU(),
+            nn.Linear(DIM, D_c_repr_dim)
+        )
+
+
+    def __call__(self, context, mask=None):
+        r = self.context_encoder(context, mask=mask)
+        return self.trunk(r)
+
+
+class TrivialContextEncoder(PyTorchModule):
     def __init__(
         self,
         agg_type,
         traj_encoder,
-        r_to_z_map,
         state_only=False
     ):
         self.save_init_params(locals())
         super().__init__()
 
-        self.r_to_z_map = r_to_z_map
         self.traj_encoder = traj_encoder
-
         self.state_only = state_only
 
         if agg_type == 'sum':
@@ -216,9 +236,23 @@ class TrivialNPEncoder(PyTorchModule):
             r = self.agg(traj_embeddings)
         else:
             r = self.agg_masked(traj_embeddings, mask)
+        return r
+
+
+class TrivialNPEncoder(PyTorchModule):
+    def __init__(
+        self,
+        context_encoder,
+        r_to_z_map,
+    ):
+        self.save_init_params(locals())
+        super().__init__()
+
+        self.context_encoder = context_encoder
+        self.r_to_z_map = r_to_z_map
+    
+
+    def __call__(self, context, mask=None):
+        r = self.context_encoder(context, mask=mask)
         post_mean, post_log_sig_diag = self.r_to_z_map(r)
-
         return ReparamMultivariateNormalDiag(post_mean, post_log_sig_diag)
-
-        # c_len = len(context)
-        # return ReparamMultivariateNormalDiag(Variable(torch.zeros(c_len, 50), requires_grad=False), Variable(torch.ones(c_len, 50), requires_grad=False))

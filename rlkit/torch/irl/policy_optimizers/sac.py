@@ -4,6 +4,7 @@ import numpy as np
 import torch.optim as optim
 from torch import nn as nn
 import torch
+from torch import autograd
 from torch.autograd import Variable
 import torch.nn.functional as F
 
@@ -94,7 +95,7 @@ class NewSoftActorCritic():
         self.wrap_absorbing = wrap_absorbing
 
 
-    def train_step(self, batch):
+    def train_step(self, batch, compute_grad_pol_loss_wrt_var=False, var_for_grad=None):
         rewards = batch['rewards'] * self.reward_scale
         terminals = batch['terminals']
         obs = batch['observations']
@@ -141,6 +142,14 @@ class NewSoftActorCritic():
         Policy Loss
         """
         policy_loss = torch.mean(log_pi - q_new_actions)
+
+        if compute_grad_pol_loss_wrt_var:
+            grad_wrt_var = autograd.grad(
+                policy_loss,
+                [var_for_grad],
+                retain_graph=True
+            )[0]
+
         mean_reg_loss = self.policy_mean_reg_weight * (policy_mean**2).mean()
         std_reg_loss = self.policy_std_reg_weight * (policy_log_std**2).mean()
         # pre_tanh_value = policy_outputs[-1]
@@ -213,6 +222,9 @@ class NewSoftActorCritic():
                 'Policy log std',
                 ptu.get_numpy(policy_log_std),
             ))
+        
+        if compute_grad_pol_loss_wrt_var:
+            return grad_wrt_var
 
     @property
     def networks(self):
