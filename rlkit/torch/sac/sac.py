@@ -699,7 +699,7 @@ class NewMetaSoftActorCritic(MetaTorchRLAlgorithm):
         """
         Policy Loss
         """
-        policy_loss = torch.mean(log_pi - q1_new_acts)
+        policy_loss = torch.mean(log_pi - q_new_actions)
         mean_reg_loss = self.policy_mean_reg_weight * (policy_mean**2).mean()
         std_reg_loss = self.policy_std_reg_weight * (policy_log_std**2).mean()
         # pre_tanh_value = policy_outputs[-1]
@@ -897,7 +897,7 @@ class NewSoftActorCritic(TorchRLAlgorithm):
         """
         Policy Loss
         """
-        policy_loss = torch.mean(log_pi - q1_new_acts)
+        policy_loss = torch.mean(log_pi - q_new_actions)
         mean_reg_loss = self.policy_mean_reg_weight * (policy_mean**2).mean()
         std_reg_loss = self.policy_std_reg_weight * (policy_log_std**2).mean()
         # pre_tanh_value = policy_outputs[-1]
