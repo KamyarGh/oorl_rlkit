@@ -1,16 +1,19 @@
+# change these: num_initial_rollouts_for_all_train_tasks(5), num_rollouts_per_epoch (125)
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_meta_irl.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: debugging_meta_irl_rew_scale_4
+  exp_name: meta_irl_log_rews_T_clip_10_no_gp_rew_scale_10
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 4
+  num_workers: 2
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
 
   algo_params:
+    q_uses_disc_r_getter: [true]
+
     save_best: [true]
     save_best_after_epoch: [50]
     
@@ -40,7 +43,7 @@ variables:
 
     policy_optim_batch_mode_random: [true]
     policy_optim_batch_size_per_task: [64] # results in batch size 1024
-    policy_optim_batch_size_per_task_from_expert: [8]
+    policy_optim_batch_size_per_task_from_expert: [0]
 
     encoder_lr: [0.0003]
     disc_lr: [0.0003]
@@ -57,7 +60,7 @@ variables:
     num_policy_updates_per_loop_iter: [1]
 
     use_grad_pen: [true]
-    grad_pen_weight: [0.5]
+    grad_pen_weight: [0.0]
 
     disc_ce_grad_clip: [100.0]
     enc_ce_grad_clip: [100.0]
@@ -75,7 +78,7 @@ variables:
       agg_type: ['sum']
   
   policy_params:
-    reward_scale: [4.0]
+    reward_scale: [10.0]
     # reward_scale: [6.0, 8.0]
     # reward_scale: [10.0, 12.0]
     # reward_scale: [14.0, 16.0]
@@ -87,7 +90,8 @@ variables:
     use_policy_as_ema_policy: [false]
     soft_ema_policy_exp: [0.005]
 
-  T_clamp_magnitude: [3.3]
+  # T_clamp_magnitude: [3.3]
+  T_clamp_magnitude: [10.0]
   gating_clamp_magnitude: [10.0]
 
   policy_net_size: [64]
@@ -97,8 +101,9 @@ variables:
     normalized: [false]
     train_test_env: [false]
   
-  # seed: [9783, 5914]
-  seed: [1553, 7972, 9361, 1901]
+  seed: [9783, 5914]
+  # seed: [1553, 7972, 9361, 1901]
+  # seed: [1553, 7972, 9361, 1901]
 
 # -----------------------------------------------------------------------------
 constants:

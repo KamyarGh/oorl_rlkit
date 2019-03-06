@@ -136,19 +136,6 @@ def experiment(variant):
         **variant['policy_params']
     )
 
-    # make the amortized q distribution
-    traj_enc = TrivialTrajEncoder(state_only=variant['algo_params']['state_only'])
-    r2z_map = TrivialR2ZMap(z_dim)
-    q_context_encoder = TrivialContextEncoder(
-        variant['algo_params']['np_params']['agg_type'],
-        traj_enc,
-        state_only=variant['algo_params']['state_only']
-    )
-    q_model = TrivialNPEncoder(
-        q_context_encoder,
-        r2z_map
-    )
-
     # make the context encoder for the discrimiantor
     traj_enc = TrivialTrajEncoder(state_only=variant['algo_params']['state_only'])
     disc_r_getter = TrivialContextEncoder(
@@ -157,6 +144,28 @@ def experiment(variant):
         state_only=variant['algo_params']['state_only']
     )
     disc_encoder = TrivialDiscDcEncoder(disc_r_getter, variant['algo_params']['D_c_repr_dim'])
+
+    # make the amortized q distribution
+    if variant['algo_params']['q_uses_disc_r_getter']:
+        r2z_map = TrivialR2ZMap(z_dim)
+        q_model = TrivialNPEncoder(
+            disc_r_getter,
+            r2z_map,
+            train_context_encoder=False
+        )
+    else:
+        traj_enc = TrivialTrajEncoder(state_only=variant['algo_params']['state_only'])
+        r2z_map = TrivialR2ZMap(z_dim)
+        q_context_encoder = TrivialContextEncoder(
+            variant['algo_params']['np_params']['agg_type'],
+            traj_enc,
+            state_only=variant['algo_params']['state_only']
+        )
+        q_model = TrivialNPEncoder(
+            q_context_encoder,
+            r2z_map,
+            train_context_encoder=True
+        )
     
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
 

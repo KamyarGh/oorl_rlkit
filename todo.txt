@@ -1,3 +1,37 @@
+Try different rewards:
+    - Try different reward scales for all settings
+    - Try different values of gradient penalty
+    - Try different clip values for T
+    - Change the form of the discriminator
+    - Think if you can do variational inference using other direction KL
+    - Try just using D_c repr instead of q(z) and see if at least that will work
+    - Try having disc encoder adam and q model adam being 0.9
+    1) try making the reward be the log of exp(T-1)
+    2) try subtracting a constant from exp(T-1)
+- check implementation for everything including disc architecture
+- make the encoder adam beta1 be 0.9
+- make the range of T larger
+- check meta-irl is implemented correctly
+- check all the evals and trains
+- add the rest of the loss terms
+- when things are working try again with separate encoders
+
+- write the intro
+- write the background:
+    - np bc version
+- write our method
+- write the appendix
+- write the experiments section
+
+
+
+
+
+
+
+
+
+
 - (done) generate data using different amounts of expert demos
 - run AIRL for different amounts of expert demos (make the replay buffer size worth 20 episodes)
     - (done) First figure out initial hyper parameters

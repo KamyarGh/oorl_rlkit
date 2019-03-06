@@ -244,12 +244,25 @@ class TrivialNPEncoder(PyTorchModule):
         self,
         context_encoder,
         r_to_z_map,
+        train_context_encoder=True
     ):
         self.save_init_params(locals())
         super().__init__()
 
-        self.context_encoder = context_encoder
         self.r_to_z_map = r_to_z_map
+        self.train_context_encoder = train_context_encoder
+        if train_context_encoder:
+            self._context_encoder = context_encoder
+        else:
+            self._context_encoder = [context_encoder]
+    
+
+    @property
+    def context_encoder(self):
+        if self.train_context_encoder:
+            return self._context_encoder
+        else:
+            return self._context_encoder[0]
     
 
     def __call__(self, context, mask=None):
