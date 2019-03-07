@@ -116,6 +116,10 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             render_eval_paths=False,
             eval_deterministic=False,
 
+            only_Dc=False,
+
+            use_rev_KL=False,
+
             **kwargs
     ):
         assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
@@ -148,10 +152,13 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         self.disc_enc_optimizer = disc_optimizer_class(
             self.disc_encoder.parameters(),
             lr=disc_lr,
-            betas=(disc_Adam_beta, 0.999)
+            # betas=(disc_Adam_beta, 0.999)
+            betas=(0.9, 0.999)
         )
         self.disc_Adam_beta = disc_Adam_beta
         print('\n\nDISC ADAM BETA IS %f\n\n' % disc_Adam_beta)
+        print('\n\nDISC ENCODER ADAM BETA IS %f\n\n' % 0.9)
+        print(self.disc_enc_optimizer)
         
         print('\n\nQ ENCODER ADAM IS 0.25\n\n')
         assert q_model_lr != 1e-3, 'just to make sure this is being set'
@@ -251,6 +258,10 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         self.max_context_size = max_context_size
         self.min_context_size = min_context_size
         assert num_context_trajs_for_training == max_context_size
+
+        self.only_Dc = only_Dc
+
+        self.use_rev_KL = use_rev_KL
     
 
     def get_exploration_policy(self, task_identifier):
@@ -271,16 +282,25 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             mask = None
 
         # need the encoder for the policy, aka the q distribution
-        enc_to_use = self.q_model
-        mode = enc_to_use.training
-        enc_to_use.eval()
-        enc_to_use.context_encoder.eval()
-        post_dist = enc_to_use([list_of_trajs], mask)
-        enc_to_use.train(mode)
-        enc_to_use.context_encoder.train(mode)
+        if not self.only_Dc:
+            enc_to_use = self.q_model
+            mode = enc_to_use.training
+            enc_to_use.eval()
+            enc_to_use.context_encoder.eval()
+            post_dist = enc_to_use([list_of_trajs], mask)
+            enc_to_use.train(mode)
+            enc_to_use.context_encoder.train(mode)
 
-        z = post_dist.sample()
-        z = z.cpu().data.numpy()[0]
+            z = post_dist.sample()
+            z = z.cpu().data.numpy()[0]
+        else:
+            mode = self.disc_encoder.training
+            self.disc_encoder.eval()
+            D_c_repr = self.disc_encoder([list_of_trajs], mask)
+            self.disc_encoder.train(mode)
+
+            z = D_c_repr.cpu().data.numpy()[0]
+
         self.main_policy.eval()
         post_cond_policy = PostCondMLPPolicyWrapper(self.main_policy, z)
         return post_cond_policy
@@ -300,17 +320,26 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         )
         
         # need the encoder for the policy, aka the q distribution
-        enc_to_use = self.q_model
-        mode = enc_to_use.training
-        enc_to_use.eval()
-        enc_to_use.context_encoder.eval()
-        post_dist = enc_to_use([list_of_trajs])
-        enc_to_use.train(mode)
-        enc_to_use.context_encoder.train(mode)
+        if not self.only_Dc:
+            enc_to_use = self.q_model
+            mode = enc_to_use.training
+            enc_to_use.eval()
+            enc_to_use.context_encoder.eval()
+            post_dist = enc_to_use([list_of_trajs])
+            enc_to_use.train(mode)
+            enc_to_use.context_encoder.train(mode)
 
-        z = post_dist.sample()
-        # z = post_dist.mean
-        z = z.cpu().data.numpy()[0]
+            z = post_dist.sample()
+            # z = post_dist.mean
+            z = z.cpu().data.numpy()[0]
+        else:
+            mode = self.disc_encoder.training
+            self.disc_encoder.eval()
+            D_c_repr = self.disc_encoder([list_of_trajs])
+            self.disc_encoder.train(mode)
+
+            z = D_c_repr.cpu().data.numpy()[0]
+
         self.main_policy.eval()
         post_cond_policy = PostCondMLPPolicyWrapper(self.main_policy, z)
         return post_cond_policy
@@ -443,6 +472,24 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         )
         KL =  -0.5 * torch.mean(KL)
         return KL
+    
+
+    def _tapered_exp(self, x):
+        # linear tapering
+        # C = 10.0
+        # log_C = np.log(C)
+        # taper_slope = 1.5 # this makes the function be 20 at x=9
+        # exp = torch.exp(x)
+        # taper = taper_slope*(x - log_C)
+        # return torch.clamp(exp, max=C) + torch.clamp(taper, min=0.0)
+
+        # tanh tapering
+        C = 5.0
+        log_C = np.log(C)
+        taper_slope = 5.0
+        exp = torch.exp(x)
+        taper = taper_slope*torch.tanh(x - log_C)
+        return torch.clamp(exp, max=C) + torch.clamp(taper, min=0.0)
 
 
     def _do_training(self, epoch):
@@ -488,10 +535,11 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # is not any different than it's training scenario
         # mode = self.q_model.training
         # self.q_model.eval()
-        post_dist = self.q_model(context_batch, mask)
-        z = post_dist.sample() # N_tasks x Dim
-        z = z.detach()
-        # self.q_model.train(mode)
+        if not self.only_Dc:
+            post_dist = self.q_model(context_batch, mask)
+            z = post_dist.sample() # N_tasks x Dim
+            z = z.detach()
+            # self.q_model.train(mode)
 
         # repeat and reshape to get the D_c_repr batch
         context_pred_D_c_repr = D_c_repr.repeat(1, self.num_context_trajs_for_training * self.disc_samples_per_traj).view(
@@ -506,16 +554,17 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         repeated_D_c_repr_batch = D_c_repr_batch.repeat(2, 1)
 
         # repeat and reshape to get the z batch
-        context_pred_z = z.repeat(1, self.num_context_trajs_for_training * self.disc_samples_per_traj).view(
-            -1,
-            z.size(1)
-        )
-        test_pred_z = z.repeat(1, self.num_test_trajs_for_training * self.disc_samples_per_traj).view(
-            -1,
-            z.size(1)
-        )
-        z_batch = torch.cat([context_pred_z, test_pred_z], dim=0)
-        repeated_z_batch = z_batch.repeat(2, 1)
+        if not self.only_Dc:
+            context_pred_z = z.repeat(1, self.num_context_trajs_for_training * self.disc_samples_per_traj).view(
+                -1,
+                z.size(1)
+            )
+            test_pred_z = z.repeat(1, self.num_test_trajs_for_training * self.disc_samples_per_traj).view(
+                -1,
+                z.size(1)
+            )
+            z_batch = torch.cat([context_pred_z, test_pred_z], dim=0)
+            repeated_z_batch = z_batch.repeat(2, 1)
 
         # compute the loss for the discriminator
         obs_batch = torch.cat([exp_obs_batch, policy_obs_batch], dim=0)
@@ -530,23 +579,43 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # print(acts_batch.size())
 
         self.discriminator.eval()
-        eval_mode_T_outputs = self.discriminator(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch).detach()
-        eval_mode_T_exp_outputs = eval_mode_T_outputs[:exp_obs_batch.size(0)]
-        eval_mode_T_pol_outputs = eval_mode_T_outputs[exp_obs_batch.size(0):]
+        if not self.only_Dc:
+            eval_mode_T_outputs = self.discriminator(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch).detach()
+            eval_mode_T_exp_outputs = eval_mode_T_outputs[:exp_obs_batch.size(0)]
+            eval_mode_T_pol_outputs = eval_mode_T_outputs[exp_obs_batch.size(0):]
 
-        only_exp_eval_mode_T_outputs = self.discriminator(exp_obs_batch, exp_acts_batch, D_c_repr_batch, z_batch).detach()
-        only_pol_eval_mode_T_outputs = self.discriminator(policy_obs_batch, policy_acts_batch, D_c_repr_batch, z_batch).detach()
-        self.discriminator.train()
+            only_exp_eval_mode_T_outputs = self.discriminator(exp_obs_batch, exp_acts_batch, D_c_repr_batch, z_batch).detach()
+            only_pol_eval_mode_T_outputs = self.discriminator(policy_obs_batch, policy_acts_batch, D_c_repr_batch, z_batch).detach()
+            self.discriminator.train()
 
-        T_outputs = self.discriminator(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch)
+            T_outputs = self.discriminator(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch)
+        else:
+            eval_mode_T_outputs = self.discriminator(obs_batch, acts_batch, repeated_D_c_repr_batch).detach()
+            eval_mode_T_exp_outputs = eval_mode_T_outputs[:exp_obs_batch.size(0)]
+            eval_mode_T_pol_outputs = eval_mode_T_outputs[exp_obs_batch.size(0):]
+
+            only_exp_eval_mode_T_outputs = self.discriminator(exp_obs_batch, exp_acts_batch, D_c_repr_batch).detach()
+            only_pol_eval_mode_T_outputs = self.discriminator(policy_obs_batch, policy_acts_batch, D_c_repr_batch).detach()
+            self.discriminator.train()
+
+            T_outputs = self.discriminator(obs_batch, acts_batch, repeated_D_c_repr_batch)
+
         T_preds = (T_outputs > 1.0).type(T_outputs.data.type())
         accuracy = (T_preds == self.bce_targets).type(torch.FloatTensor).mean()
         
         # compute the loss for the "discriminator"
         T_exp_outputs = T_outputs[:exp_obs_batch.size(0)]
         T_pol_outputs = T_outputs[exp_obs_batch.size(0):]
-        lower_bound = T_exp_outputs - torch.exp(T_pol_outputs - 1.0)
-        lower_bound = lower_bound.sum() / ((self.num_context_trajs_for_training + self.num_test_trajs_for_training) * self.disc_samples_per_traj)
+
+        if not self.use_rev_KL:
+            # lower_bound = T_exp_outputs - torch.clamp(torch.exp(T_pol_outputs - 1.0), min=0.0, max=5.0)
+            # lower_bound = T_exp_outputs - self._tapered_exp(T_pol_outputs - 1.0)
+            lower_bound = T_exp_outputs - torch.exp(T_pol_outputs - 1.0)
+
+            # lower_bound = lower_bound.sum() / ((self.num_context_trajs_for_training + self.num_test_trajs_for_training) * self.disc_samples_per_traj)
+            lower_bound = lower_bound.mean()
+        else:
+            lower_bound = self.bce(T_outputs, self.bce_targets)
         
         if self.use_grad_pen:
             eps = Variable(torch.rand(exp_obs_batch.size(0), 1))
@@ -556,23 +625,39 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             interp_obs = interp_obs.detach()
             interp_obs.requires_grad = True
             if self.state_only:
-                gradients = autograd.grad(
-                    outputs=self.discriminator(interp_obs, None, D_c_repr_batch.detach(), z_batch.detach()).sum(),
-                    inputs=[interp_obs],
-                    # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                    create_graph=True, retain_graph=True, only_inputs=True
-                )
+                if not self.only_Dc:
+                    gradients = autograd.grad(
+                        outputs=self.discriminator(interp_obs, None, D_c_repr_batch.detach(), z_batch.detach()).sum(),
+                        inputs=[interp_obs],
+                        # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                        create_graph=True, retain_graph=True, only_inputs=True
+                    )
+                else:
+                    gradients = autograd.grad(
+                        outputs=self.discriminator(interp_obs, None, D_c_repr_batch.detach()).sum(),
+                        inputs=[interp_obs],
+                        # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                        create_graph=True, retain_graph=True, only_inputs=True
+                    )
                 total_grad = gradients[0]
             else:
                 interp_actions = eps*exp_acts_batch + (1-eps)*policy_acts_batch
                 interp_actions = interp_actions.detach()
                 interp_actions.requires_grad = True
-                gradients = autograd.grad(
-                    outputs=self.discriminator(interp_obs, interp_actions, D_c_repr_batch.detach(), z_batch.detach()).sum(),
-                    inputs=[interp_obs, interp_actions],
-                    # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                    create_graph=True, retain_graph=True, only_inputs=True
-                )
+                if not self.only_Dc:
+                    gradients = autograd.grad(
+                        outputs=self.discriminator(interp_obs, interp_actions, D_c_repr_batch.detach(), z_batch.detach()).sum(),
+                        inputs=[interp_obs, interp_actions],
+                        # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                        create_graph=True, retain_graph=True, only_inputs=True
+                    )
+                else:
+                    gradients = autograd.grad(
+                        outputs=self.discriminator(interp_obs, interp_actions, D_c_repr_batch.detach()).sum(),
+                        inputs=[interp_obs, interp_actions],
+                        # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                        create_graph=True, retain_graph=True, only_inputs=True
+                    )
                 total_grad = torch.cat([gradients[0], gradients[1]], dim=1)
 
 
@@ -580,9 +665,15 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
             disc_grad_pen_loss = gradient_penalty * self.grad_pen_weight
         
-        neg_lower_bound = -1.0 * lower_bound
-        loss = neg_lower_bound + disc_grad_pen_loss
-        loss.backward()
+        if not self.use_rev_KL:
+            neg_lower_bound = -1.0 * lower_bound
+            loss = neg_lower_bound + disc_grad_pen_loss
+            loss.backward()
+        else:
+            # I didn't wanna change the name of the variable cause I'm tired
+            neg_lower_bound = lower_bound
+            loss = neg_lower_bound + disc_grad_pen_loss
+            loss.backward()
 
         self.disc_optimizer.step()
         self.disc_enc_optimizer.step()
@@ -599,15 +690,25 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             
             if self.use_target_disc:
                 if self.state_only:
-                    target_T_outputs = self.target_disc(obs_batch, None, repeated_D_c_repr_batch, repeated_z_batch)
+                    if not self.only_Dc:
+                        target_T_outputs = self.target_disc(obs_batch, None, repeated_D_c_repr_batch, repeated_z_batch)
+                    else:
+                        target_T_outputs = self.target_disc(obs_batch, None, repeated_D_c_repr_batch)
                 else:
-                    target_T_outputs = self.target_disc(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch)
+                    if not self.only_Dc:
+                        target_T_outputs = self.target_disc(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch)
+                    else:
+                        target_T_outputs = self.target_disc(obs_batch, acts_batch, repeated_D_c_repr_batch)
                 target_T_preds = (target_disc_logits > 1.0).type(target_disc_outputs.data.type())
                 target_accuracy = (target_T_preds == self.bce_targets).type(torch.FloatTensor).mean()
                 target_T_exp_outputs = target_T_outputs[:exp_obs_batch.size(0)]
                 target_T_pol_outputs = target_T_outputs[exp_obs_batch.size(0):]
+                # target_lower_bound = target_T_exp_outputs - torch.clamp(torch.exp(target_T_pol_outputs - 1.0), min=0.0, max=5.0)
+                # target_lower_bound = target_T_exp_outputs - self._tapered_exp(target_T_pol_outputs - 1.0)
                 target_lower_bound = target_T_exp_outputs - torch.exp(target_T_pol_outputs - 1.0)
-                target_lower_bound = target_lower_bound.sum() / ((self.num_context_trajs_for_training + self.num_test_trajs_for_training) * self.disc_samples_per_traj)
+
+                # target_lower_bound = target_lower_bound.sum() / ((self.num_context_trajs_for_training + self.num_test_trajs_for_training) * self.disc_samples_per_traj)
+                target_lower_bound = target_lower_bound.mean()
                 target_loss = -1.0 * target_lower_bound
 
                 if self.use_grad_pen:
@@ -618,23 +719,39 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
                     interp_obs = interp_obs.detach()
                     interp_obs.requires_grad = True
                     if self.state_only:
-                        target_gradients = autograd.grad(
-                            outputs=self.target_disc(interp_obs, None, D_c_repr_batch, z_batch).sum(),
-                            inputs=[interp_obs],
-                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                            create_graph=True, retain_graph=True, only_inputs=True
-                        )
+                        if self.only_Dc:
+                            target_gradients = autograd.grad(
+                                outputs=self.target_disc(interp_obs, None, D_c_repr_batch, z_batch).sum(),
+                                inputs=[interp_obs],
+                                # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                                create_graph=True, retain_graph=True, only_inputs=True
+                            )
+                        else:
+                            target_gradients = autograd.grad(
+                                outputs=self.target_disc(interp_obs, None, D_c_repr_batch).sum(),
+                                inputs=[interp_obs],
+                                # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                                create_graph=True, retain_graph=True, only_inputs=True
+                            )
                         total_target_grad = target_gradients[0]
                     else:
                         interp_actions = eps*exp_acts_batch + (1-eps)*policy_acts_batch
                         interp_actios = interp_actions.detach()
                         interp_actions.requires_grad = True
-                        target_gradients = autograd.grad(
-                            outputs=self.target_disc(interp_obs, interp_actions, D_c_repr_batch, z_batch).sum(),
-                            inputs=[interp_obs, interp_actions],
-                            # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
-                            create_graph=True, retain_graph=True, only_inputs=True
-                        )
+                        if self.only_Dc:
+                            target_gradients = autograd.grad(
+                                outputs=self.target_disc(interp_obs, interp_actions, D_c_repr_batch, z_batch).sum(),
+                                inputs=[interp_obs, interp_actions],
+                                # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                                create_graph=True, retain_graph=True, only_inputs=True
+                            )
+                        else:
+                            target_gradients = autograd.grad(
+                                outputs=self.target_disc(interp_obs, interp_actions, D_c_repr_batch).sum(),
+                                inputs=[interp_obs, interp_actions],
+                                # grad_outputs=torch.ones(exp_specs['batch_size'], 1).cuda(),
+                                create_graph=True, retain_graph=True, only_inputs=True
+                            )
                         total_target_grad = torch.cat([target_gradients[0], target_gradients[1]], dim=1)
 
                     # GP from Gulrajani et al.
@@ -650,46 +767,77 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             self.eval_statistics['Grad Pen'] = np.mean(ptu.get_numpy(gradient_penalty))
             self.eval_statistics['Grad Pen W'] = np.mean(self.grad_pen_weight)
 
-            self.eval_statistics['Avg Post Mean Abs'] = np.mean(np.abs(ptu.get_numpy(post_dist.mean)))
-            self.eval_statistics['Avg Post Cov Abs'] = np.mean(np.abs(ptu.get_numpy(post_dist.cov)))
+            if not self.only_Dc:
+                self.eval_statistics['Avg Post Mean Abs'] = np.mean(np.abs(ptu.get_numpy(post_dist.mean)))
+                self.eval_statistics['Avg Post Cov Abs'] = np.mean(np.abs(ptu.get_numpy(post_dist.cov)))
 
-            # exp_rews = ptu.get_numpy(torch.exp(T_exp_outputs - 1.0))
-            exp_rews = ptu.get_numpy(T_exp_outputs - 1.0)
+            if not self.use_rev_KL:
+                exp_rews = ptu.get_numpy(torch.exp(T_exp_outputs - 1.0))
+                # exp_rews = ptu.get_numpy(self._tapered_exp(T_exp_outputs - 1.0))
+                # exp_rews = ptu.get_numpy(T_exp_outputs - 1.0)
+            else:
+                # exp_rews = ptu.get_numpy(T_exp_outputs)
+                exp_rews = ptu.get_numpy(T_exp_outputs * torch.exp(T_exp_outputs))
             self.eval_statistics['Avg Rew for Exp'] = np.mean(exp_rews)
             self.eval_statistics['Std Rew for Exp'] = np.std(exp_rews)
             self.eval_statistics['Max Rew for Exp'] = np.max(exp_rews)
             self.eval_statistics['Min Rew for Exp'] = np.min(exp_rews)
 
-            # eval_mode_exp_rews = ptu.get_numpy(torch.exp(eval_mode_T_exp_outputs - 1.0))
-            eval_mode_exp_rews = ptu.get_numpy(eval_mode_T_exp_outputs - 1.0)
+            if not self.use_rev_KL:
+                eval_mode_exp_rews = ptu.get_numpy(torch.exp(eval_mode_T_exp_outputs - 1.0))
+                # eval_mode_exp_rews = ptu.get_numpy(self._tapered_exp(eval_mode_T_exp_outputs - 1.0))
+                # eval_mode_exp_rews = ptu.get_numpy(eval_mode_T_exp_outputs - 1.0)
+            else:
+                # eval_mode_exp_rews = ptu.get_numpy(eval_mode_T_exp_outputs)
+                eval_mode_exp_rews = ptu.get_numpy(eval_mode_T_exp_outputs * torch.exp(eval_mode_T_exp_outputs))
             self.eval_statistics['Eval Mode Avg Rew for Exp'] = np.mean(eval_mode_exp_rews)
             self.eval_statistics['Eval Mode Std Rew for Exp'] = np.std(eval_mode_exp_rews)
             self.eval_statistics['Eval Mode Max Rew for Exp'] = np.max(eval_mode_exp_rews)
             self.eval_statistics['Eval Mode Min Rew for Exp'] = np.min(eval_mode_exp_rews)
 
-            # only_exp_eval_mode_exp_rews = ptu.get_numpy(torch.exp(only_exp_eval_mode_T_outputs - 1.0))
-            only_exp_eval_mode_exp_rews = ptu.get_numpy(only_exp_eval_mode_T_outputs - 1.0)
+            if not self.use_rev_KL:
+                only_exp_eval_mode_exp_rews = ptu.get_numpy(torch.exp(only_exp_eval_mode_T_outputs - 1.0))
+                # only_exp_eval_mode_exp_rews = ptu.get_numpy(self._tapered_exp(only_exp_eval_mode_T_outputs - 1.0))
+                # only_exp_eval_mode_exp_rews = ptu.get_numpy(only_exp_eval_mode_T_outputs - 1.0)
+            else:
+                # only_exp_eval_mode_exp_rews = ptu.get_numpy(only_exp_eval_mode_T_outputs)
+                only_exp_eval_mode_exp_rews = ptu.get_numpy(only_exp_eval_mode_T_outputs * torch.exp(only_exp_eval_mode_T_outputs))
             self.eval_statistics['Only Exp Eval Mode Avg Rew for Exp'] = np.mean(only_exp_eval_mode_exp_rews)
             self.eval_statistics['Only Exp Eval Mode Std Rew for Exp'] = np.std(only_exp_eval_mode_exp_rews)
             self.eval_statistics['Only Exp Eval Mode Max Rew for Exp'] = np.max(only_exp_eval_mode_exp_rews)
             self.eval_statistics['Only Exp Eval Mode Min Rew for Exp'] = np.min(only_exp_eval_mode_exp_rews)
 
-            # pol_rews = ptu.get_numpy(torch.exp(T_pol_outputs - 1.0))
-            pol_rews = ptu.get_numpy(T_pol_outputs - 1.0)
+            if not self.use_rev_KL:
+                pol_rews = ptu.get_numpy(torch.exp(T_pol_outputs - 1.0))
+                # pol_rews = ptu.get_numpy(self._tapered_exp(T_pol_outputs - 1.0))
+                # pol_rews = ptu.get_numpy(T_pol_outputs - 1.0)
+            else:
+                # pol_rews = ptu.get_numpy(T_pol_outputs)
+                pol_rews = ptu.get_numpy(T_pol_outputs * torch.exp(T_pol_outputs))
             self.eval_statistics['Avg Rew for Pol'] = np.mean(pol_rews)
             self.eval_statistics['Std Rew for Pol'] = np.std(pol_rews)
             self.eval_statistics['Max Rew for Pol'] = np.max(pol_rews)
             self.eval_statistics['Min Rew for Pol'] = np.min(pol_rews)
 
-            # eval_mode_pol_rews = ptu.get_numpy(torch.exp(eval_mode_T_pol_outputs - 1.0))
-            eval_mode_pol_rews = ptu.get_numpy(eval_mode_T_pol_outputs - 1.0)
+            if not self.use_rev_KL:
+                eval_mode_pol_rews = ptu.get_numpy(torch.exp(eval_mode_T_pol_outputs - 1.0))
+                # eval_mode_pol_rews = ptu.get_numpy(self._tapered_exp(eval_mode_T_pol_outputs - 1.0))
+                # eval_mode_pol_rews = ptu.get_numpy(eval_mode_T_pol_outputs - 1.0)
+            else:
+                # eval_mode_pol_rews = ptu.get_numpy(eval_mode_T_pol_outputs)
+                eval_mode_pol_rews = ptu.get_numpy(eval_mode_T_pol_outputs * torch.exp(eval_mode_T_pol_outputs))
             self.eval_statistics['Eval Mode Avg Rew for Pol'] = np.mean(eval_mode_pol_rews)
             self.eval_statistics['Eval Mode Std Rew for Pol'] = np.std(eval_mode_pol_rews)
             self.eval_statistics['Eval Mode Max Rew for Pol'] = np.max(eval_mode_pol_rews)
             self.eval_statistics['Eval Mode Min Rew for Pol'] = np.min(eval_mode_pol_rews)
 
-            # only_pol_eval_mode_pol_rews = ptu.get_numpy(torch.exp(only_pol_eval_mode_T_outputs - 1.0))
-            only_pol_eval_mode_pol_rews = ptu.get_numpy(only_pol_eval_mode_T_outputs - 1.0)
+            if not self.use_rev_KL:
+                only_pol_eval_mode_pol_rews = ptu.get_numpy(torch.exp(only_pol_eval_mode_T_outputs - 1.0))
+                # only_pol_eval_mode_pol_rews = ptu.get_numpy(self._tapered_exp(only_pol_eval_mode_T_outputs - 1.0))
+                # only_pol_eval_mode_pol_rews = ptu.get_numpy(only_pol_eval_mode_T_outputs - 1.0)
+            else:
+                # only_pol_eval_mode_pol_rews = ptu.get_numpy(only_pol_eval_mode_T_outputs)
+                only_pol_eval_mode_pol_rews = ptu.get_numpy(only_pol_eval_mode_T_outputs * torch.exp(only_pol_eval_mode_T_outputs))
             self.eval_statistics['Only Pol Eval Mode Avg Rew for Pol'] = np.mean(only_pol_eval_mode_pol_rews)
             self.eval_statistics['Only Pol Eval Mode Std Rew for Pol'] = np.std(only_pol_eval_mode_pol_rews)
             self.eval_statistics['Only Pol Eval Mode Max Rew for Pol'] = np.max(only_pol_eval_mode_pol_rews)
@@ -716,19 +864,21 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # self.disc_encoder.train(mode)
 
         # get z, remember to detach it
-        post_dist = self.q_model(context_batch, mask)
-        z = post_dist.sample() # N_tasks x Dim
+        if not self.only_Dc:
+            post_dist = self.q_model(context_batch, mask)
+            z = post_dist.sample() # N_tasks x Dim
 
         if self.policy_optim_batch_mode_random:
             # repeat z to have the right size
-            repeated_z = z.repeat(1, self.policy_optim_batch_size_per_task).view(
-                self.num_tasks_used_per_update * self.policy_optim_batch_size_per_task,
-                -1
-            )
+            if not self.only_Dc:
+                repeated_z = z.repeat(1, self.policy_optim_batch_size_per_task).view(
+                    self.num_tasks_used_per_update * self.policy_optim_batch_size_per_task,
+                    -1
+                )
             repeated_D_c_repr = D_c_repr.repeat(1, self.policy_optim_batch_size_per_task).view(
                 self.num_tasks_used_per_update * self.policy_optim_batch_size_per_task,
                 -1
-            )
+            ).detach()
         else:
             raise NotImplementedError()
 
@@ -743,37 +893,67 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # here it is only seeing policy samples, not policy and exp samples
         disc_for_rew.eval()
         if self.state_only:
-            T_outputs = disc_for_rew(policy_batch['observations'], None, repeated_D_c_repr, repeated_z).detach()
+            if not self.only_Dc:
+                T_outputs = disc_for_rew(policy_batch['observations'], None, repeated_D_c_repr, repeated_z).detach()
+            else:
+                T_outputs = disc_for_rew(policy_batch['observations'], None, repeated_D_c_repr).detach()
         else:
             disc_for_rew.eval()
             # self.discriminator.eval()
             # eval_T_outputs = self.discriminator(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
-            eval_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
+            if not self.only_Dc:
+                eval_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
+            else:
+                eval_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr).detach()
 
             disc_for_rew.train()
             # self.discriminator.train()
 
             # train_T_outputs = self.discriminator(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
-            train_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
+            if not self.only_Dc:
+                train_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
+            else:
+                train_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr).detach()
             
-        # policy_batch['rewards'] = torch.exp(eval_T_outputs - 1.0)
-        policy_batch['rewards'] = eval_T_outputs - 1.0
+        if not self.use_rev_KL:        
+            # rew_to_give = torch.exp(eval_T_outputs - 1.0)
+            # # maybe clip and center it
+            # rew_to_give = torch.clamp(
+            #     rew_to_give,
+            #     min=0.0,
+            #     max=5.0
+            # ) - 2.5
+
+            rew_to_give = self._tapered_exp(eval_T_outputs - 1.0) - 5.0
+        else:
+            # rew_to_give = eval_T_outputs
+            rew_to_give = torch.exp(eval_T_outputs) * eval_T_outputs
+            rew_to_give = torch.clamp(rew_to_give, min=-20.0, max=20.0) - 10.0
+        
+        rew_to_give.detach()
+        policy_batch['rewards'] = rew_to_give
 
         # disc_for_rew.train()
 
         # now augment the obs with the latent sample z
-        detached_repeated_z = repeated_z.detach()
-        detached_repeated_z.requires_grad = True
-        policy_batch['observations'] = torch.cat([policy_batch['observations'], detached_repeated_z], dim=1)
-        policy_batch['next_observations'] = torch.cat([policy_batch['next_observations'], detached_repeated_z], dim=1)
+        if not self.only_Dc:
+            detached_repeated_z = repeated_z.detach()
+            detached_repeated_z.requires_grad = True
+            policy_batch['observations'] = torch.cat([policy_batch['observations'], detached_repeated_z], dim=1)
+            policy_batch['next_observations'] = torch.cat([policy_batch['next_observations'], detached_repeated_z], dim=1)
+        
+            # do a policy update (the zeroing of grads etc. should be handled internally)
+            d_pol_loss_d_repeated_z = self.policy_optimizer.train_step(policy_batch, compute_grad_pol_loss_wrt_var=True, var_for_grad=detached_repeated_z)
+            autograd.backward(
+                [repeated_z],
+                grad_variables=[d_pol_loss_d_repeated_z]
+            )
+            self.q_optimizer.step()
+        else:
+            policy_batch['observations'] = torch.cat([policy_batch['observations'], repeated_D_c_repr], dim=1)
+            policy_batch['next_observations'] = torch.cat([policy_batch['next_observations'], repeated_D_c_repr], dim=1)
+            self.policy_optimizer.train_step(policy_batch)
 
-        # do a policy update (the zeroing of grads etc. should be handled internally)
-        d_pol_loss_d_repeated_z = self.policy_optimizer.train_step(policy_batch, compute_grad_pol_loss_wrt_var=True, var_for_grad=detached_repeated_z)
-        autograd.backward(
-            [repeated_z],
-            grad_variables=[d_pol_loss_d_repeated_z]
-        )
-        self.q_optimizer.step()
         if update_loop_iter == 0 and pol_update_iter == 0:
             given_rews = ptu.get_numpy(policy_batch['rewards']).flatten()
             self.eval_statistics['Disc Rew Mean'] = np.mean(given_rews)
@@ -781,8 +961,13 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             self.eval_statistics['Disc Rew Max'] = np.max(given_rews)
             self.eval_statistics['Disc Rew Min'] = np.min(given_rews)
 
-            # train_rews = ptu.get_numpy(torch.exp(train_T_outputs - 1.0))
-            train_rews = ptu.get_numpy(train_T_outputs - 1.0)
+            if not self.use_rev_KL:
+                # train_rews = ptu.get_numpy(torch.exp(train_T_outputs - 1.0))
+                train_rews = ptu.get_numpy(self._tapered_exp(train_T_outputs - 1.0) - 5.0)
+                # train_rews = ptu.get_numpy(train_T_outputs - 1.0)
+            else:
+                # train_rews = ptu.get_numpy(train_T_outputs)
+                train_rews = ptu.get_numpy(torch.exp(train_T_outputs)*train_T_outputs)
             self.eval_statistics['Train Disc Rew Mean'] = np.mean(train_rews)
             self.eval_statistics['Train Disc Rew Std'] = np.std(train_rews)
             self.eval_statistics['Train Disc Rew Max'] = np.max(train_rews)
@@ -790,7 +975,8 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
 
             self.eval_statistics.update(self.policy_optimizer.eval_statistics)
 
-            plot_histogram(given_rews, 40, 'given_rews', 'plots/junk_vis/given_rews_log_T_clip_10_no_gp_rew_scale_10.png')
+            # only_Dc_exp_rews_T_clip_10_gp_1p0_rew_scale_10_repr_dim_32_disc_enc_adam_0p9_pol_128_mod_rews_clamped_disc_obj_use_disc_obs_processor
+            plot_histogram(given_rews, 40, 'given_rews', 'plots/junk_vis/disc_enc_and_obs_gating_gp_0p1_rew_scale_4_linear_taper_4_rew_taper_only_repeat.png')
     
 
     def evaluate(self, epoch):

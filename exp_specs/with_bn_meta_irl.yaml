@@ -2,7 +2,8 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_meta_irl.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: meta_irl_log_rews_T_clip_10_no_gp_rew_scale_10
+  # exp_name: only_Dc_exp_rews_T_clip_10_gp_1p0_rew_scale_10_repr_dim_32_disc_enc_adam_0p9_pol_128_mod_rews_clamped_disc_obj_use_disc_obs_processor
+  exp_name: disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_10_rew_taper_only_65_65
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 2
@@ -12,6 +13,9 @@ meta_data:
 variables:
 
   algo_params:
+    use_rev_KL: [false]
+    use_disc_obs_processor: [true]
+    only_Dc: [true]
     q_uses_disc_r_getter: [true]
 
     save_best: [true]
@@ -55,12 +59,12 @@ variables:
     # encoder_lr: [0.00005]
     # disc_lr: [0.00005]
 
-    num_update_loops_per_train_call: [65]
-    num_disc_updates_per_loop_iter: [1]
-    num_policy_updates_per_loop_iter: [1]
+    num_update_loops_per_train_call: [1]
+    num_disc_updates_per_loop_iter: [65]
+    num_policy_updates_per_loop_iter: [65]
 
     use_grad_pen: [true]
-    grad_pen_weight: [0.0]
+    grad_pen_weight: [0.1]
 
     disc_ce_grad_clip: [100.0]
     enc_ce_grad_clip: [100.0]
@@ -72,13 +76,13 @@ variables:
     use_target_enc: [false]
     soft_target_enc_tau: [0.005]
 
-    D_c_repr_dim: [16]
+    D_c_repr_dim: [32]
     np_params:
-      z_dim: [16]
+      z_dim: [7]
       agg_type: ['sum']
   
   policy_params:
-    reward_scale: [10.0]
+    reward_scale: [4.0]
     # reward_scale: [6.0, 8.0]
     # reward_scale: [10.0, 12.0]
     # reward_scale: [14.0, 16.0]
@@ -94,16 +98,16 @@ variables:
   T_clamp_magnitude: [10.0]
   gating_clamp_magnitude: [10.0]
 
-  policy_net_size: [64]
+  policy_net_size: [128]
   num_hidden_layers: [3]
 
   env_specs:
     normalized: [false]
     train_test_env: [false]
   
-  seed: [9783, 5914]
+  # seed: [9783, 5914]
   # seed: [1553, 7972, 9361, 1901]
-  # seed: [1553, 7972, 9361, 1901]
+  seed: [1553, 9361]
 
 # -----------------------------------------------------------------------------
 constants:

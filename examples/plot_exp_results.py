@@ -3706,7 +3706,8 @@ def plot_test_and_exp_returns(exp_name):
         y_axis_lims=y_axis_lims,
         plot_mean=False,
         column_name=[
-            'Percent_Solved_meta_train'
+            'Percent_Solved_meta_train',
+            # 'Percent_Good_Reach_meta_train'
         ]
     )
     plot_experiment_returns(
@@ -3728,7 +3729,8 @@ def plot_test_and_exp_returns(exp_name):
         y_axis_lims=y_axis_lims,
         plot_mean=False,
         column_name=[
-            'Percent_Solved_meta_test'
+            'Percent_Solved_meta_test',
+            # 'Percent_Good_Reach_meta_test'
         ]
     )
     plot_experiment_returns(
@@ -3742,6 +3744,55 @@ def plot_test_and_exp_returns(exp_name):
             'Percent_Good_Reach_meta_test'
         ]
     )
+    plot_experiment_returns(
+        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+        title,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '%s_rews.png'%title),
+        x_axis_lims=x_axis_lims,
+        # y_axis_lims=y_axis_lims,
+        plot_mean=False,
+        column_name=[
+            'Disc_Rew_Mean+Disc_Rew_Std',
+            'Disc_Rew_Mean',
+            'Disc_Rew_Mean-Disc_Rew_Std',
+        ]
+    )
+
+
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rev_KL')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_10p0_rev_KL')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_iters_1_vs_2')
+# plot_test_and_exp_returns('only_Dc_exp_rews_T_clip_10_gp_1p0_rew_scale_10_repr_dim_32_disc_enc_adam_0p9_pol_128_mod_rews_clamped_disc_obj_use_disc_obs_processor')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_2p5')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_10p0')
+
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_20')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_no_rew_centering')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_rew_clip_40')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_rew_clip_10')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_rev_KL_but_forward')
+
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_10p0_rew_scale_4_rew_clip_10')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_5p0_rew_scale_4_rew_clip_10')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_rew_clip_5')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_5p0_rew_scale_4_rew_clip_5')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_10p0_rew_scale_4_rew_clip_5')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_rew_clip_5')
+
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_tanh_taper_5')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_5')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_tanh_taper_10')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_10')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_5')
+
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_5_rew_taper_only')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_5_rew_taper_only')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_linear_taper_10_rew_taper_only')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_linear_taper_10_rew_taper_only')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_10_linear_taper_10_rew_taper_only')
+plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_10_linear_taper_10_rew_taper_only')
+
 
 
 # plot_test_and_exp_returns('fixed_final_rerun_KL_0p0_disc_512')

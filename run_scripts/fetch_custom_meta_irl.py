@@ -12,7 +12,7 @@ from rlkit.launchers.launcher_util import setup_logger, set_seed
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
 
-from rlkit.torch.irl.disc_models.meta_irl_disc import ObsGating, TFuncForFetch
+from rlkit.torch.irl.disc_models.meta_irl_disc import ObsGating, TFuncForFetch, OnlyDcTFuncForFetch
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
 from rlkit.torch.sac.policies import WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.networks import FlattenMlp, ObsPreprocessedQFunc, ObsPreprocessedVFunc
@@ -72,14 +72,23 @@ def experiment(variant):
     # make the disc model
     if variant['algo_params']['state_only']: print('\n\nUSING STATE ONLY DISC\n\n')
     assert 'transfer_version' not in variant['algo_params']
-    disc_model = TFuncForFetch(
-        T_clamp_magnitude=variant['T_clamp_magnitude'],
-        gating_clamp_magnitude=variant['gating_clamp_magnitude'],
-        state_only=variant['algo_params']['state_only'],
-        wrap_absorbing=variant['algo_params']['wrap_absorbing'],
-        D_c_repr_dim=variant['algo_params']['D_c_repr_dim'],
-        z_dim=variant['algo_params']['np_params']['z_dim']
-    )
+    if variant['algo_params']['only_Dc']:
+        disc_model = OnlyDcTFuncForFetch(
+            T_clamp_magnitude=variant['T_clamp_magnitude'],
+            gating_clamp_magnitude=variant['gating_clamp_magnitude'],
+            state_only=variant['algo_params']['state_only'],
+            wrap_absorbing=variant['algo_params']['wrap_absorbing'],
+            D_c_repr_dim=variant['algo_params']['D_c_repr_dim'],
+        )
+    else:
+        disc_model = TFuncForFetch(
+            T_clamp_magnitude=variant['T_clamp_magnitude'],
+            gating_clamp_magnitude=variant['gating_clamp_magnitude'],
+            state_only=variant['algo_params']['state_only'],
+            wrap_absorbing=variant['algo_params']['wrap_absorbing'],
+            D_c_repr_dim=variant['algo_params']['D_c_repr_dim'],
+            z_dim=variant['algo_params']['np_params']['z_dim']
+        )
     if variant['algo_params']['use_target_disc']:
         target_disc = disc_model.copy()
     else:
@@ -93,18 +102,37 @@ def experiment(variant):
     hidden_sizes = [policy_net_size] * variant['num_hidden_layers']
 
     # make the policy and its obs gating model
-    policy_obs_gating = ObsGating(variant['gating_clamp_magnitude'], z_dim=z_dim)
-    policy = WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy(
-        policy_obs_gating,
-        z_dim,
-        train_preprocess_model=True,
-        hidden_sizes=hidden_sizes,
-        obs_dim=6 + 4,
-        action_dim=4
-    )
+    if not variant['algo_params']['only_Dc']:
+        latent_dim = z_dim
+    else:
+        latent_dim = variant['algo_params']['D_c_repr_dim']
+    
+    if variant['algo_params']['use_disc_obs_processor']:
+        assert variant['algo_params']['only_Dc']
+        print('\n\nUSING DISC OBS PROCESSOR\n\n')
+        policy_obs_gating = disc_model.D_c_repr_obs_processor
+        policy = WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy(
+            policy_obs_gating,
+            latent_dim,
+            train_preprocess_model=False,
+            hidden_sizes=hidden_sizes,
+            obs_dim=6 + 4,
+            action_dim=4
+        )
+    else:
+        policy_obs_gating = ObsGating(variant['gating_clamp_magnitude'], z_dim=latent_dim)
+        policy = WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy(
+            policy_obs_gating,
+            latent_dim,
+            train_preprocess_model=True,
+            hidden_sizes=hidden_sizes,
+            obs_dim=6 + 4,
+            action_dim=4
+        )
+    print(policy)
     qf1 = ObsPreprocessedQFunc(
         policy.preprocess_model,
-        z_dim,
+        latent_dim,
         hidden_sizes=hidden_sizes,
         input_size=6 + 4 + 4 + 1*variant['algo_params']['wrap_absorbing'],
         output_size=1,
@@ -112,7 +140,7 @@ def experiment(variant):
     )
     qf2 = ObsPreprocessedQFunc(
         policy.preprocess_model,
-        z_dim,
+        latent_dim,
         hidden_sizes=hidden_sizes,
         input_size=6 + 4 + 4 + 1*variant['algo_params']['wrap_absorbing'],
         output_size=1,
@@ -120,7 +148,7 @@ def experiment(variant):
     )
     vf = ObsPreprocessedVFunc(
         policy.preprocess_model,
-        z_dim,
+        latent_dim,
         hidden_sizes=hidden_sizes,
         input_size=6 + 4 + 1*variant['algo_params']['wrap_absorbing'],
         output_size=1,

@@ -1,10 +1,65 @@
 Try different rewards:
+    - Try just using D_c repr instead of q(z) and see if at least that will work
+        - Log the gradients
+        - Probably need to add gradient clipping
+        - T-1 vs. exp(T-1) rewards
+        - larger T clip
+        - rew scales (from 1.0 to high values)
+        - Adam beta1
+        - GP weights
+        - learning rate
+        - increasing model sizes (Q functions etc.)
+        TRYING:
+            - exp(T-1)
+                - T clip 10
+                    - disc enc adam 0.9
+                        - GP 0
+                            - rew scale 1.0
+                                - pol size 64, 128
+                                - clip and center the rewards
+                                - clip it for the disc objective too
+
+            - ? do more policy steps ?
+            - gradient clipping
+            - even using the disc obs preprocessor
+            - make a version with a GAN discriminator
+
+            1) are gradient mags fucking shit up
+            2) for forward KL does my thresholding make any sense
+            3) does the centering of the reward matter
+            4) can you at least train the rev KL with a q model
+
+            1) (run clipping at 40 and 10) change the amount you clip the reward at
+            2) (running rew scale 4, no centering) does the centering matter
+            3) (running rew scale 20) increase reward scale
+            4) use bce loss but use it as forward KL
+
+
+            - learning rate?!
+            - untapered disc objective, tapered RL objective
+                - tanh tapering
+                - linear tapering
+                    - this might need larger reward scale
+            - untapered and unclipped everything
+                - do hype search on reward_scale
+            - using bin classifier for forward KL
+            - use the log of the exp reward
+
+            (do these maybe we tanh 5 tapering?)
+            - more iters on disc than gen
+            - more iters on gen than disc
+
+            - don't center
+            - last option, just use the log of the exp reward
+
+
+
+
     - Try different reward scales for all settings
     - Try different values of gradient penalty
     - Try different clip values for T
     - Change the form of the discriminator
     - Think if you can do variational inference using other direction KL
-    - Try just using D_c repr instead of q(z) and see if at least that will work
     - Try having disc encoder adam and q model adam being 0.9
     1) try making the reward be the log of exp(T-1)
     2) try subtracting a constant from exp(T-1)

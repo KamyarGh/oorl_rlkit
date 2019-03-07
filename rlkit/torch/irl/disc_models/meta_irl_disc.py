@@ -121,3 +121,60 @@ class TFuncForFetch(PyTorchModule):
         if return_color_logits:
             return clamped_outputs, D_c_color_logits, z_color_logits
         return clamped_outputs
+
+
+class OnlyDcTFuncForFetch(PyTorchModule):
+    def __init__(
+        self,
+        T_clamp_magnitude=3.3,
+        gating_clamp_magnitude=10.0,
+        state_only=False,
+        wrap_absorbing=False,
+        D_c_repr_dim=0
+    ):
+        self.save_init_params(locals())
+        super().__init__()
+
+        self.D_c_repr_dim = D_c_repr_dim
+        self.state_only = state_only
+        self.wrap_absorbing = wrap_absorbing
+        self.T_clamp_magnitude = T_clamp_magnitude
+        self.gating_clamp_magnitude = gating_clamp_magnitude
+        assert T_clamp_magnitude > 0.0
+        assert gating_clamp_magnitude > 0.0
+
+        self.D_c_repr_obs_processor = ObsGating(clamp_magnitude=self.gating_clamp_magnitude, z_dim=D_c_repr_dim)
+        DISC_HID = 512
+        print('\n\nDISC HID IS %d\n\n' % DISC_HID)
+        # concat the two processed obs and the actions
+        input_dim = 10 if state_only else 10+4
+        if wrap_absorbing: input_dim += 1
+        self.mlp = nn.Sequential(
+            nn.Linear(input_dim, DISC_HID),
+            nn.BatchNorm1d(DISC_HID),
+            nn.ReLU(),
+            nn.Linear(DISC_HID, DISC_HID),
+            nn.BatchNorm1d(DISC_HID),
+            nn.ReLU(),
+            nn.Linear(DISC_HID, DISC_HID),
+            nn.BatchNorm1d(DISC_HID),
+            nn.ReLU(),
+            nn.Linear(DISC_HID, 1)
+        )
+    
+    
+    def forward(self, obs_batch, act_batch, D_c_repr_batch=None, return_color_logits=False):
+        if return_color_logits:
+            D_c_repr_obs_batch, D_c_color_logits = self.D_c_repr_obs_processor(obs_batch, self.wrap_absorbing, D_c_repr_batch, return_color_logits)
+        else:
+            D_c_repr_obs_batch = self.D_c_repr_obs_processor(obs_batch, self.wrap_absorbing, D_c_repr_batch)
+        if self.state_only:
+            outputs = self.mlp(D_c_repr_obs_batch)
+        else:
+            concat_input = torch.cat([D_c_repr_obs_batch, act_batch], dim=-1)
+            outputs = self.mlp(concat_input)
+        clamped_outputs = torch.clamp(outputs, min=-1.0*self.T_clamp_magnitude, max=self.T_clamp_magnitude)
+
+        if return_color_logits:
+            return clamped_outputs, D_c_color_logits
+        return clamped_outputs
