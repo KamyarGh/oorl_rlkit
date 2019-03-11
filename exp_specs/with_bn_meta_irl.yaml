@@ -3,7 +3,9 @@ meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_meta_irl.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
   # exp_name: only_Dc_exp_rews_T_clip_10_gp_1p0_rew_scale_10_repr_dim_32_disc_enc_adam_0p9_pol_128_mod_rews_clamped_disc_obj_use_disc_obs_processor
-  exp_name: disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_10_rew_taper_only_65_65
+  # exp_name: disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_5_rew_taper_only_with_q_model_with_bn_z_dim_16
+  # exp_name: gp_0p5_rew_scale_10_tanh_taper_5_with_q_without_bn_z_dim_32_q_Adam_beta_0p9_disc_ignores_z_1_vs_4_pol_gate_no_bn
+  exp_name: gp_0p1_rew_scale_10_tanh_taper_5_with_q_with_bn_z_dim_32_q_Adam_beta_0p25_disc_ignores_z
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 2
@@ -14,9 +16,10 @@ variables:
 
   algo_params:
     use_rev_KL: [false]
-    use_disc_obs_processor: [true]
-    only_Dc: [true]
-    q_uses_disc_r_getter: [true]
+    use_disc_obs_processor: [false]
+    only_Dc: [false]
+    q_uses_disc_r_getter: [false]
+    disc_ignores_z: [true]
 
     save_best: [true]
     save_best_after_epoch: [50]
@@ -59,9 +62,9 @@ variables:
     # encoder_lr: [0.00005]
     # disc_lr: [0.00005]
 
-    num_update_loops_per_train_call: [1]
-    num_disc_updates_per_loop_iter: [65]
-    num_policy_updates_per_loop_iter: [65]
+    num_update_loops_per_train_call: [65]
+    num_disc_updates_per_loop_iter: [1]
+    num_policy_updates_per_loop_iter: [1]
 
     use_grad_pen: [true]
     grad_pen_weight: [0.1]
@@ -78,11 +81,11 @@ variables:
 
     D_c_repr_dim: [32]
     np_params:
-      z_dim: [7]
+      z_dim: [32]
       agg_type: ['sum']
   
   policy_params:
-    reward_scale: [4.0]
+    reward_scale: [10.0]
     # reward_scale: [6.0, 8.0]
     # reward_scale: [10.0, 12.0]
     # reward_scale: [14.0, 16.0]

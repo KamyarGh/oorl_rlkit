@@ -1,64 +1,101 @@
 meta_data:
-  script_path: /u/kamyar/oorl_rlkit/run_scripts/airl_exp_script.py
-  exp_dirs: /ais/gobi6/kamyar/oorl_rlkit/output
-  exp_name: airl_pendulum_grad_pen_using_log_prob_f_hid_32_direct_f
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/airl_exp_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
+  # exp_name: final_correct_halfcheetah_airl_with_exp_reward_hyper_search_rew_scale_more_than_40
+  exp_name: forw_KL_hype_search_disc_with_bn
   description: searching over the SAC hyperparameters
-  num_workers: 1
-  cpu_range: [3,4]
+  use_gpu: false
+  num_workers: 6
+  cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  concat_env_params_to_obs: [false]
+  disc_num_blocks: [2]
+  disc_hid_dim: [48]
+  # disc_hid_dim: [48, 64, 128]
+  disc_hid_act: [tanh]
+  disc_use_bn: [true]
 
-  # airl_params:
+  algo_params:
+    use_exp_rewards: [true]
+    # rew_clip_max: [1.0]
+    # rew_clip_min: [-1.0, -2.0, -4.0, -8.0]
 
-  # policy_params:
-    # reward_scale: [5.0] there is not need for a reward scale hopefully
-    # soft_target_tau: [0.005]
+    no_terminal: [true]
+    replay_buffer_size: [1000000]
+
+    num_update_loops_per_train_call: [100]
+    # num_update_loops_per_train_call: [1000, 100]
+    num_disc_updates_per_loop_iter: [1]
+    num_policy_updates_per_loop_iter: [1]
+
+    disc_optim_batch_size: [256]
+    grad_pen_weight: [10.0]
+    # grad_pen_weight: [1.0, 5.0, 10.0]
+    disc_ce_grad_clip: [1.0]
+    disc_gp_grad_clip: [1.0]
+  
+  policy_params:
+    reward_scale: [50.0, 75.0, 100.0]
+    # reward_scale: [50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 125.0, 150.0, 175.0, 200.0]
+    # reward_scale: [0.0001, 0.001, 0.01, 0.1, 1.0, 5.0, 10.0]
+    # reward_scale: [2.0, 4.0, 8.0, 12.0]
+    # reward_scale: [2.0, 4.0, 8.0]
+    # reward_scale: [1.0, 2.0, 4.0]
+    beta_1: [0.25]
+    # beta_1: [0.0, 0.25, 0.5, 0.9]
   
   env_specs:
-    normalized: [true]
+    normalized: [false]
   
-  seed: [9783]
+  # seed: [9783, 5914, 4865, 2135, 2349]
+  expert_seed_run_idx: [0]
+  seed: [9783, 5914]
 
 # -----------------------------------------------------------------------------
 constants:
-  expert_save_dict: '/ais/gobi6/kamyar/oorl_rlkit/output/final-pendulum-new-sac-hyper-param-search/final_pendulum_new_sac_hyper_param_search_2018_10_12_19_11_09_0000--s-0/extra_data.pkl'
-  last_k_expert_steps: 500
+  expert_name: halfcheetah_250_demos_no_subsampling
+  # expert_name: halfcheetah_25_demos_subsample_20
+  wrap_absorbing_state: false
   
-  airl_params:
-    num_epochs: 501
+  disc_clamp_magnitude: 10.0
+
+  algo_params:
+    num_epochs: 3011
     num_steps_per_epoch: 10000
     num_steps_per_eval: 10000
-    max_path_length: 100
-
-    num_reward_updates: 3
-    num_policy_updates: 32
-    rewardf_optim_batch_size: 1000
-    policy_optim_batch_size: 32
-
-    # the interaction between these two numbers matters
     num_steps_between_updates: 1000
-    replay_buffer_size: 1000 # this is the buffer for storing the policy rollouts
-    min_steps_before_training: 1000
+    max_path_length: 1000
+    min_steps_before_training: 5000
+
+
+    traj_based: false
+    state_only: false
+
+    # disc_optim_batch_size: 1024
+    policy_optim_batch_size: 256
+    policy_optim_batch_size_from_expert: 0
+
+    use_target_disc: false
+    use_disc_input_noise: false
+
+    policy_uses_task_params: false
+    concat_task_params_to_policy_obs: false
+    policy_uses_pixels: false
+
     
-    save_replay_buffer: true
+    save_replay_buffer: false
     render: false
 
-    rewardf_lr: 0.0003
+    disc_lr: 0.0003
+    disc_momentum: 0.0
     use_grad_pen: true
-    grad_pen_weight: 10.0
+
+    freq_saving: 10
   
-  # rewardf_model_name: generic_reward_f
-  # rewardf_model_specs:
-    # hid_dim: 32
-    # num_layers: 2
-
   policy_net_size: 256
+  policy_num_hidden_layers: 2
   policy_params:
-    # policy always has 2 hidden layers
-
-    reward_scale: 1.0
     discount: 0.99
     policy_lr: 0.0003
     qf_lr: 0.0003
@@ -69,4 +106,5 @@ constants:
 
     
   env_specs:
-    base_env_name: 'pendulum_v0'
+    base_env_name: 'halfcheetah_v2'
+    train_test_env: false

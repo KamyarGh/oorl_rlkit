@@ -70,6 +70,9 @@ class AIRL(TorchIRLAlgorithm):
         target_disc=None,
         soft_target_disc_tau=0.005,
 
+        rew_clip_min=None,
+        rew_clip_max=None,
+
         plotter=None,
         render_eval_paths=False,
         eval_deterministic=True,
@@ -78,6 +81,8 @@ class AIRL(TorchIRLAlgorithm):
         disc_input_noise_scale_start=0.1,
         disc_input_noise_scale_end=0.0,
         epochs_till_end_scale=50.0,
+
+        use_exp_rewards=False,
         **kwargs
     ):
         assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
@@ -167,6 +172,12 @@ class AIRL(TorchIRLAlgorithm):
         self.num_update_loops_per_train_call = num_update_loops_per_train_call
         self.num_disc_updates_per_loop_iter = num_disc_updates_per_loop_iter
         self.num_policy_updates_per_loop_iter = num_policy_updates_per_loop_iter
+
+        self.use_exp_rewards = use_exp_rewards
+        self.rew_clip_min = rew_clip_min
+        self.rew_clip_max = rew_clip_max
+        self.clip_min_rews = rew_clip_min is not None
+        self.clip_max_rews = rew_clip_max is not None
 
 
     def get_batch(self, batch_size, from_expert):
@@ -442,6 +453,12 @@ class AIRL(TorchIRLAlgorithm):
                 policy_batch['rewards'] = self.discriminator(obs, acts).detach()
             self.discriminator.train()
 
+        if self.use_exp_rewards:
+            policy_batch['rewards'] = torch.exp(policy_batch['rewards'])*(-1.0*policy_batch['rewards'])
+        if self.clip_max_rews:
+            policy_batch['rewards'] = torch.clamp(policy_batch['rewards'], max=self.rew_clip_max)
+        if self.clip_min_rews:
+            policy_batch['rewards'] = torch.clamp(policy_batch['rewards'], min=self.rew_clip_min)
         self.policy_optimizer.train_step(policy_batch)
 
         self.rewardf_eval_statistics['Disc Rew Mean'] = np.mean(ptu.get_numpy(policy_batch['rewards']))

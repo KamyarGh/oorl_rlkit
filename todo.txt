@@ -45,6 +45,8 @@ Try different rewards:
             - using bin classifier for forward KL
             - use the log of the exp reward
 
+            - 65-65 does not work
+
             (do these maybe we tanh 5 tapering?)
             - more iters on disc than gen
             - more iters on gen than disc

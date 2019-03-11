@@ -17,7 +17,6 @@ from gym.spaces import Dict
 
 class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
     '''
-        Generic class for Me
         While True:
             generate trajectories for a batch of different task settings
             update the models
@@ -57,25 +56,6 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             save_best_after_epoch=0,
             **kwargs
         ):
-        """
-        Base class for RL Algorithms
-        :param env: Environment used to evaluate.
-        :param training_env: Environment used by the algorithm. By default, a
-        copy of `env` will be made.
-        :param num_epochs:
-        :param num_steps_per_epoch:
-        :param num_steps_per_eval:
-        :param batch_size:
-        :param max_path_length:
-        :param discount:
-        :param replay_buffer_size:
-        :param render:
-        :param save_replay_buffer:
-        :param save_algorithm:
-        :param save_environment:
-        :param eval_sampler:
-        :param replay_buffer:
-        """
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
         # self.training_env = training_env or deepcopy(env)
         self.train_context_expert_replay_buffer = train_context_expert_replay_buffer

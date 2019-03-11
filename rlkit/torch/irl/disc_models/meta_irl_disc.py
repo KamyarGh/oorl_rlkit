@@ -10,24 +10,24 @@ from rlkit.torch import pytorch_util as ptu
 from copy import deepcopy
 
 class ObsGating(PyTorchModule):
-    def __init__(self, clamp_magnitude=10.0, z_dim=0):
+    def __init__(self, clamp_magnitude=10.0, z_dim=0, use_bn=True):
         self.save_init_params(locals())
         super().__init__()
 
         self.z_dim = z_dim
         self.clamp_magnitude = clamp_magnitude
+        self.use_bn = use_bn
         assert clamp_magnitude > 0.0
 
         C_EMB_HID = 32
-        self.color_embed_mlp = nn.Sequential(
-            nn.Linear(3 + z_dim, C_EMB_HID),
-            nn.BatchNorm1d(C_EMB_HID),
-            nn.ReLU(),
-            nn.Linear(C_EMB_HID, C_EMB_HID),
-            nn.BatchNorm1d(C_EMB_HID),
-            nn.ReLU(),
-            nn.Linear(C_EMB_HID, 1)
-        )
+        self.color_embed_list = nn.ModuleList([nn.Linear(3 + z_dim, C_EMB_HID)])
+        if use_bn:
+            self.color_embed_list.append(nn.BatchNorm1d(C_EMB_HID))
+        self.color_embed_list.extend([nn.ReLU(), nn.Linear(C_EMB_HID, C_EMB_HID)])
+        if use_bn:
+            self.color_embed_list.append(nn.BatchNorm1d(C_EMB_HID))
+        self.color_embed_list.extend([nn.ReLU(), nn.Linear(C_EMB_HID, 1)])
+        self.color_embed_mlp = nn.Sequential(*self.color_embed_list)
     
 
     def forward(self, obs_batch, wrap_absorbing, z_batch=None, return_color_logits=False):

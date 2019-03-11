@@ -117,8 +117,9 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             eval_deterministic=False,
 
             only_Dc=False,
-
             use_rev_KL=False,
+            q_uses_disc_r_getter=False,
+            disc_ignores_z=False,
 
             **kwargs
     ):
@@ -165,6 +166,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         self.q_optimizer = q_model_optimizer_class(
             self.q_model.parameters(),
             lr=q_model_lr,
+            # betas=(0.9, 0.999)
             betas=(0.25, 0.999)
             # betas=(0.0, 0.999)
         )
@@ -260,8 +262,9 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         assert num_context_trajs_for_training == max_context_size
 
         self.only_Dc = only_Dc
-
         self.use_rev_KL = use_rev_KL
+        self.q_uses_disc_r_getter = q_uses_disc_r_getter
+        self.disc_ignores_z = disc_ignores_z
     
 
     def get_exploration_policy(self, task_identifier):
@@ -528,7 +531,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             policy_acts_batch = Variable(ptu.from_numpy(policy_test_pred_batch['actions']), requires_grad=False)
 
         # get the disc representation for the context batch
-        D_c_repr = self.disc_encoder(context_batch, mask)
+        D_c_repr, intermediate_r = self.disc_encoder(context_batch, mask, return_r=True)
 
         # get z, remember to detach it
         # I don't need to put q in eval model cause the distribution over inputs
@@ -537,6 +540,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # self.q_model.eval()
         if not self.only_Dc:
             post_dist = self.q_model(context_batch, mask)
+            # post_dist = self.q_model(context_batch, mask, r=intermediate_r.detach())
             z = post_dist.sample() # N_tasks x Dim
             z = z.detach()
             # self.q_model.train(mode)
@@ -579,7 +583,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # print(acts_batch.size())
 
         self.discriminator.eval()
-        if not self.only_Dc:
+        if (not self.only_Dc) and (not self.disc_ignores_z):
             eval_mode_T_outputs = self.discriminator(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch).detach()
             eval_mode_T_exp_outputs = eval_mode_T_outputs[:exp_obs_batch.size(0)]
             eval_mode_T_pol_outputs = eval_mode_T_outputs[exp_obs_batch.size(0):]
@@ -625,7 +629,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             interp_obs = interp_obs.detach()
             interp_obs.requires_grad = True
             if self.state_only:
-                if not self.only_Dc:
+                if (not self.only_Dc) and (not self.disc_ignores_z):
                     gradients = autograd.grad(
                         outputs=self.discriminator(interp_obs, None, D_c_repr_batch.detach(), z_batch.detach()).sum(),
                         inputs=[interp_obs],
@@ -644,7 +648,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
                 interp_actions = eps*exp_acts_batch + (1-eps)*policy_acts_batch
                 interp_actions = interp_actions.detach()
                 interp_actions.requires_grad = True
-                if not self.only_Dc:
+                if (not self.only_Dc) and (not self.disc_ignores_z):
                     gradients = autograd.grad(
                         outputs=self.discriminator(interp_obs, interp_actions, D_c_repr_batch.detach(), z_batch.detach()).sum(),
                         inputs=[interp_obs, interp_actions],
@@ -690,12 +694,12 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             
             if self.use_target_disc:
                 if self.state_only:
-                    if not self.only_Dc:
+                    if (not self.only_Dc) and (not self.disc_ignores_z):
                         target_T_outputs = self.target_disc(obs_batch, None, repeated_D_c_repr_batch, repeated_z_batch)
                     else:
                         target_T_outputs = self.target_disc(obs_batch, None, repeated_D_c_repr_batch)
                 else:
-                    if not self.only_Dc:
+                    if (not self.only_Dc) and (not self.disc_ignores_z):
                         target_T_outputs = self.target_disc(obs_batch, acts_batch, repeated_D_c_repr_batch, repeated_z_batch)
                     else:
                         target_T_outputs = self.target_disc(obs_batch, acts_batch, repeated_D_c_repr_batch)
@@ -859,13 +863,15 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # get the disc representation for the context batch
         # mode = self.disc_encoder.training
         # self.disc_encoder.eval()
-        D_c_repr = self.disc_encoder(context_batch, mask)
-        D_c_repr.detach()
+        D_c_repr, intermediate_r = self.disc_encoder(context_batch, mask, return_r=True)
+        D_c_repr = D_c_repr.detach()
         # self.disc_encoder.train(mode)
 
         # get z, remember to detach it
         if not self.only_Dc:
+            intermediate_r = intermediate_r.detach()
             post_dist = self.q_model(context_batch, mask)
+            # post_dist = self.q_model(context_batch, mask, r=intermediate_r)
             z = post_dist.sample() # N_tasks x Dim
 
         if self.policy_optim_batch_mode_random:
@@ -893,7 +899,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
         # here it is only seeing policy samples, not policy and exp samples
         disc_for_rew.eval()
         if self.state_only:
-            if not self.only_Dc:
+            if (not self.only_Dc) and (not self.disc_ignores_z):
                 T_outputs = disc_for_rew(policy_batch['observations'], None, repeated_D_c_repr, repeated_z).detach()
             else:
                 T_outputs = disc_for_rew(policy_batch['observations'], None, repeated_D_c_repr).detach()
@@ -901,7 +907,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             disc_for_rew.eval()
             # self.discriminator.eval()
             # eval_T_outputs = self.discriminator(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
-            if not self.only_Dc:
+            if (not self.only_Dc) and (not self.disc_ignores_z):
                 eval_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
             else:
                 eval_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr).detach()
@@ -910,7 +916,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             # self.discriminator.train()
 
             # train_T_outputs = self.discriminator(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
-            if not self.only_Dc:
+            if (not self.only_Dc) and (not self.disc_ignores_z):
                 train_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr, repeated_z).detach()
             else:
                 train_T_outputs = disc_for_rew(policy_batch['observations'], policy_batch['actions'], repeated_D_c_repr).detach()
@@ -930,7 +936,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             rew_to_give = torch.exp(eval_T_outputs) * eval_T_outputs
             rew_to_give = torch.clamp(rew_to_give, min=-20.0, max=20.0) - 10.0
         
-        rew_to_give.detach()
+        rew_to_give = rew_to_give.detach()
         policy_batch['rewards'] = rew_to_give
 
         # disc_for_rew.train()
@@ -976,7 +982,7 @@ class NeuralProcessMetaIRL(TorchMetaIRLAlgorithm):
             self.eval_statistics.update(self.policy_optimizer.eval_statistics)
 
             # only_Dc_exp_rews_T_clip_10_gp_1p0_rew_scale_10_repr_dim_32_disc_enc_adam_0p9_pol_128_mod_rews_clamped_disc_obj_use_disc_obs_processor
-            plot_histogram(given_rews, 40, 'given_rews', 'plots/junk_vis/disc_enc_and_obs_gating_gp_0p1_rew_scale_4_linear_taper_4_rew_taper_only_repeat.png')
+            plot_histogram(given_rews, 40, 'given_rews', 'plots/junk_vis/gp_0p5_rew_scale_5_tanh_taper_5_with_q_with_bn_z_dim_16_q_Adam_beta_0p9_disc_ignores_z_1_vs_4.png')
     
 
     def evaluate(self, epoch):

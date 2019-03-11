@@ -6,10 +6,10 @@ import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
-from rlkit.torch.sac.sac import NewSoftActorCritic
+from rlkit.torch.sac.sac import NewSoftActorCritic, MetaNewSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 
-from rlkit.envs import get_env
+from rlkit.envs import get_env, get_meta_env, get_meta_env_params_iters
 
 import yaml
 import argparse
@@ -21,11 +21,17 @@ import argparse
 
 def experiment(variant):
     env_specs = variant['env_specs']
-    if env_specs['train_test_env']:
-        env, training_env = get_env(env_specs)
+    if variant['algo_params']['meta']:
+        env, training_env = get_meta_env(env_specs)
     else:
-        env, _ = get_env(env_specs)
-        training_env, _ = get_env(env_specs)
+        if env_specs['train_test_env']:
+            env, training_env = get_env(env_specs)
+        else:
+            env, _ = get_env(env_specs)
+            training_env, _ = get_env(env_specs)
+
+    if variant['algo_params']['meta']:
+        train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
 
     print(env.observation_space)
 
@@ -33,10 +39,7 @@ def experiment(variant):
         if not variant['algo_params']['policy_uses_pixels']:
             obs_dim = int(np.prod(env.observation_space.spaces['obs'].shape))
             if variant['algo_params']['policy_uses_task_params']:
-                if variant['algo_params']['concat_task_params_to_policy_obs']:
-                    obs_dim += int(np.prod(env.observation_space.spaces['obs_task_params'].shape))
-                else:
-                    raise NotImplementedError()
+                obs_dim += int(np.prod(env.observation_space.spaces['obs_task_params'].shape))
         else:
             raise NotImplementedError()
     else:
@@ -64,15 +67,29 @@ def experiment(variant):
         obs_dim=obs_dim,
         action_dim=action_dim,
     )
-    algorithm = NewSoftActorCritic(
-        env=env,
-        training_env=training_env,
-        policy=policy,
-        qf1=qf1,
-        qf2=qf2,
-        vf=vf,
-        **variant['algo_params']
-    )
+    if variant['algo_params']['meta']:
+        algorithm = MetaNewSoftActorCritic(
+            env=env,
+            training_env=training_env,
+            policy=policy,
+            qf1=qf1,
+            qf2=qf2,
+            vf=vf,
+
+            train_task_params_sampler=train_task_params_sampler,
+            test_task_params_sampler=test_task_params_sampler,
+            **variant['algo_params']
+        )
+    else:
+        algorithm = NewSoftActorCritic(
+            env=env,
+            training_env=training_env,
+            policy=policy,
+            qf1=qf1,
+            qf2=qf2,
+            vf=vf,
+            **variant['algo_params']
+        )
     if ptu.gpu_enabled():
         algorithm.cuda()
     algorithm.train()

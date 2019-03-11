@@ -174,8 +174,10 @@ class TrivialDiscDcEncoder(PyTorchModule):
         )
 
 
-    def __call__(self, context, mask=None):
+    def __call__(self, context, mask=None, return_r=False):
         r = self.context_encoder(context, mask=mask)
+        if return_r:
+            return self.trunk(r), r
         return self.trunk(r)
 
 
@@ -265,7 +267,8 @@ class TrivialNPEncoder(PyTorchModule):
             return self._context_encoder[0]
     
 
-    def __call__(self, context, mask=None):
-        r = self.context_encoder(context, mask=mask)
+    def __call__(self, context=None, mask=None, r=None):
+        if r is None:
+            r = self.context_encoder(context, mask=mask)
         post_mean, post_log_sig_diag = self.r_to_z_map(r)
         return ReparamMultivariateNormalDiag(post_mean, post_log_sig_diag)

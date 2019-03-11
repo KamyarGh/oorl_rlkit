@@ -3780,20 +3780,133 @@ def plot_test_and_exp_returns(exp_name):
 # plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_10p0_rew_scale_4_rew_clip_5')
 # plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_rew_clip_5')
 
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_tanh_taper_5')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_5')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_tanh_taper_10')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_10')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_5')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_tanh_taper_5')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_5')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_1p0_rew_scale_4_tanh_taper_10')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_10')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_5')
 
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_5_rew_taper_only')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_5_rew_taper_only')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_linear_taper_10_rew_taper_only')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_linear_taper_10_rew_taper_only')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_10_linear_taper_10_rew_taper_only')
-plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_10_linear_taper_10_rew_taper_only')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_tanh_taper_5_rew_taper_only')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_tanh_taper_5_rew_taper_only')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_4_linear_taper_10_rew_taper_only')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_4_linear_taper_10_rew_taper_only')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p1_rew_scale_10_linear_taper_10_rew_taper_only')
+# plot_test_and_exp_returns('disc_enc_and_obs_gating_gp_0p5_rew_scale_10_linear_taper_10_rew_taper_only')
 
 
+# exp_name = 'final_correct_halfcheetah_airl_with_exp_reward_hyper_search'
+# for hid_dim in [48, 64, 128]:
+#     for num_upd in [1000, 100]:
+#         for reward_scale in [0.0001, 0.001, 0.01, 0.1, 1.0, 5.0, 10.0]:
+#             constraints = {
+#                 'disc_hid_dim': hid_dim,
+#                 'algo_params.num_update_loops_per_train_call': num_upd,
+#                 'policy_params.reward_scale': reward_scale
+#             }
+#             title = 'disc_hid_dim_{}_rew_scale_{}_num_up_{}'.format(hid_dim, reward_scale, num_upd)
+#             plot_experiment_returns(
+#                 os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#                 title,
+#                 os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'rewards_for_%s.png'%title),
+#                 x_axis_lims=[0,1000],
+#                 # y_axis_lims=y_axis_lims,
+#                 plot_mean=False,
+#                 column_name=[
+#                     'Disc_Rew_Mean+Disc_Rew_Std',
+#                     'Disc_Rew_Mean',
+#                     'Disc_Rew_Mean-Disc_Rew_Std'
+#                 ],
+#                 constraints=constraints
+#             )
+#             plot_experiment_returns(
+#                 os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#                 title,
+#                 os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'max_min_rewards_for_%s.png'%title),
+#                 x_axis_lims=[0,1000],
+#                 # y_axis_lims=y_axis_lims,
+#                 plot_mean=False,
+#                 column_name=[
+#                     'Disc_Rew_Max',
+#                     'Disc_Rew_Min',
+#                 ],
+#                 constraints=constraints
+#             )
+#             plot_experiment_returns(
+#                 os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#                 title,
+#                 os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '%s.png'%title),
+#                 x_axis_lims=[0,1000],
+#                 # y_axis_lims=y_axis_lims,
+#                 plot_mean=False,
+#                 column_name=[
+#                     'AverageReturn'
+#                 ],
+#                 constraints=constraints
+#             )
+
+for reward_scale in [50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 125.0, 150.0, 175.0, 200.0]:
+            constraints = {
+                'policy_params.reward_scale': reward_scale
+            }
+            title = 'disc_hid_dim_48_rew_scale_{}_num_up_100'.format(reward_scale)
+            for exp_name in [
+                'final_correct_halfcheetah_airl_with_exp_reward_hyper_search_rew_scale_more_than_40',
+                'final_correct_halfcheetah_airl_with_exp_reward_hyper_search_rew_scale_more_than_40_no_clip'
+                ]:
+                plot_experiment_returns(
+                    os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+                    title,
+                    os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'rewards_for_%s.png'%title),
+                    x_axis_lims=[0,1000],
+                    # y_axis_lims=y_axis_lims,
+                    plot_mean=False,
+                    column_name=[
+                        'Disc_Rew_Mean+Disc_Rew_Std',
+                        'Disc_Rew_Mean',
+                        'Disc_Rew_Mean-Disc_Rew_Std'
+                    ],
+                    constraints=constraints
+                )
+                plot_experiment_returns(
+                    os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+                    title,
+                    os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'max_min_rewards_for_%s.png'%title),
+                    x_axis_lims=[0,1000],
+                    # y_axis_lims=y_axis_lims,
+                    plot_mean=False,
+                    column_name=[
+                        'Disc_Rew_Max',
+                        'Disc_Rew_Min',
+                    ],
+                    constraints=constraints
+                )
+                plot_experiment_returns(
+                    os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+                    title,
+                    os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '%s.png'%title),
+                    x_axis_lims=[0,1000],
+                    # y_axis_lims=y_axis_lims,
+                    plot_mean=False,
+                    column_name=[
+                        'AverageReturn'
+                    ],
+                    constraints=constraints
+                )
+                plot_experiment_returns(
+                    os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+                    title,
+                    os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grads_%s.png'%title),
+                    x_axis_lims=[0,1000],
+                    # y_axis_lims=y_axis_lims,
+                    plot_mean=False,
+                    column_name=[
+                        'Disc_Avg_CE_Grad_Norm_this_epoch',
+                        'Disc_Max_CE_Grad_Norm_this_epoch',
+                        'Disc_Avg_GP_Grad_Norm_this_epoch',
+                        'Disc_Max_GP_Grad_Norm_this_epoch'
+                    ],
+                    constraints=constraints
+                )
 
 # plot_test_and_exp_returns('fixed_final_rerun_KL_0p0_disc_512')
 # plot_test_and_exp_returns('fixed_final_rerun_KL_0p1_disc_512')

@@ -186,6 +186,7 @@ class _BaseParamsSampler(MetaTaskParamsSampler):
         )
 
     def __iter__(self):
+        # dangerous
         self.itr_ptr = 0
         return self
     

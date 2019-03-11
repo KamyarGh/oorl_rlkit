@@ -1,0 +1,51 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/sac.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
+  exp_name: test_meta_new_sac
+  description: searching over the SAC hyperparameters
+  use_gpu: true
+  num_workers: 1
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  algo_params:
+    policy_uses_task_params: [true]
+    policy_uses_pixels: [false]
+  seed: [1553]
+  # seed: [1553, 7972, 9361, 1901]
+
+# -----------------------------------------------------------------------------
+constants:
+  algo_params:
+    meta: true
+    num_epochs: 3101
+    num_steps_per_epoch: 1000
+    num_steps_per_eval: 1000
+    replay_buffer_size: 1000000
+
+    num_updates_per_env_step: 1
+    batch_size: 256
+    reward_scale: 5
+    soft_target_tau: 0.005
+
+    max_path_length: 1000
+    discount: 0.99
+
+    policy_lr: 0.0003
+    qf_lr: 0.0003
+    vf_lr: 0.0003
+    policy_mean_reg_weight: 0.001
+    policy_std_reg_weight: 0.001
+
+    render: false
+    save_algorithm: true
+    freq_saving: 500
+
+  net_size: 256
+
+  env_specs:
+    base_env_name: 'halfcheetah_rand_vel'
+    normalized: false
+    train_test_env: false
+    need_pixels: false

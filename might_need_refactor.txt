@@ -1,3 +1,8 @@
+- really need to clean up get_env
+- same thing as the next two for torch_.....
+- turn metarlalg and metairlalg into subclasses of a common meta alg
+- turn rlalg and irlalg into subclasses of a common alg
+- making a unified interface for meta environments and how to handle observation space, etc.
 - separate rl algorithm from meta-rl algorithm
 - document the parameters of GAIL
 - change the name from GAIL to DAC

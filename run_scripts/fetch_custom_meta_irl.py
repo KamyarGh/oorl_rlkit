@@ -72,7 +72,7 @@ def experiment(variant):
     # make the disc model
     if variant['algo_params']['state_only']: print('\n\nUSING STATE ONLY DISC\n\n')
     assert 'transfer_version' not in variant['algo_params']
-    if variant['algo_params']['only_Dc']:
+    if variant['algo_params']['only_Dc'] or variant['algo_params']['disc_ignores_z']:
         disc_model = OnlyDcTFuncForFetch(
             T_clamp_magnitude=variant['T_clamp_magnitude'],
             gating_clamp_magnitude=variant['gating_clamp_magnitude'],
@@ -107,7 +107,7 @@ def experiment(variant):
     else:
         latent_dim = variant['algo_params']['D_c_repr_dim']
     
-    if variant['algo_params']['use_disc_obs_processor']:
+    if variant['algo_params']['use_disc_obs_processor'] and variant['algo_params']['only_Dc']:
         assert variant['algo_params']['only_Dc']
         print('\n\nUSING DISC OBS PROCESSOR\n\n')
         policy_obs_gating = disc_model.D_c_repr_obs_processor
@@ -120,6 +120,7 @@ def experiment(variant):
             action_dim=4
         )
     else:
+        # print('\n\n$$$$$$$$\nNO BN IN POL GATING\n$$$$$$$$$\n\n')
         policy_obs_gating = ObsGating(variant['gating_clamp_magnitude'], z_dim=latent_dim)
         policy = WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy(
             policy_obs_gating,
