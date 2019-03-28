@@ -1,3 +1,20 @@
+- (done) generate different amounts of demos
+- plot the searches I've done
+- run the final version of things
+    - (done) state-action:
+        - (done) forward
+        - (done) rev
+    - (done) state:
+        - (done) forward
+        - (done) rev
+- implement BC with rev
+- run adv BC:
+    - forward
+    - reverse
+- run for normal BC
+- implement the evaluation script
+
+
 Try different rewards:
     - Try just using D_c repr instead of q(z) and see if at least that will work
         - Log the gradients

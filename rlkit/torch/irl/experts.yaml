@@ -287,6 +287,14 @@ halfcheetah_250_demos_no_subsampling:
   ]
 
 
+normalized_halfcheetah_250_demos_no_subsampling:
+  description: "normalized 250 demos, sub 1"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  seed_runs: [
+    norm_HC_250_demos_no_subsampling
+  ]
+
+
 halfcheetah_125_demos_subsample_20:
   description: "125 demos, sub 20"
   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-125/
@@ -295,6 +303,257 @@ halfcheetah_125_demos_subsample_20:
     correct_halfcheetah_demos_125_2019_02_16_15_35_36_0001--s-0
   ]
 
+halfcheetah_256_demos_20_subsampling:
+  description: "256 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/totally-final-correct-halfcheetah-demos-256-20-subsampling
+  seed_runs: [
+    totally_final_correct_halfcheetah_demos_256_20_subsampling_2019_03_11_18_50_03_0000--s-0
+  ]
+
+halfcheetah_128_demos_20_subsampling:
+  description: "128 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/totally-final-correct-halfcheetah-demos-128-20-subsampling
+  seed_runs: [
+    totally_final_correct_halfcheetah_demos_128_20_subsampling_2019_03_11_18_48_15_0000--s-0
+  ]
+
+halfcheetah_64_demos_20_subsampling:
+  description: "64 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/totally-final-correct-halfcheetah-demos-64-20-subsampling
+  seed_runs: [
+    totally_final_correct_halfcheetah_demos_64_20_subsampling_2019_03_11_18_46_21_0000--s-0
+  ]
+
+halfcheetah_32_demos_20_subsampling:
+  description: "32 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/totally-final-correct-halfcheetah-demos-32-20-subsampling
+  seed_runs: [
+    totally_final_correct_halfcheetah_demos_32_20_subsampling_2019_03_11_18_44_43_0000--s-0
+  ]
+
+halfcheetah_16_demos_20_subsampling:
+  description: "16 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/totally-final-correct-halfcheetah-demos-16-20-subsampling
+  seed_runs: [
+    totally_final_correct_halfcheetah_demos_16_20_subsampling_2019_03_11_18_44_14_0000--s-0
+  ]
+
+halfcheetah_8_demos_20_subsampling:
+  description: "8 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/totally-final-correct-halfcheetah-demos-8-20-subsampling
+  seed_runs: [
+    totally_final_correct_halfcheetah_demos_8_20_subsampling_2019_03_11_18_43_36_0000--s-0
+  ]
+
+halfcheetah_4_demos_20_subsampling:
+  description: "4 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/totally-final-correct-halfcheetah-demos-4-20-subsampling
+  seed_runs: [
+    totally_final_correct_halfcheetah_demos_4_20_subsampling_2019_03_11_18_43_02_0000--s-0
+  ]
+
+norm_halfcheetah_256_demos_20_subsampling:
+  description: "norm 256 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_halfcheetah_256_demos_20_subsampling
+  ]
+
+norm_halfcheetah_128_demos_20_subsampling:
+  description: "norm 128 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_halfcheetah_128_demos_20_subsampling
+  ]
+
+norm_halfcheetah_64_demos_20_subsampling:
+  description: "norm 64 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_halfcheetah_64_demos_20_subsampling
+  ]
+
+norm_halfcheetah_32_demos_20_subsampling:
+  description: "norm 32 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_halfcheetah_32_demos_20_subsampling
+  ]
+
+norm_halfcheetah_16_demos_20_subsampling:
+  description: "norm 16 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_halfcheetah_16_demos_20_subsampling
+  ]
+
+norm_halfcheetah_8_demos_20_subsampling:
+  description: "norm 8 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_halfcheetah_8_demos_20_subsampling
+  ]
+
+norm_halfcheetah_4_demos_20_subsampling:
+  description: "norm 4 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_halfcheetah_4_demos_20_subsampling
+  ]
+
+ant_256_demos_20_subsampling:
+  description: "256 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-ant-demos-256-20-subsampling
+  seed_runs: [
+    final_ant_demos_256_20_subsampling_2019_03_15_00_09_03_0000--s-0
+  ]
+
+ant_128_demos_20_subsampling:
+  description: "128 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-ant-demos-128-20-subsampling
+  seed_runs: [
+    final_ant_demos_128_20_subsampling_2019_03_15_00_09_48_0000--s-0
+  ]
+
+ant_64_demos_20_subsampling:
+  description: "64 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-ant-demos-64-20-subsampling
+  seed_runs: [
+    final_ant_demos_64_20_subsampling_2019_03_15_00_22_34_0000--s-0
+  ]
+
+ant_32_demos_20_subsampling:
+  description: "32 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-ant-demos-32-20-subsampling
+  seed_runs: [
+    final_ant_demos_32_20_subsampling_2019_03_15_00_23_13_0000--s-0
+  ]
+
+ant_16_demos_20_subsampling:
+  description: "16 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-ant-demos-16-20-subsampling
+  seed_runs: [
+    final_ant_demos_16_20_subsampling_2019_03_15_00_23_38_0000--s-0
+  ]
+
+ant_8_demos_20_subsampling:
+  description: "8 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-ant-demos-8-20-subsampling
+  seed_runs: [
+    final_ant_demos_8_20_subsampling_2019_03_15_00_24_27_0000--s-0
+  ]
+
+ant_4_demos_20_subsampling:
+  description: "4 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-ant-demos-4-20-subsampling
+  seed_runs: [
+    final_ant_demos_4_20_subsampling_2019_03_15_00_24_45_0000--s-0
+  ]
+
+norm_ant_256_demos_20_subsampling:
+  description: "norm 256 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_ant_256_demos_20_subsampling
+  ]
+
+norm_ant_128_demos_20_subsampling:
+  description: "norm 128 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_ant_128_demos_20_subsampling
+  ]
+
+norm_ant_64_demos_20_subsampling:
+  description: "norm 64 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_ant_64_demos_20_subsampling
+  ]
+
+norm_ant_32_demos_20_subsampling:
+  description: "norm 32 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_ant_32_demos_20_subsampling
+  ]
+
+norm_ant_16_demos_20_subsampling:
+  description: "norm 16 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_ant_16_demos_20_subsampling
+  ]
+
+norm_ant_8_demos_20_subsampling:
+  description: "norm 8 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_ant_8_demos_20_subsampling
+  ]
+
+norm_ant_4_demos_20_subsampling:
+  description: "norm 4 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_ant_4_demos_20_subsampling
+  ]
+
+humanoid_64_demos_20_subsampling:
+  description: "64 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/very-final-humanoid-demos-64-20-subsampling
+  seed_runs: [
+    very_final_humanoid_demos_64_20_subsampling_2019_03_22_13_21_50_0000--s-0
+  ]
+
+humanoid_128_demos_20_subsampling:
+  description: "128 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/very-final-humanoid-demos-128-20-subsampling
+  seed_runs: [
+    very_final_humanoid_demos_128_20_subsampling_2019_03_22_13_23_00_0000--s-0
+  ]
+
+humanoid_192_demos_20_subsampling:
+  description: "192 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/very-final-humanoid-demos-192-20-subsampling
+  seed_runs: [
+    very_final_humanoid_demos_192_20_subsampling_2019_03_22_13_24_42_0000--s-0
+  ]
+
+humanoid_256_demos_20_subsampling:
+  description: "256 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/very-final-humanoid-demos-256-20-subsampling
+  seed_runs: [
+    very_final_humanoid_demos_256_20_subsampling_2019_03_22_13_25_44_0000--s-0
+  ]
+
+norm_humanoid_64_demos_20_subsampling:
+  description: "norm 64 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_humanoid_64_demos_20_subsampling
+  ]
+
+norm_humanoid_128_demos_20_subsampling:
+  description: "norm 128 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_humanoid_128_demos_20_subsampling
+  ]
+
+norm_humanoid_192_demos_20_subsampling:
+  description: "norm 192 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_humanoid_192_demos_20_subsampling
+  ]
+
+norm_humanoid_256_demos_20_subsampling:
+  description: "norm 256 demos, sub 20"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_humanoid_256_demos_20_subsampling
+  ]
 
 # META-EXPERTS ----------------------------------------------------------------
 meta_simple_meta_reacher_expert_no_subsampling:

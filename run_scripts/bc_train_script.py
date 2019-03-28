@@ -31,37 +31,6 @@ def experiment(variant):
     extra_data = joblib.load(file_to_load)
     expert_buffer = extra_data['train']
 
-    # normalize the expert data if desired
-    scale_the_env = False
-    if variant['normalize_expert_obs']:
-        scale_the_env = True
-        end = expert_buffer._top
-        if end == 0: end = expert_buffer._size
-        obs_mean = np.mean(expert_buffer._observations[:end], axis=0, keepdims=True)
-        obs_std = np.std(expert_buffer._observations[:end], axis=0, keepdims=True)
-
-        print(obs_mean)
-        print(obs_std)
-
-        expert_buffer._observations -= obs_mean
-        expert_buffer._observations /= obs_std
-        expert_buffer._next_obs -= obs_mean
-        expert_buffer._next_obs /= obs_std
-    else:
-        obs_mean = obs_std = None
-
-    if variant['normalize_expert_acts']:
-        scale_the_env = True
-        end = expert_buffer._top
-        if end == 0: end = expert_buffer._size
-        acts_mean = np.mean(expert_buffer._actions[:end], axis=0, keepdims=True)
-        acts_std = np.std(expert_buffer._actions[:end], axis=0, keepdims=True)
-
-        expert_buffer._actions -= acts_mean
-        expert_buffer._actions /= acts_std
-    else:
-        acts_mean = acts_std = None
-
     # set up the env
     env_specs = variant['env_specs']
     if env_specs['train_test_env']:
@@ -69,25 +38,23 @@ def experiment(variant):
     else:
         env, _ = get_env(env_specs)
         training_env, _ = get_env(env_specs)
-    
-    # if needed, scale the env
-    if scale_the_env:
-        if obs_mean is not None:
-            obs_mean = obs_mean[0]
-            obs_std = obs_std[0]
-        if acts_mean is not None:
-            acts_mean = acts_mean[0]
-            acts_std = acts_std[0]
 
-        print('\nObs Stats')
-        print(obs_mean)
-        print(obs_std)
-        print('\nActs Stats')
-        print(acts_mean)
-        print(acts_std)
-
-        env = ScaledEnv(env, obs_mean, obs_std, acts_mean, acts_std)
-        training_env = ScaledEnv(training_env, obs_mean, obs_std, acts_mean, acts_std)
+    if variant['scale_env_with_given_demo_stats']:
+        assert not env_specs['normalized']
+        env = ScaledEnv(
+            env,
+            obs_mean=extra_data['obs_mean'],
+            obs_std=extra_data['obs_std'],
+            acts_mean=extra_data['acts_mean'],
+            acts_std=extra_data['acts_std'],
+        )
+        training_env = ScaledEnv(
+            training_env,
+            obs_mean=extra_data['obs_mean'],
+            obs_std=extra_data['obs_std'],
+            acts_mean=extra_data['acts_mean'],
+            acts_std=extra_data['acts_std'],
+        )
 
     # seed the env
     env.seed(variant['seed'])

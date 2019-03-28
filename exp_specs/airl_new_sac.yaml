@@ -2,27 +2,46 @@ meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/airl_exp_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
   # exp_name: final_correct_halfcheetah_airl_with_exp_reward_hyper_search_rew_scale_more_than_40
-  exp_name: forw_KL_hype_search_disc_with_bn
+  # correct_normalized_halfcheetah_state_action_forw_KL_airl_disc
+  # normalized_halfcheetah_state_action_forw_KL_airl_disc_rew_scale_search
+  # exp_name: totally_absolutely_final_normalized_ant_forw_KL_airl_disc_final_state_only
+  # exp_name: correct_no_grad_clip_halfcheetah_rev_KL
+  # exp_name: correct_no_norm_no_save_best_rev_KL_ant_no_grad_clip
+  # exp_name: 10x_steps_per_epoch_forw_KL_disc_hid_256
+  # exp_name: little_data_forw_KL_disc_hid_64
+  exp_name: what_matters_halfcheetah_forw_KL_with_128_disc_100_rew
   description: searching over the SAC hyperparameters
-  use_gpu: false
-  num_workers: 6
+  use_gpu: true
+  num_workers: 2
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
+  scale_env_with_given_demo_stats: [true]
+  
   disc_num_blocks: [2]
-  disc_hid_dim: [48]
+  # disc_hid_dim: [64]
+  # disc_hid_dim: [256]
+  disc_hid_dim: [128]
+  # disc_hid_dim: [32, 48]
   # disc_hid_dim: [48, 64, 128]
   disc_hid_act: [tanh]
-  disc_use_bn: [true]
+  disc_use_bn: [false]
 
   algo_params:
+    save_best: [true]
+    save_best_starting_from_epoch: [0]
+
+    use_target_disc: [false]
+    
+    state_only: [false]
+
     use_exp_rewards: [true]
     # rew_clip_max: [1.0]
     # rew_clip_min: [-1.0, -2.0, -4.0, -8.0]
 
     no_terminal: [true]
-    replay_buffer_size: [1000000]
+    replay_buffer_size: [20000]
 
     num_update_loops_per_train_call: [100]
     # num_update_loops_per_train_call: [1000, 100]
@@ -31,12 +50,28 @@ variables:
 
     disc_optim_batch_size: [256]
     grad_pen_weight: [10.0]
+    # grad_pen_weight: [10.0]
     # grad_pen_weight: [1.0, 5.0, 10.0]
-    disc_ce_grad_clip: [1.0]
-    disc_gp_grad_clip: [1.0]
+    disc_ce_grad_clip: [100.0]
+    disc_gp_grad_clip: [100.0]
   
   policy_params:
-    reward_scale: [50.0, 75.0, 100.0]
+    # reward_scale: [15.0, 25.0, 40.0]
+    # reward_scale: [10.0]
+    # reward_scale: [8.0]
+    # reward_scale: [50.0]
+    reward_scale: [100.0]
+    # reward_scale: [25.0, 50.0, 75.0]
+    # reward_scale: [8.0, 15.0, 100.0]
+    # reward_scale: [125.0]
+    # reward_scale: [18.0, 25.0, 50.0]
+    # reward_scale: [8.0, 12.0]
+    # reward_scale: [25.0]
+    # reward_scale: [8.0, 12.0, 25.0, 50.0, 75.0, 100.0]
+    # reward_scale: [8.0, 12.0, 25.0, 50.0, 75.0, 100.0, 150.0, 200.0]
+    # reward_scale: [5.0, 10.0, 25.0]
+    # reward_scale: [1.0, 2.0, 4.0]
+    # reward_scale: [50.0, 100.0]
     # reward_scale: [50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 125.0, 150.0, 175.0, 200.0]
     # reward_scale: [0.0001, 0.001, 0.01, 0.1, 1.0, 5.0, 10.0]
     # reward_scale: [2.0, 4.0, 8.0, 12.0]
@@ -51,32 +86,72 @@ variables:
   # seed: [9783, 5914, 4865, 2135, 2349]
   expert_seed_run_idx: [0]
   seed: [9783, 5914]
+  # seed: [9783, 5914, 4865]
 
+  expert_name: [
+    # halfcheetah_256_demos_20_subsampling,
+    # halfcheetah_128_demos_20_subsampling,
+    # halfcheetah_64_demos_20_subsampling,
+    # halfcheetah_32_demos_20_subsampling,
+    # halfcheetah_16_demos_20_subsampling,
+    # halfcheetah_8_demos_20_subsampling,
+    # halfcheetah_4_demos_20_subsampling,
+    # halfcheetah_250_demos_no_subsampling,
+
+    # norm_halfcheetah_256_demos_20_subsampling,
+    # norm_halfcheetah_128_demos_20_subsampling,
+    # norm_halfcheetah_64_demos_20_subsampling,
+    # norm_halfcheetah_32_demos_20_subsampling,
+    norm_halfcheetah_16_demos_20_subsampling,
+    # norm_halfcheetah_8_demos_20_subsampling,
+    # norm_halfcheetah_4_demos_20_subsampling,
+    # normalized_halfcheetah_250_demos_no_subsampling,
+
+    # ant_256_demos_20_subsampling,
+    # ant_128_demos_20_subsampling,
+    # ant_64_demos_20_subsampling,
+    # ant_32_demos_20_subsampling,
+    # ant_16_demos_20_subsampling,
+    # ant_8_demos_20_subsampling,
+    # ant_4_demos_20_subsampling,
+
+    # norm_ant_256_demos_20_subsampling,
+    # norm_ant_128_demos_20_subsampling,
+    # norm_ant_64_demos_20_subsampling,
+    # norm_ant_32_demos_20_subsampling,
+    # norm_ant_16_demos_20_subsampling,
+    # norm_ant_8_demos_20_subsampling,
+    # norm_ant_4_demos_20_subsampling,
+
+    # norm_humanoid_64_demos_20_subsampling,
+    # norm_humanoid_128_demos_20_subsampling,
+    # norm_humanoid_192_demos_20_subsampling,
+    # norm_humanoid_256_demos_20_subsampling
+
+  ]
 # -----------------------------------------------------------------------------
 constants:
-  expert_name: halfcheetah_250_demos_no_subsampling
   # expert_name: halfcheetah_25_demos_subsample_20
   wrap_absorbing_state: false
   
   disc_clamp_magnitude: 10.0
 
   algo_params:
-    num_epochs: 3011
-    num_steps_per_epoch: 10000
+    num_epochs: 311
+    num_steps_per_epoch: 100000
     num_steps_per_eval: 10000
     num_steps_between_updates: 1000
     max_path_length: 1000
     min_steps_before_training: 5000
 
-
     traj_based: false
-    state_only: false
 
     # disc_optim_batch_size: 1024
     policy_optim_batch_size: 256
     policy_optim_batch_size_from_expert: 0
 
-    use_target_disc: false
+    # use_target_disc: true
+    soft_target_disc_tau: 0.005
     use_disc_input_noise: false
 
     policy_uses_task_params: false
@@ -91,7 +166,7 @@ constants:
     disc_momentum: 0.0
     use_grad_pen: true
 
-    freq_saving: 10
+    freq_saving: 20
   
   policy_net_size: 256
   policy_num_hidden_layers: 2
@@ -106,5 +181,7 @@ constants:
 
     
   env_specs:
+    # base_env_name: 'humanoid_v2'
+    # base_env_name: 'ant_v2'
     base_env_name: 'halfcheetah_v2'
     train_test_env: false

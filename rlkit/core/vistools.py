@@ -93,3 +93,31 @@ def save_plot(x, y, title, save_path, color='cyan', x_axis_lims=None, y_axis_lim
         ax.set_ylim(y_axis_lims)
     plt.savefig(save_path, bbox_inches='tight')
     plt.close()
+
+
+def plot_forward_reverse_KL_rews():
+    # reverse KL
+    fig, ax = plt.subplots(1)
+    ax.plot(np.arange(-10,10,0.05), np.arange(-10,10,0.05), color='cyan')
+    ax.set_xlim([-10,10])
+    ax.set_ylim([-12,12])
+    ax.set_xlabel(r'$log\frac{\rho^{exp}(s,a)}{\rho^\pi(s,a)}$')
+    ax.set_ylabel('$r(s,a)$')
+    plt.axhline(0, color='grey')
+    plt.axvline(0, color='grey')
+    plt.savefig('plots/junk_vis/rev_KL_rew.png', bbox_inches='tight', dpi=300)
+    plt.close()
+
+    # forward KL
+    fig, ax = plt.subplots(1)
+    x = np.arange(-10,10,0.05)
+    y = np.exp(x) * (-x)
+    ax.plot(x, y, color='cyan')
+    ax.set_xlim([-10,10])
+    ax.set_ylim([-2,0.5])
+    ax.set_xlabel(r'$log\frac{\rho^{exp}(s,a)}{\rho^\pi(s,a)}$')
+    ax.set_ylabel('$r(s,a)$')
+    plt.axhline(0, color='grey')
+    plt.axvline(0, color='grey')
+    plt.savefig('plots/junk_vis/forw_KL_rew.png', bbox_inches='tight', dpi=300)
+    plt.close()

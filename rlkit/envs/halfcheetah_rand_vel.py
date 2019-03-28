@@ -1,5 +1,6 @@
 '''
-Adapted from OpenAI gym halfcheetah and Chelsea Finn's rand vel HalfCheetah
+Adapted from a combination of OpenAI gym halfcheetah and Chelsea Finn's rand vel HalfCheetah,
+and made to fit into the interface I've set up for doing meta-rl/irl
 https://github.com/cbfinn/maml_rl/blob/master/rllab/envs/mujoco/half_cheetah_env_rand.py
 '''
 import numpy as np
@@ -10,21 +11,19 @@ from rlkit.envs.meta_mujoco_env import MetaMujocoEnv
 from rlkit.envs.meta_task_params_sampler import MetaTaskParamsSampler
 
 class _TrainParamsSampler(MetaTaskParamsSampler):
-    def __init__(self, random=None):
+    def __init__(self, random=8032):
         super().__init__()
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
         self._random = random
-        self.vels = np.arange(0.0, 2.05, 0.5)
+        self.vels = self._random.uniform(low=0.0, high=3.0, size=100)
         self._ptr = 0
-    
 
     def sample(self):
         v = self.vels[self._ptr]
         v = np.array([v])
-        self._ptr = (self._ptr + 1) % len(self.vels)
+        self._ptr = (self._ptr + 1) % self.vels.shape[0]
         return {'target_velocity': v}, v
-    
 
     def sample_unique(self, num):
         vel_samples = self._random.choice(self.vels, size=num, replace=False)
@@ -34,25 +33,25 @@ class _TrainParamsSampler(MetaTaskParamsSampler):
                 vel_samples
             )
         )
-    
 
     def __iter__(self):
         # dangerous
         self._ptr = 0
         return self
-    
 
     def __next__(self):
-        if self._ptr == len(self.vels): raise StopIteration
-        vel = self._vels[self._ptr]
+        if self._ptr == len(self.vels):
+            self._ptr = 0
+            raise StopIteration
+        vel = np.array([self.vels[self._ptr]])
         self._ptr += 1
         return {'target_velocity': vel}, vel
 
 
 class _TestParamsSampler(_TrainParamsSampler):
-    def __init__(self, random=None):
+    def __init__(self, random=2340):
         super().__init__(random)
-        self.vels = np.arange(0.25, 1.9, 0.5)
+        self.vels = self._random.uniform(low=0.0, high=3.0, size=25)
 
 
 class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
@@ -101,7 +100,7 @@ class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
 
     def reset(self, task_params=None, obs_task_params=None):
         if task_params is None:
-            self.target_velocity = np.array([self.np_random.uniform(0.0, 2.0)])
+            self.target_velocity = np.array([self.np_random.uniform(0.0, 3.0)])
         else:
             self.target_velocity = task_params['target_velocity']
         obs = super().reset()
@@ -124,4 +123,21 @@ class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
         return_dict['Max Forward Progress'] = np.max(progs)
         return_dict['Min Forward Progress'] = np.min(progs)
         return_dict['Std Forward Progress'] = np.std(progs)
+
+        run_costs = []
+        ctrl_costs = []
+        for path in paths:
+            run_costs.append(np.sum([e_info['run_cost'] for e_info in path['env_infos']]))
+            ctrl_costs.append(np.sum([e_info['ctrl_cost'] for e_info in path['env_infos']]))
+        
+        return_dict['Avg Run Rew'] = -1.0*np.mean(run_costs)
+        return_dict['Max Run Rew'] = -1.0*np.min(run_costs)
+        return_dict['Min Run Rew'] = -1.0*np.max(run_costs)
+        return_dict['Std Run Rew'] = np.std(run_costs)
+
+        return_dict['Avg Ctrl Rew'] = -1.0*np.mean(ctrl_costs)
+        return_dict['Max Ctrl Rew'] = -1.0*np.min(ctrl_costs)
+        return_dict['Min Ctrl Rew'] = -1.0*np.max(ctrl_costs)
+        return_dict['Std Ctrl Rew'] = np.std(ctrl_costs)
+
         return return_dict

@@ -48,6 +48,8 @@ from rlkit.envs.halfcheetah_rand_vel import _TestParamsSampler as HalfCheetahRan
 # from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import get_params_iterators as get_meta_simple_meta_reacher_params_iters
 
 from gym.envs.mujoco.half_cheetah import HalfCheetahEnv
+from gym.envs.mujoco.ant import AntEnv
+from gym.envs.mujoco.humanoid import HumanoidEnv
 
 # from dm_control.suite.wrappers import pixels
 # from rlkit.envs.dmcs_envs import pixels
@@ -75,7 +77,8 @@ all_envs = {
 }
 
 fixed_envs = {
-    'ant_v2': lambda: gym.envs.make('Ant-v2'),
+    'humanoid_v2': lambda: HumanoidEnv(),
+    'ant_v2': lambda: AntEnv(),
     'swimmer_v2': lambda: gym.envs.make('Swimmer-v2'),
     'halfcheetah_v2': lambda: HalfCheetahEnv(),
     'hopper_v2': lambda: gym.envs.make('Hopper-v2'),

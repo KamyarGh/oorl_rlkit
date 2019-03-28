@@ -19,6 +19,7 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
         self.policy_eval_statistics = None
         self.render_eval_paths = render_eval_paths
         self.plotter = plotter
+        self.max_returns = np.float('-inf')
 
     @property
     @abc.abstractmethod
@@ -66,6 +67,17 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
 
         if self.plotter:
             self.plotter.draw()
+        
+        if average_returns > self.max_returns:
+            self.max_returns = average_returns
+            if self.save_best and epoch >= self.save_best_starting_from_epoch:
+                data_to_save = {
+                    'algorithm': self,
+                    'epoch': epoch,
+                    'average_returns': average_returns
+                }
+                logger.save_extra_data(data_to_save, 'best_test.pkl')
+                print('\n\nSAVED BEST\n\n')
 
 
 def _elem_or_tuple_to_variable(elem_or_tuple):

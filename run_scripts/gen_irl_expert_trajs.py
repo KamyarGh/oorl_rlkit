@@ -16,6 +16,7 @@ from rlkit.envs import get_env
 from rlkit.scripted_experts import get_scripted_policy
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
+from rlkit.torch.sac.policies import MakeDeterministic
 
 import yaml
 import argparse

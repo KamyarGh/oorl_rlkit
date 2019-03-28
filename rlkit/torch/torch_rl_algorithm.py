@@ -18,6 +18,7 @@ class TorchRLAlgorithm(RLAlgorithm, metaclass=abc.ABCMeta):
     def __init__(self, *args, render_eval_paths=False, plotter=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.eval_statistics = None
+        self.max_returns = np.float('-inf')
         self.render_eval_paths = render_eval_paths
         self.plotter = plotter
 
@@ -65,6 +66,17 @@ class TorchRLAlgorithm(RLAlgorithm, metaclass=abc.ABCMeta):
         statistics['AverageReturn'] = average_returns
         for key, value in statistics.items():
             logger.record_tabular(key, value)
+        
+        if average_returns > self.max_returns:
+            self.max_returns = average_returns
+            if self.save_best and epoch >= self.save_best_starting_from_epoch:
+                data_to_save = {
+                    'algorithm': self,
+                    'epoch': epoch,
+                    'average_returns': average_returns
+                }
+                logger.save_extra_data(data_to_save, 'best_test.pkl')
+                print('\n\nSAVED BEST\n\n')
 
         if self.render_eval_paths:
             self.env.render_paths(test_paths)

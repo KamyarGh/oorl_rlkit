@@ -1,36 +1,40 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/sac.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: test_meta_new_sac
+  exp_name: meta_new_sac_halfcheetah_rand_vel_100_train_25_test
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 1
+  num_workers: 16
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   algo_params:
+    reward_scale: [1.0, 2.0, 5.0, 8.0, 10.0, 20.0, 40.0, 80.0]
     policy_uses_task_params: [true]
     policy_uses_pixels: [false]
-  seed: [1553]
+  # seed: [1553]
   # seed: [1553, 7972, 9361, 1901]
+  seed: [1553, 9361]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
     meta: true
-    num_epochs: 3101
-    num_steps_per_epoch: 1000
-    num_steps_per_eval: 1000
-    replay_buffer_size: 1000000
-
-    num_updates_per_env_step: 1
-    batch_size: 256
-    reward_scale: 5
-    soft_target_tau: 0.005
-
+    num_epochs: 2001
+    num_rollouts_per_epoch: 125
+    num_rollouts_between_updates: 5
+    num_initial_rollouts_for_all_train_tasks: 1
+    num_tasks_per_eval: 5
+    num_eval_trajs_per_task: 5
+    num_updates_per_train_call: 1000
     max_path_length: 1000
     discount: 0.99
+    replay_buffer_size_per_task: 25000
+
+    num_tasks_per_batch: 4
+    num_samples_per_task_per_batch: 64
+    soft_target_tau: 0.005
 
     policy_lr: 0.0003
     qf_lr: 0.0003
@@ -40,7 +44,7 @@ constants:
 
     render: false
     save_algorithm: true
-    freq_saving: 500
+    freq_saving: 5
 
   net_size: 256
 

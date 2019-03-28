@@ -1,27 +1,33 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/sac.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: correct_normalized_new_sac_halfcheetah
+  exp_name: final_humanoid_new_sac
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 4
+  num_workers: 2
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  seed: [1553, 7972, 9361, 1901]
+  # seed: [1553, 7972, 9361, 1901]
+  seed: [1553, 7972]
 
 # -----------------------------------------------------------------------------
 constants:
   algo_params:
-    num_epochs: 3101
-    num_steps_per_epoch: 1000
-    num_steps_per_eval: 1000
+    save_best: true
+    save_best_starting_from_epoch: 80
+    
+    meta: false
+    num_epochs: 201
+    num_steps_per_epoch: 50000
+    num_steps_per_eval: 10000
     replay_buffer_size: 1000000
 
     num_updates_per_env_step: 1
     batch_size: 256
-    reward_scale: 5
+    reward_scale: 20
+    # reward_scale: 5
     soft_target_tau: 0.005
 
     max_path_length: 1000
@@ -35,11 +41,11 @@ constants:
 
     render: false
     save_algorithm: true
-    freq_saving: 500
+    freq_saving: 20
 
   net_size: 256
 
   env_specs:
-    base_env_name: 'halfcheetah_v2'
-    normalized: true
+    base_env_name: 'humanoid_v2'
+    normalized: false
     train_test_env: false

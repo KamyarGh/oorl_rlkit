@@ -45,7 +45,10 @@ class StandardAIRLDisc(nn.Module):
 
 
     def forward(self, obs_batch, act_batch):
-        input_batch = torch.cat([obs_batch, act_batch], dim=1)
+        if act_batch is not None:
+            input_batch = torch.cat([obs_batch, act_batch], dim=1)
+        else:
+            input_batch = obs_batch
         output = self.model(input_batch)
         output = torch.clamp(output, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
         return output

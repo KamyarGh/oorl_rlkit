@@ -10,9 +10,11 @@ from rlkit.core.eval_util import create_stats_ordered_dict
 from rlkit.torch.torch_irl_algorithm import TorchIRLAlgorithm
 from rlkit.torch.sac.policies import MakeDeterministic
 from rlkit.core.train_util import linear_schedule
+from rlkit.envs.wrappers import ScaledEnv
 
 import numpy as np
 from collections import OrderedDict
+import joblib
 
 torch.set_printoptions(profile="full")
 
@@ -36,6 +38,9 @@ class BC(TorchIRLAlgorithm):
         env,
         policy,
         expert_replay_buffer,
+
+        rev_KL=False,
+        expert_path=None,
 
         optim_batch_size=1024,
         policy_lr=1e-3,
@@ -64,6 +69,11 @@ class BC(TorchIRLAlgorithm):
             **kwargs
         )
 
+        self.rev_KL = rev_KL
+        if rev_KL:
+            assert expert_path is not None
+            self.expert_policy = joblib.load(expert_path)['policy']
+
         self.optim_batch_size = optim_batch_size
         self.policy_optimizer = optim.Adam(
             self.exploration_policy.parameters(),
@@ -76,6 +86,15 @@ class BC(TorchIRLAlgorithm):
 
         self.policy_mean_reg_weight = policy_mean_reg_weight
         self.policy_std_reg_weight = policy_std_reg_weight
+
+        self.scaled_env = isinstance(self.training_env, ScaledEnv)
+        if self.scaled_env:
+            if self.training_env._scale_obs:
+                self._obs_mean = Variable(ptu.from_numpy(self.training_env.obs_mean))
+                self._obs_std = Variable(ptu.from_numpy(self.training_env.obs_std))
+            if self.training_env._unscale_acts:
+                self._acts_mean = Variable(ptu.from_numpy(self.training_env.acts_mean))
+                self._acts_std = Variable(ptu.from_numpy(self.training_env.acts_std))
 
 
     def get_batch(self, batch_size):
@@ -92,6 +111,7 @@ class BC(TorchIRLAlgorithm):
 
 
     def _do_policy_training(self, epoch):
+        self.exploration_policy.train()
         exp_batch = self.get_batch(self.optim_batch_size)
         obs = exp_batch['observations']
         acts = exp_batch['actions']
@@ -99,23 +119,42 @@ class BC(TorchIRLAlgorithm):
             obs = torch.cat([obs, exp_batch['absorbing'][:, 0:1]], dim=-1)
 
         self.policy_optimizer.zero_grad()
-        log_prob, mean, log_std = self.exploration_policy.get_log_prob(obs, acts, return_normal_params=True)
-        # print(torch.max(log_prob))
-        try:
-            # print(torch.mean(log_prob))
-            # if doing log prob
-            loss = -1.0 * log_prob.mean()
-            # if doing MSE
-            # loss = ((self.exploration_policy(obs)[0] - acts)**2).mean()
-        except Exception as e:
-            print(log_prob)
-            print(mean)
-            print(log_std)
-            raise e
+
+        if self.rev_KL:
+            policy_acts_samples, mean, log_std, log_prob = self.exploration_policy(obs, return_log_prob=True)[:4]
+            if self.scaled_env:
+                if self.training_env._scale_obs:
+                    scaled_obs = (obs - self._obs_mean) / self._obs_std
+                else:
+                    scaled_obs = obs
+                if self.training_env._unscale_acts:
+                    scaled_policy_acts = policy_acts_samples * self._acts_std + self._acts_mean
+                else:
+                    scaled_policy_acts = policy_acts_samples
+                expert_log_prob = self.expert_policy.get_log_prob(scaled_obs, scaled_policy_acts)
+            else:
+                expert_log_prob = self.expert_policy.get_log_prob(obs, policy_acts_samples)
+            loss = log_prob - expert_log_prob
+            loss = loss.mean()
+        else:
+            log_prob, mean, log_std = self.exploration_policy.get_log_prob(obs, acts, return_normal_params=True)
+            # print(torch.max(log_prob))
+            try:
+                # print(torch.mean(log_prob))
+                # if doing log prob
+                loss = -1.0 * log_prob.mean()
+                # if doing MSE
+                # loss = ((self.exploration_policy(obs)[0] - acts)**2).mean()
+            except Exception as e:
+                print(log_prob)
+                print(mean)
+                print(log_std)
+                raise e
+            # total_loss = loss
+
         mean_reg_loss = self.policy_mean_reg_weight * (mean**2).mean()
         std_reg_loss = self.policy_std_reg_weight * (log_std**2).mean()
         total_loss = loss + mean_reg_loss + std_reg_loss
-        # total_loss = loss
         total_loss.backward()
         self.policy_optimizer.step()
 
@@ -141,7 +180,10 @@ class BC(TorchIRLAlgorithm):
 
     @property
     def networks(self):
-        return [self.exploration_policy]
+        nets = [self.exploration_policy]
+        if hasattr(self, 'expert_policy'):
+            nets.append(self.exploration_policy)
+        return nets
 
 
     def get_epoch_snapshot(self, epoch):

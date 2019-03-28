@@ -1,0 +1,113 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/adv_bc_exp_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
+  exp_name: ugh_adv_bc_halfcheetah
+  description: searching over the SAC hyperparameters
+  use_gpu: true
+  num_workers: 1
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  scale_env_with_given_demo_stats: [true]
+
+  policy_net_size: [16]
+  policy_num_hidden_layers: [2]
+  disc_num_blocks: [2]
+  disc_hid_dim: [256]
+  # disc_hid_dim: [32, 48]
+  # disc_hid_dim: [48, 64, 128]
+  disc_hid_act: [tanh]
+  disc_use_bn: [false]
+
+  algo_params:
+    save_best: [true]
+    save_best_starting_from_epoch: [100]
+
+    use_target_disc: [false]
+
+    KL_mode: ['forward']
+
+    no_terminal: [true]
+    replay_buffer_size: [20000]
+
+    num_update_loops_per_train_call: [5000]
+    # num_update_loops_per_train_call: [1000, 100]
+    num_disc_updates_per_loop_iter: [1]
+    num_policy_updates_per_loop_iter: [1]
+
+    disc_optim_batch_size: [256]
+    use_grad_pen: [true]
+    grad_pen_weight: [0.1]
+    # grad_pen_weight: [1.0, 5.0, 10.0]
+    disc_ce_grad_clip: [1.0]
+    disc_gp_grad_clip: [1.0]
+
+    policy_momentum: [0.9]
+    disc_momentum: [0.9]
+
+
+  env_specs:
+    normalized: [false]
+  
+  # seed: [9783, 5914, 4865, 2135, 2349]
+  expert_seed_run_idx: [0]
+  seed: [9783, 5914]
+
+  expert_name: [
+    # halfcheetah_256_demos_20_subsampling,
+    # halfcheetah_128_demos_20_subsampling,
+    # halfcheetah_64_demos_20_subsampling,
+    # halfcheetah_32_demos_20_subsampling,
+    # halfcheetah_16_demos_20_subsampling,
+    # halfcheetah_8_demos_20_subsampling,
+    # halfcheetah_4_demos_20_subsampling,
+    # halfcheetah_250_demos_no_subsampling,
+
+    # norm_halfcheetah_256_demos_20_subsampling,
+    # norm_halfcheetah_128_demos_20_subsampling,
+    # norm_halfcheetah_64_demos_20_subsampling,
+    # norm_halfcheetah_32_demos_20_subsampling,
+    # norm_halfcheetah_16_demos_20_subsampling,
+    # norm_halfcheetah_8_demos_20_subsampling,
+    # norm_halfcheetah_4_demos_20_subsampling,
+    normalized_halfcheetah_250_demos_no_subsampling,
+  ]
+# -----------------------------------------------------------------------------
+constants:
+  # expert_name: halfcheetah_25_demos_subsample_20
+  wrap_absorbing_state: false
+  
+  disc_clamp_magnitude: 10.0
+
+  algo_params:
+    num_epochs: 3011
+    num_steps_per_epoch: 1000
+    num_steps_per_eval: 10000
+    num_steps_between_updates: 1000
+    max_path_length: 1000
+    min_steps_before_training: 5000
+
+    # disc_optim_batch_size: 1024
+    policy_optim_batch_size: 256
+
+    use_target_disc: false
+    use_disc_input_noise: false
+
+    policy_uses_task_params: false
+    concat_task_params_to_policy_obs: false
+    policy_uses_pixels: false
+
+    
+    save_replay_buffer: false
+    render: false
+
+    disc_lr: 0.0003
+
+    policy_lr: 0.0003
+
+    freq_saving: 25
+    
+  env_specs:
+    base_env_name: 'halfcheetah_v2'
+    train_test_env: false

@@ -15,8 +15,7 @@ from rlkit.envs import get_env
 import rlkit.torch.pytorch_util as ptu
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
-from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
-from rlkit.torch.irl.airl import AIRL
+from rlkit.torch.irl.adv_bc import AdvBC
 from rlkit.torch.networks import FlattenMlp, Mlp
 from rlkit.torch.irl.disc_models.airl_disc import StandardAIRLDisc
 from rlkit.envs.wrappers import ScaledEnv
@@ -84,21 +83,6 @@ def experiment(variant):
     # set up the policy models
     policy_net_size = variant['policy_net_size']
     hidden_sizes = [policy_net_size] * variant['policy_num_hidden_layers']
-    qf1 = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    qf2 = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    vf = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim,
-        output_size=1,
-    )
     policy = ReparamTanhMultivariateGaussianPolicy(
         hidden_sizes=hidden_sizes,
         obs_dim=obs_dim,
@@ -107,7 +91,7 @@ def experiment(variant):
 
     # set up the discriminator models
     disc_model = StandardAIRLDisc(
-        obs_dim + action_dim if not variant['algo_params']['state_only'] else obs_dim,
+        obs_dim + action_dim,
         num_layer_blocks=variant['disc_num_blocks'],
         hid_dim=variant['disc_hid_dim'],
         hid_act=variant['disc_hid_act'],
@@ -117,21 +101,11 @@ def experiment(variant):
     print(disc_model)
     print(disc_model.clamp_magnitude)
 
-    # set up the RL algorithm used to train the policy
-    policy_optimizer = NewSoftActorCritic(
-        policy=policy,
-        qf1=qf1,
-        qf2=qf2,
-        vf=vf,
-        **variant['policy_params']
-    )
-
-    # set up the AIRL algorithm
-    algorithm = AIRL(
+    # set up the AdvBC algorithm
+    algorithm = AdvBC(
         env,
         policy,
         disc_model,
-        policy_optimizer,
         expert_buffer,
         training_env=training_env,
         wrap_absorbing=variant['wrap_absorbing_state'],
@@ -141,11 +115,8 @@ def experiment(variant):
     print(algorithm.soft_target_disc_tau)
     print(algorithm.exploration_policy)
     print(algorithm.eval_policy)
-    print(algorithm.policy_optimizer.policy_optimizer.defaults['lr'])
-    print(algorithm.policy_optimizer.qf1_optimizer.defaults['lr'])
-    print(algorithm.policy_optimizer.qf2_optimizer.defaults['lr'])
-    print(algorithm.policy_optimizer.vf_optimizer.defaults['lr'])
     print(algorithm.disc_optimizer.defaults['lr'])
+    print(algorithm.policy_optimizer.defaults['lr'])
 
     # train
     if ptu.gpu_enabled():

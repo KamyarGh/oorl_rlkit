@@ -411,6 +411,8 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
             num_tasks_per_eval=4,
             num_eval_trajs_per_task=10,
 
+            num_updates_per_train_call=1000,
+
             policy_lr=1e-3,
             qf_lr=1e-3,
             vf_lr=1e-3,
@@ -448,6 +450,8 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
         self.num_samples_per_task_per_batch = num_samples_per_task_per_batch
         self.num_tasks_per_eval = num_tasks_per_eval
         self.num_eval_trajs_per_task = num_eval_trajs_per_task
+
+        self.num_updates_per_train_call = num_updates_per_train_call
 
         self.target_vf = vf.copy()
         self.qf_criterion = nn.MSELoss()
@@ -589,118 +593,119 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
 
 
     def _do_training(self, epoch):
-        batch, obs_task_params = self._get_training_batch()
-        batch = np_to_pytorch_batch(batch)
-        obs_task_params = Variable(ptu.from_numpy(obs_task_params))
+        for _ in range(self.num_updates_per_train_call):
+            batch, obs_task_params = self._get_training_batch()
+            batch = np_to_pytorch_batch(batch)
+            obs_task_params = Variable(ptu.from_numpy(obs_task_params))
 
-        rewards = batch['rewards']
-        terminals = batch['terminals']
-        obs = batch['observations']
-        actions = batch['actions']
-        next_obs = batch['next_observations']
+            rewards = batch['rewards']
+            terminals = batch['terminals']
+            obs = batch['observations']
+            actions = batch['actions']
+            next_obs = batch['next_observations']
 
-        if self.policy_uses_task_params:
-            obs = torch.cat([obs, obs_task_params], dim=-1)
-            next_obs = torch.cat([next_obs, obs_task_params], dim=-1)
+            if self.policy_uses_task_params:
+                obs = torch.cat([obs, obs_task_params], dim=-1)
+                next_obs = torch.cat([next_obs, obs_task_params], dim=-1)
 
-        q1_pred = self.qf1(obs, actions)
-        q2_pred = self.qf2(obs, actions)
-        v_pred = self.vf(obs)
-        # Make sure policy accounts for squashing functions like tanh correctly!
-        policy_outputs = self.main_policy(obs, return_log_prob=True)
-        new_actions, policy_mean, policy_log_std, log_pi = policy_outputs[:4]
+            q1_pred = self.qf1(obs, actions)
+            q2_pred = self.qf2(obs, actions)
+            v_pred = self.vf(obs)
+            # Make sure policy accounts for squashing functions like tanh correctly!
+            policy_outputs = self.main_policy(obs, return_log_prob=True)
+            new_actions, policy_mean, policy_log_std, log_pi = policy_outputs[:4]
 
-        """
-        QF Loss
-        """
-        target_v_values = self.target_vf(next_obs)
-        q_target = rewards + (1. - terminals) * self.discount * target_v_values
-        qf1_loss = 0.5 * torch.mean((q1_pred - q_target.detach())**2)
-        qf2_loss = 0.5 * torch.mean((q2_pred - q_target.detach())**2)
-
-        """
-        VF Loss
-        """
-        q1_new_acts = self.qf1(obs, new_actions)
-        q2_new_acts = self.qf2(obs, new_actions)
-        q_new_actions = torch.min(q1_new_acts, q2_new_acts)
-        v_target = q_new_actions - log_pi
-        vf_loss = 0.5 * torch.mean((v_pred - v_target.detach())**2)
-
-        """
-        Policy Loss
-        """
-        policy_loss = torch.mean(log_pi - q_new_actions)
-        mean_reg_loss = self.policy_mean_reg_weight * (policy_mean**2).mean()
-        std_reg_loss = self.policy_std_reg_weight * (policy_log_std**2).mean()
-        # pre_tanh_value = policy_outputs[-1]
-        # pre_activation_reg_loss = self.policy_pre_activation_weight * (
-        #     (pre_tanh_value**2).sum(dim=1).mean()
-        # )
-        # policy_reg_loss = mean_reg_loss + std_reg_loss + pre_activation_reg_loss
-        policy_reg_loss = mean_reg_loss + std_reg_loss
-        policy_loss = policy_loss + policy_reg_loss
-
-        """
-        Update networks
-        """
-        self.qf1_optimizer.zero_grad()
-        qf1_loss.backward()
-        self.qf1_optimizer.step()
-
-        self.qf2_optimizer.zero_grad()
-        qf2_loss.backward()
-        self.qf2_optimizer.step()
-
-        self.vf_optimizer.zero_grad()
-        vf_loss.backward()
-        self.vf_optimizer.step()
-
-        self.policy_optimizer.zero_grad()
-        policy_loss.backward()
-        self.policy_optimizer.step()
-
-        self._update_target_network()
-
-        """
-        Save some statistics for eval
-        """
-        if self.eval_statistics is None:
             """
-            Eval should set this to None.
-            This way, these statistics are only computed for one batch.
+            QF Loss
             """
-            self.eval_statistics = OrderedDict()
-            self.eval_statistics['QF1 Loss'] = np.mean(ptu.get_numpy(qf1_loss))
-            self.eval_statistics['QF2 Loss'] = np.mean(ptu.get_numpy(qf2_loss))
-            self.eval_statistics['VF Loss'] = np.mean(ptu.get_numpy(vf_loss))
-            self.eval_statistics['Policy Loss'] = np.mean(ptu.get_numpy(
-                policy_loss
-            ))
-            self.eval_statistics.update(create_stats_ordered_dict(
-                'Q1 Predictions',
-                ptu.get_numpy(q1_pred),
-            ))
-            self.eval_statistics.update(create_stats_ordered_dict(
-                'Q2 Predictions',
-                ptu.get_numpy(q2_pred),
-            ))
-            self.eval_statistics.update(create_stats_ordered_dict(
-                'V Predictions',
-                ptu.get_numpy(v_pred),
-            ))
-            self.eval_statistics.update(create_stats_ordered_dict(
-                'Log Pis',
-                ptu.get_numpy(log_pi),
-            ))
-            self.eval_statistics.update(create_stats_ordered_dict(
-                'Policy mu',
-                ptu.get_numpy(policy_mean),
-            ))
-            self.eval_statistics.update(create_stats_ordered_dict(
-                'Policy log std',
-                ptu.get_numpy(policy_log_std),
-            ))
+            target_v_values = self.target_vf(next_obs)
+            q_target = rewards + (1. - terminals) * self.discount * target_v_values
+            qf1_loss = 0.5 * torch.mean((q1_pred - q_target.detach())**2)
+            qf2_loss = 0.5 * torch.mean((q2_pred - q_target.detach())**2)
+
+            """
+            VF Loss
+            """
+            q1_new_acts = self.qf1(obs, new_actions)
+            q2_new_acts = self.qf2(obs, new_actions)
+            q_new_actions = torch.min(q1_new_acts, q2_new_acts)
+            v_target = q_new_actions - log_pi
+            vf_loss = 0.5 * torch.mean((v_pred - v_target.detach())**2)
+
+            """
+            Policy Loss
+            """
+            policy_loss = torch.mean(log_pi - q_new_actions)
+            mean_reg_loss = self.policy_mean_reg_weight * (policy_mean**2).mean()
+            std_reg_loss = self.policy_std_reg_weight * (policy_log_std**2).mean()
+            # pre_tanh_value = policy_outputs[-1]
+            # pre_activation_reg_loss = self.policy_pre_activation_weight * (
+            #     (pre_tanh_value**2).sum(dim=1).mean()
+            # )
+            # policy_reg_loss = mean_reg_loss + std_reg_loss + pre_activation_reg_loss
+            policy_reg_loss = mean_reg_loss + std_reg_loss
+            policy_loss = policy_loss + policy_reg_loss
+
+            """
+            Update networks
+            """
+            self.qf1_optimizer.zero_grad()
+            qf1_loss.backward()
+            self.qf1_optimizer.step()
+
+            self.qf2_optimizer.zero_grad()
+            qf2_loss.backward()
+            self.qf2_optimizer.step()
+
+            self.vf_optimizer.zero_grad()
+            vf_loss.backward()
+            self.vf_optimizer.step()
+
+            self.policy_optimizer.zero_grad()
+            policy_loss.backward()
+            self.policy_optimizer.step()
+
+            self._update_target_network()
+
+            """
+            Save some statistics for eval
+            """
+            if self.eval_statistics is None:
+                """
+                Eval should set this to None.
+                This way, these statistics are only computed for one batch.
+                """
+                self.eval_statistics = OrderedDict()
+                self.eval_statistics['QF1 Loss'] = np.mean(ptu.get_numpy(qf1_loss))
+                self.eval_statistics['QF2 Loss'] = np.mean(ptu.get_numpy(qf2_loss))
+                self.eval_statistics['VF Loss'] = np.mean(ptu.get_numpy(vf_loss))
+                self.eval_statistics['Policy Loss'] = np.mean(ptu.get_numpy(
+                    policy_loss
+                ))
+                self.eval_statistics.update(create_stats_ordered_dict(
+                    'Q1 Predictions',
+                    ptu.get_numpy(q1_pred),
+                ))
+                self.eval_statistics.update(create_stats_ordered_dict(
+                    'Q2 Predictions',
+                    ptu.get_numpy(q2_pred),
+                ))
+                self.eval_statistics.update(create_stats_ordered_dict(
+                    'V Predictions',
+                    ptu.get_numpy(v_pred),
+                ))
+                self.eval_statistics.update(create_stats_ordered_dict(
+                    'Log Pis',
+                    ptu.get_numpy(log_pi),
+                ))
+                self.eval_statistics.update(create_stats_ordered_dict(
+                    'Policy mu',
+                    ptu.get_numpy(policy_mean),
+                ))
+                self.eval_statistics.update(create_stats_ordered_dict(
+                    'Policy log std',
+                    ptu.get_numpy(policy_log_std),
+                ))
 
     @property
     def networks(self):
