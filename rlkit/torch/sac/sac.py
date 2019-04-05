@@ -484,7 +484,6 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
     def get_eval_policy(self, obs_task_params):
         if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
         return PostCondMLPPolicyWrapper(self.main_policy, obs_task_params)
-        raise NotImplementedError()
     
 
     def _get_training_batch(self):

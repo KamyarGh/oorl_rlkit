@@ -1,3 +1,10 @@
+- (done) plot the grad mags
+- debug meta-fairl by running it on a single task
+- debug by running it on 4 tasks
+- run few shot fetch
+
+
+
 - (done) generate different amounts of demos
 - plot the searches I've done
 - run the final version of things

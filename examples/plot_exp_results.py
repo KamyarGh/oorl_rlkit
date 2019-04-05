@@ -3972,158 +3972,330 @@ def plot_test_and_exp_returns(exp_name):
 #                 )
 
 
-for exp_name in [
-        # 'normalized_halfcheetah_state_action_forw_KL_airl_disc_rew_scale_search',
-        # 'correct_normalized_halfcheetah_state_action_forw_KL_airl_disc',
-        # 'correct_halfcheetah_state_action_forw_KL_airl',
-        # 'halfcheetah_state_only_forw_KL_airl_disc_32_dim',
-        # 'halfcheetah_state_only_forw_KL_airl_disc_48_dim',
-        # 'actual_halfcheetah_state_only_rev_KL_airl_disc_32_dim',
-        # 'actual_halfcheetah_state_only_rev_KL_airl_disc_48_dim',
-        # 'actual_halfcheetah_state_action_rev_KL_airl_disc_32_dim',
-        # 'actual_halfcheetah_state_action_rev_KL_airl_disc_48_dim'
+# for exp_name in [
+#         # 'normalized_halfcheetah_state_action_forw_KL_airl_disc_rew_scale_search',
+#         # 'correct_normalized_halfcheetah_state_action_forw_KL_airl_disc',
+#         # 'correct_halfcheetah_state_action_forw_KL_airl',
+#         # 'halfcheetah_state_only_forw_KL_airl_disc_32_dim',
+#         # 'halfcheetah_state_only_forw_KL_airl_disc_48_dim',
+#         # 'actual_halfcheetah_state_only_rev_KL_airl_disc_32_dim',
+#         # 'actual_halfcheetah_state_only_rev_KL_airl_disc_48_dim',
+#         # 'actual_halfcheetah_state_action_rev_KL_airl_disc_32_dim',
+#         # 'actual_halfcheetah_state_action_rev_KL_airl_disc_48_dim'
 
-        # 'totally_absolutely_final_normalized_halfcheetah_forw_KL_airl_disc',
-        # 'totally_absolutely_final_normalized_halfcheetah_forw_KL_airl_disc_state_only',
-        # 'totally_absolutely_final_normalized_halfcheetah_rev_KL_airl_disc_state_action',
-        # 'totally_absolutely_final_normalized_halfcheetah_rev_KL_airl_disc_final_state_only',
-        # 'totally_absolutely_final_normalized_ant_forw_KL_airl_disc_final_state_action',
-        # 'totally_absolutely_final_normalized_ant_forw_KL_airl_disc_final_state_only',
+#         # 'totally_absolutely_final_normalized_halfcheetah_forw_KL_airl_disc',
+#         # 'totally_absolutely_final_normalized_halfcheetah_forw_KL_airl_disc_state_only',
+#         # 'totally_absolutely_final_normalized_halfcheetah_rev_KL_airl_disc_state_action',
+#         # 'totally_absolutely_final_normalized_halfcheetah_rev_KL_airl_disc_final_state_only',
+#         # 'totally_absolutely_final_normalized_ant_forw_KL_airl_disc_final_state_action',
+#         # 'totally_absolutely_final_normalized_ant_forw_KL_airl_disc_final_state_only',
 
-        # 'no_grad_clip_halfcheetah_forward_KL'
-        # 'correct_no_grad_clip_halfcheetah_rev_KL'
-        # 'no_save_best_rev_KL_ant_no_grad_clip'
+#         # 'no_grad_clip_halfcheetah_forward_KL'
+#         # 'correct_no_grad_clip_halfcheetah_rev_KL'
+#         # 'no_save_best_rev_KL_ant_no_grad_clip'
 
-        # '10x_steps_per_epoch_rev_KL_more_rew_scale_search'
+#         # '10x_steps_per_epoch_rev_KL_more_rew_scale_search'
 
-        # 'ant_rew_scale_hype_search'
-        # 'correct_ant_rew_scale_hype_search_rev_KL'
-        # 'correct_ant_rew_scale_hype_search_rev_KL_another_go'
-        # 'correct_rev_KL_halfcheetah_no_grad_clip_rew_search'
-        # 'correct_no_norm_no_save_best_rev_KL_ant_no_grad_clip'
+#         # 'ant_rew_scale_hype_search'
+#         # 'correct_ant_rew_scale_hype_search_rev_KL'
+#         # 'correct_ant_rew_scale_hype_search_rev_KL_another_go'
+#         # 'correct_rev_KL_halfcheetah_no_grad_clip_rew_search'
+#         # 'correct_no_norm_no_save_best_rev_KL_ant_no_grad_clip'
         
-        # 'correct_rev_KL_halfcheetah_no_grad_clip_rew_search'
-        # 'correct_no_norm_no_save_best_rev_KL_ant_no_grad_clip'
-        # 'ant_no_norm_forw_KL'
-        # 'ant_no_norm_forw_KL_more_0',
-        # 'ant_no_norm_forw_KL_more_1'
+#         # 'correct_rev_KL_halfcheetah_no_grad_clip_rew_search'
+#         # 'correct_no_norm_no_save_best_rev_KL_ant_no_grad_clip'
+#         # 'ant_no_norm_forw_KL'
+#         # 'ant_no_norm_forw_KL_more_0',
+#         # 'ant_no_norm_forw_KL_more_1'
 
-        # 'final_no_save_humanoid_norm_rev_KL_hype_search'
-        # 'final_no_save_humanoid_norm_forw_KL_hype_search'
+#         # 'final_no_save_humanoid_norm_rev_KL_hype_search'
+#         # 'final_no_save_humanoid_norm_forw_KL_hype_search'
 
-        # 'new_norm_ant_rev_KL_hype_search'
-        # 'no_save_new_norm_ant_forw_KL_hype_search'
-        # 'no_save_try_ant_forw_KL_with_larger_disc'
+#         # 'new_norm_ant_rev_KL_hype_search'
+#         # 'no_save_new_norm_ant_forw_KL_hype_search'
+#         # 'no_save_try_ant_forw_KL_with_larger_disc'
 
-        # 'what_matters_ant_forw_KL_with_larger_disc',
-        # 'what_matters_ant_rev_KL_with_larger_disc',
-        # 'no_save_try_ant_forw_KL_with_larger_disc_less_gp',
+#         # 'what_matters_ant_forw_KL_with_larger_disc',
+#         # 'what_matters_ant_rev_KL_with_larger_disc',
+#         # 'no_save_try_ant_forw_KL_with_larger_disc_less_gp',
 
-        # 'rerun_what_matters_halfcheetah_rev_KL_with_larger_disc',
-        # 'what_matters_halfcheetah_forw_KL_with_larger_disc',
+#         # 'rerun_what_matters_halfcheetah_rev_KL_with_larger_disc',
+#         # 'what_matters_halfcheetah_forw_KL_with_larger_disc',
 
-        'what_matters_halfcheetah_rev_KL_with_128_disc',
-        # 'what_matters_halfcheetah_forw_KL_with_128_disc',
-        'what_matters_halfcheetah_forw_KL_with_256_disc_50_rew',
-        'what_matters_halfcheetah_forw_KL_with_128_disc_50_rew',
+#         'what_matters_halfcheetah_rev_KL_with_128_disc',
+#         # 'what_matters_halfcheetah_forw_KL_with_128_disc',
+#         'what_matters_halfcheetah_forw_KL_with_256_disc_50_rew',
+#         'what_matters_halfcheetah_forw_KL_with_128_disc_50_rew',
 
-        'what_matters_halfcheetah_forw_KL_with_128_disc_100_rew'
+#         'what_matters_halfcheetah_forw_KL_with_128_disc_100_rew'
 
+#     ]:
+#     for expert in [
+#             # 'halfcheetah_256_demos_20_subsampling',
+#             # 'halfcheetah_128_demos_20_subsampling',
+#             # 'halfcheetah_64_demos_20_subsampling',
+#             # 'halfcheetah_32_demos_20_subsampling',
+#             # 'halfcheetah_16_demos_20_subsampling',
+#             # 'halfcheetah_8_demos_20_subsampling',
+#             # 'halfcheetah_4_demos_20_subsampling',
+#             # # halfcheetah_250_demos_no_subsampling,
+
+#             # 'norm_halfcheetah_256_demos_20_subsampling',
+#             # 'norm_halfcheetah_128_demos_20_subsampling',
+#             # 'norm_halfcheetah_64_demos_20_subsampling',
+#             'norm_halfcheetah_32_demos_20_subsampling',
+#             'norm_halfcheetah_16_demos_20_subsampling',
+#             'norm_halfcheetah_8_demos_20_subsampling',
+#             'norm_halfcheetah_4_demos_20_subsampling',
+#             # normalized_halfcheetah_250_demos_no_subsampling,
+
+#             # 'norm_ant_256_demos_20_subsampling',
+#             # # 'norm_ant_128_demos_20_subsampling',
+#             # 'norm_ant_64_demos_20_subsampling',
+#             # 'norm_ant_32_demos_20_subsampling',
+#             # 'norm_ant_16_demos_20_subsampling',
+#             # 'norm_ant_8_demos_20_subsampling',
+#             # 'norm_ant_4_demos_20_subsampling',
+
+#             # 'ant_16_demos_20_subsampling',
+
+#             # 'norm_humanoid_128_demos_20_subsampling',
+
+#         ]:
+#         # for disc_hid in [32, 48]:
+#         # for disc_hid in [128]:
+#         # for rew in [8.0, 12.0]:
+#         # for rew in [10.0, 25.0]: 
+#         # for rew in [50.0, 100.0]:
+#         # for rew in [10.0, 25.0]:
+#         # for rew in [50.0]:
+#         # for rew in [1.0, 2.0, 4.0]:
+#         # for rew in [8.0, 12.0, 25.0, 50.0, 75.0, 100.0, 150.0, 200.0]:
+#         # for rew in [18.0, 25.0, 50.0]:
+#         # for rew in [15.0, 25.0, 40.0]:
+#         # for rew in [5.0, 10.0, 25.0]:
+#         # for rew in [25.0, 50.0, 75.0]:
+#         # for rew in [8.0, 12.0, 25.0, 50.0, 75.0]:
+#         for rew in [8.0, 25.0, 50.0, 100.0]:
+#         # for rew in [100.0]:
+#             for use_target_disc in [False]:
+#             # for use_target_disc in [True, False]:
+#                 # for gp in [1.0, 5.0, 10.0]:
+#                 for gp in [10.0, 1.0]:
+#                     constraints = {
+#                         'policy_params.reward_scale': rew,
+#                         # 'disc_hid_dim': disc_hid,
+#                         'expert_name': expert,
+#                         'algo_params.use_target_disc': use_target_disc,
+#                         # 'algo_params.use_exp_rewards': False,
+#                         'algo_params.grad_pen_weight': gp
+#                     }
+#                     title = 'rew_%d_'%rew + 'use_target_disc_{}_'.format(use_target_disc) + expert + '_grad_pen_{}_'.format(gp)
+#                     # title = 'disc_hid_%d_'%disc_hid + 'rew_%d_'%rew + 'use_target_disc_{}_'.format(use_target_disc) + expert
+#                     plot_experiment_returns(
+#                         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#                         title,
+#                         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'z_%s.png'%title),
+#                         # x_axis_lims=[0,3000],
+#                         x_axis_lims=[0,300],
+#                         # y_axis_lims=[-4000,4000],
+#                         y_axis_lims=[0,8000],
+#                         plot_mean=False,
+#                         column_name=[
+#                             'AverageReturn'
+#                             # 'Exploration_Returns_Mean'
+#                         ],
+#                         constraints=constraints
+#                     )
+
+#                     plot_experiment_returns(
+#                         os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#                         title,
+#                         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grads_z_%s.png'%title),
+#                         # x_axis_lims=[0,3000],
+#                         x_axis_lims=[0,300],
+#                         # y_axis_lims = [0, 5],
+#                         plot_mean=False,
+#                         column_name=[
+#                             'Disc_Avg_CE_Grad_Norm_this_epoch',
+#                             'Disc_Max_CE_Grad_Norm_this_epoch',
+#                             'Disc_Avg_GP_Grad_Norm_this_epoch',
+#                             'Disc_Max_GP_Grad_Norm_this_epoch'
+#                         ],
+#                         constraints=constraints
+#                     )
+
+
+# exp_name = 'meta_new_sac_halfcheetah_rand_vel_100_train_25_test'
+# exp_name = 'final_correct_meta_fairl_halfcheetah_rand_vel_rew_scale_search'
+# for exp_name in [
+#     'final_correct_meta_fairl_halfcheetah_rand_vel_rew_scale_search',
+#     'final_correct_meta_fairl_halfcheetah_rand_vel_rew_40_gp_10_gp_grad_clip_10',
+#     'final_correct_meta_fairl_halfcheetah_rand_vel_rew_40_gp_1_gp_grad_clip_10',
+#     'final_correct_meta_fairl_halfcheetah_rand_vel_rew_40_disc_size_128_gp_1_gp_grad_clip_10',
+#     'final_correct_meta_fairl_halfcheetah_rand_vel_rew_40_disc_size_128_enc_hid_128_gp_1_gp_grad_clip_10'
+#     ]:
+#     for rew in [1.0, 2.0, 5.0, 8.0, 10.0, 20.0, 40.0, 80.0]:
+#         plot_experiment_returns(
+#             os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#             'reward %d' % rew,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'avg_ret_rew_scale_%d.png'%(rew)),
+#             # x_axis_lims=[0,3100],
+#             x_axis_lims=[0,60],
+#             # x_axis_lims=[0,200],
+#             y_axis_lims=[-2000,0],
+#             plot_mean=False,
+#             column_name=[
+#                 'AverageReturn_meta_train',
+#                 'AverageReturn_meta_test'
+#             ],
+#             # constraints={'algo_params.reward_scale': rew}
+#             constraints={'policy_params.reward_scale': rew}
+#         )
+#         plot_experiment_returns(
+#             os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#             'reward %d' % rew,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'run_ret_rew_scale_%d.png'%(rew)),
+#             # x_axis_lims=[0,3100],
+#             x_axis_lims=[0,60],
+#             # x_axis_lims=[0,200],
+#             y_axis_lims=[-2000,0],
+#             plot_mean=False,
+#             column_name=[
+#                 'Avg_Run_Rew_meta_train',
+#                 'Avg_Run_Rew_meta_test'
+#             ],
+#             # constraints={'algo_params.reward_scale': rew}
+#             constraints={'policy_params.reward_scale': rew}
+#         )
+#         plot_experiment_returns(
+#             os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#             'reward %d' % rew,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grads_rew_scale_%d.png'%(rew)),
+#             # x_axis_lims=[0,3100],
+#             x_axis_lims=[0,60],
+#             # x_axis_lims=[0,200],
+#             # y_axis_lims=[-2000,0],
+#             plot_mean=False,
+#             column_name=[
+#                 # 'Disc_Avg_CE_Grad_Norm_this_epoch',
+#                 # 'Disc_Max_CE_Grad_Norm_this_epoch',
+#                 # 'Enc_Avg_CE_Grad_Norm_this_epoch',
+#                 # 'Enc_Max_CE_Grad_Norm_this_epoch',
+#                 'Disc_Avg_GP_Grad_Norm_this_epoch',
+#                 'Disc_Max_GP_Grad_Norm_this_epoch'
+#             ],
+#             # constraints={'algo_params.reward_scale': rew}
+#             constraints={'policy_params.reward_scale': rew}
+#         )
+
+
+
+for exp_name in [
+    'hc_rand_vel_np_bc_first_hype_search',
+    'hc_rand_vel_np_bc_first_hype_search_z_dim_64_r_dim_256_num_hid_3',
+    'hc_rand_vel_np_bc_first_hype_search_z_dim_64_r_dim_256_num_hid_3_32_demos_per_task',
+    'hc_rand_vel_np_bc_first_hype_search_z_dim_16_r_dim_64_num_hid_3_32_demos_per_task',
+    'hc_rand_vel_np_bc_first_hype_search_z_dim_16_r_dim_64_num_hid_3_32_demos_per_task_det_eval'
+
+    # 'np_airl_hc_disc_128_3_pol_256_3_gp_10_rew_scale_4',
+    # 'np_airl_hc_disc_128_3_pol_256_3_gp_10_rew_scale_8',
+    # 'np_airl_hc_disc_128_3_pol_256_3_gp_1_rew_scale_4',
+    # 'np_airl_hc_disc_128_3_pol_256_3_gp_1_rew_scale_8',
     ]:
-    for expert in [
-            # 'halfcheetah_256_demos_20_subsampling',
-            # 'halfcheetah_128_demos_20_subsampling',
-            # 'halfcheetah_64_demos_20_subsampling',
-            # 'halfcheetah_32_demos_20_subsampling',
-            # 'halfcheetah_16_demos_20_subsampling',
-            # 'halfcheetah_8_demos_20_subsampling',
-            # 'halfcheetah_4_demos_20_subsampling',
-            # # halfcheetah_250_demos_no_subsampling,
+    # for r_dim in [64, 256]:
+    for pol_num_hid in [2,3]:
+        for z_dim in [16, 64]:
+            constraints = {
+                # 'algo_params.r_dim': r_dim,
+                'num_hidden_layers': pol_num_hid,
+                'algo_params.z_dim': z_dim
+            }
+            name = 'num_hid_%d_z_dim_%d' % (pol_num_hid, z_dim)
+            # name = 'r_dim_%d_num_hid_%d_z_dim_%d' % (r_dim, pol_num_hid, z_dim)
+            plot_experiment_returns(
+                os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+                name,
+                os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'avg_ret_%s.png'%(name)),
+                # x_axis_lims=[0,3100],
+                x_axis_lims=[0,200],
+                # x_axis_lims=[0,200],
+                y_axis_lims=[-2000,0],
+                plot_mean=False,
+                column_name=[
+                    'AverageReturn_meta_train',
+                    'AverageReturn_meta_test'
+                ],
+                constraints=constraints
+            )
+            plot_experiment_returns(
+                os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+                name,
+                os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'run_ret_%s.png'%(name)),
+                # x_axis_lims=[0,3100],
+                x_axis_lims=[0,200],
+                # x_axis_lims=[0,200],
+                y_axis_lims=[-2000,0],
+                plot_mean=False,
+                column_name=[
+                    'Avg_Run_Rew_meta_train',
+                    'Avg_Run_Rew_meta_test'
+                ],
+                constraints=constraints
+            )
 
-            # 'norm_halfcheetah_256_demos_20_subsampling',
-            # 'norm_halfcheetah_128_demos_20_subsampling',
-            # 'norm_halfcheetah_64_demos_20_subsampling',
-            'norm_halfcheetah_32_demos_20_subsampling',
-            'norm_halfcheetah_16_demos_20_subsampling',
-            'norm_halfcheetah_8_demos_20_subsampling',
-            'norm_halfcheetah_4_demos_20_subsampling',
-            # normalized_halfcheetah_250_demos_no_subsampling,
 
-            # 'norm_ant_256_demos_20_subsampling',
-            # # 'norm_ant_128_demos_20_subsampling',
-            # 'norm_ant_64_demos_20_subsampling',
-            # 'norm_ant_32_demos_20_subsampling',
-            # 'norm_ant_16_demos_20_subsampling',
-            # 'norm_ant_8_demos_20_subsampling',
-            # 'norm_ant_4_demos_20_subsampling',
-
-            # 'ant_16_demos_20_subsampling',
-
-            # 'norm_humanoid_128_demos_20_subsampling',
-
-        ]:
-        # for disc_hid in [32, 48]:
-        # for disc_hid in [128]:
-        # for rew in [8.0, 12.0]:
-        # for rew in [10.0, 25.0]: 
-        # for rew in [50.0, 100.0]:
-        # for rew in [10.0, 25.0]:
-        # for rew in [50.0]:
-        # for rew in [1.0, 2.0, 4.0]:
-        # for rew in [8.0, 12.0, 25.0, 50.0, 75.0, 100.0, 150.0, 200.0]:
-        # for rew in [18.0, 25.0, 50.0]:
-        # for rew in [15.0, 25.0, 40.0]:
-        # for rew in [5.0, 10.0, 25.0]:
-        # for rew in [25.0, 50.0, 75.0]:
-        # for rew in [8.0, 12.0, 25.0, 50.0, 75.0]:
-        for rew in [8.0, 25.0, 50.0, 100.0]:
-        # for rew in [100.0]:
-            for use_target_disc in [False]:
-            # for use_target_disc in [True, False]:
-                # for gp in [1.0, 5.0, 10.0]:
-                for gp in [10.0, 1.0]:
-                    constraints = {
-                        'policy_params.reward_scale': rew,
-                        # 'disc_hid_dim': disc_hid,
-                        'expert_name': expert,
-                        'algo_params.use_target_disc': use_target_disc,
-                        # 'algo_params.use_exp_rewards': False,
-                        'algo_params.grad_pen_weight': gp
-                    }
-                    title = 'rew_%d_'%rew + 'use_target_disc_{}_'.format(use_target_disc) + expert + '_grad_pen_{}_'.format(gp)
-                    # title = 'disc_hid_%d_'%disc_hid + 'rew_%d_'%rew + 'use_target_disc_{}_'.format(use_target_disc) + expert
-                    plot_experiment_returns(
-                        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
-                        title,
-                        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'z_%s.png'%title),
-                        # x_axis_lims=[0,3000],
-                        x_axis_lims=[0,300],
-                        # y_axis_lims=[-4000,4000],
-                        y_axis_lims=[0,8000],
-                        plot_mean=False,
-                        column_name=[
-                            'AverageReturn'
-                            # 'Exploration_Returns_Mean'
-                        ],
-                        constraints=constraints
-                    )
-
-                    plot_experiment_returns(
-                        os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
-                        title,
-                        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grads_z_%s.png'%title),
-                        # x_axis_lims=[0,3000],
-                        x_axis_lims=[0,300],
-                        # y_axis_lims = [0, 5],
-                        plot_mean=False,
-                        column_name=[
-                            'Disc_Avg_CE_Grad_Norm_this_epoch',
-                            'Disc_Max_CE_Grad_Norm_this_epoch',
-                            'Disc_Avg_GP_Grad_Norm_this_epoch',
-                            'Disc_Max_GP_Grad_Norm_this_epoch'
-                        ],
-                        constraints=constraints
-                    )
+# for exp_name in [
+#     # 'fetch_with_meta_fairl_rew_scale_search',
+#     # 'fetch_with_meta_fairl_rew_scale_2',
+#     # 'fetch_with_meta_fairl_rew_scale_2_KL_0'
+#     # 'first_try_actual_fetch_with_meta_fairl_KL_0p0_context_1_to_6_rew_scale_search_no_grad_clip',
+#     # 'first_try_actual_fetch_with_meta_fairl_KL_0p0_context_1_to_6_rew_scale_40',
+#     # 'first_try_actual_fetch_with_meta_fairl_KL_0p0_context_1_to_6_rew_scale_20',
+#     # 'first_try_actual_fetch_with_meta_fairl_KL_0p0_context_1_to_6_rew_scale_search'
+#     'airl_but_fairl_context_1_3_no_KL_gp_search_rew_search_no_clip',
+#     'airl_but_fairl_context_1_3_no_KL_gp_search_rew_search_with_clip',
+#     'airl_but_fairl_context_1_3_no_KL_gp_search_rew_40_no_clip'
+#     ]:
+#     for rew in [1.0, 2.0, 5.0, 8.0, 10.0, 20.0, 40.0, 80.0]:
+#         name = 'fairl_fetch'
+#         plot_experiment_returns(
+#             os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#             name,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, '%s_rew_scale_%d.png'%(name, rew)),
+#             # x_axis_lims=[0,3100],
+#             x_axis_lims=[0,100],
+#             # x_axis_lims=[0,200],
+#             y_axis_lims=[0, 1],
+#             plot_mean=False,
+#             column_name=[
+#                 'Percent_Solved_meta_train',
+#                 'Percent_Good_Reach_meta_train',
+#                 'Percent_Solved_meta_test',
+#                 'Percent_Good_Reach_meta_test'
+#             ],
+#             constraints={'policy_params.reward_scale': rew}
+#         )
+#         plot_experiment_returns(
+#             os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#             name,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grads_rew_scale_%d.png'%(rew)),
+#             # x_axis_lims=[0,3100],
+#             x_axis_lims=[0,100],
+#             # x_axis_lims=[0,200],
+#             # y_axis_lims=[-2000,0],
+#             plot_mean=False,
+#             column_name=[
+#                 'Disc_Avg_CE_Grad_Norm_this_epoch',
+#                 # 'Disc_Max_CE_Grad_Norm_this_epoch',
+#                 'Enc_Avg_CE_Grad_Norm_this_epoch',
+#                 # 'Enc_Max_CE_Grad_Norm_this_epoch',
+#                 'Disc_Avg_GP_Grad_Norm_this_epoch',
+#                 # 'Disc_Max_GP_Grad_Norm_this_epoch'
+#             ],
+#             # constraints={'algo_params.reward_scale': rew}
+#             constraints={'policy_params.reward_scale': rew}
+#         )
 
 
 # exp_name = 'normalized_ant_new_sac'
@@ -4157,42 +4329,42 @@ for exp_name in [
 # exp_name = 'workshop_last_call_halfcheetah_bc_rev_KL_false'
 # exp_name = 'totally_workshop_last_call_halfcheetah_bc_forw_KL_true'
 # exp_name = 'test_what_matters_ant_BC_256_demos_larger_models'
-exp_name = 'what_matters_halfcheetah_BC_32_model_128'
-for expert in [
-        # 'norm_halfcheetah_256_demos_20_subsampling',
-        # 'norm_halfcheetah_128_demos_20_subsampling',
-        # 'norm_halfcheetah_64_demos_20_subsampling',
-        'norm_halfcheetah_32_demos_20_subsampling',
-        # 'norm_halfcheetah_16_demos_20_subsampling',
-        # 'norm_halfcheetah_8_demos_20_subsampling',
-        # 'norm_halfcheetah_4_demos_20_subsampling',
+# exp_name = 'what_matters_halfcheetah_BC_32_model_128'
+# for expert in [
+#         # 'norm_halfcheetah_256_demos_20_subsampling',
+#         # 'norm_halfcheetah_128_demos_20_subsampling',
+#         # 'norm_halfcheetah_64_demos_20_subsampling',
+#         'norm_halfcheetah_32_demos_20_subsampling',
+#         # 'norm_halfcheetah_16_demos_20_subsampling',
+#         # 'norm_halfcheetah_8_demos_20_subsampling',
+#         # 'norm_halfcheetah_4_demos_20_subsampling',
 
-        # 'norm_ant_16_demos_20_subsampling',
-        # 'norm_ant_256_demos_20_subsampling',
-    ]:
-    # for net_size in [16, 32, 64]:
-    for net_size in [128, 256]:
-    # for net_size in [8, 16, 32, 64, 128]:
-        for rev_KL in [True, False]:
-            constraints = {
-                'policy_net_size': net_size,
-                'expert_name': expert,
-                'algo_params.rev_KL': rev_KL
-            }
-            # title = 'net_size_%d_'%net_size + expert
-            title = 'net_size_%d_'%net_size + expert + '_rev_KL_{}'.format(rev_KL)
-            plot_experiment_returns(
-                os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
-                title,
-                os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'z_%s.png'%title),
-                x_axis_lims=[0,201],
-                y_axis_lims=[-2000,8000],
-                plot_mean=False,
-                column_name=[
-                    'AverageReturn'
-                ],
-                constraints=constraints
-            )
+#         # 'norm_ant_16_demos_20_subsampling',
+#         # 'norm_ant_256_demos_20_subsampling',
+#     ]:
+#     # for net_size in [16, 32, 64]:
+#     for net_size in [128, 256]:
+#     # for net_size in [8, 16, 32, 64, 128]:
+#         for rev_KL in [True, False]:
+#             constraints = {
+#                 'policy_net_size': net_size,
+#                 'expert_name': expert,
+#                 'algo_params.rev_KL': rev_KL
+#             }
+#             # title = 'net_size_%d_'%net_size + expert
+#             title = 'net_size_%d_'%net_size + expert + '_rev_KL_{}'.format(rev_KL)
+#             plot_experiment_returns(
+#                 os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#                 title,
+#                 os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'z_%s.png'%title),
+#                 x_axis_lims=[0,201],
+#                 y_axis_lims=[-2000,8000],
+#                 plot_mean=False,
+#                 column_name=[
+#                     'AverageReturn'
+#                 ],
+#                 constraints=constraints
+#             )
 
 
 # exp_name = 'first_adv_bc_halfcheetah_hype_search'
@@ -4480,19 +4652,19 @@ for expert in [
                         # )
 
 
-exp_name = 'correct_halfcheetah_rand_vel_meta_new_sac'
-name = 'rand_vel_HC'
-plot_experiment_returns(
-    os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
-    name,
-    os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grad_%s.png'%name),
-    # y_axis_lims=[0.0, 8000.0],
-    plot_mean=False,
-    column_name=[
-        'AverageReturn_meta_train',
-        'AverageReturn_meta_test'
-    ],
-)
+# exp_name = 'correct_halfcheetah_rand_vel_meta_new_sac'
+# name = 'rand_vel_HC'
+# plot_experiment_returns(
+#     os.path.join('/scratch/gobi2/kamyar/oorl_rlkit/output', exp_name.replace('_', '-')),
+#     name,
+#     os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'grad_%s.png'%name),
+#     # y_axis_lims=[0.0, 8000.0],
+#     plot_mean=False,
+#     column_name=[
+#         'AverageReturn_meta_train',
+#         'AverageReturn_meta_test'
+#     ],
+# )
 
 
 # for rew in [2.0, 4.0]:

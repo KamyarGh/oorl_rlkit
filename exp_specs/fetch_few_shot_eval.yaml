@@ -1,16 +1,16 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_evaluation_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: test_eval_recall_at_k
+  exp_name: meta_fairl_eval
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 4
+  num_workers: 2
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
   evaluating_np_airl: [true] # if false means evaluating np_bc
-  sample_from_prior: [true]
+  sample_from_prior: [false]
   # sub_exp: [
   #   final_better_np_bc_new_hype_search_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_19_20_37_53_0000--s-0,
   #   final_better_np_bc_new_hype_search_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_19_20_37_53_0001--s-0,
@@ -18,13 +18,16 @@ variables:
   #   final_better_np_bc_new_hype_search_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_19_20_37_54_0003--s-0
   # ]
   sub_exp: [
-    less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0000--s-0,
-    less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0001--s-0,
-    less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0002--s-0,
-    less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0003--s-0
+    # less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0000--s-0,
+    # less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0001--s-0,
+    # less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0002--s-0,
+    # less_epochs_final_better_np_airl_KL_0p01_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16_2019_02_20_11_14_17_0003--s-0
+    fetch_with_meta_fairl_rew_scale_2_2019_03_30_05_31_46_0000--s-0,
+    fetch_with_meta_fairl_rew_scale_2_2019_03_30_05_31_51_0001--s-0
   ]
 
 # -----------------------------------------------------------------------------
 constants:
   # exp_path: /scratch/gobi2/kamyar/oorl_rlkit/output/final-better-np-bc-new-hype-search-KL-0p01-weight-share-enc-32-dim-pol-dim-64-gate-dim-32-z-dim-16
-  exp_path: /scratch/gobi2/kamyar/oorl_rlkit/output/less-epochs-final-better-np-airl-KL-0p01-weight-share-enc-32-dim-pol-dim-64-gate-dim-32-z-dim-16/
+  # exp_path: /scratch/gobi2/kamyar/oorl_rlkit/output/less-epochs-final-better-np-airl-KL-0p01-weight-share-enc-32-dim-pol-dim-64-gate-dim-32-z-dim-16/
+  exp_path: /scratch/gobi2/kamyar/oorl_rlkit/output/fetch-with-meta-fairl-rew-scale-2

@@ -10,6 +10,50 @@ from rlkit.torch import pytorch_util as ptu
 from copy import deepcopy
 
 
+class StandardMetaDisc(nn.Module):
+    def __init__(
+        self,
+        input_dim,
+        num_layer_blocks=2,
+        hid_dim=100,
+        hid_act='relu',
+        use_bn=True,
+        clamp_magnitude=10.0
+    ):
+        super().__init__()
+
+        if hid_act == 'relu':
+            hid_act_class = nn.ReLU
+        elif hid_act == 'tanh':
+            hid_act_class = nn.Tanh
+        else:
+            raise NotImplementedError()
+
+        self.clamp_magnitude = clamp_magnitude
+
+        self.mod_list = nn.ModuleList([nn.Linear(input_dim, hid_dim)])
+        if use_bn: self.mod_list.append(nn.BatchNorm1d(hid_dim))
+        self.mod_list.append(hid_act_class())
+
+        for i in range(num_layer_blocks - 1):
+            self.mod_list.append(nn.Linear(hid_dim, hid_dim))
+            if use_bn: self.mod_list.append(nn.BatchNorm1d(hid_dim))
+            self.mod_list.append(hid_act_class())
+        
+        self.mod_list.append(nn.Linear(hid_dim, 1))
+        self.model = nn.Sequential(*self.mod_list)
+
+
+    def forward(self, obs_batch, act_batch, next_obs_batch, z_batch):
+        if act_batch is not None:
+            input_batch = torch.cat([obs_batch, act_batch, next_obs_batch, z_batch], dim=1)
+        else:
+            input_batch = torch.cat([obs_batch, next_obs_batch, z_batch], dim=1)
+        output = self.model(input_batch)
+        output = torch.clamp(output, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
+        return output
+
+
 class StandardAIRLDisc(nn.Module):
     def __init__(
         self,
@@ -44,11 +88,16 @@ class StandardAIRLDisc(nn.Module):
         self.model = nn.Sequential(*self.mod_list)
 
 
-    def forward(self, obs_batch, act_batch):
+    def forward(self, obs_batch, act_batch, z_batch=None):
         if act_batch is not None:
-            input_batch = torch.cat([obs_batch, act_batch], dim=1)
+            to_concat = [obs_batch, act_batch]
+            if z_batch is not None: to_concat.append(z_batch)
+            input_batch = torch.cat(to_concat, dim=1)
         else:
-            input_batch = obs_batch
+            if z_batch is not None:
+                input_batch = torch.cat([obs_batch, z_batch], dim=1)
+            else:
+                input_batch = obs_batch
         output = self.model(input_batch)
         output = torch.clamp(output, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
         return output
@@ -307,6 +356,7 @@ class ThirdVersionSingleColorFetchCustomDisc(PyTorchModule):
         DISC_HID = 512
         print('\n\nDISC HID IS %d\n\n' % DISC_HID)
         input_dim = 10 if state_only else 14
+        # input_dim = 20 if state_only else 24
         if wrap_absorbing: input_dim += 1
         self.disc_part = nn.Sequential(
             nn.Linear(input_dim, DISC_HID),
@@ -323,11 +373,15 @@ class ThirdVersionSingleColorFetchCustomDisc(PyTorchModule):
     
     
     def forward(self, obs_batch, act_batch, z_batch=None):
+    # def forward(self, obs_batch, act_batch, next_obs_batch, z_batch=None):
         obs_batch = self.obs_processor(obs_batch, self.wrap_absorbing, z_batch)
+        # next_obs_batch = self.obs_processor(next_obs_batch, self.wrap_absorbing, z_batch)
         if self.state_only:
             disc_logits = self.disc_part(obs_batch)
+            # disc_logits = self.disc_part(obs_batch, next_obs_batch)
         else:
             concat_input = torch.cat([obs_batch, act_batch], dim=-1)
+            # concat_input = torch.cat([obs_batch, act_batch, next_obs_batch], dim=-1)
             disc_logits = self.disc_part(concat_input)
         clamped_disc_logits = torch.clamp(disc_logits, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
         return clamped_disc_logits

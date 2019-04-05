@@ -1,0 +1,93 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/np_bc_exp_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
+  exp_name: hc_rand_vel_np_bc_first_hype_search_z_dim_16_r_dim_64_num_hid_3_32_demos_per_task_det_eval
+  description: searching over the SAC hyperparameters
+  use_gpu: true
+  num_workers: 8
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  algo_params:
+    save_best: [true]
+    save_best_after_epoch: [0]
+
+    # objective: ['mse']
+    objective: ['max_like']
+    max_KL_beta: [0.0]
+    KL_ramp_up_start_iter: [20000]
+    KL_ramp_up_end_iter: [50000]
+    wrap_absorbing: [false]
+
+    few_shot_version: [true]
+    max_context_size: [4]
+    min_context_size: [1]
+
+    # results in training batch size of 1024 for disc model
+    num_tasks_used_per_update: [8]
+    num_context_trajs_for_training: [4]
+    num_test_trajs_for_training: [4]
+    train_samples_per_traj: [16]
+
+    num_context_trajs_for_exploration: [4]
+
+    num_tasks_per_eval: [10]
+    num_diff_context_per_eval_task: [2]
+    num_eval_trajs_per_post_sample: [2]
+    num_context_trajs_for_eval: [3]
+
+    encoder_lr: [0.0003]
+    policy_lr: [0.0003]
+
+    num_update_loops_per_train_call: [1000]
+
+    use_target_enc: [false]
+    soft_target_enc_tau: [0.005]
+
+    use_target_policy: [false]
+    soft_target_policy_tau: [0.005]
+
+    r_dim: [64]
+    z_dim: [16]
+    enc_hid_dim: [256]
+    r2z_hid_dim: [64]
+    num_enc_layer_blocks: [2]
+    agg_type: ['sum']
+
+  policy_net_size: [256]
+  num_hidden_layers: [3]
+
+  seed: [7972, 9361]
+
+# -----------------------------------------------------------------------------
+constants:
+  # expert_name: halfcheetah_rand_vel_expert
+  expert_name: halfcheetah_rand_vel_expert_32_demos_per_task
+  expert_seed_run_idx: 0
+  
+  algo_params:
+    eval_deterministic: true
+    
+    num_epochs: 10001
+    num_rollouts_per_epoch: 1
+    num_rollouts_between_updates: 1
+    num_initial_rollouts_for_all_train_tasks: 0
+    min_rollouts_before_training: 0
+    max_path_length: 1000
+
+    policy_uses_pixels: false
+
+    replay_buffer_size_per_task: 2000
+
+    save_replay_buffer: false
+    save_algorithm: true
+    render: false
+
+    freq_saving: 5
+
+  env_specs:
+    base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'
+    normalized: false
+    train_test_env: false
+    need_pixels: false

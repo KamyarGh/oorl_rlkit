@@ -11,6 +11,7 @@ from rlkit.torch.gen_exp_traj_algorithm import ExpertTrajGeneratorAlgorithm
 from rlkit.core import logger
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.sac.policies import MakeDeterministic
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
 from rlkit.scripted_experts import get_scripted_policy
@@ -31,7 +32,7 @@ import json
 def fill_buffer(
     buffer,
     meta_env,
-    expert_policy,
+    expert,
     expert_policy_specs,
     task_params_sampler,
     num_rollouts_per_task,
@@ -41,13 +42,19 @@ def fill_buffer(
     render=False,
     check_for_success=False,
     wrap_absorbing=False,
-    subsample_factor=1
+    subsample_factor=1,
+    deterministic=True
 ):
     expert_uses_pixels = expert_policy_specs['policy_uses_pixels']
     expert_uses_task_params = expert_policy_specs['policy_uses_task_params']
-    concat_task_params_to_policy_obs = expert_policy_specs['concat_task_params_to_policy_obs']
+    # hack
+    if 'concat_task_params_to_policy_obs' in expert_policy_specs:
+        concat_task_params_to_policy_obs = expert_policy_specs['concat_task_params_to_policy_obs']
+    else:
+        concat_task_params_to_policy_obs = False
 
-    first_complete_list = []
+    # this is something for debugging few shot fetch demos
+    # first_complete_list = []
 
     for task_params, obs_task_params in task_params_sampler:
         print('Doing Task {}...'.format(task_params))
@@ -56,12 +63,17 @@ def fill_buffer(
 
         num_rollouts_completed = 0
         while num_rollouts_completed < num_rollouts_per_task:
+            cur_rollout_rewards = 0
             print('\tRollout %d...' % num_rollouts_completed)
             cur_path_builder = PathBuilder()
 
             observation = meta_env.reset(task_params=task_params, obs_task_params=obs_task_params)
             if policy_is_scripted:
-                expert_policy.reset(meta_env)
+                policy = expert
+                policy.reset(meta_env)
+            else:
+                policy = expert.get_exploration_policy(obs_task_params)
+                if deterministic: policy.deterministic = True
             terminal = False
 
             subsample_mod = randint(0, subsample_factor-1)
@@ -79,15 +91,18 @@ def fill_buffer(
                 if expert_uses_task_params:
                     if concat_task_params_to_policy_obs:
                         agent_obs = np.concatenate((agent_obs, obs_task_params), -1)
-                    else:
-                        agent_obs = {'obs': agent_obs, 'obs_task_params': obs_task_params}
+                    # else:
+                        # agent_obs = {'obs': agent_obs, 'obs_task_params': obs_task_params}
 
                 if policy_is_scripted:
-                    action, agent_info = expert_policy.get_action(agent_obs, meta_env, len(cur_path_builder))
+                    action, agent_info = policy.get_action(agent_obs, meta_env, len(cur_path_builder))
                 else:
-                    action, agent_info = expert_policy.get_action(agent_obs)
+                    action, agent_info = policy.get_action(agent_obs)
 
                 next_ob, raw_reward, terminal, env_info = (meta_env.step(action))
+                # raw_reward = -1.0 * env_info['run_cost']
+                raw_reward = env_info['vel']
+                cur_rollout_rewards += raw_reward
 
                 if no_terminal: terminal = False
                 if wrap_absorbing:
@@ -170,10 +185,11 @@ def fill_buffer(
                     )
                 buffer.terminate_episode(task_id)                
                 num_rollouts_completed += 1
+                print('Return: %.2f' % cur_rollout_rewards)
             
-            print(expert_policy.first_time_all_complete)
-            first_complete_list.append(expert_policy.first_time_all_complete)
-    print(np.histogram(first_complete_list, bins=100))
+            # print(policy.first_time_all_complete)
+            # first_complete_list.append(expert_policy.first_time_all_complete)
+    # print(np.histogram(first_complete_list, bins=100))
 
 
 def experiment(specs):
@@ -181,17 +197,19 @@ def experiment(specs):
     # the specific experiment run (with a particular seed etc.) of the expert policy
     # to use for generating trajectories
     if not specs['use_scripted_policy']:
-        raise NotImplementedError('Outdated')
-        with open(path.join(specs['specific_exp_dir'], 'variant.json'), 'r') as f:
-            variant = json.load(f)
-        max_path_length = variant['algo_params']['max_path_length']
-        if 'wrap_absorbing' in variant['algo_params']:
-            wrap_absorbing = variant['algo_params']['wrap_absorbing']
-        else:
-            wrap_absorbing = False
-        expert_policy_specs = variant['algo_params']
-        no_terminal = variant['algo_params']['no_terminal']
+        policy_is_scripted = False
+        expert = joblib.load(path.join(specs['expert_dir'], 'extra_data.pkl'))['algorithm']
+        max_path_length = expert.max_path_length
+        attrs = [
+            'max_path_length', 'policy_uses_pixels',
+            'policy_uses_task_params',
+            'no_terminal'
+        ]
+        expert_policy_specs = {att: getattr(expert, att) for att in attrs}
+        expert_policy_specs['wrap_absorbing'] = specs['wrap_absorbing']
+        no_terminal = specs['no_terminal']
     else:
+        policy_is_scripted = True
         max_path_length = specs['max_path_length']
         wrap_absorbing = specs['wrap_absorbing']
         expert_policy_specs = {
@@ -200,13 +218,8 @@ def experiment(specs):
             'concat_task_params_to_policy_obs': specs['concat_task_params_to_policy_obs']
         }
         no_terminal = specs['no_terminal']
+        expert = get_scripted_policy(specs['scripted_policy_name'])
 
-    # for now the assumption is that the expert was trained with forward rl
-    if specs['use_scripted_policy']:
-        policy = get_scripted_policy(specs['scripted_policy_name'])
-        policy_is_scripted = True
-    else:
-        policy = joblib.load(path.join(specs['specific_exp_dir'], 'params.pkl'))['exploration_policy']
 
     # set up the envs
     env_specs = specs['env_specs']
@@ -229,9 +242,6 @@ def experiment(specs):
         concat_task_params_to_policy_obs=False
     )
 
-    # train_context_buffer, train_test_buffer = buffer_constructor(meta_train_env), buffer_constructor(meta_train_env)
-    # test_context_buffer, test_test_buffer = buffer_constructor(meta_test_env), buffer_constructor(meta_test_env)
-
     train_context_buffer = buffer_constructor(meta_train_env)
     test_context_buffer = buffer_constructor(meta_test_env)
 
@@ -239,41 +249,31 @@ def experiment(specs):
     check_for_success = specs['check_for_success']
     # fill the train buffers
     fill_buffer(
-        train_context_buffer, meta_train_env, policy, expert_policy_specs,
+        train_context_buffer, meta_train_env,
+        expert,
+        expert_policy_specs,
         meta_train_params_sampler, specs['num_rollouts_per_task'], max_path_length,
         no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success,
-        subsample_factor=specs['subsample_factor']
+        subsample_factor=specs['subsample_factor'],
+        deterministic=specs['get_deterministic_expert_demos']
     )
     train_test_buffer = deepcopy(train_context_buffer)
-    # fill_buffer(
-    #     train_test_buffer, meta_train_env, policy, expert_policy_specs,
-    #     meta_train_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-    #     no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
-    #     policy_is_scripted=policy_is_scripted, render=render,
-    #     check_for_success=check_for_success,
-    #     subsample_factor=specs['subsample_factor']
-    # )
 
     # fill the test buffers
     fill_buffer(
-        test_context_buffer, meta_train_env, policy, expert_policy_specs,
+        test_context_buffer, meta_train_env,
+        expert,
+        expert_policy_specs,
         meta_test_params_sampler, specs['num_rollouts_per_task'], max_path_length,
         no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success,
-        subsample_factor=specs['subsample_factor']
+        subsample_factor=specs['subsample_factor'],
+        deterministic=specs['get_deterministic_expert_demos']
     )
     test_test_buffer = deepcopy(test_context_buffer)
-    # fill_buffer(
-    #     test_test_buffer, meta_train_env, policy, expert_policy_specs,
-    #     meta_test_params_sampler, specs['num_rollouts_per_task'], max_path_length,
-    #     no_terminal=no_terminal, wrap_absorbing=specs['wrap_absorbing'],
-    #     policy_is_scripted=policy_is_scripted, render=render,
-    #     check_for_success=check_for_success,
-    #     subsample_factor=specs['subsample_factor']
-    # )
 
     # save the replay buffers
     d = {

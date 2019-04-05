@@ -246,7 +246,8 @@ class TrivialNPEncoder(PyTorchModule):
         self,
         context_encoder,
         r_to_z_map,
-        train_context_encoder=True
+        train_context_encoder=True,
+        state_only=False
     ):
         self.save_init_params(locals())
         super().__init__()

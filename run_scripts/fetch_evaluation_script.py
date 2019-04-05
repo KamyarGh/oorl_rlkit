@@ -9,6 +9,7 @@ from collections import defaultdict
 
 import numpy as np
 
+import torch
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.few_shot_fetch_env import _BaseParamsSampler
 from rlkit.envs.few_shot_fetch_env import StatsFor50Tasks25EachScaled0p9LinearBasicFewShotFetchEnv as EvalEnv
@@ -31,8 +32,10 @@ EVAL_SEED = 89205
 
 NUM_EVAL_TASKS = 16
 NUM_CONTEXT_SAMPLES = 3
+# NUM_POST_SAMPLES = 1
 NUM_POST_SAMPLES = 3
 NUM_ROLLOUTS_PER_POST_SAMPLE = 10
+# NUM_ROLLOUTS_PER_POST_SAMPLE = 5
 
 def rollout_path(env, task_params, obs_task_params, post_cond_policy):
     cur_eval_path_builder = PathBuilder()
@@ -105,7 +108,8 @@ def gather_eval_data(policy, np_encoder, expert_buffer_for_eval_tasks, max_conte
 
                 for _ in range(NUM_POST_SAMPLES):
                     # sample from the posterior and get the PostCondPolicy
-                    z = post_dist.sample()
+                    # z = post_dist.sample()
+                    z = torch.tanh(post_dist.mean)
                     z = z.cpu().data.numpy()[0]
                     if sample_from_prior:
                         z = np.random.normal(size=z.shape)

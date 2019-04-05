@@ -42,6 +42,8 @@ from rlkit.envs.few_shot_reach_env import get_zero_task_params_iterator as zero_
 from rlkit.envs.halfcheetah_rand_vel import HalfCheetahRandVelEnv
 from rlkit.envs.halfcheetah_rand_vel import _TrainParamsSampler as HalfCheetahRandVelTrainSampler
 from rlkit.envs.halfcheetah_rand_vel import _TestParamsSampler as HalfCheetahRandVelTestSampler
+from rlkit.envs.halfcheetah_rand_vel import _MetaTrainParamsSampler as HalfCheetahRandVelMetaTrainSampler
+from rlkit.envs.halfcheetah_rand_vel import _MetaTestParamsSampler as HalfCheetahRandVelMetaTestSampler
 
 # for meta simple meta reacher
 # from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
@@ -371,6 +373,13 @@ meta_envs = {
             'is_dmcs_env': False
         }
     },
+    'halfcheetah_rand_vel_25_meta_train_25_meta_test': {
+        'meta_train': lambda: HalfCheetahRandVelEnv(),
+        'meta_test': lambda: HalfCheetahRandVelEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    }
     # 'zero_unscaled_basic_few_shot_reach_env': {
     #     'meta_train': lambda: BasicFewShotReachEnv(),
     #     'meta_test': lambda: BasicFewShotReachEnv(),
@@ -466,8 +475,12 @@ meta_env_task_params_iterators = {
         'meta_test': lambda: few_shot_fetch_env_get_some_task_params_iterator(train_env=False, num=16)
     },
     'halfcheetah_rand_vel': {
-        'meta_train': lambda: HalfCheetahRandVelTrainSampler(),
-        'meta_test': lambda: HalfCheetahRandVelTestSampler(),
+        'meta_train': lambda: HalfCheetahRandVelTrainSampler(num_samples=100),
+        'meta_test': lambda: HalfCheetahRandVelTestSampler(num_samples=25),
+    },
+    'halfcheetah_rand_vel_25_meta_train_25_meta_test': {
+        'meta_train': lambda: HalfCheetahRandVelMetaTrainSampler(),
+        'meta_test': lambda: HalfCheetahRandVelMetaTestSampler(),
     }
     # 'zero_unscaled_basic_few_shot_reach_env': {
     #     'meta_train': lambda: zero_few_shot_reach_env_get_task_params_iterator(train_env=True),

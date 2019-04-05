@@ -11,7 +11,7 @@ from rlkit.envs.meta_mujoco_env import MetaMujocoEnv
 from rlkit.envs.meta_task_params_sampler import MetaTaskParamsSampler
 
 class _TrainParamsSampler(MetaTaskParamsSampler):
-    def __init__(self, random=8032):
+    def __init__(self, random=8032, num_samples=100):
         super().__init__()
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
@@ -49,9 +49,21 @@ class _TrainParamsSampler(MetaTaskParamsSampler):
 
 
 class _TestParamsSampler(_TrainParamsSampler):
-    def __init__(self, random=2340):
-        super().__init__(random)
+    def __init__(self, random=2340, num_samples=25):
+        super().__init__(random, num_samples=num_samples)
         self.vels = self._random.uniform(low=0.0, high=3.0, size=25)
+
+
+class _MetaTrainParamsSampler(_TrainParamsSampler):
+    def __init__(self, random=9827, num_samples=25):
+        super().__init__(random, num_samples=num_samples)
+        self.vels = np.arange(0, 3.05, 0.125)
+
+
+class _MetaTestParamsSampler(_TrainParamsSampler):
+    def __init__(self, random=5382, num_samples=25):
+        super().__init__(random, num_samples=num_samples)
+        self.vels = np.arange(0.0625, 3.05, 0.125)
 
 
 class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
@@ -76,7 +88,7 @@ class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
         cost = ctrl_cost + run_cost
         reward = -cost
         done = False
-        return ob, reward, done, dict(ctrl_cost=ctrl_cost, run_cost=run_cost)
+        return ob, reward, done, dict(ctrl_cost=ctrl_cost, run_cost=run_cost, vel=cur_vel)
 
     def _get_obs(self):
         obs = np.concatenate([

@@ -37,5 +37,7 @@
 - remove the Wrapped Absorbing Env wrapper
 - remove gen_expert_trajs old version
 - remove the need for train_test_env
+- gen_meta_irl_expert_trajs needs some clean up in fill_buffer
+- unify meta non meta normalization
 
 - need to remove the copy of wrapped_goal.....

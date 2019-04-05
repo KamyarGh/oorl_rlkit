@@ -12,16 +12,13 @@ from rlkit.launchers.launcher_util import setup_logger, set_seed
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
 
-from rlkit.torch.irl.disc_models.airl_disc import ThirdVersionSingleColorFetchCustomDisc
-from rlkit.torch.irl.disc_models.airl_disc import TransferVersionSingleColorFetchCustomDisc
+from rlkit.torch.irl.disc_models.airl_disc import StandardAIRLDisc
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
-from rlkit.torch.sac.policies import WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy
-from rlkit.torch.networks import FlattenMlp, ObsPreprocessedQFunc, ObsPreprocessedVFunc
+from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.networks import FlattenMlp
 
 from rlkit.torch.irl.np_airl import NeuralProcessAIRL
-from rlkit.torch.irl.meta_fairl import MetaFAIRL
-from rlkit.torch.irl.encoders.conv_trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder, TrivialContextEncoder
-# from rlkit.torch.irl.encoders.trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder
+from rlkit.torch.irl.encoders.conv_seq_encoder import ConvTrajEncoder, R2ZMap, Dc2RMap, NPEncoder
 
 import yaml
 import argparse
@@ -45,7 +42,6 @@ def experiment(variant):
     file_to_load = path.join(expert_dir, specific_run, 'extra_data.pkl')
     extra_data = joblib.load(file_to_load)
 
-    # this script is for the non-meta-learning AIRL
     train_context_buffer, train_test_buffer = extra_data['meta_train']['context'], extra_data['meta_train']['test']
     test_context_buffer, test_test_buffer = extra_data['meta_test']['context'], extra_data['meta_test']['test']
 
@@ -71,19 +67,17 @@ def experiment(variant):
 
     # make the disc model
     if variant['algo_params']['state_only']: print('\n\nUSING STATE ONLY DISC\n\n')
-    if variant['algo_params']['transfer_version']:
-        disc_model = TransferVersionSingleColorFetchCustomDisc(
-            clamp_magnitude=variant['disc_clamp_magnitude'],
-            z_dim=variant['algo_params']['np_params']['z_dim'],
-            gamma=0.99
-        )
-    else:
-        disc_model = ThirdVersionSingleColorFetchCustomDisc(
-            clamp_magnitude=variant['disc_clamp_magnitude'],
-            state_only=variant['algo_params']['state_only'],
-            wrap_absorbing=variant['algo_params']['wrap_absorbing'],
-            z_dim=variant['algo_params']['np_params']['z_dim']
-        )
+    disc_model = StandardAIRLDisc(
+        obs_dim + action_dim + variant['algo_params']['z_dim'] if not variant['algo_params']['state_only'] else obs_dim + variant['algo_params']['z_dim'],
+        num_layer_blocks=variant['disc_num_blocks'],
+        hid_dim=variant['disc_hid_dim'],
+        hid_act=variant['disc_hid_act'],
+        use_bn=variant['disc_use_bn'],
+        clamp_magnitude=variant['disc_clamp_magnitude']
+    )
+    print(disc_model)
+    print(disc_model.clamp_magnitude)
+
     if variant['algo_params']['use_target_disc']:
         target_disc = disc_model.copy()
     else:
@@ -91,41 +85,29 @@ def experiment(variant):
     print(disc_model)
     print(disc_model.clamp_magnitude)
 
-    z_dim = variant['algo_params']['np_params']['z_dim']
+    z_dim = variant['algo_params']['z_dim']
     policy_net_size = variant['policy_net_size']
     hidden_sizes = [policy_net_size] * variant['num_hidden_layers']
-    qf1 = ObsPreprocessedQFunc(
-        target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
-        z_dim,
+    qf1 = FlattenMlp(
         hidden_sizes=hidden_sizes,
-        input_size=6 + 4 + 4 + 1*variant['algo_params']['wrap_absorbing'],
+        input_size=obs_dim + action_dim + z_dim,
         output_size=1,
-        wrap_absorbing=variant['algo_params']['wrap_absorbing']
     )
-    qf2 = ObsPreprocessedQFunc(
-        target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
-        z_dim,
+    qf2 = FlattenMlp(
         hidden_sizes=hidden_sizes,
-        input_size=6 + 4 + 4 + 1*variant['algo_params']['wrap_absorbing'],
+        input_size=obs_dim + action_dim + z_dim,
         output_size=1,
-        wrap_absorbing=variant['algo_params']['wrap_absorbing']
     )
-    vf = ObsPreprocessedVFunc(
-        target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
-        z_dim,
+    vf = FlattenMlp(
         hidden_sizes=hidden_sizes,
-        input_size=6 + 4 + 1*variant['algo_params']['wrap_absorbing'],
+        input_size=obs_dim + z_dim,
         output_size=1,
-        wrap_absorbing=variant['algo_params']['wrap_absorbing']
     )
-    policy = WithZObsPreprocessedReparamTanhMultivariateGaussianPolicy(
-        target_disc.obs_processor if target_disc is not None else disc_model.obs_processor,
-        z_dim,
+    policy = ReparamTanhMultivariateGaussianPolicy(
         hidden_sizes=hidden_sizes,
-        obs_dim=6 + 4,
-        action_dim=4
+        obs_dim=obs_dim + z_dim,
+        action_dim=action_dim,
     )
-
     policy_optimizer = NewSoftActorCritic(
         policy=policy,
         qf1=qf1,
@@ -135,31 +117,33 @@ def experiment(variant):
         **variant['policy_params']
     )
 
-    # Make the neural process
-    traj_enc = TrivialTrajEncoder(state_only=variant['algo_params']['state_only'])
-    context_enc = TrivialContextEncoder(
-        variant['algo_params']['np_params']['agg_type'],
+    # make the encoder
+    traj_enc = ConvTrajEncoder(
+        variant['algo_params']['np_params']['traj_enc_params']['num_conv_layers'],
+        obs_dim + action_dim if not variant['algo_params']['state_only'] else obs_dim,
+        variant['algo_params']['np_params']['traj_enc_params']['channels'],
+        variant['algo_params']['np_params']['traj_enc_params']['kernel'],
+        variant['algo_params']['np_params']['traj_enc_params']['stride'],
+    )
+    Dc2R_map = Dc2RMap(
+        variant['algo_params']['np_params']['Dc2r_params']['agg_type'],
         traj_enc,
         state_only=variant['algo_params']['state_only']
     )
-    r2z_map = TrivialR2ZMap(z_dim)
-    
-    np_enc = TrivialNPEncoder(
-        context_enc,
-        r2z_map,
-        state_only=variant['algo_params']['state_only']
+    r2z_map = R2ZMap(
+        variant['algo_params']['np_params']['r2z_params']['num_layers'],
+        variant['algo_params']['np_params']['traj_enc_params']['channels'],
+        variant['algo_params']['np_params']['r2z_params']['hid_dim'],
+        variant['algo_params']['z_dim']
     )
-    
+    np_encoder = NPEncoder(
+        Dc2R_map,
+        r2z_map,
+    )
+
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
 
-    if variant['meta_fairl']:
-        print('\n\nUSING META-FAIRL\n\n')
-        algorithm_class = MetaFAIRL
-    else:
-        print('\n\nUSING META-AIRL\n\n')
-        algorithm_class = NeuralProcessAIRL
-    
-    algorithm = algorithm_class(
+    algorithm = NeuralProcessAIRL(
         meta_test_env, # env is the test env, training_env is the training env (following rlkit original setup)
         
         policy,
@@ -170,7 +154,7 @@ def experiment(variant):
         test_context_buffer,
         test_test_buffer,
 
-        np_enc,
+        np_encoder,
 
         policy_optimizer,
 
@@ -184,12 +168,6 @@ def experiment(variant):
 
     if ptu.gpu_enabled():
         algorithm.cuda()
-        # print(target_disc)
-        # print(next(algorithm.discriminator.obs_processor.parameters()).is_cuda)
-        # print(next(algorithm.main_policy.preprocess_model.parameters()).is_cuda)
-        # print(algorithm.main_policy.preprocess_model is algorithm.main_policy.copy().preprocess_model)
-        # print(algorithm.main_policy.preprocess_model is algorithm.main_policy.preprocess_model.copy())
-        # 1/0
     algorithm.train()
 
     return 1

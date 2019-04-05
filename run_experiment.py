@@ -107,8 +107,8 @@ if __name__ == '__main__':
         if args.nosrun:
             command = 'python {script} -e {specs}'
         else:
-            # command = 'srun --gres=gpu:1 -c 4 --mem 15gb -p gpu python {script} -e {specs}'
-            command = 'srun --gres=gpu:1 -c 12 --mem 15gb -p wsgpu python {script} -e {specs}'
+            command = 'srun --gres=gpu:1 -c 8 --mem 15gb -p gpu python {script} -e {specs}'
+            # command = 'srun --gres=gpu:1 -c 12 --mem 15gb -p wsgpu python {script} -e {specs}'
         # command = 'srun --gres=gpu:1 -x dgx1,guppy9 -p gpuc python {script} -e {specs}'
     else:
         command = 'taskset {aff} python {script} -e {specs}'

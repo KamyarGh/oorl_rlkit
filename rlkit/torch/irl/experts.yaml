@@ -555,7 +555,30 @@ norm_humanoid_256_demos_20_subsampling:
     norm_humanoid_256_demos_20_subsampling
   ]
 
+
 # META-EXPERTS ----------------------------------------------------------------
+halfcheetah_rand_vel_expert:
+  description: "25 meta train, 25 meta test, 8 demos each, subsample 20, unif spaced 0.125"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-25-25-8-each-20-sub
+  seed_runs: [
+    hc_rand_vel_expert_demos_25_25_8_each_20_sub_2019_03_29_05_30_45_0000--s-0
+  ]
+
+halfcheetah_rand_vel_expert_32_demos_per_task:
+  description: "25 meta train, 25 meta test, 32 demos each, subsample 20, unif spaced 0.125"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-25-25-32-each-20-sub
+  seed_runs: [
+    hc_rand_vel_expert_demos_25_25_32_each_20_sub_2019_03_30_01_27_32_0000--s-0
+  ]
+
+# norm_halfcheetah_rand_vel_expert:
+#   description: "25 meta train, 25 meta test, 4 demos each, subsample 20, unif spaced 0.125"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+#   seed_runs: [
+#     norm_halfcheetah_rand_vel_expert
+#   ]
+
+
 meta_simple_meta_reacher_expert_no_subsampling:
   description: "meta simple meta reacher expert, 6 trajs per task"
   exp_dir: /ais/gobi6/kamyar/oorl_rlkit/output/final-exp-trajs-for-meta-simple-meta-reacher

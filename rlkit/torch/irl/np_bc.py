@@ -252,7 +252,8 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
                 self.max_context_size,
                 num_tasks=self.num_tasks_used_per_update,
-                keys=['observations', 'actions']
+                keys=['observations', 'actions', 'next_observations']
+                # keys=['observations', 'actions']
             )
             mask = ptu.Variable(torch.ones(self.num_tasks_used_per_update, self.max_context_size, 1))
             this_context_sizes = np.random.randint(self.min_context_size, self.max_context_size+1, size=self.num_tasks_used_per_update)
@@ -262,7 +263,8 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
                 self.num_context_trajs_for_training,
                 num_tasks=self.num_tasks_used_per_update,
-                keys=['observations', 'actions']
+                keys=['observations', 'actions', 'next_observations']
+                # keys=['observations', 'actions']
             )
             mask = None
 

@@ -1,0 +1,40 @@
+# after running this you probably want to run normalize_meta_expert_demos.py on
+# the demos to normalize them (use check meta expert replay buffer stats)
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/gen_meta_irl_expert_trajs.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
+  exp_name: hc_rand_vel_expert_demos_25_25_32_each_20_sub
+  description: generating expert demos for few shot
+  use_gpu: true
+  num_workers: 1
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  use_scripted_policy: [false]
+  render: [false]
+  student_policy_uses_pixels: [false]
+  num_rollouts_per_task: [32]
+  subsample_factor: [20]
+  # seed: [28043, 99381, 33478, 448293, 5739]
+  seed: [28043]
+
+# -----------------------------------------------------------------------------
+constants:
+  # the expert
+  expert_dir: '/scratch/gobi2/kamyar/oorl_rlkit/output/meta-new-sac-halfcheetah-rand-vel-100-train-25-test/meta_new_sac_halfcheetah_rand_vel_100_train_25_test_2019_03_27_21_10_37_0000--s-0'
+  env_specs:
+    base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'
+    normalized: false
+    need_pixels: false
+  max_path_length: 1000
+  wrap_absorbing: false
+  no_terminal: false
+
+  check_for_success: false
+
+  policy_uses_pixels: false
+  policy_uses_task_params: false
+  concat_task_params_to_policy_obs: false
+  
+  get_deterministic_expert_demos: true
