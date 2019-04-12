@@ -1,7 +1,7 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/np_airl_exp_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: np_airl_hc_disc_128_3_pol_256_3_gp_1_rew_scale_4
+  exp_name: r_64_z_64_within_traj_agg_mean_disc_s_a_512_3_relu_gp_10_no_clip_norm_disc_no_bn_16_demos_rew_scale_8
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 2
@@ -9,9 +9,11 @@ meta_data:
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
+  scale_env_with_given_demo_stats: [true]
+
   disc_num_blocks: [3]
-  disc_hid_dim: [128]
-  disc_hid_act: ['tanh']
+  disc_hid_dim: [512]
+  disc_hid_act: ['relu']
   disc_use_bn: [false]
   disc_clamp_magnitude: [10.0]
 
@@ -42,9 +44,9 @@ variables:
 
     num_context_trajs_for_exploration: [4] # doesn't do anything if we're in few-shot mode
 
-    num_tasks_per_eval: [10]
+    num_tasks_per_eval: [24]
     num_diff_context_per_eval_task: [2]
-    num_eval_trajs_per_post_sample: [2]
+    num_eval_trajs_per_post_sample: [1]
     num_context_trajs_for_eval: [3] # doesn't do anything if we're in few-shot mode
 
     policy_optim_batch_mode_random: [true]
@@ -65,11 +67,18 @@ variables:
     num_policy_updates_per_loop_iter: [1]
 
     use_grad_pen: [true]
-    grad_pen_weight: [1.0]
+    grad_pen_weight: [10.0]
+    # grad_pen_weight: [1.0]
 
+    # disc_ce_grad_clip: [2.0]
+    # enc_ce_grad_clip: [0.5]
+    # disc_gp_grad_clip: [2.0]
     disc_ce_grad_clip: [100.0]
     enc_ce_grad_clip: [100.0]
     disc_gp_grad_clip: [100.0]
+    # disc_ce_grad_clip: [2.0]
+    # enc_ce_grad_clip: [2.0]
+    # disc_gp_grad_clip: [2.0]
 
     use_target_disc: [false]
     soft_target_disc_tau: [0.005]
@@ -77,21 +86,30 @@ variables:
     use_target_enc: [false]
     soft_target_enc_tau: [0.005]
 
-    z_dim: [16]
-    np_params:
-      traj_enc_params:
-        num_conv_layers: [3]
-        channels: [32]
-        kernel: [3]
-        stride: [2]
-      Dc2r_params:
-        agg_type: ['sum']
-      r2z_params:
-        num_layers: [1]
-        hid_dim: [32]
+    r_dim: [64]
+    z_dim: [64]
+    enc_hid_dim: [256]
+    r2z_hid_dim: [64]
+    num_enc_layer_blocks: [2]
+    agg_type: ['sum']
+    within_traj_agg: ['mean']
+    # --------
+    # z_dim: [16]
+    # np_params:
+    #   traj_enc_params:
+    #     num_conv_layers: [3]
+    #     channels: [32]
+    #     kernel: [3]
+    #     stride: [2]
+    #   Dc2r_params:
+    #     agg_type: ['sum']
+    #   r2z_params:
+    #     num_layers: [1]
+    #     hid_dim: [32]
   
   policy_params:
-    reward_scale: [4.0]
+    # reward_scale: [4.0]
+    reward_scale: [8.0]
     use_policy_as_ema_policy: [false]
     soft_ema_policy_exp: [0.005]
 
@@ -109,14 +127,16 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
-  expert_name: halfcheetah_rand_vel_expert
+  # expert_name: halfcheetah_rand_vel_expert
+  # expert_name: norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
+  expert_name: norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20
   expert_seed_run_idx: 0
   
   algo_params:
     eval_deterministic: false
     
     num_epochs: 2001
-    num_rollouts_per_epoch: 375 # num rollouts between updates * 25
+    num_rollouts_per_epoch: 125 # num rollouts between updates * 25
     num_rollouts_between_updates: 5
     num_initial_rollouts_for_all_train_tasks: 1
     min_rollouts_before_training: 0
@@ -127,7 +147,7 @@ constants:
     replay_buffer_size_per_task: 50000
 
     # save_replay_buffer: false
-    save_algorithm: true
+    save_algorithm: false
     render: false
 
     freq_saving: 5

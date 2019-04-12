@@ -35,6 +35,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
             max_path_length=1000,
             discount=0.99,
             replay_buffer_size_per_task=20000,
+            reward_scale=1.0,
             render=False,
             save_replay_buffer=False,
             save_algorithm=False,
@@ -63,6 +64,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.max_path_length = max_path_length
         self.discount = discount
         self.replay_buffer_size_per_task = replay_buffer_size_per_task
+        self.reward_scale = reward_scale
         self.render = render
         self.save_replay_buffer = save_replay_buffer
         self.save_algorithm = save_algorithm
@@ -100,7 +102,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
         self.test_task_params_sampler = test_task_params_sampler
         self.do_not_train = do_not_train
         self.do_not_eval = do_not_eval
-        self.best_meta_test_percent_solved = 0.0
+        self.best_meta_test = np.float('-inf')
         self.save_best = save_best
         self.save_best_after_epoch = save_best_after_epoch
 
@@ -174,6 +176,7 @@ class MetaRLAlgorithm(metaclass=abc.ABCMeta):
                 self.training_env.render()
             
             next_ob, raw_reward, terminal, env_info = (self.training_env.step(action))
+            raw_reward *= self.reward_scale
             if self.no_terminal:
                 terminal = False
             

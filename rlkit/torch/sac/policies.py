@@ -374,16 +374,72 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             return log_prob, mean, log_std
         return log_prob
 
+
+class AntRandGoalCustomReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):
+    """
+    Custom for Ant Rand Goal
+    The only difference is that it linearly embeds the goal into a higher dimension
+    """
+    def __init__(
+            self,
+            goal_dim,
+            goal_embed_dim,
+            hidden_sizes,
+            obs_dim,
+            action_dim,
+            std=None,
+            init_w=1e-3,
+            **kwargs
+    ):
+        self.save_init_params(locals())
+        super().__init__(
+            hidden_sizes,
+            obs_dim + goal_embed_dim,
+            action_dim,
+            init_w=init_w,
+            **kwargs
+        )
+
+        self.goal_embed_fc = nn.Linear(goal_dim, goal_embed_dim)
+        self.goal_dim = goal_dim
+    
+    def forward(
+        self,
+        obs,
+        deterministic=False,
+        return_log_prob=False,
+        return_tanh_normal=False
+    ):
+        # obs will actuall be concat of [obs, goal]
+        goal = obs[:,-self.goal_dim:]
+        goal_embed = self.goal_embed_fc(goal)
+        obs = torch.cat([obs[:,:-self.goal_dim], goal_embed], dim=-1)
+        return super().forward(
+            obs,
+            deterministic=deterministic,
+            return_log_prob=return_log_prob,
+            return_tanh_normal=return_tanh_normal
+        )
+
+
      
 class PostCondMLPPolicyWrapper(ExplorationPolicy):
-    def __init__(self, policy, np_post_sample, deterministic=False):
+    def __init__(self, policy, np_post_sample, deterministic=False, obs_mean=None, obs_std=None):
         super().__init__()
         self.policy = policy
         self.np_z = np_post_sample # assuming it is a flat np array
         self.deterministic = deterministic
+        self.obs_mean = obs_mean
+        self.obs_std = obs_std
+        if obs_mean is not None:
+            self.normalize_obs = True
+        else:
+            self.normalize_obs = False
 
 
     def get_action(self, obs_np):
+        if self.normalize_obs:
+            obs_np = (obs_np - self.obs_mean) / self.obs_std
         obs = np.concatenate((obs_np, self.np_z), axis=0)
         return self.policy.get_action(obs, deterministic=self.deterministic)
 

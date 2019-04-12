@@ -557,6 +557,41 @@ norm_humanoid_256_demos_20_subsampling:
 
 
 # META-EXPERTS ----------------------------------------------------------------
+hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20:
+  description: "25 meta train, 25 meta test, 16 demos each, subsample 20, unif spaced 0.125"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-0p125-separated-16-demos-per-task-20-sub-stoch-policy-3-layer-rew-4
+  seed_runs: [
+    hc_rand_vel_expert_demos_0p125_separated_16_demos_per_task_20_sub_stoch_policy_3_layer_rew_4_2019_04_07_18_31_35_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20:
+  description: "normalized, 25 meta train, 25 meta test, 16 demos each, subsample 20, unif spaced 0.125"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20
+  ]
+
+deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
+  description: "25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-0p125-separated-64-demos-per-task-20-sub-det-poliy-3-layer-rew-4
+  seed_runs: [
+    hc_rand_vel_expert_demos_0p125_separated_64_demos_per_task_20_sub_det_poliy_3_layer_rew_4_2019_04_05_16_02_49_0000--s-0
+  ]
+
+norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
+  description: "normalized, 25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  seed_runs: [
+    norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
+  ]
+
+stochastic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
+  description: "25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
+  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/stochastic-hc-rand-vel-expert-demos-0p125-separated-64-demos-per-task-20-sub-stoch-policy-3-layer-rew-4
+  seed_runs: [
+    stochastic_hc_rand_vel_expert_demos_0p125_separated_64_demos_per_task_20_sub_stoch_policy_3_layer_rew_4_2019_04_05_16_40_07_0000--s-0
+  ]
+
 halfcheetah_rand_vel_expert:
   description: "25 meta train, 25 meta test, 8 demos each, subsample 20, unif spaced 0.125"
   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-25-25-8-each-20-sub

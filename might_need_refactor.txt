@@ -39,5 +39,9 @@
 - remove the need for train_test_env
 - gen_meta_irl_expert_trajs needs some clean up in fill_buffer
 - unify meta non meta normalization
+- getting ScaledEnv wrapper to handle meta setting more nicely
+- remove few shot hc rand vel eval script and move evertyhig into genral few shot eval script
+- unify the interface for policy_uses_task_params (move it into each algorith individually)
+- add capacity to mix and match tasks with task params samplers
 
 - need to remove the copy of wrapped_goal.....

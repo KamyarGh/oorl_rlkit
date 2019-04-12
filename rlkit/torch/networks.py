@@ -304,3 +304,44 @@ class ObsPreprocessedVFunc(FlattenMlp):
     def forward(self, obs):
         obs = self.preprocess_fn(obs).detach()
         return super().forward(obs)
+
+
+class AntRandGoalCustomQFunc(FlattenMlp):
+    def __init__(
+        self,
+        goal_dim,
+        goal_embed_dim,
+        *args,
+        **kwargs
+    ):
+        self.save_init_params(locals())
+        kwargs['input_size'] += goal_embed_dim
+        super().__init__(*args, **kwargs)
+        self.goal_embed_fc = nn.Linear(goal_dim, goal_embed_dim)
+        self.goal_dim = goal_dim
+
+    def forward(self, obs, action, **kwargs):
+        goal = obs[:,-self.goal_dim:]
+        flat_inputs = torch.cat([obs[:,:-self.goal_dim], self.goal_embed_fc(goal), action], dim=1)
+        return super().forward(flat_inputs, **kwargs)
+
+
+class AntRandGoalCustomVFunc(FlattenMlp):
+    def __init__(
+        self,
+        goal_dim,
+        goal_embed_dim,
+        *args,
+        **kwargs
+    ):
+        self.save_init_params(locals())
+        kwargs['input_size'] += goal_embed_dim
+        super().__init__(*args, **kwargs)
+        self.goal_embed_fc = nn.Linear(goal_dim, goal_embed_dim)
+        self.goal_dim = goal_dim
+
+    def forward(self, obs, **kwargs):
+        goal = obs[:,-self.goal_dim:]
+        flat_inputs = torch.cat([obs[:,:-self.goal_dim], self.goal_embed_fc(goal)], dim=1)
+        return super().forward(flat_inputs, **kwargs)
+

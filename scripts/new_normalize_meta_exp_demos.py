@@ -39,11 +39,22 @@ def do_the_thing(data_path, save_path, plot_obs_histogram=False):
         # first concatenate all the obs from all the tasks
         print(d.keys())
         con_rb = d['meta_train']['context']
-        all_obs = np.concatenate([rb._observations['obs'][:rb._size] for rb in con_rb.task_replay_buffers.values()])
+        all_obs = np.concatenate(
+            [rb._observations['obs'][:rb._size] for rb in con_rb.task_replay_buffers.values()]
+            +
+            [rb._next_obs['obs'][:rb._size] for rb in con_rb.task_replay_buffers.values()]
+        )
         mean, std = get_stats(all_obs)
         print(all_obs.shape)
+        print('\nBefore -----------------------')
+        print('Mean:')
         print(mean)
+        print('Std:')
         print(std)
+        print('Max:')
+        print(np.max(all_obs, axis=0))
+        print('Min:')
+        print(np.min(all_obs, axis=0))
 
         meta_rbs_to_normalize = [
             d['meta_train']['context'],
@@ -57,6 +68,24 @@ def do_the_thing(data_path, save_path, plot_obs_histogram=False):
                 task_rb._next_obs['obs'] = (task_rb._next_obs['obs'] - mean) / std
         d['obs_mean'] = mean
         d['obs_std'] = std
+        # ---------
+        con_rb = d['meta_train']['context']
+        all_obs = np.concatenate(
+            [rb._observations['obs'][:rb._size] for rb in con_rb.task_replay_buffers.values()]
+            +
+            [rb._next_obs['obs'][:rb._size] for rb in con_rb.task_replay_buffers.values()]
+        )
+        mean, std = get_stats(all_obs)
+        print(all_obs.shape)
+        print('\nAfter -----------------------')
+        print('Mean:')
+        print(mean)
+        print('Std:')
+        print(std)
+        print('Max:')
+        print(np.max(all_obs, axis=0))
+        print('Min:')
+        print(np.min(all_obs, axis=0))
     if NORMALIZE_ACTS:
         raise NotImplementedError('Must take into account d[\'train\']._size')
         # d['train']._actions, mean, std = get_normalized(d['train']._actions, return_stats=True)
@@ -79,7 +108,9 @@ with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
     listings = yaml.load(f.read())
 
 for i, expert in enumerate([
-    'halfcheetah_rand_vel_expert'
+    # 'halfcheetah_rand_vel_expert',
+    # 'deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20'
+    'hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20'
   ]):
   data_path = osp.join(listings[expert]['exp_dir'], listings[expert]['seed_runs'][0], 'extra_data.pkl')
   save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/norm_'+expert

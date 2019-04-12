@@ -1,0 +1,32 @@
+meta_data:
+  script_path: /Users/kamyar/vector_home/oorl_rlkit/run_scripts/few_shot_ant_rand_goal_eval_script.py
+  # script_path: /h/kamyar/oorl_rlkit/run_scripts/few_shot_ant_rand_goal_eval_script.py
+  exp_dirs: /Users/kamyar/junk/
+  # exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
+  exp_name: test
+  description: searching over the SAC hyperparameters
+  use_gpu: false
+  num_workers: 1
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  sample_from_prior: [false]
+  eval_expert: [true]
+  just_loading_policy: [true]
+  sub_exp_mode: [true]
+  render: [true]
+  exp_path: [
+    # /scratch/gobi2/kamyar/oorl_rlkit/output/expert-ant-rand-goal-meta-new-sac-rew-scale-5-rb-10k/expert_ant_rand_goal_meta_new_sac_rew_scale_5_rb_10k_2019_04_08_21_33_08_0000--s-0/
+    # /scratch/gobi2/kamyar/oorl_rlkit/output/proper-expert-ant-rand-goal-120-deg-rew-scale-10-roll-between-5-upd-1000-batch-32-32-max-path-200/proper_expert_ant_rand_goal_120_deg_rew_scale_10_roll_between_5_upd_1000_batch_32_32_max_path_200_2019_04_10_01_39_35_0000--s-0
+    /Users/kamyar/junk
+  ]
+  context_sizes: [
+    [4]
+  ]
+  num_rollouts_per_task: [5]
+  eval_deterministic: [true]
+
+
+# -----------------------------------------------------------------------------
+constants: {}

@@ -3,7 +3,10 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/gen_meta_irl_expert_trajs.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: hc_rand_vel_expert_demos_25_25_32_each_20_sub
+  # exp_name: hc_rand_vel_expert_demos_0p125_spaced_tasks_64_demos_each_20_sub_det_policy
+  # exp_name: stochastic_hc_rand_vel_expert_demos_0p125_separated_64_demos_per_task_20_sub_stoch_policy_3_layer_rew_4
+  # exp_name: hc_rand_vel_expert_demos_0p125_separated_16_demos_per_task_20_sub_stoch_policy_3_layer_rew_4
+  exp_name: test_no_ctrl_cost_1
   description: generating expert demos for few shot
   use_gpu: true
   num_workers: 1
@@ -14,17 +17,27 @@ variables:
   use_scripted_policy: [false]
   render: [false]
   student_policy_uses_pixels: [false]
-  num_rollouts_per_task: [32]
-  subsample_factor: [20]
+  num_rollouts_per_task: [10]
+  # subsample_factor: [20]
+  subsample_factor: [1]
   # seed: [28043, 99381, 33478, 448293, 5739]
   seed: [28043]
 
 # -----------------------------------------------------------------------------
 constants:
   # the expert
-  expert_dir: '/scratch/gobi2/kamyar/oorl_rlkit/output/meta-new-sac-halfcheetah-rand-vel-100-train-25-test/meta_new_sac_halfcheetah_rand_vel_100_train_25_test_2019_03_27_21_10_37_0000--s-0'
+  # 2 layer expert, rew 1
+  # expert_dir: '/scratch/gobi2/kamyar/oorl_rlkit/output/meta-new-sac-halfcheetah-rand-vel-100-train-25-test/meta_new_sac_halfcheetah_rand_vel_100_train_25_test_2019_03_27_21_10_37_0000--s-0'
+  # 3 layer expert, rew 1
+  # expert_dir: '/scratch/gobi2/kamyar/oorl_rlkit/output/meta-new-sac-halfcheetah-rand-vel-100-train-25-test-3-layers-rew-1/meta_new_sac_halfcheetah_rand_vel_100_train_25_test_3_layers_rew_1_2019_04_05_02_45_58_0000--s-0/'
+  # 3 layer expert, rew 4
+  # expert_dir: '/scratch/gobi2/kamyar/oorl_rlkit/output/meta-new-sac-halfcheetah-rand-vel-100-train-25-test-3-layers-rew-4/meta_new_sac_halfcheetah_rand_vel_100_train_25_test_3_layers_rew_4_2019_04_05_02_49_51_0000--s-0/'
+  # 2 layer expert, rew 80
+  # expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/meta-new-sac-halfcheetah-rand-vel-100-train-25-test/meta_new_sac_halfcheetah_rand_vel_100_train_25_test_2019_03_29_06_03_28_0015--s-0/
+  # 3 layer expert, rew 4, no ctrl cost
+  expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/no-ctrl-cost-meta-new-sac-halfcheetah-rand-vel-100-train-25-test-3-layers-rew-4/no_ctrl_cost_meta_new_sac_halfcheetah_rand_vel_100_train_25_test_3_layers_rew_4_2019_04_07_18_44_23_0000--s-0/
   env_specs:
-    base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'
+    base_env_name: 'halfcheetah_rand_vel_0p125_separated'
     normalized: false
     need_pixels: false
   max_path_length: 1000
@@ -38,3 +51,11 @@ constants:
   concat_task_params_to_policy_obs: false
   
   get_deterministic_expert_demos: true
+
+# 2 layer policy
+# stochastic evaluation : -614.43 +/- 117.56
+# determinisitc evaluation: -350.27 +/- 144.68
+
+# 3 layer policy
+# stochastic evaluation : -614.43 +/- 117.56
+# determinisitc evaluation: -365.17 +/- 124.24

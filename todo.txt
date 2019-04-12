@@ -1,3 +1,58 @@
+- (done) check if 3 layer experts are better than 2 layer
+- (done) generate a lot of demos (64 per task) (det & stoch)
+- (done) check velocity for stochastic
+- (done) check velocity for best bc you have thus far
+- for timestep-based:
+    - check what happens if you share initial weight for s,s'
+    - find best setting
+    - then check if normalizing the demos helps?
+- try s, a, s' version of traj encoder
+- make new conv seq traj encoder
+- fix the master's thesis objective
+- get shit running on the vaughn cluster
+USING 64 demos per task
+- figure out best BC architecture and z dim etc.
+- make np_airl work for halfcheetah
+    - gp amount (10 is better than 1)
+    - grad clip (yes)
+    - batch norm in disc (NOPE)
+    - increase disc size (512 - 3 is the shit)
+    - ReLU FOR THE WIN
+
+    - run with less data (running)
+    - REWARD SCALE SEARCH!!!!!!!! (running)
+    
+    - grad clip for GP
+    - S, A, S'
+    - TRY EVEN LARGER MODEL 1024!
+    - CHECK NEW GRAD CLIP VALUES
+    - reduce replay buffer size
+    - Adam parameters
+    - using a running mean
+    - !! multiple disc steps per policy step (and maybe other big gan choices)
+    - multiple policy steps per disc step
+    - slow down encoder learning rate?
+USING MUCH LESS demos per task
+- figure out best BC architecture and z dim etc.
+- start making np_airl work for halfcheetah
+
+
+
+TRAINING ANT EXPERT:
+    - other form of the environmnet from guided meta-policy search
+    - might need to turn it into half-circle
+    - batch size and num tasks per batch
+    - reward scale
+    - num rollouts between updates
+    - max path length
+    - normalized box env
+
+
+
+
+
+
+
 - (done) plot the grad mags
 - debug meta-fairl by running it on a single task
 - debug by running it on 4 tasks

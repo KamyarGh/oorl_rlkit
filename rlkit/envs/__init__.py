@@ -39,11 +39,23 @@ from rlkit.envs.few_shot_fetch_env import _BaseParamsSampler as FewShotFetchBase
 from rlkit.envs.few_shot_reach_env import BasicFewShotReachEnv, ZeroScaled0p9LinearFewShotReachEnv
 from rlkit.envs.few_shot_reach_env import get_zero_task_params_iterator as zero_few_shot_reach_env_get_task_params_iterator
 
+# Halfcheetah rand vel imports
 from rlkit.envs.halfcheetah_rand_vel import HalfCheetahRandVelEnv
 from rlkit.envs.halfcheetah_rand_vel import _TrainParamsSampler as HalfCheetahRandVelTrainSampler
 from rlkit.envs.halfcheetah_rand_vel import _TestParamsSampler as HalfCheetahRandVelTestSampler
 from rlkit.envs.halfcheetah_rand_vel import _MetaTrainParamsSampler as HalfCheetahRandVelMetaTrainSampler
 from rlkit.envs.halfcheetah_rand_vel import _MetaTestParamsSampler as HalfCheetahRandVelMetaTestSampler
+
+# Ant goal pos imports
+from rlkit.envs.ant_rand_goal import AntRandGoalEnv
+from rlkit.envs.ant_rand_goal import _ExpertTrainParamsSampler as AntRandGoalExpertTrainSampler
+from rlkit.envs.ant_rand_goal import _ExpertTestParamsSampler as AntRandGoalExpertTestSampler
+from rlkit.envs.ant_rand_goal import _Expert120DegreesParamsSampler as AntRandGoal120DegreesSampler
+from rlkit.envs.ant_rand_goal import _Expert60DegreesParamsSampler as AntRandGoal60DegreesSampler
+from rlkit.envs.ant_rand_goal import _Expert2DirectionsParamsSampler as AntRandGoal2DirectionsSampler
+from rlkit.envs.ant_rand_goal import _ExpertOneDirectionParamsSampler as AntRandGoalOneDirectionSampler
+from rlkit.envs.ant_rand_goal import _ExpertOpposite2DirectionsParamsSampler as AntRandGoalOpposite2DirectionsSampler
+from rlkit.envs.ant_rand_goal import _Expert45DegFartherParamsSampler as AntRandGoal45DegFartherParamsSampler
 
 # for meta simple meta reacher
 # from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
@@ -379,7 +391,63 @@ meta_envs = {
         'info': {
             'is_dmcs_env': False
         }
-    }
+    },
+    'halfcheetah_rand_vel_0p125_separated': {
+        'meta_train': lambda: HalfCheetahRandVelEnv(),
+        'meta_test': lambda: HalfCheetahRandVelEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_200_points': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_120_degrees': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_60_degrees': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_2_directions': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_45_deg_farther': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_opposite_2_directions': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_one_direction': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
     # 'zero_unscaled_basic_few_shot_reach_env': {
     #     'meta_train': lambda: BasicFewShotReachEnv(),
     #     'meta_test': lambda: BasicFewShotReachEnv(),
@@ -481,7 +549,39 @@ meta_env_task_params_iterators = {
     'halfcheetah_rand_vel_25_meta_train_25_meta_test': {
         'meta_train': lambda: HalfCheetahRandVelMetaTrainSampler(),
         'meta_test': lambda: HalfCheetahRandVelMetaTestSampler(),
-    }
+    },
+    'halfcheetah_rand_vel_0p125_separated': {
+        'meta_train': lambda: HalfCheetahRandVelMetaTrainSampler(),
+        'meta_test': lambda: HalfCheetahRandVelMetaTestSampler(),
+    },
+    'ant_rand_goal_200_points': {
+        'meta_train': lambda: AntRandGoalExpertTrainSampler(),
+        'meta_test': lambda: AntRandGoalExpertTestSampler(),
+    },
+    'ant_rand_goal_120_degrees': {
+        'meta_train': lambda: AntRandGoal120DegreesSampler(),
+        'meta_test': lambda: AntRandGoal120DegreesSampler(),
+    },
+    'ant_rand_goal_60_degrees': {
+        'meta_train': lambda: AntRandGoal60DegreesSampler(),
+        'meta_test': lambda: AntRandGoal60DegreesSampler(),
+    },
+    'ant_rand_goal_2_directions': {
+        'meta_train': lambda: AntRandGoal2DirectionsSampler(),
+        'meta_test': lambda: AntRandGoal2DirectionsSampler()
+    },
+    'ant_rand_goal_45_deg_farther': {
+        'meta_train': lambda: AntRandGoal45DegFartherParamsSampler(),
+        'meta_test': lambda: AntRandGoal45DegFartherParamsSampler()
+    },
+    'ant_rand_goal_opposite_2_directions': {
+        'meta_train': lambda: AntRandGoalOpposite2DirectionsSampler(),
+        'meta_test': lambda: AntRandGoalOpposite2DirectionsSampler()
+    },
+    'ant_rand_goal_one_direction': {
+        'meta_train': lambda: AntRandGoalOneDirectionSampler(),
+        'meta_test': lambda: AntRandGoalOneDirectionSampler()
+    },
     # 'zero_unscaled_basic_few_shot_reach_env': {
     #     'meta_train': lambda: zero_few_shot_reach_env_get_task_params_iterator(train_env=True),
     #     'meta_test': lambda: zero_few_shot_reach_env_get_task_params_iterator(train_env=False)

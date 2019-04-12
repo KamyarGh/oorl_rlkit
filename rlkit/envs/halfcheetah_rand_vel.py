@@ -16,7 +16,7 @@ class _TrainParamsSampler(MetaTaskParamsSampler):
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
         self._random = random
-        self.vels = self._random.uniform(low=0.0, high=3.0, size=100)
+        self.vels = self._random.uniform(low=0.0, high=3.0, size=num_samples)
         self._ptr = 0
 
     def sample(self):
@@ -86,9 +86,11 @@ class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
         # run_cost = 1.*np.abs(self.get_body_comvel("torso")[0] - self.target_velocity)
         run_cost = 1.*np.abs(cur_vel - self.target_velocity[0])
         cost = ctrl_cost + run_cost
+        # cost = run_cost
         reward = -cost
         done = False
         return ob, reward, done, dict(ctrl_cost=ctrl_cost, run_cost=run_cost, vel=cur_vel)
+        # return ob, reward, done, dict(run_cost=run_cost, vel=cur_vel)
 
     def _get_obs(self):
         obs = np.concatenate([

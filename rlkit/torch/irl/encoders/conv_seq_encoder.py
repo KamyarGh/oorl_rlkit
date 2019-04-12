@@ -126,11 +126,14 @@ class Dc2RMap(PyTorchModule):
 
         obs = np.array([[d['observations'] for d in task_trajs] for task_trajs in context])
         acts = np.array([[d['actions'] for d in task_trajs] for task_trajs in context])
+        next_obs = np.array([[d['next_observations'] for d in task_trajs] for task_trajs in context])
 
         if not self.state_only:
-            all_timesteps = np.concatenate([obs, acts], axis=-1)
+            # all_timesteps = np.concatenate([obs, acts], axis=-1)
+            all_timesteps = np.concatenate([obs, acts, next_obs], axis=-1)
         else:
-            all_timesteps = obs
+            # all_timesteps = obs
+            all_timesteps = np.concatenate([obs, next_obs], axis=-1)
         all_timesteps = Variable(ptu.from_numpy(all_timesteps), requires_grad=False)
 
         traj_embeddings = self.traj_encoder(all_timesteps)

@@ -1,14 +1,19 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/np_bc_exp_script.py
   exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: hc_rand_vel_np_bc_first_hype_search_z_dim_16_r_dim_64_num_hid_3_32_demos_per_task_det_eval
+  # exp_name: hc_rand_vel_32_demos_per_task_det_eval_new_conv_encoder_z_dim_32_sasp_conv_ch_64_stride_3_new_expert_64_demos
+  # exp_name: hc_rand_vel_new_expert_64_demos_timestep_enc_r_64_z_16_enc_256_r2z_64_lay_2_within_traj_agg_mean_z_64_norm
+  # exp_name: hc_rand_vel_bc_norm_16_demos
+  exp_name: hc_16_demos_within_traj_agg_mean_shorter_epochs
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 8
+  num_workers: 2
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
+  scale_env_with_given_demo_stats: [true]
+
   algo_params:
     save_best: [true]
     save_best_after_epoch: [0]
@@ -32,15 +37,15 @@ variables:
 
     num_context_trajs_for_exploration: [4]
 
-    num_tasks_per_eval: [10]
+    num_tasks_per_eval: [24]
     num_diff_context_per_eval_task: [2]
-    num_eval_trajs_per_post_sample: [2]
+    num_eval_trajs_per_post_sample: [1]
     num_context_trajs_for_eval: [3]
 
     encoder_lr: [0.0003]
     policy_lr: [0.0003]
 
-    num_update_loops_per_train_call: [1000]
+    num_update_loops_per_train_call: [2000]
 
     use_target_enc: [false]
     soft_target_enc_tau: [0.005]
@@ -49,11 +54,25 @@ variables:
     soft_target_policy_tau: [0.005]
 
     r_dim: [64]
-    z_dim: [16]
+    z_dim: [64]
     enc_hid_dim: [256]
     r2z_hid_dim: [64]
     num_enc_layer_blocks: [2]
     agg_type: ['sum']
+    within_traj_agg: ['mean']
+    # --------
+    # z_dim: [32]
+    # np_params:
+    #   traj_enc_params:
+    #     num_conv_layers: [3]
+    #     channels: [64]
+    #     kernel: [3]
+    #     stride: [3]
+    #   Dc2r_params:
+    #     agg_type: ['sum']
+    #   r2z_params:
+    #     num_layers: [1]
+    #     hid_dim: [32]
 
   policy_net_size: [256]
   num_hidden_layers: [3]
@@ -63,7 +82,10 @@ variables:
 # -----------------------------------------------------------------------------
 constants:
   # expert_name: halfcheetah_rand_vel_expert
-  expert_name: halfcheetah_rand_vel_expert_32_demos_per_task
+  # expert_name: halfcheetah_rand_vel_expert_32_demos_per_task
+  # expert_name: deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
+  # expert_name: norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
+  expert_name: norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20
   expert_seed_run_idx: 0
   
   algo_params:
@@ -81,10 +103,15 @@ constants:
     replay_buffer_size_per_task: 2000
 
     save_replay_buffer: false
-    save_algorithm: true
+    save_algorithm: false
     render: false
 
     freq_saving: 5
+
+    np_params:
+      traj_enc_params: {}
+      Dc2r_params: {}
+      r2z_params: {}
 
   env_specs:
     base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'

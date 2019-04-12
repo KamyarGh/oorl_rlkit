@@ -106,7 +106,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self.test_task_params_sampler = test_task_params_sampler
         self.do_not_train = do_not_train
         self.do_not_eval = do_not_eval
-        self.best_meta_test_percent_solved = 0.0
+        self.best_meta_test = np.float('-inf')
         self.save_best = save_best
         self.save_best_after_epoch = save_best_after_epoch
 

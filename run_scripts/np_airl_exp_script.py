@@ -11,6 +11,7 @@ from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 
 from rlkit.envs import get_meta_env, get_meta_env_params_iters
+from rlkit.envs.wrappers import ScaledMetaEnv
 
 from rlkit.torch.irl.disc_models.airl_disc import StandardAIRLDisc
 from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
@@ -18,6 +19,7 @@ from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.networks import FlattenMlp
 
 from rlkit.torch.irl.np_airl import NeuralProcessAIRL
+from rlkit.torch.irl.encoders.mlp_encoder import TimestepBasedEncoder
 from rlkit.torch.irl.encoders.conv_seq_encoder import ConvTrajEncoder, R2ZMap, Dc2RMap, NPEncoder
 
 import yaml
@@ -50,6 +52,23 @@ def experiment(variant):
     meta_train_env, meta_test_env = get_meta_env(env_specs)
     meta_train_env.seed(variant['seed'])
     meta_test_env.seed(variant['seed'])
+
+    if variant['scale_env_with_given_demo_stats']:
+        assert not env_specs['normalized']
+        meta_train_env = ScaledMetaEnv(
+            meta_train_env,
+            obs_mean=extra_data['obs_mean'],
+            obs_std=extra_data['obs_std'],
+            acts_mean=extra_data['acts_mean'],
+            acts_std=extra_data['acts_std'],
+        )
+        meta_test_env = ScaledMetaEnv(
+            meta_test_env,
+            obs_mean=extra_data['obs_mean'],
+            obs_std=extra_data['obs_std'],
+            acts_mean=extra_data['acts_mean'],
+            acts_std=extra_data['acts_std'],
+        )
 
     # set up the policy and training algorithm
     if isinstance(meta_train_env.observation_space, Dict):
@@ -118,28 +137,40 @@ def experiment(variant):
     )
 
     # make the encoder
-    traj_enc = ConvTrajEncoder(
-        variant['algo_params']['np_params']['traj_enc_params']['num_conv_layers'],
-        obs_dim + action_dim if not variant['algo_params']['state_only'] else obs_dim,
-        variant['algo_params']['np_params']['traj_enc_params']['channels'],
-        variant['algo_params']['np_params']['traj_enc_params']['kernel'],
-        variant['algo_params']['np_params']['traj_enc_params']['stride'],
+    encoder = TimestepBasedEncoder(
+        2*obs_dim + action_dim, #(s,a,s')
+        variant['algo_params']['r_dim'],
+        variant['algo_params']['z_dim'],
+        variant['algo_params']['enc_hid_dim'],
+        variant['algo_params']['r2z_hid_dim'],
+        variant['algo_params']['num_enc_layer_blocks'],
+        hid_act='relu',
+        use_bn=True,
+        within_traj_agg=variant['algo_params']['within_traj_agg']
     )
-    Dc2R_map = Dc2RMap(
-        variant['algo_params']['np_params']['Dc2r_params']['agg_type'],
-        traj_enc,
-        state_only=variant['algo_params']['state_only']
-    )
-    r2z_map = R2ZMap(
-        variant['algo_params']['np_params']['r2z_params']['num_layers'],
-        variant['algo_params']['np_params']['traj_enc_params']['channels'],
-        variant['algo_params']['np_params']['r2z_params']['hid_dim'],
-        variant['algo_params']['z_dim']
-    )
-    np_encoder = NPEncoder(
-        Dc2R_map,
-        r2z_map,
-    )
+    # ---------------
+    # traj_enc = ConvTrajEncoder(
+    #     variant['algo_params']['np_params']['traj_enc_params']['num_conv_layers'],
+    #     obs_dim + action_dim if not variant['algo_params']['state_only'] else obs_dim,
+    #     variant['algo_params']['np_params']['traj_enc_params']['channels'],
+    #     variant['algo_params']['np_params']['traj_enc_params']['kernel'],
+    #     variant['algo_params']['np_params']['traj_enc_params']['stride'],
+    # )
+    # Dc2R_map = Dc2RMap(
+    #     variant['algo_params']['np_params']['Dc2r_params']['agg_type'],
+    #     traj_enc,
+    #     state_only=variant['algo_params']['state_only']
+    # )
+    # r2z_map = R2ZMap(
+    #     variant['algo_params']['np_params']['r2z_params']['num_layers'],
+    #     variant['algo_params']['np_params']['traj_enc_params']['channels'],
+    #     variant['algo_params']['np_params']['r2z_params']['hid_dim'],
+    #     variant['algo_params']['z_dim']
+    # )
+    # encoder = NPEncoder(
+    #     Dc2R_map,
+    #     r2z_map,
+    # )
 
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
 
@@ -154,7 +185,7 @@ def experiment(variant):
         test_context_buffer,
         test_test_buffer,
 
-        np_encoder,
+        encoder,
 
         policy_optimizer,
 

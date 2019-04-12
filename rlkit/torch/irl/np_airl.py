@@ -310,8 +310,9 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
     
 
     def _get_disc_training_batch(self):
-        keys_to_get = ['observations', 'actions']
-        if self.transfer_version: keys_to_get.append('next_observations')
+        keys_to_get = ['observations', 'actions', 'next_observations']
+        # if self.transfer_version and 'next_observations' not in keys_to_get:
+        #     keys_to_get.append('next_observations')
         
         if self.few_shot_version:
             context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
@@ -380,7 +381,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
                 self.max_context_size,
                 num_tasks=self.num_tasks_used_per_update,
-                keys=['observations', 'actions']
+                keys=['observations', 'actions', 'next_observations']
             )
             mask = ptu.Variable(torch.ones(self.num_tasks_used_per_update, self.max_context_size, 1))
             this_context_sizes = np.random.randint(self.min_context_size, self.max_context_size+1, size=self.num_tasks_used_per_update)
@@ -390,7 +391,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             context_batch, task_identifiers_list = self.train_context_expert_replay_buffer.sample_trajs(
                 self.num_context_trajs_for_training,
                 num_tasks=self.num_tasks_used_per_update,
-                keys=['observations', 'actions']
+                keys=['observations', 'actions', 'next_observations']
             )
             mask = None
 

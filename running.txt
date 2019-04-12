@@ -1,0 +1,74 @@
+NEED TO REDUCE CONTROL COST by a factor of 1/25 since the gears are now 1/5th of the previous gears
+THEY REDUCED IT by 1/20
+
+# t1: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_60_deg_rew_scale_1_roll_between_5_upd_100_batch_30_32_max_path_300
+# t4: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_60_deg_rew_scale_5_roll_between_5_upd_100_batch_30_32_max_path_300
+# t6: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_60_deg_rew_scale_5_roll_between_5_upd_100_batch_30_32_max_path_200
+# t8: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_60_deg_rew_scale_1_roll_between_5_upd_100_batch_30_32_max_path_200
+-----
+# t7: custom_32_low_gear_ant_rand_goal_60_deg_rew_scale_1_roll_between_5_upd_100_batch_30_32_max_path_300
+# t7: ant_2_dir_norm_obs_rew_scale_1_path_300
+-----
+# t5: custom_32_ant_rand_goal_120_deg_rew_scale_5_roll_between_5_upd_100_batch_32_32_max_path_200_good_save
+# t5: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_60_deg_rew_scale_1_roll_between_10_upd_1000_batch_30_32_max_path_200
+
+# t9: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_2_dir_rew_scale_1_roll_between_2_upd_200_batch_2_128_max_path_200
+
+
+----- 2-dir -----
+# t10: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_2_dir_rew_scale_5_roll_between_2_upd_200_batch_2_128_max_path_200
+
+# t7: ant_2_dir_norm_obs_rew_scale_1_path_300
+# t9: ant_2_dir_norm_obs_rew_scale_5_path_300
+# t9: ant_2_dir_norm_obs_rew_scale_25_path_300
+# t7: ant_2_dir_norm_obs_rew_scale_50_path_300
+# t10: ant_2_dir_norm_obs_rew_scale_25_path_300_no_embed
+
+
+works perfectly # t9: ant_one_dir_no_norm_obs_rew_scale_25_path_300
+bad # t7: ant_one_dir_no_norm_obs_rew_scale_5_path_300
+works perfectly # t10: ant_one_dir_no_norm_obs_rew_scale_5_path_300_no_embed
+
+# t9: ant_two_dir_no_norm_obs_rew_scale_25_path_300
+# t10: ant_two_dir_no_norm_obs_rew_scale_25_path_300_no_embed
+
+
+ACTUALLY CORRECT REWARD SCALE ------------------------
+# t9: ant_two_dir_no_norm_obs_rew_scale_25_path_300_actual_rew_scale
+# t10: ant_two_dir_no_norm_obs_rew_scale_25_path_300_no_embed_actual_rew_scale
+# t1: ant_two_dir_no_norm_obs_rew_scale_50_path_300_actual_rew_scale
+# t4: ant_two_dir_no_norm_obs_rew_scale_50_path_300_actual_rew_scale_no_embed
+# t6: ant_two_dir_no_norm_obs_rew_scale_100_path_300_actual_rew_scale_no_embed
+# one seed worked very well t8: ant_two_dir_no_norm_obs_rew_scale_100_path_300_actual_rew_scale
+
+# t5: ant_two_dir_no_norm_obs_rew_scale_50_path_300_actual_rew_scale_with_obs_norm
+# t0: ant_two_dir_no_norm_obs_rew_scale_50_path_300_actual_rew_scale_no_embed_with_obs_norm
+
+
+t9: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale
+t10: ant_two_dir_no_norm_obs_rew_scale_400_path_300_actual_rew_scale
+t1: ant_two_dir_no_norm_obs_rew_scale_400_path_300_actual_rew_scale_opp_2_dir
+t6: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale_opp_2_dir
+t5: ant_two_dir_no_norm_obs_rew_scale_100_path_300_actual_rew_scale_45_deg_farther
+t0: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale_45_deg_farther
+
+
+
+
+TRY LARGER BATCH SIZE MAYBE AT LEAST FOR THE 2 DIR?
+
+NEED TO TRY:
+reward scale 10-50-100
+without custom_32
+
+
+
+
+
+# t0: proper_expert_ant_rand_goal_meta_new_sac_rew_scale_5_roll_between_5_upd_1000_batch_32_32
+# t1: proper_expert_ant_rand_goal_120_deg_rew_scale_10_roll_between_5_upd_1000_batch_32_32
+# t3: proper_expert_ant_rand_goal_120_deg_rew_scale_10_roll_between_5_upd_1000_batch_32_32
+
+TRY WITH MAX PATH LENGTH 200-300
+TRY THE RUSSELL VERSION OF ANT REWARD
+TRY SMALLER ARC ON CIRCLE

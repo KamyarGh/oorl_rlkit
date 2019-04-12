@@ -2,12 +2,17 @@ import numpy as np
 from gym.envs.mujoco import HalfCheetahEnv, InvertedPendulumEnv, ReacherEnv
 from gym.spaces import Dict
 
+import torch
+import torch.nn as nn
+
 import rlkit.torch.pytorch_util as ptu
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.sac.policies import AntRandGoalCustomReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.sac.sac import NewSoftActorCritic, MetaNewSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
+from rlkit.torch.networks import AntRandGoalCustomQFunc, AntRandGoalCustomVFunc
 
 from rlkit.envs import get_env, get_meta_env, get_meta_env_params_iters
 
@@ -47,26 +52,59 @@ def experiment(variant):
     action_dim = int(np.prod(env.action_space.shape))
 
     net_size = variant['net_size']
-    qf1 = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    qf2 = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    vf = FlattenMlp(
-        hidden_sizes=[net_size, net_size],
-        input_size=obs_dim,
-        output_size=1,
-    )
-    policy = ReparamTanhMultivariateGaussianPolicy(
-        hidden_sizes=[net_size, net_size],
-        obs_dim=obs_dim,
-        action_dim=action_dim,
-    )
+    hidden_sizes = [net_size] * variant['num_hidden_layers']
+    if variant['use_custom_ant_models']:
+        assert isinstance(env.observation_space, Dict)
+        qf1 = AntRandGoalCustomQFunc(
+            int(np.prod(env.observation_space.spaces['obs_task_params'].shape)),
+            variant['goal_embed_dim'],
+            hidden_sizes=hidden_sizes,
+            input_size=int(np.prod(env.observation_space.spaces['obs'].shape)) + action_dim,
+            output_size=1,
+        )
+        qf2 = AntRandGoalCustomQFunc(
+            int(np.prod(env.observation_space.spaces['obs_task_params'].shape)),
+            variant['goal_embed_dim'],
+            hidden_sizes=hidden_sizes,
+            input_size=int(np.prod(env.observation_space.spaces['obs'].shape)) + action_dim,
+            output_size=1,
+        )
+        vf = AntRandGoalCustomVFunc(
+            int(np.prod(env.observation_space.spaces['obs_task_params'].shape)),
+            variant['goal_embed_dim'],
+            hidden_sizes=hidden_sizes,
+            input_size=int(np.prod(env.observation_space.spaces['obs'].shape)),
+            output_size=1,
+        )
+        policy = AntRandGoalCustomReparamTanhMultivariateGaussianPolicy(
+            int(np.prod(env.observation_space.spaces['obs_task_params'].shape)),
+            variant['goal_embed_dim'],
+            hidden_sizes=hidden_sizes,
+            obs_dim=int(np.prod(env.observation_space.spaces['obs'].shape)),
+            action_dim=action_dim,
+        )
+    else:
+        qf1 = FlattenMlp(
+            hidden_sizes=hidden_sizes,
+            input_size=obs_dim + action_dim,
+            output_size=1,
+        )
+        qf2 = FlattenMlp(
+            hidden_sizes=hidden_sizes,
+            input_size=obs_dim + action_dim,
+            output_size=1,
+        )
+        vf = FlattenMlp(
+            hidden_sizes=hidden_sizes,
+            input_size=obs_dim,
+            output_size=1,
+        )
+        policy = ReparamTanhMultivariateGaussianPolicy(
+            hidden_sizes=hidden_sizes,
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+        )
+
     if variant['algo_params']['meta']:
         algorithm = MetaNewSoftActorCritic(
             env=env,
@@ -78,6 +116,8 @@ def experiment(variant):
 
             train_task_params_sampler=train_task_params_sampler,
             test_task_params_sampler=test_task_params_sampler,
+
+            true_env_obs_dim=int(np.prod(env.observation_space.spaces['obs'].shape)),
             **variant['algo_params']
         )
     else:

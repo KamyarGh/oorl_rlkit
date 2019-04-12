@@ -1,0 +1,24 @@
+meta_data:
+  script_path: /h/kamyar/oorl_rlkit/run_scripts/few_shot_hc_rand_vel_eval_script.py
+  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
+  exp_name: test
+  description: searching over the SAC hyperparameters
+  use_gpu: true
+  num_workers: 1
+  cpu_range: [0,159]
+  num_cpu_per_worker: 1
+# -----------------------------------------------------------------------------
+variables:
+  sample_from_prior: [false]
+  exp_path: [
+    /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-np-bc-first-hype-search-z-dim-16-r-dim-64-num-hid-3-32-demos-per-task-det-eval
+  ]
+  context_sizes: [
+    [4]
+  ]
+  num_rollouts_per_task: [10]
+  eval_deterministic: [true]
+
+
+# -----------------------------------------------------------------------------
+constants: {}

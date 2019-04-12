@@ -71,14 +71,14 @@ class TorchMetaRLAlgorithm(MetaRLAlgorithm, metaclass=abc.ABCMeta):
                 self.env.render_paths(test_paths)
         
         # meta_test_this_epoch = statistics['Percent_Solved meta_test']
-        # if meta_test_this_epoch >= self.best_meta_test_percent_solved:
+        # if meta_test_this_epoch >= self.best_meta_test:
         #     # make sure you set save_algorithm to true then call save_extra_data
         #     prev_save_alg = self.save_algorithm
         #     self.save_algorithm = True
         #     if self.save_best:
         #         if epoch > self.save_best_after_epoch:
         #             logger.save_extra_data(self.get_extra_data_to_save(epoch), 'best_meta_test.pkl')
-        #             self.best_meta_test_percent_solved = meta_test_this_epoch
+        #             self.best_meta_test = meta_test_this_epoch
         #             print('\n\nSAVED ALG AT EPOCH %d\n\n' % epoch)
         #     self.save_algorithm = prev_save_alg
 

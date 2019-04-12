@@ -55,6 +55,7 @@ def fill_buffer(
 
     # this is something for debugging few shot fetch demos
     # first_complete_list = []
+    debug_stats = []
 
     for task_params, obs_task_params in task_params_sampler:
         print('Doing Task {}...'.format(task_params))
@@ -103,6 +104,7 @@ def fill_buffer(
                 # raw_reward = -1.0 * env_info['run_cost']
                 raw_reward = env_info['vel']
                 cur_rollout_rewards += raw_reward
+                # if step_num < 200: cur_rollout_rewards += raw_reward
 
                 if no_terminal: terminal = False
                 if wrap_absorbing:
@@ -185,11 +187,15 @@ def fill_buffer(
                     )
                 buffer.terminate_episode(task_id)                
                 num_rollouts_completed += 1
-                print('Return: %.2f' % cur_rollout_rewards)
+                print('Return: %.2f' % (cur_rollout_rewards))
+                debug_stats.append(cur_rollout_rewards)
             
             # print(policy.first_time_all_complete)
             # first_complete_list.append(expert_policy.first_time_all_complete)
     # print(np.histogram(first_complete_list, bins=100))
+    print('\n\n')
+    print(np.mean(debug_stats))
+    print(np.std(debug_stats))
 
 
 def experiment(specs):

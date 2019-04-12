@@ -425,6 +425,10 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
             plotter=None,
             render_eval_paths=False,
             eval_deterministic=True,
+
+            do_running_obs_norm=False,
+            true_env_obs_dim=None,
+
             **kwargs
     ):
         super().__init__(
@@ -474,15 +478,41 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
             self.vf.parameters(),
             lr=vf_lr,
         )
-    
+
+        self.do_running_obs_norm = do_running_obs_norm
+        if do_running_obs_norm:
+            self.obs_mean = Variable(ptu.from_numpy(np.zeros((1, true_env_obs_dim))))
+            self.obs_std = Variable(ptu.from_numpy(np.ones((1, true_env_obs_dim))))
+            self.obs_sum = Variable(ptu.from_numpy(np.zeros((1, true_env_obs_dim))))
+            self.obs_sum_sq = Variable(ptu.from_numpy(np.zeros((1, true_env_obs_dim))))
+            self.obs_sum.requires_grad = False
+            self.obs_sum_sq.requires_grad = False
+            self.obs_count = 0.0
+            self.eps = 1e-2 * Variable(ptu.from_numpy(np.ones((1, true_env_obs_dim))))
+            self.eps.requires_grad = False
+
 
     def get_exploration_policy(self, obs_task_params):
         if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
+        if self.do_running_obs_norm:
+            return PostCondMLPPolicyWrapper(
+                self.main_policy,
+                obs_task_params,
+                obs_mean=ptu.get_numpy(self.obs_mean)[0],
+                obs_std=ptu.get_numpy(self.obs_std)[0]
+            )
         return PostCondMLPPolicyWrapper(self.main_policy, obs_task_params)
     
 
     def get_eval_policy(self, obs_task_params):
         if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
+        if self.do_running_obs_norm:
+            return PostCondMLPPolicyWrapper(
+                self.main_policy,
+                obs_task_params,
+                obs_mean=ptu.get_numpy(self.obs_mean)[0],
+                obs_std=ptu.get_numpy(self.obs_std)[0]
+            )
         return PostCondMLPPolicyWrapper(self.main_policy, obs_task_params)
     
 
@@ -602,6 +632,20 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
             obs = batch['observations']
             actions = batch['actions']
             next_obs = batch['next_observations']
+
+            # normalize if needed and recompute values
+            if self.do_running_obs_norm:
+                self.obs_sum += torch.sum(obs, dim=0, keepdim=True)
+                self.obs_sum_sq += torch.sum(obs**2, dim=0, keepdim=True)
+                self.obs_count += obs.size(0)
+                self.obs_mean = self.obs_sum / self.obs_count
+                self.obs_std = (self.obs_sum_sq / self.obs_count) - (self.obs_mean**2)
+                self.obs_std = torch.max(self.obs_std, self.eps)
+                # now normalize obs, and next_obs
+                obs = (obs - self.obs_mean) / self.obs_std
+                next_obs = (next_obs - self.obs_mean) / self.obs_std
+                # print(self.obs_mean)
+                # print(self.obs_std)
 
             if self.policy_uses_task_params:
                 obs = torch.cat([obs, obs_task_params], dim=-1)

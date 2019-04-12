@@ -26,20 +26,30 @@ def get_pool_function(exp_fn_name):
 def get_legal_cpus(cpu_range, num_cpu_per_worker):
     num_available_cpus = cpu_range[1] - cpu_range[0] + 1
     affinities = []
-    for i in range(int(num_available_cpus / num_cpu_per_worker)):
-        affinities.append(
-            [
-                cpu_range[0] + num_cpu_per_worker * i + j
-                for j in range(num_cpu_per_worker)
-            ]
-        )
-    affinities = [hex(sum(2**i for i in aff)) for aff in affinities]
+    # for i in range(int(num_available_cpus / num_cpu_per_worker)):
+        # affinities.append(
+        #         [
+        #             cpu_range[0] + num_cpu_per_worker * i + j
+        #             for j in range(num_cpu_per_worker)
+        #         ]
+        #     )
+    # affinities = [hex(sum(2**i for i in aff)) for aff in affinities]
 
+    all_cpus = list(range(cpu_range[0], cpu_range[1]+1))
     legal_cpus = []
-    for i, aff in enumerate(affinities):
-        command_to_run = 'taskset {} python -c \"x=1\" >/dev/null 2>&1'.format(aff)
-        if os.system(command_to_run) == 0: legal_cpus.append(i)
-    return legal_cpus
+    for c in all_cpus:
+        command_to_run = 'taskset {} python -c \"x=1\" >/dev/null 2>&1'.format(hex(2**c))
+        if os.system(command_to_run) == 0: legal_cpus.append(c)
+    # print(legal_cpus)
+    # print(len(legal_cpus))
+    affinities = []
+    for i in range(int(len(legal_cpus) / num_cpu_per_worker)):
+        _temp = [legal_cpus[c] for c in range(num_cpu_per_worker * i, num_cpu_per_worker * (i+1))]
+        # print(_temp)
+        affinities.append(hex(sum(2**c for c in _temp)))
+    # print(affinities)
+    # 1/0
+    return affinities
 
 
 if __name__ == '__main__':
@@ -84,19 +94,24 @@ if __name__ == '__main__':
     # num_available_cpus = cpu_range[1] - cpu_range[0] + 1
     # assert  num_cpu_per_worker * num_workers <= num_available_cpus
 
-    legal_cpus = get_legal_cpus(cpu_range, num_cpu_per_worker)
-    num_available_cpus = len(legal_cpus)
-    assert num_cpu_per_worker * num_workers <= num_available_cpus
+    # legal_cpus = get_legal_cpus(cpu_range, num_cpu_per_worker)
     # print(legal_cpus)
-    affinities = []
-    for i in range(int(num_available_cpus / num_cpu_per_worker)):
-        affinities.append(
-            [
-                legal_cpus[num_cpu_per_worker * i + j]
-                for j in range(num_cpu_per_worker)
-            ]
-        )
-    affinities = [hex(sum(2**i for i in aff)) for aff in affinities]
+    # num_available_cpus = len(legal_cpus)
+    # print(num_available_cpus)
+    # print(num_cpu_per_worker)
+    # print(num_workers)
+    # assert num_cpu_per_worker * num_workers <= num_available_cpus
+    # # print(legal_cpus)
+    # affinities = []
+    # for i in range(int(num_available_cpus / num_cpu_per_worker)):
+    #     affinities.append(
+    #         [
+    #             legal_cpus[num_cpu_per_worker * i + j]
+    #             for j in range(num_cpu_per_worker)
+    #         ]
+    #     )
+    # affinities = [hex(sum(2**i for i in aff)) for aff in affinities]
+    affinities = get_legal_cpus(cpu_range, num_cpu_per_worker)
     affinity_Q = Queue()
     for aff in affinities: affinity_Q.put(aff)
 
@@ -105,12 +120,13 @@ if __name__ == '__main__':
     args_idx = 0
     if 'use_gpu' in exp_specs['meta_data'] and exp_specs['meta_data']['use_gpu']:
         if args.nosrun:
-            command = 'python {script} -e {specs}'
+            command = 'taskset {aff} python {script} -e {specs}'
         else:
             command = 'srun --gres=gpu:1 -c 8 --mem 15gb -p gpu python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 12 --mem 15gb -p wsgpu python {script} -e {specs}'
         # command = 'srun --gres=gpu:1 -x dgx1,guppy9 -p gpuc python {script} -e {specs}'
     else:
+        # command = 'python {script} -e {specs}'
         command = 'taskset {aff} python {script} -e {specs}'
         # command = 'srun --gres=gpu:0 -c 1 --mem 5gb -p cpu python {script} -e {specs}'
     while (args_idx < num_variants) or (len(running_processes) > 0):
@@ -121,6 +137,11 @@ if __name__ == '__main__':
                 'script': exp_specs['meta_data']['script_path'],
                 'specs': os.path.join(variants_dir, '%i.yaml'%args_idx)
             }
+            # format_dict = {
+            #     'aff': aff,
+            #     'script': exp_specs['meta_data']['script_path'],
+            #     'specs': os.path.join(variants_dir, '%i.yaml'%args_idx)
+            # }
             command_to_run = command.format(**format_dict)
             command_to_run = command_to_run.split()
             print('POPENING')
