@@ -1,7 +1,6 @@
 meta_data:
-  script_path: /h/kamyar/oorl_rlkit/run_scripts/sac.py
-  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: final_humanoid_new_sac
+  script_path: run_scripts/sac.py
+  exp_name: test
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 2
@@ -14,13 +13,14 @@ variables:
 
 # -----------------------------------------------------------------------------
 constants:
+  use_custom_ant_models: false
   algo_params:
     save_best: true
     save_best_starting_from_epoch: 80
     
     meta: false
     num_epochs: 201
-    num_steps_per_epoch: 50000
+    num_steps_per_epoch: 10
     num_steps_per_eval: 10000
     replay_buffer_size: 1000000
 
@@ -44,6 +44,7 @@ constants:
     freq_saving: 20
 
   net_size: 256
+  num_hidden_layers: 2
 
   env_specs:
     base_env_name: 'humanoid_v2'

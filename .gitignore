@@ -108,3 +108,4 @@ rlkit/envs/custom_assets/*
 
 # future project ideas
 project_ideas
+rlkit/launchers/config.py

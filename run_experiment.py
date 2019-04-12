@@ -4,11 +4,13 @@ import yaml
 import argparse
 import psutil
 import os
+from os import path as osp
 from queue import Queue
 from time import sleep
 from subprocess import Popen
 import datetime
 import dateutil
+from rlkit.launchers import config
 from rlkit.launchers.launcher_util import setup_logger, build_nested_variant_generator
 
 # from exp_pool_fns.neural_process_v1 import exp_fn
@@ -72,7 +74,8 @@ if __name__ == '__main__':
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
     variants_dir = os.path.join(
-        exp_specs['meta_data']['exp_dirs'], exp_specs['meta_data']['exp_name'], 'variants-'+timestamp
+        # exp_specs['meta_data']['exp_dirs'], exp_specs['meta_data']['exp_name'], 'variants-'+timestamp
+        config.LOCAL_LOG_DIR, exp_specs['meta_data']['exp_name'], 'variants-'+timestamp
     )
     os.makedirs(variants_dir)
     with open(os.path.join(variants_dir, 'exp_spec_definition.yaml'), 'w') as f:
@@ -122,7 +125,8 @@ if __name__ == '__main__':
         if args.nosrun:
             command = 'taskset {aff} python {script} -e {specs}'
         else:
-            command = 'srun --gres=gpu:1 -c 8 --mem 15gb -p gpu python {script} -e {specs}'
+            # command = 'srun --gres=gpu:1 -c 8 --mem 15gb -p gpu python {script} -e {specs}'
+            command = 'srun --gres=gpu:1 -c 8 --mem 15gb -p p100 python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 12 --mem 15gb -p wsgpu python {script} -e {specs}'
         # command = 'srun --gres=gpu:1 -x dgx1,guppy9 -p gpuc python {script} -e {specs}'
     else:
@@ -134,12 +138,12 @@ if __name__ == '__main__':
             aff = affinity_Q.get()
             format_dict = {
                 'aff': aff,
-                'script': exp_specs['meta_data']['script_path'],
+                'script': osp.join(config.RLKIT_PATH, exp_specs['meta_data']['script_path']),
                 'specs': os.path.join(variants_dir, '%i.yaml'%args_idx)
             }
             # format_dict = {
             #     'aff': aff,
-            #     'script': exp_specs['meta_data']['script_path'],
+            #     'script': osp.join(config.RLKIT_PATH, exp_specs['meta_data']['script_path']),
             #     'specs': os.path.join(variants_dir, '%i.yaml'%args_idx)
             # }
             command_to_run = command.format(**format_dict)
