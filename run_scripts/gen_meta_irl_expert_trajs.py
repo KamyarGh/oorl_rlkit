@@ -80,6 +80,7 @@ def fill_buffer(
             subsample_mod = randint(0, subsample_factor-1)
             step_num = 0
 
+            rollout_debug = []
             while (not terminal) and step_num < max_path_length:
                 if render: meta_env.render()
                 if isinstance(meta_env.observation_space, Dict):
@@ -102,9 +103,11 @@ def fill_buffer(
 
                 next_ob, raw_reward, terminal, env_info = (meta_env.step(action))
                 # raw_reward = -1.0 * env_info['run_cost']
-                raw_reward = env_info['vel']
+                # raw_reward = env_info['vel']
                 cur_rollout_rewards += raw_reward
                 # if step_num < 200: cur_rollout_rewards += raw_reward
+
+                rollout_debug.append(env_info['l2_dist'])
 
                 if no_terminal: terminal = False
                 if wrap_absorbing:
@@ -189,6 +192,8 @@ def fill_buffer(
                 num_rollouts_completed += 1
                 print('Return: %.2f' % (cur_rollout_rewards))
                 debug_stats.append(cur_rollout_rewards)
+
+                print('Min L2: %.3f' % np.min(rollout_debug))
             
             # print(policy.first_time_all_complete)
             # first_complete_list.append(expert_policy.first_time_all_complete)
@@ -205,7 +210,10 @@ def experiment(specs):
     if not specs['use_scripted_policy']:
         policy_is_scripted = False
         expert = joblib.load(path.join(specs['expert_dir'], 'extra_data.pkl'))['algorithm']
-        max_path_length = expert.max_path_length
+        # max_path_length = expert.max_path_length
+        max_path_length = specs['max_path_length']
+        if max_path_length != expert.max_path_length:
+            print('\n\nUsing max_path_length {}! Expert\'s was {}!'.format(max_path_length, expert.max_path_length))
         attrs = [
             'max_path_length', 'policy_uses_pixels',
             'policy_uses_task_params',

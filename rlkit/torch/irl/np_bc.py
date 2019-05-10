@@ -66,12 +66,15 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             num_diff_context_per_eval_task=2,
             num_eval_trajs_per_post_sample=2,
             num_context_trajs_for_eval=3,
+            policy_optim_batch_size_per_task=64,
 
             policy_lr=1e-3,
             policy_optimizer_class=optim.Adam,
 
             encoder_lr=1e-3,
             encoder_optimizer_class=optim.Adam,
+
+            beta_1=0.9,
 
             num_update_loops_per_train_call=65,
 
@@ -113,18 +116,20 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         self.policy_optimizer = policy_optimizer_class(
             self.policy.parameters(),
             lr=policy_lr,
-            betas=(0.9, 0.999)
+            betas=(beta_1, 0.999)
         )
         self.encoder_optimizer = encoder_optimizer_class(
             self.encoder.parameters(),
             lr=encoder_lr,
             betas=(0.9, 0.999)
         )
+        print('\n\nBETA-1 for POLICY IS %f\n\n' % beta_1)
 
         self.num_tasks_used_per_update = num_tasks_used_per_update
         self.num_context_trajs_for_training = num_context_trajs_for_training
         self.num_test_trajs_for_training = num_test_trajs_for_training
         self.train_samples_per_traj = train_samples_per_traj
+        self.policy_optim_batch_size_per_task = policy_optim_batch_size_per_task
 
         self.num_context_trajs_for_exploration = num_context_trajs_for_exploration
         
@@ -255,7 +260,7 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
                 keys=['observations', 'actions', 'next_observations']
                 # keys=['observations', 'actions']
             )
-            mask = ptu.Variable(torch.ones(self.num_tasks_used_per_update, self.max_context_size, 1))
+            mask = ptu.Variable(torch.zeros(self.num_tasks_used_per_update, self.max_context_size, 1))
             this_context_sizes = np.random.randint(self.min_context_size, self.max_context_size+1, size=self.num_tasks_used_per_update)
             for i, c_size in enumerate(this_context_sizes):
                 mask[i,:c_size,:] = 1.0
@@ -268,21 +273,45 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
             )
             mask = None
 
-        # get the pred version of the context batch
-        # subsample the trajs
-        flat_context_batch = [subsample_traj(traj, self.train_samples_per_traj) for task_trajs in context_batch for traj in task_trajs]
-        context_pred_batch = concat_trajs(flat_context_batch)
+        # OLD VERSION
+        # # get the pred version of the context batch
+        # # subsample the trajs
+        # flat_context_batch = [subsample_traj(traj, self.train_samples_per_traj) for task_trajs in context_batch for traj in task_trajs]
+        # context_pred_batch = concat_trajs(flat_context_batch)
 
-        test_batch, _ = self.train_test_expert_replay_buffer.sample_trajs(
-            self.num_test_trajs_for_training,
-            task_identifiers=task_identifiers_list,
-            keys=['observations', 'actions'],
-            samples_per_traj=self.train_samples_per_traj
+        # test_batch, _ = self.train_test_expert_replay_buffer.sample_trajs(
+        #     self.num_test_trajs_for_training,
+        #     task_identifiers=task_identifiers_list,
+        #     keys=['observations', 'actions'],
+        #     samples_per_traj=self.train_samples_per_traj
+        # )
+        # flat_test_batch = [traj for task_trajs in test_batch for traj in task_trajs]
+        # test_pred_batch = concat_trajs(flat_test_batch)
+
+        # NEW VERSION
+        # get the test batch for the tasks from policy buffer
+        policy_batch, _ = self.train_test_expert_replay_buffer.sample_random_batch(
+            self.policy_optim_batch_size_per_task,
+            task_identifiers_list=task_identifiers_list
         )
-        flat_test_batch = [traj for task_trajs in test_batch for traj in task_trajs]
-        test_pred_batch = concat_trajs(flat_test_batch)
+        policy_obs = np.concatenate([d['observations'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
+        policy_acts = np.concatenate([d['actions'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
+        policy_terminals = np.concatenate([d['terminals'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
+        policy_next_obs = np.concatenate([d['next_observations'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
+        # policy_absorbing = np.concatenate([d['absorbing'] for d in policy_batch], axis=0) # (N_tasks * batch_size) x Dim
+        policy_batch = dict(
+            observations=policy_obs,
+            actions=policy_acts,
+            terminals=policy_terminals,
+            next_observations=policy_next_obs,
+            # absorbing=absorbing
+        )
+        
+        # OLD VERSION
+        # return context_batch, context_pred_batch, test_pred_batch, mask
 
-        return context_batch, context_pred_batch, test_pred_batch, mask
+        # NEW VERSION
+        return context_batch, mask, policy_batch
 
 
     def _do_training(self, epoch):
@@ -295,11 +324,11 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         z_means = post_dist.mean
         z_log_covs = post_dist.log_cov
         z_covs = post_dist.cov
-        KL = torch.mean(
+        KL = torch.sum(
             1.0 + z_log_covs - z_means**2 - z_covs,
             dim=-1
         )
-        KL =  -0.5 * torch.sum(KL)
+        KL =  -0.5 * torch.mean(KL)
         return KL
 
 
@@ -311,31 +340,45 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         self.policy_optimizer.zero_grad()
 
         # prep the batches
-        context_batch, context_pred_batch, test_pred_batch, mask = self._get_training_batch()
+        # OLD VERSION -----------------------------------------------------------------------------
+        # context_batch, context_pred_batch, test_pred_batch, mask = self._get_training_batch()
+        
+        # post_dist = self.encoder(context_batch, mask)
+        # z = post_dist.sample() # N_tasks x Dim
+        # # z = post_dist.mean
 
-        # convert it to a pytorch tensor
-        # note that our objective says we should maximize likelihood of
-        # BOTH the context_batch and the test_batch
-        obs_batch = np.concatenate((context_pred_batch['observations'], test_pred_batch['observations']), axis=0)
-        obs_batch = Variable(ptu.from_numpy(obs_batch), requires_grad=False)
+        # # convert it to a pytorch tensor
+        # # note that our objective says we should maximize likelihood of
+        # # BOTH the context_batch and the test_batch
+        # obs_batch = np.concatenate((context_pred_batch['observations'], test_pred_batch['observations']), axis=0)
+        # obs_batch = Variable(ptu.from_numpy(obs_batch), requires_grad=False)
 
-        acts_batch = np.concatenate((context_pred_batch['actions'], test_pred_batch['actions']), axis=0)
-        acts_batch = Variable(ptu.from_numpy(acts_batch), requires_grad=False)
+        # acts_batch = np.concatenate((context_pred_batch['actions'], test_pred_batch['actions']), axis=0)
+        # acts_batch = Variable(ptu.from_numpy(acts_batch), requires_grad=False)
+
+        # # make z's for expert samples
+        # context_pred_z = z.repeat(1, self.num_context_trajs_for_training * self.train_samples_per_traj).view(
+        #     -1,
+        #     z.size(1)
+        # )
+        # test_pred_z = z.repeat(1, self.num_test_trajs_for_training * self.train_samples_per_traj).view(
+        #     -1,
+        #     z.size(1)
+        # )
+        # z_batch = torch.cat([context_pred_z, test_pred_z], dim=0)
+        # NEW VERSION (this is more fair to this model) -------------------------------------------
+        context_batch, mask, pred_batch = self._get_training_batch()
 
         post_dist = self.encoder(context_batch, mask)
         z = post_dist.sample() # N_tasks x Dim
         # z = post_dist.mean
 
-        # make z's for expert samples
-        context_pred_z = z.repeat(1, self.num_context_trajs_for_training * self.train_samples_per_traj).view(
+        obs_batch = Variable(ptu.from_numpy(pred_batch['observations']), requires_grad=False)
+        acts_batch = Variable(ptu.from_numpy(pred_batch['actions']), requires_grad=False)
+        z_batch = z.repeat(1, self.policy_optim_batch_size_per_task).view(
             -1,
             z.size(1)
         )
-        test_pred_z = z.repeat(1, self.num_test_trajs_for_training * self.train_samples_per_traj).view(
-            -1,
-            z.size(1)
-        )
-        z_batch = torch.cat([context_pred_z, test_pred_z], dim=0)
 
         input_batch = torch.cat([obs_batch, z_batch], dim=-1)
         

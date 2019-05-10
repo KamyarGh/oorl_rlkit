@@ -114,6 +114,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             render_eval_paths=False,
             eval_deterministic=False,
 
+            use_ground_truth_task_params_for_debugging=False,
+
             **kwargs
     ):
         assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
@@ -245,67 +247,80 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         self.max_context_size = max_context_size
         self.min_context_size = min_context_size
         assert num_context_trajs_for_training == max_context_size
+
+        self.use_ground_truth_task_params_for_debugging = use_ground_truth_task_params_for_debugging
+        if self.use_ground_truth_task_params_for_debugging:
+            raise NotImplementedError()
+            print('\n\n!!!!!!!!!!!!!!!')
+            print('USING GROUNDTRUTH PARAMS FOR DEBUGGING')
+            print('\n\n!!!!!!!!!!!!!!!')
     
 
     def get_exploration_policy(self, task_identifier):
-        if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
-        if self.few_shot_version:
-            # no need for this if/else statement like this, make it cleaner
-            this_context_size = np.random.randint(self.min_context_size, self.max_context_size+1)
-            list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
-                task_identifier,
-                this_context_size
-            )
-            mask = None
-        else:
-            list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
-                task_identifier,
-                self.num_context_trajs_for_exploration,
-            )
-            mask = None
+        if not self.use_ground_truth_task_params_for_debugging:
+            if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
+            if self.few_shot_version:
+                # no need for this if/else statement like this, make it cleaner
+                this_context_size = np.random.randint(self.min_context_size, self.max_context_size+1)
+                list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
+                    task_identifier,
+                    this_context_size
+                )
+                mask = None
+            else:
+                list_of_trajs = self.train_context_expert_replay_buffer.sample_trajs_from_task(
+                    task_identifier,
+                    self.num_context_trajs_for_exploration,
+                )
+                mask = None
 
-        if self.use_target_enc:
-            enc_to_use = self.target_enc
-        else:
-            enc_to_use = self.encoder
-        
-        mode = enc_to_use.training
-        enc_to_use.eval()
-        post_dist = enc_to_use([list_of_trajs], mask)
-        enc_to_use.train(mode)
+            if self.use_target_enc:
+                enc_to_use = self.target_enc
+            else:
+                enc_to_use = self.encoder
+            
+            mode = enc_to_use.training
+            enc_to_use.eval()
+            post_dist = enc_to_use([list_of_trajs], mask)
+            enc_to_use.train(mode)
 
-        z = post_dist.sample()
-        # z = post_dist.mean
-        z = z.cpu().data.numpy()[0]
+            z = post_dist.sample()
+            # z = post_dist.mean
+            z = z.cpu().data.numpy()[0]
+        else:
+            z = self.env.task_id_to_obs_task_params(task_identifier)
         return PostCondMLPPolicyWrapper(self.main_policy, z)
     
 
     def get_eval_policy(self, task_identifier, mode='meta_test'):
-        if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
-        if mode == 'meta_train':
-            rb = self.train_context_expert_replay_buffer
-        else:
-            rb = self.test_context_expert_replay_buffer
-        
-        list_of_trajs = rb.sample_trajs_from_task(
-            task_identifier,
-            np.random.randint(self.min_context_size, self.max_context_size+1) \
-                if self.few_shot_version else self.num_context_trajs_for_eval,
-        )
-        
-        if self.use_target_enc:
-            enc_to_use = self.target_enc
-        else:
-            enc_to_use = self.encoder
-        
-        mode = enc_to_use.training
-        enc_to_use.eval()
-        post_dist = enc_to_use([list_of_trajs])
-        enc_to_use.train(mode)
+        if not self.use_ground_truth_task_params_for_debugging:
+            if self.wrap_absorbing: raise NotImplementedError('wrap absorbing')
+            if mode == 'meta_train':
+                rb = self.train_context_expert_replay_buffer
+            else:
+                rb = self.test_context_expert_replay_buffer
+            
+            list_of_trajs = rb.sample_trajs_from_task(
+                task_identifier,
+                np.random.randint(self.min_context_size, self.max_context_size+1) \
+                    if self.few_shot_version else self.num_context_trajs_for_eval,
+            )
+            
+            if self.use_target_enc:
+                enc_to_use = self.target_enc
+            else:
+                enc_to_use = self.encoder
+            
+            mode = enc_to_use.training
+            enc_to_use.eval()
+            post_dist = enc_to_use([list_of_trajs])
+            enc_to_use.train(mode)
 
-        z = post_dist.sample()
-        # z = post_dist.mean
-        z = z.cpu().data.numpy()[0]
+            z = post_dist.sample()
+            # z = post_dist.mean
+            z = z.cpu().data.numpy()[0]
+        else:
+            z = self.env.task_id_to_obs_task_params(task_identifier)
         return PostCondMLPPolicyWrapper(self.main_policy, z)
     
 
@@ -320,7 +335,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
                 num_tasks=self.num_tasks_used_per_update,
                 keys=keys_to_get
             )
-            mask = ptu.Variable(torch.ones(self.num_tasks_used_per_update, self.max_context_size, 1))
+            mask = ptu.Variable(torch.zeros(self.num_tasks_used_per_update, self.max_context_size, 1))
             this_context_sizes = np.random.randint(self.min_context_size, self.max_context_size+1, size=self.num_tasks_used_per_update)
             for i, c_size in enumerate(this_context_sizes):
                 mask[i,:c_size,:] = 1.0
@@ -369,7 +384,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             'observations': np.concatenate((policy_test_pred_batch_0['observations'], policy_test_pred_batch_1['observations']), axis=0),
             'actions': np.concatenate((policy_test_pred_batch_0['actions'], policy_test_pred_batch_1['actions']), axis=0)
         }
-        if self.transfer_version:
+        if self.transfer_version: raise NotImplementedError()
+        if self.state_only:
             policy_test_pred_batch['next_observations'] = np.concatenate((policy_test_pred_batch_0['next_observations'], policy_test_pred_batch_1['next_observations']), axis=0)
 
         return context_batch, context_pred_batch, test_pred_batch, policy_test_pred_batch, mask
@@ -383,7 +399,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
                 num_tasks=self.num_tasks_used_per_update,
                 keys=['observations', 'actions', 'next_observations']
             )
-            mask = ptu.Variable(torch.ones(self.num_tasks_used_per_update, self.max_context_size, 1))
+            mask = ptu.Variable(torch.zeros(self.num_tasks_used_per_update, self.max_context_size, 1))
             this_context_sizes = np.random.randint(self.min_context_size, self.max_context_size+1, size=self.num_tasks_used_per_update)
             for i, c_size in enumerate(this_context_sizes):
                 mask[i,:c_size,:] = 1.0
@@ -435,11 +451,11 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         z_means = post_dist.mean
         z_log_covs = post_dist.log_cov
         z_covs = post_dist.cov
-        KL = torch.mean(
+        KL = torch.sum(
             1.0 + z_log_covs - z_means**2 - z_covs,
             dim=-1
         )
-        KL =  -0.5 * torch.sum(KL)
+        KL =  -0.5 * torch.mean(KL)
         return KL
 
 
@@ -468,7 +484,14 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         exp_obs_batch = Variable(ptu.from_numpy(exp_obs_batch), requires_grad=False)
         policy_obs_batch = Variable(ptu.from_numpy(policy_test_pred_batch['observations']), requires_grad=False)
 
-        if not self.state_only:
+        if self.state_only:
+            temp_exp_next_obs = np.concatenate((context_pred_batch['next_observations'], test_pred_batch['next_observations']), axis=0)
+            temp_exp_next_obs = Variable(ptu.from_numpy(temp_exp_next_obs), requires_grad=False)
+            temp_pol_next_obs = Variable(ptu.from_numpy(policy_test_pred_batch['next_observations']), requires_grad=False)
+
+            exp_obs_batch = torch.cat([exp_obs_batch, temp_exp_next_obs], dim=-1)
+            policy_obs_batch = torch.cat([policy_obs_batch, temp_pol_next_obs], dim=-1)
+        else:
             exp_acts_batch = np.concatenate((context_pred_batch['actions'], test_pred_batch['actions']), axis=0)
             exp_acts_batch = Variable(ptu.from_numpy(exp_acts_batch), requires_grad=False)
             policy_acts_batch = Variable(ptu.from_numpy(policy_test_pred_batch['actions']), requires_grad=False)
@@ -497,6 +520,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             acts_batch = torch.cat([exp_acts_batch, policy_acts_batch], dim=0)
         
         if self.transfer_version:
+            raise NotImplementedError()
             # make the next_obs_batch
             exp_next_obs_batch = np.concatenate((context_pred_batch['next_observations'], test_pred_batch['next_observations']), axis=0)
             exp_next_obs_batch = Variable(ptu.from_numpy(exp_next_obs_batch), requires_grad=False)
@@ -631,6 +655,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
                 total_grad = gradients[0]
             else:
                 if self.transfer_version:
+                    raise NotImplementedError()
                     interp_next_obs = eps*exp_next_obs_batch + (1-eps)*policy_next_obs_batch
                     interp_next_obs = interp_next_obs.detach()
                     interp_next_obs.requires_grad = True
@@ -745,6 +770,7 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
                         total_target_grad = target_gradients[0]
                     else:
                         if self.transfer_version:
+                            raise NotImplementedError()
                             interp_next_obs = eps*exp_next_obs_batch + (1-eps)*policy_next_obs_batch
                             interp_next_obs = interp_next_obs.detach()
                             interp_next_obs.requires_grad = True
@@ -904,9 +930,14 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         
         disc_for_rew.eval()
         if self.state_only:
-            policy_batch['rewards'] = disc_for_rew(policy_batch['observations'], None, z).detach()
+            policy_batch['rewards'] = disc_for_rew(
+                torch.cat([policy_batch['observations'], policy_batch['next_observations']], dim=-1),
+                None,
+                z
+            ).detach()
         else:
             if self.transfer_version:
+                raise NotImplementedError()
                 # compute the log probability of actions under the policy
                 obs_input_to_policy = torch.cat([policy_batch['observations'], z], dim=1)
                 pol_log_prob = self.main_policy.get_log_prob(obs_input_to_policy, policy_batch['actions']).detach()

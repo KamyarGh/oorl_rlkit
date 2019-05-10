@@ -375,28 +375,35 @@ norm_halfcheetah_64_demos_20_subsampling:
 
 norm_halfcheetah_32_demos_20_subsampling:
   description: "norm 32 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_halfcheetah_32_demos_20_subsampling
   ]
 
 norm_halfcheetah_16_demos_20_subsampling:
   description: "norm 16 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_halfcheetah_16_demos_20_subsampling
   ]
 
+# norm_halfcheetah_16_demos_20_subsampling:
+#   description: "norm 16 demos, sub 20"
+#   exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+#   seed_runs: [
+#     norm_halfcheetah_16_demos_20_subsampling
+#   ]
+
 norm_halfcheetah_8_demos_20_subsampling:
   description: "norm 8 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_halfcheetah_8_demos_20_subsampling
   ]
 
 norm_halfcheetah_4_demos_20_subsampling:
   description: "norm 4 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_halfcheetah_4_demos_20_subsampling
   ]
@@ -473,28 +480,28 @@ norm_ant_64_demos_20_subsampling:
 
 norm_ant_32_demos_20_subsampling:
   description: "norm 32 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_ant_32_demos_20_subsampling
   ]
 
 norm_ant_16_demos_20_subsampling:
   description: "norm 16 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_ant_16_demos_20_subsampling
   ]
 
 norm_ant_8_demos_20_subsampling:
   description: "norm 8 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_ant_8_demos_20_subsampling
   ]
 
 norm_ant_4_demos_20_subsampling:
   description: "norm 4 demos, sub 20"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_ant_4_demos_20_subsampling
   ]
@@ -555,63 +562,363 @@ norm_humanoid_256_demos_20_subsampling:
     norm_humanoid_256_demos_20_subsampling
   ]
 
+ant_multi_valid_target_demos_8_target_8_each_no_sub:
+  description: "ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-valid-target-demos-8-target-8-each-no-sub
+  seed_runs: [
+    ant_multi_valid_target_demos_8_target_8_each_no_sub_2019_05_04_12_48_35_0000--s-0
+  ]
+
+norm_ant_multi_valid_target_demos_8_target_8_each_no_sub:
+  description: "normalized, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_multi_valid_target_demos_8_target_8_each_no_sub
+  ]
+
+deterministic_ant_multi_valid_target_demos_8_target_8_each_no_sub:
+  description: "deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-valid-target-demos-8-target-8-each-no-sub-deterministic-rollouts-correct
+  seed_runs: [
+    ant_multi_valid_target_demos_8_target_8_each_no_sub_deterministic_rollouts_correct_2019_05_05_12_55_09_0000--s-0
+  ]
+
+deterministic_ant_multi_valid_target_demos_8_target_16_each_no_sub:
+  description: "deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-valid-target-demos-8-target-16-each-no-sub-deterministic-rollouts
+  seed_runs: [
+    ant_multi_valid_target_demos_8_target_16_each_no_sub_deterministic_rollouts_2019_05_05_14_34_47_0000--s-0
+  ]
+
+deterministic_ant_multi_valid_target_demos_8_target_24_each_no_sub:
+  description: "deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-valid-target-demos-8-target-24-each-no-sub-deterministic-rollouts-correct
+  seed_runs: [
+    ant_multi_valid_target_demos_8_target_24_each_no_sub_deterministic_rollouts_correct_2019_05_05_15_07_43_0000--s-0
+  ]
+
+deterministic_ant_multi_valid_target_demos_8_target_24_each_no_sub_path_len_50:
+  description: "deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-valid-target-demos-8-target-24-each-no-sub-deterministic-rollouts-correct-path-len-50
+  seed_runs: [
+    ant_multi_valid_target_demos_8_target_24_each_no_sub_deterministic_rollouts_correct_path_len_50_2019_05_05_15_13_43_0000--s-0
+  ]
+
+deterministic_ant_multi_valid_target_demos_8_target_16_each_no_sub_path_len_50:
+  description: "deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-valid-target-demos-8-target-16-each-no-sub-deterministic-rollouts-correct-path-len-50
+  seed_runs: [
+    ant_multi_valid_target_demos_8_target_16_each_no_sub_deterministic_rollouts_correct_path_len_50_2019_05_05_15_18_53_0000--s-0
+  ]
+
+deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len_50:
+  description: "deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-valid-target-demos-8-target-32-each-no-sub-deterministic-rollouts-correct-path-len-50-actually-ugh
+  seed_runs: [
+    ant_multi_valid_target_demos_8_target_32_each_no_sub_deterministic_rollouts_correct_path_len_50_actually_ugh_2019_05_05_15_48_02_0000--s-0
+  ]
+
+norm_deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len_50:
+  description: "normalized, deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len_50
+  ]
 
 # META-EXPERTS ----------------------------------------------------------------
-hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20:
-  description: "25 meta train, 25 meta test, 16 demos each, subsample 20, unif spaced 0.125"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-0p125-separated-16-demos-per-task-20-sub-stoch-policy-3-layer-rew-4
+ant_test_tasks_for_32_points:
+  description: "16 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-test-points-for-32-points-16-demos-sub-1
   seed_runs: [
-    hc_rand_vel_expert_demos_0p125_separated_16_demos_per_task_20_sub_stoch_policy_3_layer_rew_4_2019_04_07_18_31_35_0000--s-0
+    ant_agg_test_points_for_32_points_16_demos_sub_1_2019_04_28_13_30_41_0000--s-0
   ]
 
-norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20:
-  description: "normalized, 25 meta train, 25 meta test, 16 demos each, subsample 20, unif spaced 0.125"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+norm_ant_test_tasks_for_32_points:
+  description: "normalized, 16 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
-    norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20
+    norm_ant_test_tasks_for_32_points
   ]
 
-deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
-  description: "25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-0p125-separated-64-demos-per-task-20-sub-det-poliy-3-layer-rew-4
+ant_32_points_64_demos_sub_1:
+  description: "64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-32-points-64-demos-sub-1
   seed_runs: [
-    hc_rand_vel_expert_demos_0p125_separated_64_demos_per_task_20_sub_det_poliy_3_layer_rew_4_2019_04_05_16_02_49_0000--s-0
+    ant_agg_32_points_64_demos_sub_1_2019_04_27_23_37_34_0000--s-0
   ]
 
-norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
-  description: "normalized, 25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+norm_ant_32_points_64_demos_sub_1:
+  description: "normalized, 64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
-    norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
+    norm_ant_32_points_64_demos_sub_1
   ]
 
-stochastic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
-  description: "25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/stochastic-hc-rand-vel-expert-demos-0p125-separated-64-demos-per-task-20-sub-stoch-policy-3-layer-rew-4
+ant_32_points_4_demos_sub_1:
+  description: "4 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-32-points-4-demos-sub-1
   seed_runs: [
-    stochastic_hc_rand_vel_expert_demos_0p125_separated_64_demos_per_task_20_sub_stoch_policy_3_layer_rew_4_2019_04_05_16_40_07_0000--s-0
+    ant_agg_32_points_4_demos_sub_1_2019_04_27_15_28_35_0000--s-0
   ]
 
-halfcheetah_rand_vel_expert:
-  description: "25 meta train, 25 meta test, 8 demos each, subsample 20, unif spaced 0.125"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-25-25-8-each-20-sub
+norm_ant_32_points_4_demos_sub_1:
+  description: "normalized, 4 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
-    hc_rand_vel_expert_demos_25_25_8_each_20_sub_2019_03_29_05_30_45_0000--s-0
+    norm_ant_32_points_4_demos_sub_1
   ]
 
-halfcheetah_rand_vel_expert_32_demos_per_task:
-  description: "25 meta train, 25 meta test, 32 demos each, subsample 20, unif spaced 0.125"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-25-25-32-each-20-sub
+ant_32_points_16_demos_sub_1:
+  description: "16 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-32-points-16-demos-sub-1
   seed_runs: [
-    hc_rand_vel_expert_demos_25_25_32_each_20_sub_2019_03_30_01_27_32_0000--s-0
+    ant_agg_32_points_16_demos_sub_1_2019_04_27_15_12_08_0000--s-0
   ]
 
-# norm_halfcheetah_rand_vel_expert:
-#   description: "25 meta train, 25 meta test, 4 demos each, subsample 20, unif spaced 0.125"
+norm_ant_32_points_16_demos_sub_1:
+  description: "normalized, 16 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_32_points_16_demos_sub_1
+  ]
+
+ant_sixteen_points_16_demos_sub_1:
+  description: "train and test tasks, 16 train 16 test, 16 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-16-points-train-and-test-16-demos-sub-1
+  seed_runs: [
+    ant_agg_16_points_train_and_test_16_demos_sub_1_2019_04_26_21_30_06_0000--s-0
+  ]
+
+norm_ant_sixteen_points_16_demos_sub_1:
+  description: "normalized, train and test tasks, 16 train 16 test, 16 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_sixteen_points_16_demos_sub_1
+  ]
+
+ant_eight_points_64_demos_sub_1:
+  description: "64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-eight-points-64-demos-sub-1
+  seed_runs: [
+    ant_agg_eight_points_64_demos_sub_1_2019_04_24_21_17_54_0000--s-0
+  ]
+
+norm_ant_eight_points_64_demos_sub_1:
+  description: "normalized, 64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_eight_points_64_demos_sub_1
+  ]
+
+ant_opposite_points_64_demos_sub_1:
+  description: "64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-opposite-points-64-demos-sub-1
+  seed_runs: [
+    ant_agg_opposite_points_64_demos_sub_1_2019_04_24_13_25_35_0000--s-0
+  ]
+
+norm_ant_opposite_points_64_demos_sub_1:
+  description: "normalized, 64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_opposite_points_64_demos_sub_1
+  ]
+
+ant_two_points_64_demos_sub_1:
+  description: "64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-two-points-64-demos-sub-1
+  seed_runs: [
+    ant_agg_two_points_64_demos_sub_1_2019_04_24_13_09_14_0000--s-0
+  ]
+
+norm_ant_two_points_64_demos_sub_1:
+  description: "normalized, 64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_two_points_64_demos_sub_1
+  ]
+
+ant_five_points_64_demos_sub_1:
+  description: "64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-agg-five-points-64-demos-sub-1
+  seed_runs: [
+    ant_agg_five_points_64_demos_sub_1_2019_04_23_23_00_18_0000--s-0
+  ]
+
+norm_ant_five_points_64_demos_sub_1:
+  description: "normalized, 64 demos each, subsample 1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_five_points_64_demos_sub_1
+  ]
+
+hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20:
+  description: "4 demos each, subsample 20, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-expert-demos-0p1-separated-4-demos-sub-20
+  seed_runs: [
+    hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20_2019_04_19_22_07_01_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20:
+  description: "normalized, 4 demos each, subsample 20, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
+  ]
+
+hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20:
+  description: "16 demos each, subsample 20, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-very-good-expert-demos-0p1-separated-16-demos-per-task-20-subsample
+  seed_runs: [
+    hc_rand_vel_very_good_expert_demos_0p1_separated_16_demos_per_task_20_subsample_2019_04_13_20_31_33_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20:
+  description: "normalized, 16 demos each, subsample 20, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
+  ]
+
+hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20:
+  description: "64 demos each, subsample 20, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-very-good-expert-demos-0p1-separated-64-demos-per-task-20-subsample
+  seed_runs: [
+    hc_rand_vel_very_good_expert_demos_0p1_separated_64_demos_per_task_20_subsample_2019_04_13_20_42_23_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20:
+  description: "normalized, 64 demos each, subsample 20, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20
+  ]
+
+hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1:
+  description: "64 demos each, subsample 1, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-very-good-expert-demos-0p1-separated-64-demos-per-task-no-subsample-correct
+  seed_runs: [
+    hc_rand_vel_very_good_expert_demos_0p1_separated_64_demos_per_task_no_subsample_correct_2019_04_15_15_47_37_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1:
+  description: "normalized 64 demos each, subsample 1, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
+  ]
+
+hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1_only_task_1:
+  description: "only task 1, 64 demos each, subsample 1, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-very-good-expert-demos-0p1-separated-64-demos-per-task-no-subsample-correct-only-for-task-1
+  seed_runs: [
+    hc_rand_vel_very_good_expert_demos_0p1_separated_64_demos_per_task_no_subsample_correct_only_for_task_1_2019_04_15_19_49_30_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1_only_task_1:
+  description: "normalized, only task 1, 64 demos each, subsample 1, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1_only_task_1
+  ]
+
+hc_rand_vel_expert_demos_0p1_separated_256_demos_sub_1_only_task_1:
+  description: "only task 1, 256 demos each, subsample 1, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-very-good-expert-demos-0p1-separated-256-demos-per-task-no-subsample-correct-only-for-task-1
+  seed_runs: [
+    hc_rand_vel_very_good_expert_demos_0p1_separated_256_demos_per_task_no_subsample_correct_only_for_task_1_2019_04_15_20_20_36_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_demos_0p1_separated_256_demos_sub_1_only_task_1:
+  description: "normalized, only task 1, 256 demos each, subsample 1, unif spaced 0.1"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_demos_0p1_separated_256_demos_sub_1_only_task_1
+  ]
+
+hc_rand_vel_expert_debug_5_values:
+  description: "annoyed"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-debug-5-values
+  seed_runs: [
+    hc_rand_vel_debug_5_values_2019_04_16_12_19_22_0000--s-0
+  ]
+
+hc_rand_vel_expert_debug_9_values:
+  description: "less annoyed"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-debug-9-values
+  seed_runs: [
+    hc_rand_vel_debug_9_values_2019_04_16_13_11_34_0000--s-0
+  ]
+
+hc_rand_vel_expert_debug_1_to_2_values:
+  description: "back to more annoyed"
+  exp_dir: /scratch/hdd001/home/kamyar/output/hc-rand-vel-debug-1-to-2-values
+  seed_runs: [
+    hc_rand_vel_debug_1_to_2_values_2019_04_16_14_17_25_0000--s-0
+  ]
+
+norm_hc_rand_vel_expert_debug_1_to_2_values:
+  description: "normalized, back to more annoyed"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_expert_debug_1_to_2_values
+  ]
+
+# hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20:
+#   description: "25 meta train, 25 meta test, 16 demos each, subsample 20, unif spaced 0.125"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-0p125-separated-16-demos-per-task-20-sub-stoch-policy-3-layer-rew-4
+#   seed_runs: [
+#     hc_rand_vel_expert_demos_0p125_separated_16_demos_per_task_20_sub_stoch_policy_3_layer_rew_4_2019_04_07_18_31_35_0000--s-0
+#   ]
+
+# norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20:
+#   description: "normalized, 25 meta train, 25 meta test, 16 demos each, subsample 20, unif spaced 0.125"
 #   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
 #   seed_runs: [
-#     norm_halfcheetah_rand_vel_expert
+#     norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20
 #   ]
+
+# deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
+#   description: "25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-0p125-separated-64-demos-per-task-20-sub-det-poliy-3-layer-rew-4
+#   seed_runs: [
+#     hc_rand_vel_expert_demos_0p125_separated_64_demos_per_task_20_sub_det_poliy_3_layer_rew_4_2019_04_05_16_02_49_0000--s-0
+#   ]
+
+# norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
+#   description: "normalized, 25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+#   seed_runs: [
+#     norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
+#   ]
+
+# stochastic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20:
+#   description: "25 meta train, 25 meta test, 64 demos each, subsample 20, unif spaced 0.125"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/stochastic-hc-rand-vel-expert-demos-0p125-separated-64-demos-per-task-20-sub-stoch-policy-3-layer-rew-4
+#   seed_runs: [
+#     stochastic_hc_rand_vel_expert_demos_0p125_separated_64_demos_per_task_20_sub_stoch_policy_3_layer_rew_4_2019_04_05_16_40_07_0000--s-0
+#   ]
+
+# halfcheetah_rand_vel_expert:
+#   description: "25 meta train, 25 meta test, 8 demos each, subsample 20, unif spaced 0.125"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-25-25-8-each-20-sub
+#   seed_runs: [
+#     hc_rand_vel_expert_demos_25_25_8_each_20_sub_2019_03_29_05_30_45_0000--s-0
+#   ]
+
+# halfcheetah_rand_vel_expert_32_demos_per_task:
+#   description: "25 meta train, 25 meta test, 32 demos each, subsample 20, unif spaced 0.125"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/hc-rand-vel-expert-demos-25-25-32-each-20-sub
+#   seed_runs: [
+#     hc_rand_vel_expert_demos_25_25_32_each_20_sub_2019_03_30_01_27_32_0000--s-0
+#   ]
+
+# # norm_halfcheetah_rand_vel_expert:
+# #   description: "25 meta train, 25 meta test, 4 demos each, subsample 20, unif spaced 0.125"
+# #   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
+# #   seed_runs: [
+# #     norm_halfcheetah_rand_vel_expert
+# #   ]
 
 
 meta_simple_meta_reacher_expert_no_subsampling:
@@ -864,16 +1171,17 @@ another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_sub
     another_scale_0p9_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1
   ]
 
-fixed_colors_32_16_1:
-  description: "episode length 65"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
-  seed_runs: [
-    fixed_colors_32_16_1
-  ]
+# fixed_colors_32_16_1:
+#   description: "episode length 65"
+#   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+#   seed_runs: [
+#     fixed_colors_32_16_1
+#   ]
 
 fixed_colors_0p5_32_16_1:
   description: "episode length 65"
-  exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  # exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
   seed_runs: [
     fixed_colors_0p5_32_16_1
   ]

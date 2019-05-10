@@ -62,13 +62,19 @@ def get_mean_curves(curves):
 if __name__ == '__main__':
     # f_KL_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-ant-forw-KL-with-larger-disc'
     # r_KL_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-ant-rev-KL-with-larger-disc'
+    
+    # f_KL_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-forw-KL-with-128-disc-50-rew'
+    # r_KL_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-rev-KL-with-128-disc'
 
-    f_KL_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-forw-KL-with-128-disc-50-rew'
-    r_KL_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-rev-KL-with-128-disc'
+    gail_path = '/scratch/hdd001/home/kamyar/output/halfcheetah-gail-rew-4'
+    f_KL_path = '/scratch/hdd001/home/kamyar/output/what-matters-halfcheetah-forw-KL-with-128-disc-50-rew'
+    r_KL_path = '/scratch/hdd001/home/kamyar/output/what-matters-halfcheetah-rev-KL-with-128-disc'
 
+    gail_curves = get_curves(gail_path)
     f_curves = get_curves(f_KL_path)
     r_curves = get_curves(r_KL_path)
 
+    gail_means = get_mean_curves(gail_curves)
     f_means = get_mean_curves(f_curves)
     r_means = get_mean_curves(r_curves)
 
@@ -79,9 +85,18 @@ if __name__ == '__main__':
 
             fig, ax = plt.subplots(1)
             
-            ax.plot(r_means[det][expert], color='purple', label='AIRL')
+            # ax.plot(r_means[det][expert], color='purple', label='AIRL')
+            ax.plot(r_curves[det][expert][0], color='purple', label='AIRL')
+            ax.plot(r_curves[det][expert][1], color='purple', label='AIRL')
             # ax.fill_between(X, r_means+r_stds, r_means-r_stds, facecolor='purple', alpha=0.5)
-            ax.plot(f_means[det][expert], color='cyan', label='FAIRL')
+
+            # ax.plot(gail_means[det][expert], color='salmon', label='GAIL')
+            ax.plot(gail_curves[det][expert][0], color='salmon', label='GAIL')
+            ax.plot(gail_curves[det][expert][1], color='salmon', label='GAIL')
+
+            # ax.plot(f_means[det][expert], color='cyan', label='FAIRL')
+            ax.plot(f_curves[det][expert][0], color='cyan', label='FAIRL')
+            ax.plot(f_curves[det][expert][1], color='cyan', label='FAIRL')
             # ax.fill_between(X, f_means+f_stds, f_means-f_stds, facecolor='cyan', alpha=0.5)
 
             ax.set_xlim([0, 150])

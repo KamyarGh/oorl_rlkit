@@ -87,7 +87,7 @@ def experiment(variant):
     # make the disc model
     if variant['algo_params']['state_only']: print('\n\nUSING STATE ONLY DISC\n\n')
     disc_model = StandardAIRLDisc(
-        obs_dim + action_dim + variant['algo_params']['z_dim'] if not variant['algo_params']['state_only'] else obs_dim + variant['algo_params']['z_dim'],
+        obs_dim + action_dim + variant['algo_params']['z_dim'] if not variant['algo_params']['state_only'] else 2*obs_dim + variant['algo_params']['z_dim'],
         num_layer_blocks=variant['disc_num_blocks'],
         hid_dim=variant['disc_hid_dim'],
         hid_act=variant['disc_hid_act'],
@@ -138,7 +138,7 @@ def experiment(variant):
 
     # make the encoder
     encoder = TimestepBasedEncoder(
-        2*obs_dim + action_dim, #(s,a,s')
+        2*obs_dim if variant['algo_params']['state_only'] else 2*obs_dim + action_dim, #(s,a,s')
         variant['algo_params']['r_dim'],
         variant['algo_params']['z_dim'],
         variant['algo_params']['enc_hid_dim'],
@@ -146,7 +146,8 @@ def experiment(variant):
         variant['algo_params']['num_enc_layer_blocks'],
         hid_act='relu',
         use_bn=True,
-        within_traj_agg=variant['algo_params']['within_traj_agg']
+        within_traj_agg=variant['algo_params']['within_traj_agg'],
+        state_only=variant['algo_params']['state_only']
     )
     # ---------------
     # traj_enc = ConvTrajEncoder(

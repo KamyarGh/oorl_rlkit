@@ -26,14 +26,15 @@ Things I need:
 '''
 
 MAX_PATH_LENGTH = 65
-EXPERT_BUFFER_PATH = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/few_shot_fetch_eval_expert_trajs/extra_data.pkl'
+EXPERT_BUFFER_PATH = '/scratch/hdd001/home/kamyar/expert_demos/few_shot_fetch_eval_expert_trajs/extra_data.pkl'
 
 EVAL_SEED = 89205
 
-NUM_EVAL_TASKS = 16
-NUM_CONTEXT_SAMPLES = 3
+# NUM_EVAL_TASKS = 16
+NUM_EVAL_TASKS = 4
+NUM_CONTEXT_SAMPLES = 1
 # NUM_POST_SAMPLES = 1
-NUM_POST_SAMPLES = 3
+NUM_POST_SAMPLES = 1
 NUM_ROLLOUTS_PER_POST_SAMPLE = 10
 # NUM_ROLLOUTS_PER_POST_SAMPLE = 5
 
@@ -70,7 +71,7 @@ def rollout_path(env, task_params, obs_task_params, post_cond_policy):
     return cur_eval_path_builder.get_all_stacked()
 
 
-def gather_eval_data(policy, np_encoder, expert_buffer_for_eval_tasks, max_context_size=8, sample_from_prior=False):
+def gather_eval_data(policy, np_encoder, expert_buffer_for_eval_tasks, max_context_size=6, sample_from_prior=False):
     # return all the metrics we would need for evaluating the models
     # for each trajectory we need to know 1) was it successful 2) was it a good reach
     # policy.cuda()
@@ -89,6 +90,7 @@ def gather_eval_data(policy, np_encoder, expert_buffer_for_eval_tasks, max_conte
 
     all_good_reach = defaultdict(list)
     all_solved = defaultdict(list)
+    all_no_op_fail = defaultdict(list)
     for task_params, obs_task_params in params_sampler:
         print('\tEvaluating task %d...' % task_num)
         task_num += 1
@@ -109,7 +111,7 @@ def gather_eval_data(policy, np_encoder, expert_buffer_for_eval_tasks, max_conte
                 for _ in range(NUM_POST_SAMPLES):
                     # sample from the posterior and get the PostCondPolicy
                     # z = post_dist.sample()
-                    z = torch.tanh(post_dist.mean)
+                    z = post_dist.mean
                     z = z.cpu().data.numpy()[0]
                     if sample_from_prior:
                         z = np.random.normal(size=z.shape)
@@ -127,7 +129,8 @@ def gather_eval_data(policy, np_encoder, expert_buffer_for_eval_tasks, max_conte
             stats_for_context_size = env.log_statistics(paths_for_context_size)
             all_good_reach[context_size].append(stats_for_context_size['Percent_Good_Reach'])
             all_solved[context_size].append(stats_for_context_size['Percent_Solved'])
-    return {'algorithm_good_reach': all_good_reach, 'algorithm_solved': all_solved}
+            all_no_op_fail[context_size].append(stats_for_context_size['Percent_NoOp_Fail'])
+    return {'algorithm_good_reach': all_good_reach, 'algorithm_solved': all_solved, 'algorithm_no_op_fail': all_no_op_fail}
 
 
 if __name__ == '__main__':
@@ -152,9 +155,9 @@ if __name__ == '__main__':
     expert_buffer = joblib.load(EXPERT_BUFFER_PATH)['meta_train']['context']
 
     # for each subdir experiment evaluate it
-    all_stats = []
     try:
         alg = joblib.load(osp.join(exp_path, sub_exp, 'best_meta_test.pkl'))['algorithm']
+        # alg = joblib.load(osp.join(exp_path, sub_exp, 'extra_data.pkl'))['algorithm']
         print('\nLOADED ALGORITHM\n')
         if exp_specs['evaluating_np_airl']:
             alg.cuda()
@@ -171,13 +174,13 @@ if __name__ == '__main__':
         expert_buffer,
         sample_from_prior=sample_from_prior
     )
-    all_stats.append(sub_exp_stats)
+    print(sub_exp_stats)
 
     # save all of the results
     save_name = 'all_few_shot_stats.pkl'
     if sample_from_prior: save_name = 'prior_sampled_' + save_name
     joblib.dump(
-        {'all_few_shot_stats': all_stats},
+        sub_exp_stats,
         osp.join(exp_path, sub_exp, save_name),
         compress=3
     )

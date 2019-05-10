@@ -18,7 +18,7 @@ from rlkit.torch.sac.policies import WithZObsPreprocessedReparamTanhMultivariate
 from rlkit.torch.networks import FlattenMlp
 
 from rlkit.torch.irl.np_bc import NeuralProcessBC
-from rlkit.torch.irl.encoders.conv_trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder
+from rlkit.torch.irl.encoders.conv_trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder, TrivialContextEncoder
 # from rlkit.torch.irl.encoders.trivial_encoder import TrivialTrajEncoder, TrivialR2ZMap, TrivialNPEncoder
 
 import yaml
@@ -85,13 +85,18 @@ def experiment(variant):
     )
 
     # Make the neural process
-    traj_enc = TrivialTrajEncoder()
+    traj_enc = TrivialTrajEncoder(state_only=variant['algo_params']['state_only'])
+    context_enc = TrivialContextEncoder(
+        variant['algo_params']['np_params']['agg_type'],
+        traj_enc,
+        state_only=variant['algo_params']['state_only']
+    )
     r2z_map = TrivialR2ZMap(z_dim)
     
     np_enc = TrivialNPEncoder(
-        variant['algo_params']['np_params']['agg_type'],
-        traj_enc,
-        r2z_map
+        context_enc,
+        r2z_map,
+        state_only=variant['algo_params']['state_only']
     )
     
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)

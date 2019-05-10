@@ -54,9 +54,24 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             no_terminal=False,
             save_best=False,
             save_best_after_epoch=0,
+            custom_save_epoch=[],
+
+            use_env_getter=False,
+            training_env_getter=None,
+            test_env_getter=None,
+            get_full_obs_dict=False,
+
             **kwargs
         ):
-        self.training_env = training_env or pickle.loads(pickle.dumps(env))
+        self.use_env_getter = use_env_getter
+        self.training_env_getter = training_env_getter
+        self.test_env_getter = test_env_getter
+        self.get_full_obs_dict = get_full_obs_dict
+        if self.use_env_getter:
+            cur_task_params, cur_obs_task_params = train_task_params_sampler.sample()
+            self.training_env = self.training_env_getter(cur_obs_task_params)
+        else:
+            self.training_env = training_env or pickle.loads(pickle.dumps(env))
         # self.training_env = training_env or deepcopy(env)
         self.train_context_expert_replay_buffer = train_context_expert_replay_buffer
         self.train_test_expert_replay_buffer = train_test_expert_replay_buffer
@@ -76,9 +91,13 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self.save_environment = save_environment
         self.policy_uses_pixels = policy_uses_pixels
 
-        self.action_space = env.action_space
-        self.obs_space = env.observation_space
-        self.env = env
+        if self.use_env_getter:
+            cur_task_params, cur_obs_task_params = test_task_params_sampler.sample()
+            self.env = test_env_getter(cur_obs_task_params)
+        else:
+            self.env = env
+        self.action_space = self.env.action_space
+        self.obs_space = self.env.observation_space
         if replay_buffer is None:
             replay_buffer = MetaEnvReplayBuffer(
                 self.replay_buffer_size_per_task,
@@ -109,13 +128,14 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self.best_meta_test = np.float('-inf')
         self.save_best = save_best
         self.save_best_after_epoch = save_best_after_epoch
+        self.custom_save_epoch = custom_save_epoch
 
 
     def train(self, start_epoch=0):
         self.pretrain()
         if start_epoch == 0:
             params = self.get_epoch_snapshot(-1)
-            logger.save_itr_params(-1, params)
+            # logger.save_itr_params(-1, params)
         self.training_mode(False)
         # self._n_env_steps_total = start_epoch * self.num_env_steps_per_epoch
         gt.reset()
@@ -169,10 +189,13 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         terminal = False
         while (not terminal) and len(self._current_path_builder) < self.max_path_length:
             if isinstance(self.obs_space, Dict):
-                if self.policy_uses_pixels:
-                    agent_obs = observation['pixels']
+                if self.get_full_obs_dict:
+                    agent_obs = observation
                 else:
-                    agent_obs = observation['obs']
+                    if self.policy_uses_pixels:
+                        agent_obs = observation['pixels']
+                    else:
+                        agent_obs = observation['obs']
             else:
                 agent_obs = observation
             
@@ -236,6 +259,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             save_itrs=True,
         ):
             self._start_epoch(epoch)
+            print('EPOCH STARTED')
             # print('epoch')
             for _ in range(self.num_rollouts_per_epoch):
                 # print('rollout')
@@ -272,7 +296,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
 
             if epoch % self.freq_saving == 0:
                 params = self.get_epoch_snapshot(epoch)
-                logger.save_itr_params(epoch, params)
+                # logger.save_itr_params(epoch, params)
             table_keys = logger.get_table_key_set()
 
             # logger.record_tabular(
@@ -357,13 +381,19 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
 
 
     def _start_new_rollout(self, task_params=None, obs_task_params=None):
-        if task_params is None:
-            task_params, obs_task_params = self.train_task_params_sampler.sample()
-        observation = self.training_env.reset(task_params=task_params, obs_task_params=obs_task_params)
+        if self.use_env_getter:
+            self.training_env = self.training_env_getter(obs_task_params)
+            obs_from_reset = self.training_env.reset()
+            observation = self.training_env._get_obs()
+        else:
+            if task_params is None:
+                task_params, obs_task_params = self.train_task_params_sampler.sample()
+            observation = self.training_env.reset(task_params=task_params, obs_task_params=obs_task_params)
         task_id = self.training_env.task_identifier
 
         self.exploration_policy = self.get_exploration_policy(task_id)
         self.exploration_policy.reset()
+
         return observation, task_id
 
 

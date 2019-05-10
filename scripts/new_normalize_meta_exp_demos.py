@@ -110,10 +110,28 @@ with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
 for i, expert in enumerate([
     # 'halfcheetah_rand_vel_expert',
     # 'deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20'
-    'hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20'
+    # 'hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20'
+    # 'hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20'
+    # 'hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20'
+    # 'hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1'
+    # 'hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1_only_task_1'
+    # 'hc_rand_vel_expert_demos_0p1_separated_256_demos_sub_1_only_task_1'
+    # 'hc_rand_vel_expert_debug_1_to_2_values'
+    # 'hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20'
+
+    # ANT
+    # 'ant_five_points_64_demos_sub_1'
+    # 'ant_two_points_64_demos_sub_1'
+    # 'ant_opposite_points_64_demos_sub_1'
+    # 'ant_eight_points_64_demos_sub_1'
+    # 'ant_sixteen_points_16_demos_sub_1'
+    # 'ant_32_points_16_demos_sub_1'
+    # 'ant_32_points_4_demos_sub_1'
+    # 'ant_32_points_64_demos_sub_1'
+    'ant_test_tasks_for_32_points'
   ]):
   data_path = osp.join(listings[expert]['exp_dir'], listings[expert]['seed_runs'][0], 'extra_data.pkl')
-  save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/norm_'+expert
+  save_dir = '/scratch/hdd001/home/kamyar/expert_demos/norm_'+expert
   os.makedirs(save_dir, exist_ok=True)
   save_path = osp.join(save_dir, 'extra_data.pkl')
   do_the_thing(data_path, save_path, False)

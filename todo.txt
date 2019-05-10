@@ -1,3 +1,183 @@
+- (done) implement the obtain eval samples
+- (done) check success checker in log statistics (remember normalization of the state)
+- (done) make sure the architecture is reasonable
+- (done) implement the version with a z kernel at each layer
+- (done) do the image checking for the validation set
+- (done) fix saving
+- (done) check that saving works
+- (done) don't forget to remove the thing that trains only on very few tasks
+
+Things to try for meta-bc-pusher:
+- (running) higher lr
+- (done, double-flip) fixing the stupid table texture thing
+- (did it again seems ok) check pre and post normalized X ranges
+- (done) make gifs
+- (done)plot the context you are giving it
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+- (DONE) NEEEED TO RENDER BIGGER AND USE ANTI-ALIASING
+- (yeah I think it's good) check if the angle of the camera is correct, I think it is
+- (done forever) Also check action bounds
+- normalization replacing 1e-3 with 1.0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Morning Schedule:
+2) Implement a trivial and fast-to-train contextual policy that take in the final image and cur_image and outputs action
+    - Try variants of this until you get around 50% performance
+    - Otherwise there is likely a problem
+- check that the MLP output doesnt have any activations
+- check validation set loss
+2) check what Ziyu Wang did for learning from images
+1) Maximum likelihood with gaussian version of both models
+    - the softmax makes the gradients 3 orders of magnitude smaller check that encoder is getting gradients
+3) USE DATA LOADER FOR LOADING TRAINING BATCHES
+3) POST COND KEEPS TAKING Z ON AND OFF GPU, IF ITS A LARGE OBJECT, THEN ROLLOUTS WILL BE SLOW
+3) After trivial contextual model and MLE model, need to check that data loading is good
+    - load a task, render the environment, take the same set of actions, see where the gripper ends up
+3) try pretraining an auto-encoder
+3) need to remove spatial-softmax
+3) even with these models try image-only to make sure gradients go through the images
+3) with and without batchnorm
+
+- plot the spatial softmax activations
+- turn off batch norm everywhere for now
+- (they didn't train with this I think) end effector loss
+- check if you can overfit on one task and when you overfit what is the MSE loss
+
+- try with MLE on Gaussian policy
+- check the action normalizing thing
+- check that policy output doesn't have relus for output
+- save some of the evaluation demos videos
+- start with the context being just a single final image
+- increasing the kernel sizes
+- attention instead of this stupid kernel thing
+- batch norm
+- larger models
+- timestep based encoder
+- learning rate
+- check max_path_length
+
+
+
+Making things work:
+v1):
+    - instead of video only encode the last timestep
+    - even in the last timestep black out everything but the region around the target
+    - check the strides they used in their model
+    - save some of the evaluation demos videos
+    - use meta-batch size 16-1-1
+    - policy model:
+        - (running) v1) encode cur image with a few conv layers, dot product feature-wise with
+            1x1xCH representation gotten from encoding the target, softmax, gate the conv
+            output, concatenate the gated conv output to the original conv output,
+            do the rest of the processing, keep using spatial softmax
+        - add a thing to visualize some of the eval runs
+        - add a thing to visualize some of the x-y maps
+        - maybe use batch norm in policy image processor too
+        - v2) don't use spatial softmax
+        - v2) instead of mult. interaction sigmoid it to make a mask
+        - v3) try without the state
+        - ....
+    - I think they trained on the validation set as well
+
+    - (if still not working):
+        - read their paper and figure out what the extra loss about the eept is?
+        - check that state normalization is correct
+        - read the film paper in more detail
+
+
+
+
+
+
+
+- make a reparam gaussian policy
+- does their additional loss term eept matter?
+- make sure SAC is gonna work with this
+- check what the action limits were in the original pusher environemnt
+
+
+
+
+- check scaling
+- check that the images for the demos and the envs are matched for the train and val sets
+
+
+- (done) implement the meta-pusher env and test it
+- implement meta-bc version and debug it
+- implement obtain_eval_samples
+- implement success evaluation
+- run meta-bc experiments
+
+- make the LRUMeta replay buffer
+- make a new meta-irl-algorithm so you can run meta-airl
+- implement meta-airl
+
+
+
+
+- v0:
+    - (done) encoder always just gets video regardless of whether the discriminator gets image/+state/+action or not
+    - (done) discriminator gets image + state + action and uses spatial softmax
+    - (done) policy gets image + state + action and uses spatial softmax
+    - (done) Q and V same as policy
+- Make a copy of np_airl specifically for this task
+- Add the data-loader to the code
+    - Might need to implement my own data loader so that I can load multiple 
+- Add the environment to the code
+- Make changes to the replay buffer to support images & 
+- DEBUGGING
+
+
+
+hc
+fetch
+new things
+
+
+t3: no nat 10
+t4: nat 5
+t5: 5 no nat
+t6: nat 10
+
+
+
+
+
+
+
+
+
+HC rand vel
+- run debugs of hc rand vel
+    - 5
+    - 9
+    - 9 with adam beta-1 0.25
+- try running np airl with unnormalized data
+- gather final results for hc_np_airl (do you want to be few-shot)
+- gather final results for hc_np_airl state-only
+- gather final results for hc_np_bc
+
+Ant rand goal
+- try with beta-1 0.25 and beta-1 0.9
+
+Fetch
+- fetch few-shot with KL np_airl
+- fetch few-shot with KL np_bc
+
+Ant Fetch
+- (running) train an ant that goes forward and backward
+- check that you can train a meta-airl to imitate the forward backward ant
+- make the script to generate demos for the ant fetch
+- train np airl no KL
+- train np bc no KL
+
+
+
+
+
 - (done) check if 3 layer experts are better than 2 layer
 - (done) generate a lot of demos (64 per task) (det & stoch)
 - (done) check velocity for stochastic

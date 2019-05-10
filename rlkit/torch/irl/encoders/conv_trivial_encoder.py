@@ -14,7 +14,7 @@ from rlkit.torch.irl.encoders.aggregators import sum_aggregator_unmasked, tanh_s
 from rlkit.torch.irl.encoders.aggregators import sum_aggregator, tanh_sum_aggregator
 from rlkit.torch.distributions import ReparamMultivariateNormalDiag
 
-DIM = 32
+DIM = 24
 
 class TrivialTrajEncoder(PyTorchModule):
     '''
@@ -251,7 +251,6 @@ class TrivialNPEncoder(PyTorchModule):
     ):
         self.save_init_params(locals())
         super().__init__()
-
         self.r_to_z_map = r_to_z_map
         self.train_context_encoder = train_context_encoder
         if train_context_encoder:

@@ -94,6 +94,13 @@ class ScaledEnv(ProxyEnv, Serializable):
         if self._scale_obs:
                 obs = (obs - self.obs_mean) / self.obs_std
         return obs
+
+
+    def log_statistics(self, *args, **kwargs):
+        if hasattr(self._wrapped_env, "log_statistics"):
+            return self._wrapped_env.log_statistics(*args, **kwargs)
+        else:
+            return {}
     
 
 class ScaledMetaEnv(ProxyEnv, Serializable):

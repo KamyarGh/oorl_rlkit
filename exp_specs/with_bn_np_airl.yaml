@@ -1,7 +1,10 @@
 meta_data:
-  script_path: /h/kamyar/oorl_rlkit/run_scripts/fetch_custom_train_np_airl.py
-  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: double_grad_clip_thresh_less_epochs_final_better_np_airl_KL_0p1_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16
+  script_path: run_scripts/fetch_custom_train_np_airl.py
+  # exp_name: double_grad_clip_thresh_less_epochs_final_better_np_airl_KL_0p1_weight_share_enc_32_dim_pol_dim_64_gate_dim_32_z_dim_16
+  # exp_name: fetch_np_airl_KL_0p001_epoch_60_to_120_few_shot_1_to_6_fucking_fixed_no_clip_DIM_24_all_clip_5
+  # exp_name: fetch_np_airl_KL_0p001_DIM_24_with_target_enc_with_enc_grad_clip
+  # exp_name: fetch_np_airl_KL_0p001_DIM_24_with_target_enc_with_enc_grad_clip
+  exp_name: fetch_np_airl_no_KL_DIM_24_no_clip_1_to_3
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 4
@@ -9,14 +12,16 @@ meta_data:
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-
+  meta_fairl: [false]
   algo_params:
     save_best: [true]
-    save_best_after_epoch: [50]
+    save_best_after_epoch: [40]
+    # save_best_after_epoch: [120]
+    # custom_save_epoch: [[60,120]]
     
-    max_KL_beta: [0.1]
-    KL_ramp_up_start_iter: [48750] # start at epoch 30
-    KL_ramp_up_end_iter: [81250] # when you change this also change best after epoch
+    max_KL_beta: [0.0]
+    KL_ramp_up_start_iter: [97500] # start at epoch 60
+    KL_ramp_up_end_iter: [195000] # when you change this also change best after epoch
 
     wrap_absorbing: [false]
     state_only: [false]
@@ -30,14 +35,14 @@ variables:
     # results in training batch size of 1024 for disc model
     num_tasks_used_per_update: [16]
     num_context_trajs_for_training: [3]
-    num_test_trajs_for_training: [5]
+    num_test_trajs_for_training: [6]
     disc_samples_per_traj: [8]
 
     num_context_trajs_for_exploration: [3]
 
     num_tasks_per_eval: [10]
-    num_diff_context_per_eval_task: [2]
-    num_eval_trajs_per_post_sample: [2]
+    num_diff_context_per_eval_task: [6]
+    num_eval_trajs_per_post_sample: [3]
     num_context_trajs_for_eval: [3]
 
     policy_optim_batch_mode_random: [true]
@@ -64,17 +69,20 @@ variables:
     # grad_pen_weight: [5.0]
     grad_pen_weight: [0.5]
 
-    disc_ce_grad_clip: [8.0]
-    enc_ce_grad_clip: [2.0]
-    disc_gp_grad_clip: [2.0]
-    # disc_ce_grad_clip: [100.0]
-    # enc_ce_grad_clip: [100.0]
-    # disc_gp_grad_clip: [100.0]
+    # disc_ce_grad_clip: [8.0]
+    # enc_ce_grad_clip: [2.0]
+    # disc_gp_grad_clip: [2.0]
+    disc_ce_grad_clip: [100.0]
+    enc_ce_grad_clip: [100.0]
+    disc_gp_grad_clip: [100.0]
+    # disc_ce_grad_clip: [5.0]
+    # enc_ce_grad_clip: [5.0]
+    # disc_gp_grad_clip: [5.0]
 
     use_target_disc: [false]
     soft_target_disc_tau: [0.005]
 
-    use_target_enc: [false]
+    use_target_enc: [true]
     soft_target_enc_tau: [0.005]
 
     np_params:
@@ -120,7 +128,7 @@ constants:
   algo_params:
     eval_deterministic: false
     
-    num_epochs: 101
+    num_epochs: 161
     num_rollouts_per_epoch: 125 # num rollouts between updates * 25
     num_rollouts_between_updates: 5
     num_initial_rollouts_for_all_train_tasks: 5
@@ -132,9 +140,10 @@ constants:
     replay_buffer_size_per_task: 20000
 
     save_replay_buffer: false
+    save_algorithm: true
     render: false
 
-    freq_saving: 25
+    freq_saving: 10
 
     np_params: {}
   

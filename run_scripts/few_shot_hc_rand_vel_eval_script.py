@@ -1,8 +1,3 @@
-'''
-Given only a single context trajectory, infer the posterior and evaluate
-for each k, if we take k samples from the posterior, what is percentage of
-tasks that are solved by taking the OR over all k for the same test envs.
-'''
 import yaml
 import argparse
 import os
@@ -65,7 +60,7 @@ def rollout_path(env, task_params, obs_task_params, post_cond_policy, max_path_l
     return cur_eval_path_builder.get_all_stacked()
 
 
-def gather_eval_data(alg, sample_from_prior=False, num_rollouts_per_task=8, context_sizes=[4], deterministic=True):
+def gather_eval_data(alg, sample_from_prior=False, num_rollouts_per_task=8, context_sizes=[4], deterministic=True, num_diff_context=1):
     alg.encoder.eval()
 
     all_statistics = {}
@@ -74,6 +69,8 @@ def gather_eval_data(alg, sample_from_prior=False, num_rollouts_per_task=8, cont
     params_sampler = alg.test_task_params_sampler
     expert_buffer_for_eval_tasks = alg.test_context_expert_replay_buffer
     env = alg.env
+    
+    _all_rets = []
 
     for task_params, obs_task_params in params_sampler:
         _task_dict = {}
@@ -90,39 +87,56 @@ def gather_eval_data(alg, sample_from_prior=False, num_rollouts_per_task=8, cont
             #     context_size
             # )
 
-            # evaluate all posterior sample trajs with same initial state
-            env_seed = np.random.randint(0, high=10000)
+            # # evaluate all posterior sample trajs with same initial state
+            # env_seed = np.random.randint(0, high=10000)
 
             if sample_from_prior: raise NotImplementedError
             # z = post_dist.sample()
             # z = z.cpu().data.numpy()[0]
             # if sample_from_prior:
             #     z = np.random.normal(size=z.shape)
-            post_cond_policy = alg.get_eval_policy(task_id, mode='meta_test')
-            post_cond_policy.policy.eval()
-            post_cond_policy.deterministic = deterministic
+
+            # 
+            # post_cond_policy = alg.get_eval_policy(task_id, mode='meta_test')
+            # post_cond_policy.policy.eval()
+            # post_cond_policy.deterministic = deterministic
+            # 
 
             # reset the env seed
-            env.seed(seed=env_seed)
             _vels = []
             # _std_vels = []
             _run_costs = []
             _rets = []
-            for _ in range(num_rollouts_per_task):
-                stacked_path = rollout_path(
-                    env,
-                    task_params,
-                    obs_task_params,
-                    post_cond_policy,
-                    alg.max_path_length
-                )
+            # env.seed(seed=env_seed)
 
-                # compute mean vel, return, run cost per traj
-                _vels.extend([d['vel'] for d in stacked_path['env_infos']])
-                # _std_vels.append(np.std([d['vel'] for d in stacked_path['env_infos']]))
-                _run_costs.append(np.sum([d['run_cost'] for d in stacked_path['env_infos']]))
-                _rets.append(np.sum(stacked_path['rewards']))
-            
+            for c_idx in range(num_diff_context):
+                list_of_trajs = alg.test_context_expert_replay_buffer.sample_trajs_from_task(
+                    task_id,
+                    context_size
+                )
+                alg.encoder.eval()
+                post_dist = alg.encoder([list_of_trajs])
+                z = post_dist.sample()
+                z = z.cpu().data.numpy()[0]
+                # post_cond_policy = PostCondMLPPolicyWrapper(alg.main_policy, z)
+                post_cond_policy = PostCondMLPPolicyWrapper(alg.main_policy, z)
+                post_cond_policy.policy.eval()
+                post_cond_policy.deterministic = deterministic
+                for _ in range(num_rollouts_per_task):
+                    stacked_path = rollout_path(
+                        env,
+                        task_params,
+                        obs_task_params,
+                        post_cond_policy,
+                        alg.max_path_length
+                    )
+
+                    # compute mean vel, return, run cost per traj
+                    _vels.extend([d['vel'] for d in stacked_path['env_infos']])
+                    # _std_vels.append(np.std([d['vel'] for d in stacked_path['env_infos']]))
+                    _run_costs.append(np.sum([d['run_cost'] for d in stacked_path['env_infos']]))
+                    _rets.append(np.sum(stacked_path['rewards']))
+                
             _cont_size_dict['_vels'] = _vels
             # _cont_size_dict['std_vels'] = _std_vels
             _cont_size_dict['run_costs'] = _run_costs
@@ -130,8 +144,10 @@ def gather_eval_data(alg, sample_from_prior=False, num_rollouts_per_task=8, cont
             _task_dict[context_size] = _cont_size_dict
 
             print('\t\tVel: %.4f +/- %.4f' % (np.mean(_vels), np.std(_vels)))
+            _all_rets.extend(_rets)
         
         all_statistics[task_id] = _task_dict
+    print('\nReturns: %.4f +/- %.4f' % (np.mean(_all_rets), np.std(_all_rets)))
     return all_statistics
 
 
@@ -154,31 +170,40 @@ if __name__ == '__main__':
 
     # do eval
     all_stats = []
-    for sub_exp in os.listdir(exp_path):
-        if os.path.isdir(osp.join(exp_path, sub_exp)):
-            try:
-                # alg = joblib.load(osp.join(exp_path, sub_exp, 'best_meta_test.pkl'))['algorithm']
-                alg = joblib.load(osp.join(exp_path, sub_exp, 'extra_data.pkl'))['algorithm']
-                print('\nLOADED ALGORITHM\n')
-            except Exception as e:
-                print('Failed on {}/{}'.format(exp_path, sub_exp))
-                raise e
-            
-            if exp_specs['use_gpu']:
-                alg.cuda()
-            else:
-                alg.cpu()
+    all_paths = []
+    fname = 'best_meta_test.pkl' if exp_specs['use_best'] else 'extra_data.pkl'
+    if exp_specs['sub_exp_mode']:
+        all_paths = [osp.join(exp_path, fname)]
+    else:
+        for sub_exp in os.listdir(exp_path):
+            if os.path.isdir(osp.join(exp_path, sub_exp)):
+                all_paths.append(osp.join(exp_path, sub_exp, fname))
+    
+    for p in all_paths:
+        try:
+            # alg = joblib.load(osp.join(exp_path, sub_exp, 'best_meta_test.pkl'))['algorithm']
+            alg = joblib.load(p)['algorithm']
+            print('\nLOADED ALGORITHM\n')
+        except Exception as e:
+            print('Failed on {}/{}'.format(exp_path, sub_exp))
+            raise e
+        
+        if exp_specs['use_gpu']:
+            alg.cuda()
+        else:
+            alg.cpu()
 
-            print('\n\nEVALUATING SUB EXPERIMENT %d...' % len(all_stats))
-            
-            sub_exp_stats = gather_eval_data(
-                alg,
-                sample_from_prior=sample_from_prior,
-                context_sizes=exp_specs['context_sizes'],
-                num_rollouts_per_task=exp_specs['num_rollouts_per_task'],
-                deterministic=exp_specs['eval_deterministic']
-            )
-            all_stats.append(sub_exp_stats)
+        print('\n\nEVALUATING SUB EXPERIMENT %d...' % len(all_stats))
+        
+        sub_exp_stats = gather_eval_data(
+            alg,
+            sample_from_prior=sample_from_prior,
+            context_sizes=exp_specs['context_sizes'],
+            num_rollouts_per_task=exp_specs['num_rollouts_per_task'],
+            deterministic=exp_specs['eval_deterministic'],
+            num_diff_context=exp_specs['num_diff_context']
+        )
+        all_stats.append(sub_exp_stats)
 
     # save all of the results
     save_name = 'all_eval_stats.pkl'
@@ -191,18 +216,18 @@ if __name__ == '__main__':
 
 
     # do some plotting
-    stats = all_stats[0]
-    C = 4
-    X = list(k for k in stats)
-    X = sorted(X)
-    means = np.array([np.mean(stats[t][C]['_vels']) for t in X])
-    stds = np.array([np.std(stats[t][C]['_vels']) for t in X])
+    # stats = all_stats[0]
+    # C = 4
+    # X = list(k for k in stats)
+    # X = sorted(X)
+    # means = np.array([np.mean(stats[t][C]['_vels']) for t in X])
+    # stds = np.array([np.std(stats[t][C]['_vels']) for t in X])
     
-    fig, ax = plt.subplots(1)
-    ax.plot(X, means)
-    ax.plot(X, means + stds)
-    ax.plot(X, means - stds)
-    ax.plot(X,X)
-    ax.set_ylim([-0.1,3.1])
-    plt.savefig('plots/junk_vis/best_hc_rand_vel_bc_thus_far.png', bbox_inches='tight', dpi=300)
-    plt.close()
+    # fig, ax = plt.subplots(1)
+    # ax.plot(X, means)
+    # ax.plot(X, means + stds)
+    # ax.plot(X, means - stds)
+    # ax.plot(X,X)
+    # ax.set_ylim([-0.1,3.1])
+    # plt.savefig('plots/junk_vis/best_hc_rand_vel_thus_far.png', bbox_inches='tight', dpi=300)
+    # plt.close()

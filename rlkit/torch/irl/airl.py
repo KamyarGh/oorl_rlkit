@@ -83,7 +83,9 @@ class AIRL(TorchIRLAlgorithm):
         disc_input_noise_scale_end=0.0,
         epochs_till_end_scale=50.0,
 
+        # both false is airl, if first one true fairl, else gail, both true is error
         use_exp_rewards=False,
+        gail_mode=False,
         **kwargs
     ):
         assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
@@ -91,6 +93,8 @@ class AIRL(TorchIRLAlgorithm):
             eval_policy = MakeDeterministic(policy)
         else:
             eval_policy = policy
+        
+        assert not (use_exp_rewards and gail_mode), 'Only one or neither'
         
         super().__init__(
             env=env,
@@ -175,6 +179,7 @@ class AIRL(TorchIRLAlgorithm):
         self.num_policy_updates_per_loop_iter = num_policy_updates_per_loop_iter
 
         self.use_exp_rewards = use_exp_rewards
+        self.gail_mode = gail_mode
         self.rew_clip_min = rew_clip_min
         self.rew_clip_max = rew_clip_max
         self.clip_min_rews = rew_clip_min is not None
@@ -456,6 +461,8 @@ class AIRL(TorchIRLAlgorithm):
 
         if self.use_exp_rewards:
             policy_batch['rewards'] = torch.exp(policy_batch['rewards'])*(-1.0*policy_batch['rewards'])
+        if self.gail_mode:
+            policy_batch['rewards'] = F.softplus(policy_batch['rewards'], beta=-1)
         if self.clip_max_rews:
             policy_batch['rewards'] = torch.clamp(policy_batch['rewards'], max=self.rew_clip_max)
         if self.clip_min_rews:

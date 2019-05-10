@@ -15,7 +15,9 @@ import matplotlib.pyplot as plt
 # expert_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/hc-2-layer-rew-80-vel-check/hc_2_layer_rew_80_vel_check_2019_04_05_15_38_45_0000--s-0/'
 # expert_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/test-stochastic/test_stochastic_2019_04_05_16_32_09_0000--s-0/'
 # expert_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/test-200-limit/test_200_limit_2019_04_07_17_15_22_0000--s-0/'
-expert_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/test-no-ctrl-cost-1/test_no_ctrl_cost_1_2019_04_07_21_53_19_0000--s-0/'
+# expert_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/test-no-ctrl-cost-1/test_no_ctrl_cost_1_2019_04_07_21_53_19_0000--s-0/'
+# expert_path = '/scratch/hdd001/home/kamyar/output/test-meta-gen-1/test_meta_gen_1_2019_04_13_19_37_13_0000--s-0'
+expert_path = '/scratch/hdd001/home/kamyar/output/test-meta-gen-2-stochastic/test_meta_gen_2_stochastic_2019_04_13_19_47_16_0000--s-0'
 
 rb = joblib.load(osp.join(expert_path, 'extra_data.pkl'))['meta_train']['context']
 X, means, stds = [], [], []
@@ -52,5 +54,7 @@ ax.set_ylim([-0.1,3.1])
 # plt.savefig('plots/junk_vis/2_layer_vels_for_hc_rand_vel_expert_rew_80.png', bbox_inches='tight', dpi=300)
 # plt.savefig('plots/junk_vis/3_layer_vels_for_hc_rand_vel_expert_rew_4_stochastic.png', bbox_inches='tight', dpi=300)
 # plt.savefig('plots/junk_vis/3_layer_vels_for_hc_rand_vel_expert_rew_4_det_200_limit.png', bbox_inches='tight', dpi=300)
-plt.savefig('plots/junk_vis/3_layer_vels_for_hc_rand_vel_expert_rew_4_det_no_ctrl.png', bbox_inches='tight', dpi=300)
+# plt.savefig('plots/junk_vis/3_layer_vels_for_hc_rand_vel_expert_rew_4_det_no_ctrl.png', bbox_inches='tight', dpi=300)
+# plt.savefig('plots/junk_vis/hc_rand_vel_expert_rew_scale_150_3_layer_policy.png', bbox_inches='tight', dpi=300)
+plt.savefig('plots/junk_vis/hc_rand_vel_expert_rew_scale_150_3_layer_policy_stochastic.png', bbox_inches='tight', dpi=300)
 plt.close()

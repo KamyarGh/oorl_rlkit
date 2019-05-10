@@ -43,5 +43,13 @@
 - remove few shot hc rand vel eval script and move evertyhig into genral few shot eval script
 - unify the interface for policy_uses_task_params (move it into each algorith individually)
 - add capacity to mix and match tasks with task params samplers
+- remove transfer version from np_airl
+- unify fetch custom and standard versions of experiment scripts
+- fix "best saving" in torch-meta-irl
+- NEED to make it so the for meta tasks, when you wanna get a new env you call get_task_env()
+and you get the env for that task. This will be very useful when you need different xml files
+per task.
+- NEED TO MAKE REPLAY BUFFER MORE GENERAL
+- Need to merge pusher_specific_* with meta_irl_algorhthm etc.
 
 - need to remove the copy of wrapped_goal.....

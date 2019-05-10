@@ -7,8 +7,8 @@ import numpy as np
 from collections import OrderedDict
 from gym import utils
 from rlkit.envs.meta_mujoco_env import MetaMujocoEnv
-
 from rlkit.envs.meta_task_params_sampler import MetaTaskParamsSampler
+
 
 class _BaseParamsSampler(MetaTaskParamsSampler):
     def __init__(self, goals, random=7823):
@@ -89,6 +89,16 @@ class _Expert60DegreesParamsSampler(_BaseParamsSampler):
         super().__init__(goals, random=random)
 
 
+class _ExpertMiddle60DegreesParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=30, r=2.0):
+        a = np.linspace(np.pi/3.0, 2*np.pi/3.0, num=num_samples, endpoint=True)
+        # is this in the original where you wanna sample inside the disc
+        # r = 3 * np.random.random(num_tasks) ** 0.5
+        # r = 2.0
+        goals = np.stack((r * np.cos(a), r * np.sin(a)), axis=-1)
+        super().__init__(goals, random=random)
+
+
 class _Expert2DirectionsParamsSampler(_BaseParamsSampler):
     def __init__(self, random=2837, num_samples=2):
         goals = np.array(
@@ -113,13 +123,29 @@ class _Expert45DegFartherParamsSampler(_BaseParamsSampler):
         super().__init__(goals, random=random)
 
 
+class _Expert90DegApartParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=2):
+        # radius 4 at 45 and 135 degrees
+        goals = np.array(
+            [
+                # [3.4, 3.4],
+                # [-3.4, 3.4]
+                [2.0, 0.0],
+                [0.0, 2.0],
+            ]
+        )
+        super().__init__(goals, random=random)
+
+
 class _ExpertOpposite2DirectionsParamsSampler(_BaseParamsSampler):
     def __init__(self, random=2837, num_samples=2):
         goals = np.array(
             [
                 [2.0, 0.0],
-                # [0.0, 2.0]
+                # # [0.0, 2.0]
                 [-2.0, 0.0]
+                # [4.0, 0.0],
+                # [-4.0, 0.0]
             ]
         )
         super().__init__(goals, random=random)
@@ -127,35 +153,295 @@ class _ExpertOpposite2DirectionsParamsSampler(_BaseParamsSampler):
 
 class _ExpertOneDirectionParamsSampler(_BaseParamsSampler):
     def __init__(self, random=2837, num_samples=1):
+        # goals = np.array(
+        #     [
+        #         # [1.85, 0.77]
+        #         # [0.77, 1.85]
+        #         # [-0.77, 1.85]
+        #         # [-1.85, 0.77]
+        #         # [-1.85, -0.77]
+        #         # [1.85, -0.77]
+        #         # [-0.77, -1.85]
+        #     ]
+        # )
         goals = np.array(
             [
-                [2.0, 0.0]
+                # [ 1.96,  0.39],
+                # [ 1.66,  1.11],
+                # [ 1.11,  1.66],
+                # [ 0.39,  1.96],
+                # [-0.39,  1.96],
+                # [-1.11,  1.66],
+                # [-1.66,  1.11],
+                # [-1.96,  0.39],
+                # [-1.96, -0.39],
+                # [-1.66, -1.11],
+                # [-1.11, -1.66],
+                # [-0.39, -1.96],
+                # [ 0.39, -1.96],
+                # [ 1.11, -1.66],
+                # [ 1.66, -1.11],
+                # [ 1.96, -0.39]
+
+
+                # test tasks
+                # [ 1.99,  0.2 ],
+                # [ 1.76,  0.94],
+                # [ 1.27,  1.55],
+                # [ 0.58,  1.91],
+                # [-0.2 ,  1.99],
+                # [-0.94,  1.76],
+                # [-1.55,  1.27],
+                # [-1.91,  0.58],
+                # [-1.99, -0.2 ],
+                # [-1.76, -0.94],
+                # [-1.27, -1.55],
+                # [-0.58, -1.91],
+                # [ 0.2 , -1.99],
+                # [ 0.94, -1.76],
+                # [ 1.55, -1.27],
+                # [ 1.91, -0.58]
             ]
         )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _ExpertLineParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837):
+        a = np.linspace(-10.0, 10.0, num=21, endpoint=True)
+        goals = np.stack((4 * np.ones(a.shape[0]), a), axis=-1)
+        super().__init__(goals, random=random)
+
+
+class _ExpertFivePointsParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        goals = np.array(
+            [
+                [2.0, 0.0],
+                [1.41, 1.41],
+                [0.0, 2.0],
+                [-1.41, 1.41],
+                [-2.0, 0.0]
+            ]
+        )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _ExpertEightPointsParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        goals = np.array(
+            [
+                [2.0, 0.0],
+                [1.41, 1.41],
+                [0.0, 2.0],
+                [-1.41, 1.41],
+                [-2.0, 0.0],
+                [-1.41, -1.41],
+                [0.0, -2.0],
+                [1.41, -1.41]
+            ]
+        )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _Expert16PointsTrainParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        goals = np.array(
+            [
+                [2.0, 0.0],
+                [1.41, 1.41],
+                [0.0, 2.0],
+                [-1.41, 1.41],
+                [-2.0, 0.0],
+                [-1.41, -1.41],
+                [0.0, -2.0],
+                [1.41, -1.41],
+
+                [1.85, 0.77],
+                [0.77, 1.85],
+                [-0.77, 1.85],
+                [-1.85, 0.77],
+                [-1.85, -0.77],
+                [-0.77, -1.85],
+                [0.77, -1.85],
+                [1.85, -0.77],
+            ]
+        )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _Expert16PointsTestParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        goals = np.array(
+            [
+                [1.96,  0.39],
+                [1.66,  1.11],
+                [1.11,  1.66],
+                [0.39,  1.96],
+                [0.39,  1.96],
+                [1.11,  1.66],
+                [1.66,  1.11],
+                [1.96,  0.39],
+                [1.96, -0.39],
+                [1.66, -1.11],
+                [1.11, -1.66],
+                [0.39, -1.96],
+                [0.39, -1.96],
+                [1.11, -1.66],
+                [1.66, -1.11],
+                [1.96, -0.39]
+            ]
+        )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _Expert32PointsParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        goals = np.array(
+            [
+                [2.0, 0.0],
+                [1.41, 1.41],
+                [0.0, 2.0],
+                [-1.41, 1.41],
+                [-2.0, 0.0],
+                [-1.41, -1.41],
+                [0.0, -2.0],
+                [1.41, -1.41],
+                [1.85, 0.77],
+                [0.77, 1.85],
+                [-0.77, 1.85],
+                [-1.85, 0.77],
+                [-1.85, -0.77],
+                [-0.77, -1.85],
+                [0.77, -1.85],
+                [1.85, -0.77],
+
+                [1.96,  0.39],
+                [1.66,  1.11],
+                [1.11,  1.66],
+                [0.39,  1.96],
+                [0.39,  1.96],
+                [1.11,  1.66],
+                [1.66,  1.11],
+                [1.96,  0.39],
+                [1.96, -0.39],
+                [1.66, -1.11],
+                [1.11, -1.66],
+                [0.39, -1.96],
+                [0.39, -1.96],
+                [1.11, -1.66],
+                [1.66, -1.11],
+                [1.96, -0.39]
+            ]
+        )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _ExpertTestTasksFor32PointsParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        goals = np.array(
+            [
+                [ 1.99,  0.2 ],
+                [ 1.76,  0.94],
+                [ 1.27,  1.55],
+                [ 0.58,  1.91],
+                [-0.2 ,  1.99],
+                [-0.94,  1.76],
+                [-1.55,  1.27],
+                [-1.91,  0.58],
+                [-1.99, -0.2 ],
+                [-1.76, -0.94],
+                [-1.27, -1.55],
+                [-0.58, -1.91],
+                [ 0.2 , -1.99],
+                [ 0.94, -1.76],
+                [ 1.55, -1.27],
+                [ 1.91, -0.58]
+            ]
+        )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _Expert24PointsParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        r = 2.0
+        a = np.linspace(0, 2*np.pi, num=24, endpoint=False)
+        goals = np.stack((r * np.cos(a), r * np.sin(a)), axis=-1)
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class _ExpertTwoPointsParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        goals = np.array(
+            [
+                [1.41, 1.41],
+                [-1.41, 1.41],
+            ]
+        )
+        print('\n\n')
+        print(goals)
+        print('\n\n')
         super().__init__(goals, random=random)
 
 
 class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
     def __init__(self):
-        self.goal_pos = self.sample_tasks(1)[0]
+        self.goal_pos = np.array([1.41, 1.41])
         # MetaMujocoEnv.__init__(self, 'ant.xml', 5)
         MetaMujocoEnv.__init__(self, 'low_gear_ratio_ant.xml', 5)
         utils.EzPickle.__init__(self)
 
     def sample_tasks(self, n_tasks):
-        a = np.random.random(n_tasks) * 2 * np.pi
-        r = 3 * np.random.random(n_tasks) ** 0.5
-        return np.stack((r * np.cos(a), r * np.sin(a)), axis=-1)
+        raise NotImplementedError()
+        # a = np.random.random(n_tasks) * 2 * np.pi
+        # r = 3 * np.random.random(n_tasks) ** 0.5
+        # return np.stack((r * np.cos(a), r * np.sin(a)), axis=-1)
 
     def step(self, a):
         self.do_simulation(a, self.frame_skip)
         xposafter = self.get_body_com("torso")
-        goal_reward = -np.sum(np.abs(xposafter[:2] - self.goal_pos))  # make it happy, not suicidal
+
+        l1_dist = np.sum(np.abs(xposafter[:2] - self.goal_pos))
+        l2_dist = np.sqrt(np.sum(np.square(xposafter[:2] - self.goal_pos)))
+
+        # goal_reward = -np.sum(np.abs(xposafter[:2] - self.goal_pos))  # make it happy, not suicidal
+        # goal_reward = -np.sum(np.square(xposafter[:2] - self.goal_pos))  # make it happy, not suicidal
+        # goal_reward = -1.0 * l2_dist # make it happy, not suicidal
+        # goal_reward = -1.0 * l1_dist
+        # goal_reward = -1.0 * (l2_dist**2)
+        goal_reward = -1.0 * l2_dist
+
         # ctrl_cost = .1 * np.square(a).sum()
         ctrl_cost = 0.5 * 1e-2 * np.square(a).sum()
-        contact_cost = 0.5 * 1e-3 * np.sum(np.square(np.clip(self.sim.data.cfrc_ext, -1, 1)))
+        # contact_cost = 0.5 * 1e-3 * np.sum(np.square(np.clip(self.sim.data.cfrc_ext, -1, 1)))
+        contact_cost = 0.0
         # survive_reward = 1.0
         survive_reward = 0.0
+        # survive_reward = 4.0
         reward = goal_reward - ctrl_cost - contact_cost + survive_reward
         state = self.state_vector()
         # notdone = np.isfinite(state).all() and 1.0 >= state[2] >= 0.
@@ -163,6 +449,8 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
         done = False
         ob = self._get_obs()
         return ob, reward, done, dict(
+            l1_dist=l1_dist,
+            l2_dist=l2_dist,
             reward_forward=goal_reward,
             reward_ctrl=-ctrl_cost,
             reward_contact=-contact_cost,
@@ -172,11 +460,17 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
         obs = np.concatenate([
             self.sim.data.qpos.flat,
             self.sim.data.qvel.flat,
-            np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
+            # np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
+            self.get_body_com("torso").flat
         ])
+        # print('---')
+        # print(self.get_body_com("torso"))
+        # print(np.array(self.get_body_com("torso").flat))
+        # print(np.concatenate([self.get_body_com("torso").flat]))
+        # print(obs)
         return {
             'obs': obs.copy(),
-            'obs_task_params': self.goal_pos
+            'obs_task_params': self.goal_pos.copy()
         }
 
     def reset_model(self):
@@ -205,11 +499,14 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
 
     def log_statistics(self, paths):
         # this is run so rarely that it doesn't matter if it's a little inefficient
-        progs = [np.mean([d["reward_forward"] for d in path["env_infos"]]) for path in paths]
-        last_100_dists = [np.mean([d["reward_forward"] for d in path["env_infos"]][-100:]) for path in paths]
-        min_dists = [-np.max([d["reward_forward"] for d in path["env_infos"]]) for path in paths]
+        progs = [np.mean([d["l1_dist"] for d in path["env_infos"]]) for path in paths]
+        last_100_dists = [np.mean([d["l1_dist"] for d in path["env_infos"]][-100:]) for path in paths]
+        min_dists = [np.min([d["l1_dist"] for d in path["env_infos"]]) for path in paths]
         ctrl_cost = [-np.mean([d["reward_ctrl"] for d in path["env_infos"]]) for path in paths]
         contact_cost = [-np.mean([d["reward_contact"] for d in path["env_infos"]]) for path in paths]
+
+        l2_min_dists = [np.min([d["l2_dist"] for d in path["env_infos"]]) for path in paths]
+        l2_last_100_dists = [np.mean([d["l2_dist"] for d in path["env_infos"]][-100:]) for path in paths]
 
         return_dict = OrderedDict()
         return_dict['AverageClosest'] = np.mean(min_dists)
@@ -229,6 +526,16 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
 
         return_dict['AverageCtrlCost'] = np.mean(ctrl_cost)
         return_dict['AverageContactCost'] = np.mean(contact_cost)
+
+        return_dict['L2AverageClosest'] = np.mean(l2_min_dists)
+        return_dict['L2MaxClosest'] = np.max(l2_min_dists)
+        return_dict['L2MinClosest'] = np.min(l2_min_dists)
+        return_dict['L2StdClosest'] = np.std(l2_min_dists)
+
+        return_dict['L2AverageLast100'] = np.mean(l2_last_100_dists)
+        return_dict['L2MaxLast100'] = np.max(l2_last_100_dists)
+        return_dict['L2MinLast100'] = np.min(l2_last_100_dists)
+        return_dict['L2StdLast100'] = np.std(l2_last_100_dists)
         return return_dict
 
 

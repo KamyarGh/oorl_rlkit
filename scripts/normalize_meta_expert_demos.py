@@ -32,7 +32,8 @@ import joblib
 # path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/fixed-colors-final-correct-another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-1/fixed_colors_final_correct_another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1_2019_01_22_06_38_48_0000--s-0/extra_data.pkl'
 # path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/fixed-colors-0p5-radius-final-correct-another-seed-correct-new-gen-few-shot-fetch-linear-demos-32-tasks-16-total-each-subsample-1/fixed_colors_0p5_radius_final_correct_another_seed_correct_new_gen_few_shot_fetch_linear_demos_32_tasks_16_total_each_subsample_1_2019_01_22_07_53_12_0000--s-0/extra_data.pkl'
 # path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/final-few-shot-fetch-eval-expert-trajs/final_few_shot_fetch_eval_expert_trajs_2019_01_23_02_22_12_0000--s-0/extra_data.pkl'
-path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/faster-final-few-shot-fetch-eval-expert-trajs/faster_final_few_shot_fetch_eval_expert_trajs_2019_01_23_13_32_04_0000--s-0/extra_data.pkl'
+# path_to_extra_data = '/scratch/gobi2/kamyar/oorl_rlkit/output/faster-final-few-shot-fetch-eval-expert-trajs/faster_final_few_shot_fetch_eval_expert_trajs_2019_01_23_13_32_04_0000--s-0/extra_data.pkl'
+path_to_extra_data = '/scratch/hdd001/home/kamyar/output/hc-rand-vel-very-good-expert-demos-0p1-separated-16-demos-per-task-20-subsample/hc_rand_vel_very_good_expert_demos_0p1_separated_16_demos_per_task_20_subsample_2019_04_13_20_31_33_0000--s-0/extra_data.pkl'
 save_path = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/faster_few_shot_fetch_eval_expert_trajs/extra_data.pkl'
 
 # SCALE = 0.99

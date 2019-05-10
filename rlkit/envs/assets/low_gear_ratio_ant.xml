@@ -76,9 +76,20 @@
         <site name="target2" pos="1 -1.73 .01" rgba=".6 .3 .3 1" type="sphere" size=".15"/>
         <site name="target3" pos="2 0 .01" rgba=".6 .3 .3 1" type="sphere" size=".15"/>
         <site name="target4" pos="1.41 1.41 .01" rgba=".3 0 .3 1" type="sphere" size=".15"/>
+        <site name="target7" pos="2.83 2.83 .01" rgba=".3 0 .3 1" type="sphere" size=".15"/>
         <site name="target5" pos="0 2 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
         <site name="target6" pos="0 -2 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
         <!-- <site name="target4" pos="1 -1.73 .01" rgba=".6 .3 .3 1" type="sphere" size=".15"/> -->
+        <!-- <site name="target8" pos="0 2 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
+        <site name="target10" pos="1 1.73 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
+        <site name="target12" pos="1.73 1 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
+        <site name="target14" pos="2 0 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/> -->
+        
+        <!-- <site name="target8" pos="1.93 0.52 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
+        <site name="target10" pos="1.41 1.41 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
+        <site name="target12" pos="0.52 1.93 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/>
+        <site name="target14" pos="-0.52 1.93 .01" rgba="0 .3 .3 1" type="sphere" size=".15"/> -->
+
     </worldbody>
     <actuator>
         <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="hip_4" gear="30"/>

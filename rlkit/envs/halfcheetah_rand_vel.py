@@ -11,18 +11,17 @@ from rlkit.envs.meta_mujoco_env import MetaMujocoEnv
 from rlkit.envs.meta_task_params_sampler import MetaTaskParamsSampler
 
 class _TrainParamsSampler(MetaTaskParamsSampler):
-    def __init__(self, random=8032, num_samples=100):
+    def __init__(self, random=8032, num_samples=91):
         super().__init__()
         if not isinstance(random, np.random.RandomState):
           random = np.random.RandomState(random)
         self._random = random
-        self.vels = self._random.uniform(low=0.0, high=3.0, size=num_samples)
+        self.vels = np.linspace(0.0, 3.0, num=num_samples, endpoint=True)
         self._ptr = 0
 
     def sample(self):
-        v = self.vels[self._ptr]
+        v = self._random.choice(self.vels)
         v = np.array([v])
-        self._ptr = (self._ptr + 1) % self.vels.shape[0]
         return {'target_velocity': v}, v
 
     def sample_unique(self, num):
@@ -55,15 +54,34 @@ class _TestParamsSampler(_TrainParamsSampler):
 
 
 class _MetaTrainParamsSampler(_TrainParamsSampler):
-    def __init__(self, random=9827, num_samples=25):
-        super().__init__(random, num_samples=num_samples)
-        self.vels = np.arange(0, 3.05, 0.125)
+    def __init__(self, random=9827):
+        super().__init__(random, num_samples=1)
+        self.vels = np.linspace(0.0, 3.0, num=31, endpoint=True)
 
 
 class _MetaTestParamsSampler(_TrainParamsSampler):
-    def __init__(self, random=5382, num_samples=25):
-        super().__init__(random, num_samples=num_samples)
-        self.vels = np.arange(0.0625, 3.05, 0.125)
+    def __init__(self, random=5382):
+        super().__init__(random, num_samples=1)
+        self.vels = np.linspace(0.05, 2.95, num=30, endpoint=True)
+
+
+class _DebugMetaTrainSampler(_TrainParamsSampler):
+    def __init__(self, random=9827):
+        super().__init__(random, num_samples=1)
+        # self.vels = np.linspace(0.0, 3.0, num=31, endpoint=True)
+        # self.vels = np.array([1.0])
+        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0])
+        self.vels = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
+
+class _DebugMetaTestSampler(_TrainParamsSampler):
+    def __init__(self, random=9827):
+        super().__init__(random, num_samples=1)
+        # self.vels = np.linspace(0.0, 3.0, num=31, endpoint=True)
+        # self.vels = np.array([1.05])
+        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0])
+        self.vels = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
 
 
 class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):

@@ -45,12 +45,12 @@ ACTUALLY CORRECT REWARD SCALE ------------------------
 # t0: ant_two_dir_no_norm_obs_rew_scale_50_path_300_actual_rew_scale_no_embed_with_obs_norm
 
 
-t9: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale
+one seed good t9: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale
 t10: ant_two_dir_no_norm_obs_rew_scale_400_path_300_actual_rew_scale
 t1: ant_two_dir_no_norm_obs_rew_scale_400_path_300_actual_rew_scale_opp_2_dir
-t6: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale_opp_2_dir
-t5: ant_two_dir_no_norm_obs_rew_scale_100_path_300_actual_rew_scale_45_deg_farther
-t0: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale_45_deg_farther
+good t6: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale_opp_2_dir
+one seed good t5: ant_two_dir_no_norm_obs_rew_scale_100_path_300_actual_rew_scale_45_deg_farther
+one seed good t0: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale_45_deg_farther
 
 
 
@@ -72,3 +72,14 @@ without custom_32
 TRY WITH MAX PATH LENGTH 200-300
 TRY THE RUSSELL VERSION OF ANT REWARD
 TRY SMALLER ARC ON CIRCLE
+
+
+
+
+VAUGHN CLUSTER
+Halfcheetah rand vel -----------------------
+t0-t3, t5-t6: hc rand vel expert hype search
+
+
+Ant rand pos -------------------------------
+t4: actually a hype search of ant 60 degrees test_ant_rew_scale_200_path_300_dense_60_degrees_rew_scale_search

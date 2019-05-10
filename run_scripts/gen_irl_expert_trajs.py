@@ -28,6 +28,7 @@ import argparse
 import joblib
 import json
 
+from rlkit.envs.ant_multi_target import AntMultiTargetEnv
 
 def fill_buffer(
     buffer,
@@ -41,7 +42,7 @@ def fill_buffer(
     render=False,
     check_for_success=False,
     wrap_absorbing=False,
-    subsample_factor=1
+    subsample_factor=1,
 ):
     expert_uses_pixels = expert_policy_specs['policy_uses_pixels']
     expert_uses_task_params = expert_policy_specs['policy_uses_task_params']
@@ -51,9 +52,26 @@ def fill_buffer(
 
     num_rollouts_completed = 0
     total_rewards = 0.0
+
+    # special handling of AntMultiTargetEnv cause of the weirdness of the situation
+    if isinstance(env, AntMultiTargetEnv):
+        multi_ant_agg_experts = expert_policy
+        expert_policy = None
+
     while num_rollouts_completed < num_rollouts:
         print('\tRollout %d...' % num_rollouts_completed)
         cur_path_builder = PathBuilder()
+
+        # special handling of AntMultiTargetEnv cause of the weirdness of the situation
+        if isinstance(env, AntMultiTargetEnv):
+            num_targets = env.valid_targets.shape[2]
+            num_rollouts_per_target = int(num_rollouts / num_targets)
+            target_idx = int(num_rollouts_completed / num_rollouts_per_target)
+            cur_target = env.valid_targets[0,0,target_idx,:]
+            print('ANT GOING FOR {}'.format(cur_target))
+            expert_policy = multi_ant_agg_experts.get_exploration_policy(cur_target)
+
+            expert_policy.deterministic = True
 
         observation = env.reset()
         if policy_is_scripted:
@@ -65,6 +83,7 @@ def fill_buffer(
 
         rewards_for_rollout = 0.0
 
+        printed_target_dist = False
         while (not terminal) and step_num < max_path_length:
             if render: env.render()
             if isinstance(env.observation_space, Dict):
@@ -92,6 +111,12 @@ def fill_buffer(
             reward = np.array([reward])
             rewards_for_rollout += raw_reward
 
+            if isinstance(env, AntMultiTargetEnv):
+                if np.linalg.norm(env_info['xy_pos'] - cur_target) < 0.2:
+                    if not printed_target_dist:
+                        print(step_num)
+                        printed_target_dist = True
+
             if step_num % subsample_factor == subsample_mod:
                 cur_path_builder.add_all(
                     observations=observation,
@@ -105,6 +130,8 @@ def fill_buffer(
                 )
             observation = next_ob
             step_num += 1
+        print(env_info['xy_pos'])
+        print(step_num)
 
         if terminal and wrap_absorbing:
             '''
@@ -174,18 +201,32 @@ def experiment(specs):
     # the specific experiment run (with a particular seed etc.) of the expert policy
     # to use for generating trajectories
     if not specs['use_scripted_policy']:
-        alg = joblib.load(path.join(specs['expert_dir'], 'extra_data.pkl'))['algorithm']
-        policy = alg.exploration_policy
-        policy_is_scripted = False
+        if specs['env_specs']['base_env_name'] == 'ant_multi_target':
+            # this one is a very weird case so we are handling it on an individual basis
+            policy = joblib.load(path.join(specs['expert_dir'], 'extra_data.pkl'))['algorithm']
+            policy_is_scripted = False
+            # max_path_length = 100
+            max_path_length = 50
+            expert_policy_specs = {
+                'max_path_length': max_path_length,
+                'policy_uses_pixels': False,
+                'policy_uses_task_params': False,
+                'concat_task_params_to_policy_obs': False,
+                'no_terminal': True
+            }
+        else:
+            alg = joblib.load(path.join(specs['expert_dir'], 'extra_data.pkl'))['algorithm']
+            policy = alg.exploration_policy
+            policy_is_scripted = False
 
-        max_path_length = alg.max_path_length
-        attrs = [
-            'max_path_length', 'policy_uses_pixels',
-            'policy_uses_task_params', 'concat_task_params_to_policy_obs',
-            'no_terminal'
-        ]
-        expert_policy_specs = {att: getattr(alg, att) for att in attrs}
-        expert_policy_specs['wrap_absorbing'] = specs['wrap_absorbing']
+            max_path_length = alg.max_path_length
+            attrs = [
+                'max_path_length', 'policy_uses_pixels',
+                'policy_uses_task_params', 'concat_task_params_to_policy_obs',
+                'no_terminal'
+            ]
+            expert_policy_specs = {att: getattr(alg, att) for att in attrs}
+            expert_policy_specs['wrap_absorbing'] = specs['wrap_absorbing']
     else:
         policy = get_scripted_policy(specs['scripted_policy_name'])
         policy_is_scripted = True

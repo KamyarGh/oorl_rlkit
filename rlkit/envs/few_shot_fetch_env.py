@@ -425,11 +425,24 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
     def step(self, action):
         obs, reward, done, info = super().step(action)
         info['correct_obj_idx'] = self.correct_obj_idx
+
+        # log some info so we can track whether failure was due
+        # to no-op or due to incorrect choice
+        yes_op = False
+        for idx in [0,1]:
+            obj_rel_to_goal = obs['obs'][3*idx:3*idx+3].copy()
+            d = np.linalg.norm(obj_rel_to_goal, axis=-1)
+            yes_op |= d < self.distance_threshold
+        info['yes_op'] = yes_op
+
         return obs, reward, done, info
     
     @property
     def task_identifier(self):
         return tuple(self.goal_color_center)
+    
+    def task_id_to_obs_task_params(self, task_id):
+        return np.array(task_id)
 
     def _is_success(self, obs):
         correct_obj_rel_to_goal = obs['obs'][3*self.correct_obj_idx:3*self.correct_obj_idx+3].copy()
@@ -458,9 +471,19 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
     def log_statistics(self, test_paths):
         # compute proportion of episodes that were fully solved
         successes = []
+        num_total_failures = 0
+        num_failures_due_to_no_op = 0
         for path in test_paths:
             successes.append(np.sum([e_info['is_success'] for e_info in path['env_infos']]) > 0)
+            if not successes[-1]:
+                num_total_failures += 1
+                if np.sum([e_info['yes_op'] for e_info in path['env_infos']]) == 0:
+                    num_failures_due_to_no_op += 1
         percent_solved = np.sum(successes) / float(len(successes))
+        if num_total_failures == 0:
+            percent_no_op_fail = 0
+        else:
+            percent_no_op_fail = num_failures_due_to_no_op / float(num_total_failures)
 
         # compute proportion of episodes that the arm reached for the right
         # object but was not necessarily able to pick it up
@@ -494,6 +517,7 @@ class FewShotFetchEnv(few_shot_robot_env.FewShotRobotEnv):
         return_dict = OrderedDict()
         return_dict['Percent_Good_Reach'] = percent_good_reach
         return_dict['Percent_Solved'] = percent_solved
+        return_dict['Percent_NoOp_Fail'] = percent_no_op_fail
         return_dict['Avg Min Dist to Cor'] = np.mean(min_dist_to_cor)
         return_dict['Std Min Dist to Cor'] = np.std(min_dist_to_cor)
         return_dict['Avg Min Cor Z'] = np.mean(min_cor_z)

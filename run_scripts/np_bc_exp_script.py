@@ -67,6 +67,8 @@ def experiment(variant):
             acts_mean=extra_data['acts_mean'],
             acts_std=extra_data['acts_std'],
         )
+    print(meta_train_env)
+    print(meta_test_env)
 
     # set up the policy and training algorithm
     if isinstance(meta_train_env.observation_space, Dict):

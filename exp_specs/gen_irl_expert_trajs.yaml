@@ -1,9 +1,9 @@
 meta_data:
-  # script_path: /Users/kamyar/vector_home/oorl_rlkit/run_scripts/gen_meta_irl_expert_trajs.py
-  script_path: /h/kamyar/oorl_rlkit/run_scripts/gen_irl_expert_trajs.py
-  # exp_dirs: /Users/kamyar/local_policies_dir/output
-  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
-  exp_name: very_final_humanoid_demos_256_20_subsampling
+  script_path: run_scripts/gen_irl_expert_trajs.py
+  # exp_name: ant_multi_valid_target_demos_8_target_8_each_no_sub
+  # exp_name: ant_multi_valid_target_demos_8_target_8_each_no_sub_deterministic_rollouts_correct
+  exp_name: ant_multi_valid_target_demos_8_target_32_each_no_sub_deterministic_rollouts_correct_path_len_50_actually_ugh
+  # exp_name: test
   description: generating expert demos
   use_gpu: true
   num_workers: 1
@@ -16,20 +16,18 @@ variables:
   render: [false]
   student_policy_uses_pixels: [false]
   num_rollouts: [256]
-  subsample_factor: [20]
-  # seed: [28043, 99381, 33478, 448293, 5739]
-  # seed: [28043]
-  # seed: [99381, 77594]
+  subsample_factor: [1]
   seed: [99381]
 
 # -----------------------------------------------------------------------------
 constants:
   # expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-new-sac-halfcheetah/correct_new_sac_halfcheetah_2019_02_03_17_22_06_0001--s-0
   # expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/normalized-ant-new-sac/normalized_ant_new_sac_2019_03_12_18_52_02_0002--s-0/
-  expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-humanoid-new-sac/final_humanoid_new_sac_2019_03_18_22_51_04_0000--s-0/
+  # expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-humanoid-new-sac/final_humanoid_new_sac_2019_03_18_22_51_04_0000--s-0/
+  expert_dir: /scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert
 
   env_specs:
-    base_env_name: 'humanoid_v2'
+    base_env_name: 'ant_multi_target'
     normalized: false
     need_pixels: false
     train_test_env: false

@@ -23,7 +23,17 @@ from rlkit.data_management.path_builder import PathBuilder
 from rlkit.envs.ant_rand_goal import AntRandGoalEnv
 # from rlkit.envs.ant_rand_goal import _Expert120DegreesParamsSampler as AntRandGoalExpertTestSampler
 # from rlkit.envs.ant_rand_goal import _Expert60DegreesParamsSampler as AntRandGoalExpertTestSampler
-from rlkit.envs.ant_rand_goal import _Expert2DirectionsParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _Expert2DirectionsParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _Expert45DegFartherParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _ExpertFivePointsParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _ExpertTwoPointsParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _ExpertOpposite2DirectionsParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _ExpertEightPointsParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _Expert16PointsTrainParamsSampler as AntRandGoalExpertTestSampler
+# from rlkit.envs.ant_rand_goal import _Expert16PointsTestParamsSampler as AntRandGoalExpertTestSampler
+
+# from rlkit.envs.ant_rand_goal import _Expert32PointsParamsSampler as AntRandGoalExpertTestSampler
+from rlkit.envs.ant_rand_goal import _ExpertTestTasksFor32PointsParamsSampler as AntRandGoalExpertTestSampler
 
 from rlkit.torch.sac.policies import PostCondMLPPolicyWrapper
 
@@ -54,6 +64,11 @@ def rollout_path(env, task_params, obs_task_params, post_cond_policy, max_path_l
         
         next_ob, raw_reward, terminal, env_info = (env.step(action))
         terminal = False
+
+        # print(env_info['l2_dist'])
+        # print('{}: {}'.format(agent_obs[-3:], env_info['l2_dist']))
+        # print(agent_obs)
+        # print(env_info['l2_dist'])
         
         reward = raw_reward
         terminal = np.array([terminal])
@@ -80,10 +95,13 @@ def gather_eval_data(
     sample_from_prior=False,
     num_rollouts_per_task=8,
     context_sizes=[4],
+    num_diff_context=1,
     deterministic=True,
     eval_expert=False,
     just_loading_policy=False,
-    render=False
+    render=False,
+    use_separate_expert_buffer=False,
+    expert_buffer_for_eval_tasks=None,
     ):
     if not eval_expert: alg.encoder.eval()
 
@@ -112,62 +130,75 @@ def gather_eval_data(
 
             # evaluate all posterior sample trajs with same initial state
             env_seed = np.random.randint(0, high=10000)
-
-            if sample_from_prior: raise NotImplementedError
-            # z = post_dist.sample()
-            # z = z.cpu().data.numpy()[0]
-            # if sample_from_prior:
-            #     z = np.random.normal(size=z.shape)
-            if eval_expert:
-                if just_loading_policy:
-                    post_cond_policy = PostCondMLPPolicyWrapper(alg, obs_task_params)
-                else:
-                    post_cond_policy = alg.get_eval_policy(obs_task_params)
-            else:
-                post_cond_policy = alg.get_eval_policy(task_id, mode='meta_test')
-            post_cond_policy.policy.eval()
-            post_cond_policy.deterministic = deterministic
-
             # reset the env seed
             env.seed(seed=env_seed)
             _rets = []
             _min_dists = []
             _last_100 = []
-            for _ in range(num_rollouts_per_task):
-                if just_loading_policy:
-                    # max_path_length = 200
-                    max_path_length = 300
-                else:
-                    alg.max_path_length
-                stacked_path = rollout_path(
-                    env,
-                    task_params,
-                    obs_task_params,
-                    post_cond_policy,
-                    max_path_length,
-                    eval_expert,
-                    render
-                )
-                obs = np.array([d['obs'] for d in stacked_path['observations']])
-                # print(np.max(obs, axis=0))
-                # print(np.min(obs, axis=0))
-                # print(np.mean(obs, axis=0))
-                # print(np.std(obs, axis=0))
-                # print(obs.shape)
-                # print(np.max(obs))
-                # print(np.min(obs))
 
-                _rets.append(np.sum(stacked_path['rewards']))
-                rew_frw = [d['reward_forward'] for d in stacked_path['env_infos']]
-                _min_dists.append(-np.max(rew_frw))
-                _last_100.append(np.mean(rew_frw[-100:]))
-            
+            for _ in range(num_diff_context):
+                if sample_from_prior: raise NotImplementedError
+                # z = post_dist.sample()
+                # z = z.cpu().data.numpy()[0]
+                # if sample_from_prior:
+                #     z = np.random.normal(size=z.shape)
+                if eval_expert:
+                    if just_loading_policy:
+                        post_cond_policy = PostCondMLPPolicyWrapper(alg, obs_task_params)
+                    else:
+                        post_cond_policy = alg.get_eval_policy(obs_task_params)
+                else:
+                    if use_separate_expert_buffer:
+                        list_of_trajs = expert_buffer_for_eval_tasks.sample_trajs_from_task(
+                            task_id,
+                            context_size
+                        )
+                        post_dist = alg.encoder([list_of_trajs])
+                        z = post_dist.mean
+                        z = z.cpu().data.numpy()[0]
+                        # post_cond_policy = PostCondMLPPolicyWrapper(alg.main_policy, z)
+                        post_cond_policy = PostCondMLPPolicyWrapper(alg.policy, z)
+                    else:
+                        post_cond_policy = alg.get_eval_policy(task_id, mode='meta_test')
+                    # post_cond_policy = alg.get_eval_policy(task_id, mode='meta_train')
+                post_cond_policy.policy.eval()
+                post_cond_policy.deterministic = deterministic
+                
+                for _ in range(num_rollouts_per_task):
+                    if just_loading_policy:
+                        max_path_length = 100
+                    else:
+                        max_path_length = alg.max_path_length
+                    stacked_path = rollout_path(
+                        env,
+                        task_params,
+                        obs_task_params,
+                        post_cond_policy,
+                        max_path_length,
+                        eval_expert,
+                        render
+                    )
+                    obs = np.array([d['obs'] for d in stacked_path['observations']])
+                    # print(np.max(obs, axis=0))
+                    # print(np.min(obs, axis=0))
+                    # print(np.mean(obs, axis=0))
+                    # print(np.std(obs, axis=0))
+                    # print(obs.shape)
+                    # print(np.max(obs))
+                    # print(np.min(obs))
+
+                    _rets.append(np.sum(stacked_path['rewards']))
+                    rew_frw = [d['reward_forward'] for d in stacked_path['env_infos']]
+                    _min_dists.append(-np.max(rew_frw))
+                    _last_100.append(np.mean(rew_frw[-100:]))
+                
             _cont_size_dict['rets'] = _rets
             _cont_size_dict['min_dists'] = _min_dists
             _cont_size_dict['last_100'] = _last_100
             _task_dict[context_size] = _cont_size_dict
 
             print('\t\t\tMin Dist: %.4f +/- %.4f' % (np.mean(_min_dists), np.std(_min_dists)))
+            print(_min_dists)
         
         all_statistics[task_id] = _task_dict
     return all_statistics
@@ -195,7 +226,8 @@ if __name__ == '__main__':
     all_stats = []
     all_paths = []
     if exp_specs['sub_exp_mode']:
-        all_paths = [osp.join(exp_path, 'extra_data.pkl')]
+        # all_paths = [osp.join(exp_path, 'extra_data.pkl')]
+        all_paths = [osp.join(exp_path, 'best_meta_test.pkl')]
     else:
         for sub_exp in os.listdir(exp_path):
             if os.path.isdir(osp.join(exp_path, sub_exp)):
@@ -220,15 +252,22 @@ if __name__ == '__main__':
 
         print('\n\nEVALUATING SUB EXPERIMENT %d...' % len(all_stats))
         
+        if exp_specs['use_separate_expert_buffer']:
+            expert_buffer = joblib.load(exp_specs['expert_buffer_path'])['meta_train']['context']
+        else:
+            expert_buffer = None
         sub_exp_stats = gather_eval_data(
             alg,
             sample_from_prior=sample_from_prior,
             context_sizes=exp_specs['context_sizes'],
+            num_diff_context=exp_specs['num_diff_context'],
             num_rollouts_per_task=exp_specs['num_rollouts_per_task'],
             deterministic=exp_specs['eval_deterministic'],
             eval_expert=exp_specs['eval_expert'], # this means we are evaluating the expert meta-rl policy,
             just_loading_policy=exp_specs['just_loading_policy'],
-            render=exp_specs['render']
+            render=exp_specs['render'],
+            use_separate_expert_buffer=exp_specs['use_separate_expert_buffer'],
+            expert_buffer_for_eval_tasks=expert_buffer
         )
         all_stats.append(sub_exp_stats)
 

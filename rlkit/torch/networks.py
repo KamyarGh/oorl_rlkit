@@ -345,3 +345,318 @@ class AntRandGoalCustomVFunc(FlattenMlp):
         flat_inputs = torch.cat([obs[:,:-self.goal_dim], self.goal_embed_fc(goal)], dim=1)
         return super().forward(flat_inputs, **kwargs)
 
+
+class Ant2DCustomLayerV1(PyTorchModule):
+    def __init__(
+        self,
+        extra_info_dim,
+        hid_dim
+    ):
+        self.save_init_params(locals())
+        super().__init__()
+
+        self.hid_part = nn.Sequential(
+            nn.Linear(hid_dim + extra_info_dim, hid_dim),
+            nn.ReLU()
+        )
+        self.extra_part = nn.Sequential(
+            nn.Linear(extra_info_dim, extra_info_dim),
+            nn.ReLU()
+        )
+        self.gate_fc = nn.Linear(extra_info_dim, hid_dim)
+    
+
+    def forward(self, extra_info, hid):
+        extra_info = self.extra_part(extra_info)
+
+        gate_logits = self.gate_fc(extra_info)
+        gate_logits = torch.clamp(gate_logits, min=-10.0, max=10.0)
+        gate = F.sigmoid(gate_logits)
+
+        hid = self.hid_part(torch.cat([extra_info, gate * hid], dim=-1))
+
+        return extra_info, hid
+
+
+class AntCustomGatingVFuncV1(PyTorchModule):
+    def __init__(
+        self,
+    ):
+        self.save_init_params(locals())
+        super().__init__()
+
+        obs_dim = 113
+        hid_dim = 256
+        extra_dim = 32
+
+        self.first_hid_layer = nn.Sequential(
+            nn.Linear(obs_dim, hid_dim),
+            nn.ReLU()
+        )
+        self.first_extra_layer = nn.Sequential(
+            nn.Linear(2, extra_dim),
+            nn.ReLU()
+        )
+        
+        self.mod_list = nn.ModuleList(
+            [
+                Ant2DCustomLayerV1(extra_dim, hid_dim),
+                Ant2DCustomLayerV1(extra_dim, hid_dim)
+            ]
+        )
+
+        self.last_fc = nn.Linear(hid_dim + extra_dim, 1)
+
+    def forward(self, obs, **kwargs):
+        goal = obs[:,-2:]
+        obs = obs[:,:-2]
+
+        extra_info = self.first_extra_layer(goal)
+        hid = self.first_hid_layer(obs)
+
+        for h_mod in self.mod_list:
+            extra_info, hid = h_mod(extra_info, hid)
+        
+        output = self.last_fc(
+            torch.cat([hid, extra_info], dim=-1)
+        )
+        return output
+
+
+class AntCustomGatingQFuncV1(PyTorchModule):
+    def __init__(
+        self,
+    ):
+        self.save_init_params(locals())
+        super().__init__()
+
+        obs_dim = 113
+        action_dim = 8
+        hid_dim = 256
+        extra_dim = 32
+
+        self.first_hid_layer = nn.Sequential(
+            nn.Linear(obs_dim + action_dim, hid_dim),
+            nn.ReLU()
+        )
+        self.first_extra_layer = nn.Sequential(
+            nn.Linear(2, extra_dim),
+            nn.ReLU()
+        )
+        
+        self.mod_list = nn.ModuleList(
+            [
+                Ant2DCustomLayerV1(extra_dim, hid_dim),
+                Ant2DCustomLayerV1(extra_dim, hid_dim)
+            ]
+        )
+
+        self.last_fc = nn.Linear(hid_dim + extra_dim, 1)
+
+    def forward(self, obs, action, **kwargs):
+        goal = obs[:,-2:]
+        obs = obs[:,:-2]
+
+        extra_info = self.first_extra_layer(goal)
+        hid = self.first_hid_layer(
+            torch.cat([obs, action], dim=-1)
+        )
+
+        for h_mod in self.mod_list:
+            extra_info, hid = h_mod(extra_info, hid)
+        
+        output = self.last_fc(
+            torch.cat([hid, extra_info], dim=-1)
+        )
+        return output
+
+
+class AntCustomGatingVFuncV2(PyTorchModule):
+    def __init__(
+        self,
+    ):
+        assert False
+        self.save_init_params(locals())
+        super().__init__()
+
+        obs_dim = 113
+        hid_dim = 256
+        extra_dim = 32
+
+        self.first_hid_layer = nn.Sequential(
+            nn.Linear(obs_dim, hid_dim),
+            nn.ReLU()
+        )
+        self.first_extra_layer = nn.Sequential(
+            nn.Linear(2, extra_dim),
+            nn.ReLU()
+        )
+        
+        self.mod_list = nn.ModuleList(
+            [
+                Ant2DCustomLayerV1(extra_dim, hid_dim),
+                Ant2DCustomLayerV1(extra_dim, hid_dim)
+            ]
+        )
+
+        self.last_fc = nn.Linear(hid_dim + extra_dim, 1)
+
+    def forward(self, obs, **kwargs):
+        goal = obs[:,-2:]
+        obs = obs[:,:-2]
+
+        extra_info = self.first_extra_layer(goal)
+        hid = self.first_hid_layer(obs)
+
+        for h_mod in self.mod_list:
+            extra_info, hid = h_mod(extra_info, hid)
+        
+        output = self.last_fc(
+            torch.cat([hid, extra_info], dim=-1)
+        )
+        return output
+
+
+class AntCustomGatingQFuncV2(PyTorchModule):
+    def __init__(
+        self,
+    ):
+        assert False
+        self.save_init_params(locals())
+        super().__init__()
+
+        obs_dim = 113
+        action_dim = 8
+        hid_dim = 256
+        extra_dim = 32
+
+        self.first_hid_layer = nn.Sequential(
+            nn.Linear(obs_dim + action_dim, hid_dim),
+            nn.ReLU()
+        )
+        self.first_extra_layer = nn.Sequential(
+            nn.Linear(2, extra_dim),
+            nn.ReLU()
+        )
+        
+        self.mod_list = nn.ModuleList(
+            [
+                Ant2DCustomLayerV1(extra_dim, hid_dim),
+                Ant2DCustomLayerV1(extra_dim, hid_dim)
+            ]
+        )
+
+        self.last_fc = nn.Linear(hid_dim + extra_dim, 1)
+
+    def forward(self, obs, action, **kwargs):
+        goal = obs[:,-2:]
+        obs = obs[:,:-2]
+
+        extra_info = self.first_extra_layer(goal)
+        hid = self.first_hid_layer(
+            torch.cat([obs, action], dim=-1)
+        )
+
+        for h_mod in self.mod_list:
+            extra_info, hid = h_mod(extra_info, hid)
+        
+        output = self.last_fc(
+            torch.cat([hid, extra_info], dim=-1)
+        )
+        return output
+
+
+class AntAggregateExpert():
+    def __init__(self, e_dict, max_path_length, policy_uses_pixels=False, policy_uses_task_params=True, no_terminal=True):
+        self.e_dict = e_dict
+        self.max_path_length = max_path_length
+        self.policy_uses_pixels = policy_uses_pixels
+        self.policy_uses_task_params = policy_uses_task_params
+        self.no_terminal = no_terminal
+    
+    def get_exploration_policy(self, obs_task_params):
+        return self.e_dict[tuple(obs_task_params)]
+
+
+class PusherTaskQFunc(FlattenMlp):
+    '''
+    This is the Q function used for the pusher task which has to push various
+    meshes to the center of the table.
+    Input is image and optionally robot state
+    '''
+    def __init__(self, image_processor, image_only=False, *args, **kwargs):
+        self.save_init_params(locals())
+        super().__init__(*args, **kwargs)
+
+        # We plan to let the discriminator train the image processor
+        # and let the policy just learn to adapt itself to this module.
+        # To prevent the module from being trained with the policy, we
+        # use this hack.
+        self._image_processor = image_processor
+        self.image_only = image_only
+
+
+    @property
+    def image_processer(self):
+        return self._image_processor
+
+
+    def process_image(self, z, image):
+        mode = self.image_processor.training
+        self.image_processor.eval()
+        feature_positions = self.image_processor([z], [image]).detach()
+        self.preprocess_model.train(mode)
+        return feature_positions
+    
+
+    def forward(self, obs, action):
+        image = obs['image']
+        z = obs['z']
+        things_to_concat = [self.process_image(z, image).detach()]
+        if not self.image_only:
+            state = obs['state']
+            things_to_concat.append(state)
+        things_to_concat.append(action)
+        mlp_input = torch.cat(things_to_concat, dim=-1)
+        return super().forward(mlp_input, actions)
+
+
+class PusherTaskVFunc(FlattenMlp):
+    '''
+    This is the V funciton used for the pusher task which has to push various
+    meshes to the center of the table.
+    Input is image and optionally robot state
+    '''
+    def __init__(self, image_processor, image_only=False, *args, **kwargs):
+        self.save_init_params(locals())
+        super().__init__(*args, **kwargs)
+
+        # We plan to let the discriminator train the image processor
+        # and let the policy just learn to adapt itself to this module.
+        # To prevent the module from being trained with the policy, we
+        # use this hack.
+        self._image_processor = image_processor
+        self.image_only = image_only
+
+
+    @property
+    def image_processer(self):
+        return self._image_processor
+
+
+    def process_image(self, z, image):
+        mode = self.image_processor.training
+        self.image_processor.eval()
+        feature_positions = self.image_processor([z], [image]).detach()
+        self.preprocess_model.train(mode)
+        return feature_positions
+    
+
+    def forward(self, obs):
+        image = obs['image']
+        z = obs['z']
+        policy_input = self.process_image(z, image).detach()
+        if not self.image_only:
+            state = obs['state']
+            policy_input = torch.cat([policy_input, state], dim=-1)
+        return super().forward(policy_input, actions)

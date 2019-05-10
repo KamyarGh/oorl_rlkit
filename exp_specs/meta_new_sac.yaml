@@ -1,25 +1,34 @@
 meta_data:
-  script_path: /h/kamyar/oorl_rlkit/run_scripts/sac.py
-  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: ant_two_dir_no_norm_obs_rew_scale_200_path_300_actual_rew_scale_45_deg_farther
-  # exp_name: custom_32_low_ctrl_cost_low_gear_ant_rand_goal_2_dir_rew_scale_5_roll_between_2_upd_200_batch_2_128_max_path_200
+  script_path: run_scripts/sac.py
+  # exp_name: ant_90_deg_apart_max_path_300_l1_reward
+  # exp_name: ant_quarter_circle_l1_rew_smal_ctrl_cost_no_contact_cost
+  # exp_name: ant_original_model_large_rew_200_plus_survival_rew
+  # exp_name: ant_original_model_large_squared_rew_plus_survival_rew_scale_150
+  # exp_name: ant_original_model_large_squared_rew_plus_survival_middle_60_deg_rew_scale_200
+  exp_name: ant_large_expert_one_direction_pi_over_32_16_points_test_15_no_survive
+  # exp_name: ant_expert_24_points_pol_512_3_roll_between_8_rew_scale_50
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 2
   cpu_range: [0,159]
-  num_cpu_per_worker: 2
+  num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  use_custom_ant_models: [true]
+  use_custom_ant_models: [false]
   goal_embed_dim: [32]
   algo_params:
-    reward_scale: [200.0]
+    # reward_scale: [100.0, 200.0, 300.0, 400.0]
+    # reward_scale: [25.0, 50.0, 100.0, 150.0, 200.0]
     # reward_scale: [1.0, 2.0, 5.0, 8.0, 10.0, 20.0, 40.0, 80.0]
+    # reward_scale: [5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 150.0, 200.0]
+    # reward_scale: [50.0, 100.0, 150.0, 200.0]
+    reward_scale: [200.0]
     policy_uses_task_params: [true]
     policy_uses_pixels: [false]
   # seed: [1553]
   # seed: [1553, 7972, 9361, 1901]
-  seed: [1553, 9361]
+  seed: [8734, 4082]
+  # seed: [8734]
 
 # -----------------------------------------------------------------------------
 constants:
@@ -28,24 +37,28 @@ constants:
     do_running_obs_norm: false
 
     num_epochs: 2001
-    num_rollouts_per_epoch: 200
-    num_rollouts_between_updates: 2
+    num_rollouts_per_epoch: 100
+    num_rollouts_between_updates: 1
     num_initial_rollouts_for_all_train_tasks: 5
-    num_tasks_per_eval: 2
-    num_eval_trajs_per_task: 5
-    num_updates_per_train_call: 300
+    num_tasks_per_eval: 1
+    num_eval_trajs_per_task: 10
+    num_updates_per_train_call: 100
     # max_path_length: 1000
     # max_path_length: 400
-    # max_path_length: 200
-    max_path_length: 300
+    max_path_length: 100
+    # max_path_length: 100
+    # max_path_length: 500
     discount: 0.99
+    # replay_buffer_size_per_task: 80000
     replay_buffer_size_per_task: 500000
+    # replay_buffer_size_per_task: 1000000
+    # replay_buffer_size_per_task: 30000
     # replay_buffer_size_per_task: 250000
     # replay_buffer_size_per_task: 10000
     # replay_buffer_size_per_task: 25000
 
-    num_tasks_per_batch: 2
-    num_samples_per_task_per_batch: 128
+    num_tasks_per_batch: 1
+    num_samples_per_task_per_batch: 256
     soft_target_tau: 0.005
 
     policy_lr: 0.0003
@@ -56,17 +69,27 @@ constants:
 
     render: false
     save_algorithm: true
-    freq_saving: 5
+    freq_saving: 10
 
-  net_size: 256
+  net_size: 512
   num_hidden_layers: 3
+  # net_size: 100
+  # num_hidden_layers: 2
 
   env_specs:
-    # base_env_name: 'ant_rand_goal_one_direction'
-    base_env_name: 'ant_rand_goal_45_deg_farther'
+    # base_env_name: 'ant_rand_goal_24_points'
+    base_env_name: 'ant_rand_goal_one_direction'
+    # base_env_name: 'ant_rand_goal_45_deg_farther'
     # base_env_name: 'ant_rand_goal_opposite_2_directions'
+
+    # base_env_name: 'ant_rand_goal_90_deg_apart'
+    
     # base_env_name: 'ant_rand_goal_2_directions'
     # base_env_name: 'ant_rand_goal_60_degrees'
+
+    # base_env_name: 'ant_rand_goal_middle_60'
+    
+    # base_env_name: 'ant_rand_goal_line_params_sampler'
     # base_env_name: 'ant_rand_goal_120_degrees'
     # base_env_name: 'ant_rand_goal_200_points'
     normalized: false

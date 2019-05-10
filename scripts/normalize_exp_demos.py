@@ -58,6 +58,30 @@ def do_the_thing(data_path, save_path, plot_obs_histogram=False):
         print(mean)
         print('Std:')
         print(std)
+
+        print('\nPost Normalization Check')
+        print('Train')
+        print('Obs')
+        print(np.mean(d['train']._observations, axis=0))
+        print(np.std(d['train']._observations, axis=0))
+        print(np.max(d['train']._observations, axis=0))
+        print(np.min(d['train']._observations, axis=0))
+        print('Next Obs')
+        print(np.mean(d['train']._next_obs, axis=0))
+        print(np.std(d['train']._next_obs, axis=0))
+        print(np.max(d['train']._next_obs, axis=0))
+        print(np.min(d['train']._next_obs, axis=0))
+        print('Test')
+        print('Obs')
+        print(np.mean(d['test']._observations, axis=0))
+        print(np.std(d['test']._observations, axis=0))
+        print(np.max(d['test']._next_obs, axis=0))
+        print(np.min(d['test']._next_obs, axis=0))
+        print('Next Obs')
+        print(np.mean(d['test']._next_obs, axis=0))
+        print(np.std(d['test']._next_obs, axis=0))
+        print(np.max(d['test']._next_obs, axis=0))
+        print(np.min(d['test']._next_obs, axis=0))
     if NORMALIZE_ACTS:
         raise NotImplementedError('Must take into account d[\'train\']._size')
         # d['train']._actions, mean, std = get_normalized(d['train']._actions, return_stats=True)
@@ -80,13 +104,17 @@ with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
     listings = yaml.load(f.read())
 
 for i, expert in enumerate([
-    'halfcheetah_256_demos_20_subsampling',
-    'halfcheetah_128_demos_20_subsampling',
-    'halfcheetah_64_demos_20_subsampling',
-    'halfcheetah_32_demos_20_subsampling',
-    'halfcheetah_16_demos_20_subsampling',
-    'halfcheetah_8_demos_20_subsampling',
-    'halfcheetah_4_demos_20_subsampling',
+    # 'ant_multi_valid_target_demos_8_target_8_each_no_sub'
+    'deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len_50'
+
+    # 'halfcheetah_256_demos_20_subsampling',
+    # 'halfcheetah_128_demos_20_subsampling',
+    # 'halfcheetah_64_demos_20_subsampling',
+    # 'halfcheetah_32_demos_20_subsampling',
+    # 'halfcheetah_16_demos_20_subsampling',
+    # 'halfcheetah_8_demos_20_subsampling',
+    # 'halfcheetah_4_demos_20_subsampling',
+
     # 'ant_256_demos_20_subsampling',
     # 'ant_128_demos_20_subsampling',
     # 'ant_64_demos_20_subsampling',
@@ -100,7 +128,8 @@ for i, expert in enumerate([
     # 'humanoid_256_demos_20_subsampling'
   ]):
   data_path = osp.join(listings[expert]['exp_dir'], listings[expert]['seed_runs'][0], 'extra_data.pkl')
-  save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/norm_'+expert
+  # save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/norm_'+expert
+  save_dir = '/scratch/hdd001/home/kamyar/expert_demos/norm_'+expert
   os.makedirs(save_dir, exist_ok=True)
   save_path = osp.join(save_dir, 'extra_data.pkl')
   do_the_thing(data_path, save_path, i == 0)

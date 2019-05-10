@@ -1,6 +1,5 @@
 meta_data:
-  script_path: /h/kamyar/oorl_rlkit/run_scripts/airl_exp_script.py
-  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output
+  script_path: run_scripts/airl_exp_script.py
   # exp_name: final_correct_halfcheetah_airl_with_exp_reward_hyper_search_rew_scale_more_than_40
   # correct_normalized_halfcheetah_state_action_forw_KL_airl_disc
   # normalized_halfcheetah_state_action_forw_KL_airl_disc_rew_scale_search
@@ -9,10 +8,12 @@ meta_data:
   # exp_name: correct_no_norm_no_save_best_rev_KL_ant_no_grad_clip
   # exp_name: 10x_steps_per_epoch_forw_KL_disc_hid_256
   # exp_name: little_data_forw_KL_disc_hid_64
-  exp_name: what_matters_halfcheetah_forw_KL_with_128_disc_100_rew
+  # exp_name: what_matters_halfcheetah_forw_KL_with_128_disc_100_rew
+  # exp_name: halfcheetah_forw_KL_16_demos_20_sub_with_128_disc_100_rew_clipping_at_1_and_some_hype_search
+  exp_name: actually_ant_gail_rew_search
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 2
+  num_workers: 12
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
@@ -29,14 +30,17 @@ variables:
   disc_use_bn: [false]
 
   algo_params:
-    save_best: [true]
+    save_best: [false]
     save_best_starting_from_epoch: [0]
 
     use_target_disc: [false]
     
     state_only: [false]
 
-    use_exp_rewards: [true]
+    # use_exp_rewards: [true]
+    use_exp_rewards: [false]
+    gail_mode: [true]
+
     # rew_clip_max: [1.0]
     # rew_clip_min: [-1.0, -2.0, -4.0, -8.0]
 
@@ -52,15 +56,18 @@ variables:
     grad_pen_weight: [10.0]
     # grad_pen_weight: [10.0]
     # grad_pen_weight: [1.0, 5.0, 10.0]
+
     disc_ce_grad_clip: [100.0]
     disc_gp_grad_clip: [100.0]
+    # disc_ce_grad_clip: [1.0]
+    # disc_gp_grad_clip: [1.0]
   
   policy_params:
     # reward_scale: [15.0, 25.0, 40.0]
     # reward_scale: [10.0]
     # reward_scale: [8.0]
     # reward_scale: [50.0]
-    reward_scale: [100.0]
+    # reward_scale: [100.0]
     # reward_scale: [25.0, 50.0, 75.0]
     # reward_scale: [8.0, 15.0, 100.0]
     # reward_scale: [125.0]
@@ -77,6 +84,8 @@ variables:
     # reward_scale: [2.0, 4.0, 8.0, 12.0]
     # reward_scale: [2.0, 4.0, 8.0]
     # reward_scale: [1.0, 2.0, 4.0]
+    reward_scale: [2.0, 4.0, 8.0, 16.0, 32.0, 64.0]
+    # reward_scale: [4.0]
     beta_1: [0.25]
     # beta_1: [0.0, 0.25, 0.5, 0.9]
   
@@ -102,7 +111,7 @@ variables:
     # norm_halfcheetah_128_demos_20_subsampling,
     # norm_halfcheetah_64_demos_20_subsampling,
     # norm_halfcheetah_32_demos_20_subsampling,
-    norm_halfcheetah_16_demos_20_subsampling,
+    # norm_halfcheetah_16_demos_20_subsampling,
     # norm_halfcheetah_8_demos_20_subsampling,
     # norm_halfcheetah_4_demos_20_subsampling,
     # normalized_halfcheetah_250_demos_no_subsampling,
@@ -119,7 +128,7 @@ variables:
     # norm_ant_128_demos_20_subsampling,
     # norm_ant_64_demos_20_subsampling,
     # norm_ant_32_demos_20_subsampling,
-    # norm_ant_16_demos_20_subsampling,
+    norm_ant_16_demos_20_subsampling,
     # norm_ant_8_demos_20_subsampling,
     # norm_ant_4_demos_20_subsampling,
 
@@ -182,6 +191,6 @@ constants:
     
   env_specs:
     # base_env_name: 'humanoid_v2'
-    # base_env_name: 'ant_v2'
-    base_env_name: 'halfcheetah_v2'
+    base_env_name: 'ant_v2'
+    # base_env_name: 'halfcheetah_v2'
     train_test_env: false

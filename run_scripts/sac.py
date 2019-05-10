@@ -10,9 +10,11 @@ from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.sac.policies import AntRandGoalCustomReparamTanhMultivariateGaussianPolicy
+from rlkit.torch.sac.policies import AntCustomGatingV1ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.sac.sac import NewSoftActorCritic, MetaNewSoftActorCritic
 from rlkit.torch.networks import FlattenMlp
 from rlkit.torch.networks import AntRandGoalCustomQFunc, AntRandGoalCustomVFunc
+from rlkit.torch.networks import AntCustomGatingVFuncV1, AntCustomGatingQFuncV1
 
 from rlkit.envs import get_env, get_meta_env, get_meta_env_params_iters
 
@@ -55,6 +57,7 @@ def experiment(variant):
     hidden_sizes = [net_size] * variant['num_hidden_layers']
     if variant['use_custom_ant_models']:
         assert isinstance(env.observation_space, Dict)
+        print('CUSTOM ANT WITH LINEAR EMBEDDING OF THE TARGET POSITION')
         qf1 = AntRandGoalCustomQFunc(
             int(np.prod(env.observation_space.spaces['obs_task_params'].shape)),
             variant['goal_embed_dim'],
@@ -83,7 +86,14 @@ def experiment(variant):
             obs_dim=int(np.prod(env.observation_space.spaces['obs'].shape)),
             action_dim=action_dim,
         )
+
+        # CUSTOM ANT WITH GATING ACTIVATIONS OF EACH LAYER
+        # qf1 = AntCustomGatingQFuncV1()
+        # qf2 = AntCustomGatingQFuncV1()
+        # vf = AntCustomGatingVFuncV1()
+        # policy = AntCustomGatingV1ReparamTanhMultivariateGaussianPolicy()
     else:
+        print('Using simple model')
         qf1 = FlattenMlp(
             hidden_sizes=hidden_sizes,
             input_size=obs_dim + action_dim,

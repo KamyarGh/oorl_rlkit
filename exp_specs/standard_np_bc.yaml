@@ -1,21 +1,20 @@
 meta_data:
-  script_path: /h/kamyar/oorl_rlkit/run_scripts/np_bc_exp_script.py
-  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  # exp_name: hc_rand_vel_32_demos_per_task_det_eval_new_conv_encoder_z_dim_32_sasp_conv_ch_64_stride_3_new_expert_64_demos
-  # exp_name: hc_rand_vel_new_expert_64_demos_timestep_enc_r_64_z_16_enc_256_r2z_64_lay_2_within_traj_agg_mean_z_64_norm
-  # exp_name: hc_rand_vel_bc_norm_16_demos
-  exp_name: hc_16_demos_within_traj_agg_mean_shorter_epochs
+  script_path: run_scripts/np_bc_exp_script.py
+  # exp_name: hc_rand_vel_unnorm_16_demos_sub_20
+  # exp_name: hc_rand_vel_64_per_task_no_sub_unnorm_debug_1_to_2_values_beta_1_0p9_norm
+  # exp_name: hc_rand_vel_64_demos_sub_1_no_norm_with_saving
+  exp_name: hc_rand_vel_64_demos_sub_1_no_saving_new_version_hype_search_with_lr_0p02
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 2
+  num_workers: 8
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  scale_env_with_given_demo_stats: [true]
+  scale_env_with_given_demo_stats: [false]
 
   algo_params:
-    save_best: [true]
+    save_best: [false]
     save_best_after_epoch: [0]
 
     # objective: ['mse']
@@ -30,22 +29,38 @@ variables:
     min_context_size: [1]
 
     # results in training batch size of 1024 for disc model
+    # num_tasks_used_per_update: [8]
+    # num_context_trajs_for_training: [4]
+    # num_test_trajs_for_training: [4]
+    # train_samples_per_traj: [16]
+    # for debugging --------------
     num_tasks_used_per_update: [8]
-    num_context_trajs_for_training: [4]
+    num_context_trajs_for_training: [4] # does not matter
     num_test_trajs_for_training: [4]
     train_samples_per_traj: [16]
+    policy_optim_batch_size_per_task: [128]
 
     num_context_trajs_for_exploration: [4]
 
-    num_tasks_per_eval: [24]
+    # num_tasks_per_eval: [24]
+    # num_diff_context_per_eval_task: [2]
+    # num_eval_trajs_per_post_sample: [1]
+    # num_context_trajs_for_eval: [3]
+    # for debugging ---------------
+    num_tasks_per_eval: [5]
     num_diff_context_per_eval_task: [2]
-    num_eval_trajs_per_post_sample: [1]
+    num_eval_trajs_per_post_sample: [3]
     num_context_trajs_for_eval: [3]
 
-    encoder_lr: [0.0003]
-    policy_lr: [0.0003]
+    # encoder_lr: [0.0003]
+    # policy_lr: [0.0003]
+    encoder_lr: [0.02]
+    policy_lr: [0.02]
+    # beta_1: [0.25]
+    beta_1: [0.25, 0.9]
+    # beta_1: [0.25]
 
-    num_update_loops_per_train_call: [2000]
+    num_update_loops_per_train_call: [1000]
 
     use_target_enc: [false]
     soft_target_enc_tau: [0.005]
@@ -77,25 +92,41 @@ variables:
   policy_net_size: [256]
   num_hidden_layers: [3]
 
-  seed: [7972, 9361]
+  # seed: [7723, 4969, 3082, 2290]
+  # seed: [7723]
+  seed: [7723, 4969]
+  expert_name: [
+    hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1,
+    norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1,
+    # hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
+    # hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
+  ]
 
 # -----------------------------------------------------------------------------
 constants:
-  # expert_name: halfcheetah_rand_vel_expert
-  # expert_name: halfcheetah_rand_vel_expert_32_demos_per_task
-  # expert_name: deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
-  # expert_name: norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
-  expert_name: norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20
+  # expert_name: hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1_only_task_1
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_256_demos_sub_1_only_task_1
+  # expert_name: hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1_only_task_1
+  # expert_name: hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20
+  # expert_name: hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
+  # expert_name: hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
+  # expert_name: hc_rand_vel_expert_debug_9_values
+  # expert_name: norm_hc_rand_vel_expert_debug_1_to_2_values
+
   expert_seed_run_idx: 0
   
   algo_params:
     eval_deterministic: true
     
-    num_epochs: 10001
+    num_epochs: 101
     num_rollouts_per_epoch: 1
     num_rollouts_between_updates: 1
     num_initial_rollouts_for_all_train_tasks: 0
     min_rollouts_before_training: 0
+    # max_path_length: 200
     max_path_length: 1000
 
     policy_uses_pixels: false
@@ -114,7 +145,8 @@ constants:
       r2z_params: {}
 
   env_specs:
-    base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'
+    # base_env_name: 'halfcheetah_rand_vel_0p1_separated'
+    base_env_name: 'halfcheetah_rand_vel_0p1_separated'
     normalized: false
     train_test_env: false
     need_pixels: false

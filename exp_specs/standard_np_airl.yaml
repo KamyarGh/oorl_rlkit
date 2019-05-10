@@ -1,10 +1,11 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/np_airl_exp_script.py
-  exp_dirs: /scratch/gobi2/kamyar/oorl_rlkit/output/
-  exp_name: r_64_z_64_within_traj_agg_mean_disc_s_a_512_3_relu_gp_10_no_clip_norm_disc_no_bn_16_demos_rew_scale_8
+  # exp_name: hc_rand_vel_np_airl_16_demos_rew_search_with_saving_more_rew_search
+  # exp_name: hc_rand_vel_np_airl_4_demos_sub_20_state_only_rew_search_normalized_correct
+  exp_name: hc_rand_vel_np_airl_4_demos_rew_search_with_saving_more_rew_search
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 2
+  num_workers: 4
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
@@ -19,7 +20,7 @@ variables:
 
   algo_params:
     # !!!!!!!! IF YOU WANT TO SAVE BEST YOU SHOULD FIX IT IN TORCH_META_IRL
-    save_best: [false] # READ THE COMMENT ABOVE!!!!!
+    save_best: [true] # READ THE COMMENT ABOVE!!!!!
     # !!!!!!!! SERIOUSLY, READ THE COMMENT ABOVE!!!!!
     save_best_after_epoch: [0]
     
@@ -44,9 +45,9 @@ variables:
 
     num_context_trajs_for_exploration: [4] # doesn't do anything if we're in few-shot mode
 
-    num_tasks_per_eval: [24]
+    num_tasks_per_eval: [5]
     num_diff_context_per_eval_task: [2]
-    num_eval_trajs_per_post_sample: [1]
+    num_eval_trajs_per_post_sample: [3]
     num_context_trajs_for_eval: [3] # doesn't do anything if we're in few-shot mode
 
     policy_optim_batch_mode_random: [true]
@@ -109,7 +110,10 @@ variables:
   
   policy_params:
     # reward_scale: [4.0]
-    reward_scale: [8.0]
+    # reward_scale: [8.0, 12.0, 16.0]
+    # reward_scale: [20.0, 24.0, 40.0]
+    # reward_scale: [12.0, 20.0, 24.0]
+    reward_scale: [24.0]
     use_policy_as_ema_policy: [false]
     soft_ema_policy_exp: [0.005]
 
@@ -122,14 +126,18 @@ variables:
   
   # seed: [9783, 5914]
   # seed: [1553, 7972, 9361, 1901]
-  seed: [7972, 9361]
+  # seed: [7972, 9361]
+  seed: [7723, 4969, 3082, 2290]
   # seed: [7972]
 
 # -----------------------------------------------------------------------------
 constants:
-  # expert_name: halfcheetah_rand_vel_expert
-  # expert_name: norm_deterministic_hc_rand_vel_expert_demos_0p125_separated_64_demos_sub_20
-  expert_name: norm_hc_rand_vel_expert_demos_0p125_separated_16_demos_sub_20
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
+  expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
+  # expert_name: hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
   expert_seed_run_idx: 0
   
   algo_params:
@@ -147,7 +155,7 @@ constants:
     replay_buffer_size_per_task: 50000
 
     # save_replay_buffer: false
-    save_algorithm: false
+    save_algorithm: true
     render: false
 
     freq_saving: 5
@@ -172,7 +180,8 @@ constants:
     soft_target_tau: 0.005
     
   env_specs:
-    base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'
+    # base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'
+    base_env_name: 'halfcheetah_rand_vel_0p1_separated'
     normalized: false
     train_test_env: false
     need_pixels: false

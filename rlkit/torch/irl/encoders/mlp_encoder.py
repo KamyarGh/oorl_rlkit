@@ -49,7 +49,7 @@ class TrivialR2ZMap(PyTorchModule):
 class TimestepBasedEncoder(PyTorchModule):
     def __init__(
         self,
-        input_dim, #(s,a,s')
+        input_dim, #(s,a,s') or (s,s') depending on state-only
         r_dim,
         z_dim,
         enc_hid_dim,
@@ -57,7 +57,8 @@ class TimestepBasedEncoder(PyTorchModule):
         num_enc_layer_blocks,
         hid_act='relu',
         use_bn=True,
-        within_traj_agg='sum' # 'sum' or 'mean'
+        within_traj_agg='sum', # 'sum' or 'mean',
+        state_only=False # if state-only, we only condition on the states and not actions
     ):
         self.save_init_params(locals())
         super().__init__()
@@ -94,20 +95,30 @@ class TimestepBasedEncoder(PyTorchModule):
         # build the r to z map
         self.r2z_map = TrivialR2ZMap(r_dim, z_dim, r2z_hid_dim)
 
+        self.state_only = state_only
+        print('STATE-ONLY ENCODER: {}'.format(self.state_only))
+
 
     def forward(self, context=None, mask=None, r=None):
         if r is None:
             obs = np.array([[d['observations'] for d in task_trajs] for task_trajs in context])
-            acts = np.array([[d['actions'] for d in task_trajs] for task_trajs in context])
             next_obs = np.array([[d['next_observations'] for d in task_trajs] for task_trajs in context])
+            if not self.state_only:
+                acts = np.array([[d['actions'] for d in task_trajs] for task_trajs in context])
+                all_timesteps = np.concatenate([obs, acts, next_obs], axis=-1)
+            else:
+                all_timesteps = np.concatenate([obs, next_obs], axis=-1)
+            
+            # FOR DEBUGGING THE ENCODER
+            # all_timesteps = all_timesteps[:,:,-1:,:]
 
-            all_timesteps = np.concatenate([obs, acts, next_obs], axis=-1)
             all_timesteps = Variable(ptu.from_numpy(all_timesteps), requires_grad=False)
 
             # N_tasks x N_trajs x Len x Dim
             N_tasks, N_trajs, Len, Dim = all_timesteps.size(0), all_timesteps.size(1), all_timesteps.size(2), all_timesteps.size(3)
             all_timesteps = all_timesteps.view(-1, Dim)
-            embeddings = self.timestep_encoder(all_timesteps).view(N_tasks, N_trajs, Len, self.r_dim)
+            embeddings = self.timestep_encoder(all_timesteps)
+            embeddings = embeddings.view(N_tasks, N_trajs, Len, self.r_dim)
 
             if self.use_sum_for_traj_agg:
                 traj_embeddings = torch.sum(embeddings, dim=2)
