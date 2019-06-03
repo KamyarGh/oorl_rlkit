@@ -578,6 +578,18 @@ class AntAggregateExpert():
         return self.e_dict[tuple(obs_task_params)]
 
 
+class WalkerDynamicsAggregateExpert():
+    def __init__(self, e_dict, max_path_length, policy_uses_pixels=False, policy_uses_task_params=True, no_terminal=False):
+        self.e_dict = e_dict
+        self.max_path_length = max_path_length
+        self.policy_uses_pixels = policy_uses_pixels
+        self.policy_uses_task_params = policy_uses_task_params
+        self.no_terminal = no_terminal
+    
+    def get_exploration_policy(self, obs_task_params):
+        return self.e_dict[tuple(obs_task_params)]
+
+
 class PusherTaskQFunc(FlattenMlp):
     '''
     This is the Q function used for the pusher task which has to push various

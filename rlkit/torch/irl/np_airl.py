@@ -121,7 +121,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
         assert disc_lr != 1e-3, 'Just checking that this is being taken from the spec file'
         if kwargs['policy_uses_pixels']: raise NotImplementedError('policy uses pixels')
         if kwargs['wrap_absorbing']: raise NotImplementedError('wrap absorbing')
-        assert not eval_deterministic
+        # assert not eval_deterministic
+        self.eval_deterministic = eval_deterministic
         
         super().__init__(
             env=env,
@@ -321,7 +322,9 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             z = z.cpu().data.numpy()[0]
         else:
             z = self.env.task_id_to_obs_task_params(task_identifier)
-        return PostCondMLPPolicyWrapper(self.main_policy, z)
+        post_cond_policy = PostCondMLPPolicyWrapper(self.main_policy, z)
+        post_cond_policy.deterministic = self.eval_deterministic
+        return post_cond_policy
     
 
     def _get_disc_training_batch(self):
@@ -496,6 +499,12 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
             exp_acts_batch = Variable(ptu.from_numpy(exp_acts_batch), requires_grad=False)
             policy_acts_batch = Variable(ptu.from_numpy(policy_test_pred_batch['actions']), requires_grad=False)
 
+        # print(mask.size)
+        # print(len(context_batch))
+        # print(context_batch)
+        # print(len(context_batch))
+        # print(len(context_batch[0]))
+        # print(context_batch[0][0].shape)
         post_dist = self.encoder(context_batch, mask)
         z = post_dist.sample() # N_tasks x Dim
         # z = post_dist.mean
@@ -1002,8 +1011,8 @@ class NeuralProcessAIRL(TorchMetaIRLAlgorithm):
                         action, agent_info = eval_policy.get_action(agent_obs)
                         
                         next_ob, raw_reward, terminal, env_info = (self.env.step(action))
-                        if self.no_terminal:
-                            terminal = False
+                        # if self.no_terminal:
+                        #     terminal = False
                         
                         reward = raw_reward
                         terminal = np.array([terminal])

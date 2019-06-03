@@ -145,6 +145,7 @@ def plot_experiment_returns(
             # print(csv_full_path)
             try:
                 progress_csv = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)
+                # print(progress_csv.dtype)
                 if isinstance(column_name, str):
                     column_name = [column_name]
                 for c_name in column_name:

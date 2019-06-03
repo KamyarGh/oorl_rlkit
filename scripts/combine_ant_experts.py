@@ -6,16 +6,23 @@ import os.path as osp
 from rlkit.torch.networks import AntAggregateExpert
 
 max_path_length = 100
+# max_path_length = 50
 expert_paths = {
+    # multi-ant 4 directions distance 4
+    (4.0, 0.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-4-0-no-survive/ant_large_expert_one_direction_4_0_no_survive_2019_05_15_19_58_03_0000--s-0/extra_data.pkl',
+    (0.0, 4.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-0-4-no-survive/ant_large_expert_one_direction_0_4_no_survive_2019_05_15_19_59_23_0000--s-0/extra_data.pkl',
+    (0.0, -4.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-0-neg-4-no-survive/ant_large_expert_one_direction_0_neg_4_no_survive_2019_05_15_20_02_50_0000--s-0/extra_data.pkl',
+    (-4.0, 0.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-neg-4-0-no-survive/ant_large_expert_one_direction_neg_4_0_no_survive_2019_05_15_20_03_45_0000--s-0/extra_data.pkl',
+
     # TRAIN ONES
-    (2.0, 0.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-2-0-no-survive/ant_large_expert_one_direction_2_0_no_survive_2019_04_23_19_52_16_0000--s-0/extra_data.pkl',
-    (1.41, 1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-1p41-1p41-no-survive/ant_large_expert_one_direction_1p41_1p41_no_survive_2019_04_23_19_53_28_0000--s-0/extra_data.pkl',
-    (0.0, 2.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-0-2-no-survive/ant_large_expert_one_direction_0_2_no_survive_2019_04_23_19_56_25_0000--s-0/extra_data.pkl',
-    (-1.41, 1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-neg-1p41-1p41-no-survive/ant_large_expert_one_direction_neg_1p41_1p41_no_survive_2019_04_23_19_57_55_0001--s-0/extra_data.pkl',
-    (-2.0, 0.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-neg-2-0-no-survive/ant_large_expert_one_direction_neg_2_0_no_survive_2019_04_23_19_55_30_0000--s-0/extra_data.pkl',
-    (-1.41, -1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-neg-1p41-neg-1p41-no-survive/ant_large_expert_one_direction_neg_1p41_neg_1p41_no_survive_2019_04_24_14_00_16_0000--s-0/extra_data.pkl',
-    (0.0, -2.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-0-neg-2-no-survive/ant_large_expert_one_direction_0_neg_2_no_survive_2019_04_24_14_06_34_0000--s-0/extra_data.pkl',
-    (1.41, -1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-1p41-neg-1p41-no-survive/ant_large_expert_one_direction_1p41_neg_1p41_no_survive_2019_04_24_14_10_53_0000--s-0/extra_data.pkl',
+    # (2.0, 0.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-2-0-no-survive/ant_large_expert_one_direction_2_0_no_survive_2019_04_23_19_52_16_0000--s-0/extra_data.pkl',
+    # (1.41, 1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-1p41-1p41-no-survive/ant_large_expert_one_direction_1p41_1p41_no_survive_2019_04_23_19_53_28_0000--s-0/extra_data.pkl',
+    # (0.0, 2.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-0-2-no-survive/ant_large_expert_one_direction_0_2_no_survive_2019_04_23_19_56_25_0000--s-0/extra_data.pkl',
+    # (-1.41, 1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-neg-1p41-1p41-no-survive/ant_large_expert_one_direction_neg_1p41_1p41_no_survive_2019_04_23_19_57_55_0001--s-0/extra_data.pkl',
+    # (-2.0, 0.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-neg-2-0-no-survive/ant_large_expert_one_direction_neg_2_0_no_survive_2019_04_23_19_55_30_0000--s-0/extra_data.pkl',
+    # (-1.41, -1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-neg-1p41-neg-1p41-no-survive/ant_large_expert_one_direction_neg_1p41_neg_1p41_no_survive_2019_04_24_14_00_16_0000--s-0/extra_data.pkl',
+    # (0.0, -2.0): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-0-neg-2-no-survive/ant_large_expert_one_direction_0_neg_2_no_survive_2019_04_24_14_06_34_0000--s-0/extra_data.pkl',
+    # (1.41, -1.41): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-1p41-neg-1p41-no-survive/ant_large_expert_one_direction_1p41_neg_1p41_no_survive_2019_04_24_14_10_53_0000--s-0/extra_data.pkl',
 
     # (1.85, 0.77): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-1p85-0p77-no-survive/ant_large_expert_one_direction_1p85_0p77_no_survive_2019_04_26_00_42_49_0000--s-0/extra_data.pkl',
     # (0.77, 1.85): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-0p77-1p85-no-survive/ant_large_expert_one_direction_0p77_1p85_no_survive_2019_04_26_00_43_34_0000--s-0/extra_data.pkl',
@@ -62,7 +69,10 @@ expert_paths = {
 #     ( 1.91, -0.58): '/scratch/hdd001/home/kamyar/output/ant-large-expert-one-direction-pi-over-32-16-points-test-15-no-survive/ant_large_expert_one_direction_pi_over_32_16_points_test_15_no_survive_2019_04_27_23_56_47_0000--s-0/extra_data.pkl',
 # }
 # save_path = '/scratch/hdd001/home/kamyar/expert_demos/pi_over_32_16_points_test_ant_agg'
-save_path = '/scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert' # the experiment where you want to see if fairl is better than airl
+# save_path = '/scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert' # the experiment where you want to see if fairl is better than airl
+# save_path = '/scratch/hdd001/home/kamyar/expert_demos/ant_linear_classification_expert' # the experiment where you want to see if fairl is better than airl
+# save_path = '/scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert_4_directions' # the experiment where you want to see if fairl is better than airl
+save_path = '/scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert_4_directions_4_distance' # the experiment where you want to see if fairl is better than airl
 
 def make_e_dict(paths):
     new_dict = {}
@@ -79,4 +89,5 @@ if __name__ == '__main__':
     joblib.dump({'algorithm': agg}, osp.join(save_path, 'extra_data.pkl'), compress=3)
 
     print('\n')
+    print(max_path_length)
     print(osp.join(save_path, 'extra_data.pkl'))

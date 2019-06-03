@@ -19,6 +19,7 @@ from rlkit.torch.sac.policies import MakeDeterministic
 from rlkit.core.train_util import linear_schedule
 
 from rlkit.torch.sac.policies import PostCondPuhserPolicyWrapper, CondBaselineContextualPolicy
+from rlkit.torch.sac.policies import YetAnotherPostCondPuhserPolicyWrapper
 from rlkit.data_management.path_builder import PathBuilder
 from gym.spaces import Dict
 
@@ -52,6 +53,7 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
 
         easy_context=False,
         last_image_is_context=False,
+        using_all_context=False,
         context_video_subsample_factor=4,
 
         num_tasks_used_per_update=5,
@@ -99,7 +101,7 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         assert num_context_trajs_for_training == 1
         assert not use_target_policy
         assert not use_target_enc
-        assert objective == 'mse', 'NaN problems when we used MLE'
+        # assert objective == 'mse', 'NaN problems when we used MLE'
         # assert mse_loss_multiplier == 50.0, "What they used in their work"
 
         super().__init__(
@@ -114,9 +116,10 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         self.train_ds, self.test_ds = train_ds, test_ds
         self.context_video_subsample_factor = context_video_subsample_factor
         self.context_subsample_inds = np.arange(99, -1, -1*self.context_video_subsample_factor)[::-1]
-        assert not (easy_context and last_image_is_context)
+        assert sum([easy_context, last_image_is_context, using_all_context]) <= 1
         self.easy_context = easy_context
         self.last_image_is_context = last_image_is_context
+        self.using_all_context = using_all_context
         self.log_dir = log_dir
 
         self.policy = policy
@@ -200,16 +203,38 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         batch = self.train_ds.get_single_traj(task_identifier)
         if self.easy_context:
             vid = batch['videos'][0][:,-1,-45:,30:75][None]
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
         elif self.last_image_is_context:
             vid = batch['videos'][0][:,-1][None]
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
+        elif self.using_all_context:
+            vid = batch['videos'][0][:,self.context_subsample_inds]
+            vid = vid[None]
+            vid = vid.transpose((0, 2, 1, 3, 4))
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
+
+            context_Xs = batch['states'][0][self.context_subsample_inds]
+            context_Xs = Variable(ptu.from_numpy(context_Xs), requires_grad=False)
+
+            context_Us = batch['actions'][0][self.context_subsample_inds]
+            context_Us = Variable(ptu.from_numpy(context_Us), requires_grad=False)
+
+            all_context = {
+                'image': vid,
+                'X': context_Xs,
+                'U': context_Us,
+            }
         else:
             vid = batch['videos'][0][:,self.context_subsample_inds]
             vid = vid[None]
             # vid = np.array(batch['videos'])
             # print('----')
             # print(vid.shape)
-        vid = Variable(ptu.from_numpy(vid), requires_grad=False)
-        vid.mul_(1.0/255.0)
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
 
         # from scipy.misc import imsave
         # print(vid.shape)
@@ -225,11 +250,14 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         if self.last_image_is_context:
             enc_to_use.train(mode)
             return CondBaselineContextualPolicy(self.policy, vid)
+        elif self.using_all_context:
+            film_feats, extra_latents = enc_to_use(all_context)
+            return YetAnotherPostCondPuhserPolicyWrapper(self.policy, film_feats, extra_latents, deterministic=False)
         else:
             z = enc_to_use(vid)
             z = z.cpu().data.numpy()[0]
             enc_to_use.train(mode)
-            return PostCondPuhserPolicyWrapper(self.policy, z)
+            return PostCondPuhserPolicyWrapper(self.policy, z, deterministic=False)
 
     
 
@@ -252,16 +280,38 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         
         if self.easy_context:
             vid = batch['videos'][0][:,-1,-45:,30:75][None]
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
+        if self.using_all_context:
+            vid = batch['videos'][0][:,self.context_subsample_inds]
+            vid = vid[None]
+            vid = vid.transpose((0, 2, 1, 3, 4))
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
+
+            context_Xs = batch['states'][0][self.context_subsample_inds]
+            context_Xs = Variable(ptu.from_numpy(context_Xs), requires_grad=False)
+
+            context_Us = batch['actions'][0][self.context_subsample_inds]
+            context_Us = Variable(ptu.from_numpy(context_Us), requires_grad=False)
+
+            all_context = {
+                'image': vid,
+                'X': context_Xs,
+                'U': context_Us,
+            }
         elif self.last_image_is_context:
             vid = batch['videos'][0][:,-1][None]
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
         else:
             vid = batch['videos'][0][:,self.context_subsample_inds]
             vid = vid[None]
             # vid = np.array(batch['videos'])
             # print('----')
             # print(vid.shape)
-        vid = Variable(ptu.from_numpy(vid), requires_grad=False)
-        vid.mul_(1.0/255.0)
+            vid = Variable(ptu.from_numpy(vid), requires_grad=False)
+            vid.mul_(1.0/255.0)
 
         # from scipy.misc import imsave
         # imsave('plots/junk_vis/val_check_get_eval.png', ptu.get_numpy(vid[0][:,0,:,:]).transpose(1,2,0))
@@ -282,31 +332,71 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
             if return_context:
                 return CondBaselineContextualPolicy(self.policy, vid), vid
             return CondBaselineContextualPolicy(self.policy, vid)
+        elif self.using_all_context:
+            film_feats, extra_latents = enc_to_use(all_context)
+            if return_context:
+                return YetAnotherPostCondPuhserPolicyWrapper(self.policy, film_feats, extra_latents, deterministic=False), all_context
+            return YetAnotherPostCondPuhserPolicyWrapper(self.policy, film_feats, extra_latents, deterministic=False)
         else:
             z = enc_to_use(vid)
             enc_to_use.train(is_training_mode)
             z = z.cpu().data.numpy()[0]
+            if mode == 'meta_test':
+                det_eval = True
+            else:
+                det_eval = False
             if return_context:
                 return PostCondPuhserPolicyWrapper(self.policy, z), vid
-            return PostCondPuhserPolicyWrapper(self.policy, z)
+                return PostCondPuhserPolicyWrapper(self.policy, z, deterministic=det_eval), vid
+            return PostCondPuhserPolicyWrapper(self.policy, z, deterministic=det_eval)
 
 
     def _get_training_batch(self):
         tasks = self.train_task_params_sampler.sample_unique(self.num_tasks_used_per_update)
+
+        # print('\n\n')
+        # print(tasks)
+
         task_inds = list(map(lambda t: int(t[-1].split('_')[-1]), tasks))
         task_batches = [self.train_ds[task] for task in task_inds]
 
+        # print(task_inds)
+        # print('\n\n')
         # we are just using single videos for context for now
         # subsample the videos by desired amount
         if self.easy_context:
             contexts = np.array([b['videos'][0][:,-1,-45:,30:75] for b in task_batches])
+            contexts = Variable(ptu.from_numpy(contexts), requires_grad=False)
+            # remember to divide the images by 255.0
+            contexts.mul_(1.0/255.0)
         elif self.last_image_is_context:
+            assert False, 'Check reshaping!'
             contexts = np.array([b['videos'][0][:,-1] for b in task_batches])
+            contexts = Variable(ptu.from_numpy(contexts), requires_grad=False)
+            # remember to divide the images by 255.0
+            contexts.mul_(1.0/255.0)
+        elif self.using_all_context:
+            # N_tasks x 3 x len x h x w
+            context_imgs = np.array([b['videos'][0][:,self.context_subsample_inds] for b in task_batches])
+            context_imgs = context_imgs.transpose((0, 2, 1, 3, 4))
+            context_imgs = Variable(ptu.from_numpy(context_imgs), requires_grad=False)
+            # remember to divide the images by 255.0
+            context_imgs.mul_(1.0/255.0)
+            context_Xs = np.array([b['states'][0][self.context_subsample_inds] for b in task_batches])
+            context_Xs = Variable(ptu.from_numpy(context_Xs), requires_grad=False)
+            context_Us = np.array([b['actions'][0][self.context_subsample_inds] for b in task_batches])
+            context_Us = Variable(ptu.from_numpy(context_Us), requires_grad=False)
+            contexts = {
+                'image': context_imgs,
+                'X': context_Xs,
+                'U': context_Us
+            }
         else:
+            assert False, 'Check reshaping!'
             contexts = np.array([b['videos'][0][:,self.context_subsample_inds] for b in task_batches])
-        contexts = Variable(ptu.from_numpy(contexts), requires_grad=False)
-        # remember to divide the images by 255.0
-        contexts.mul_(1.0/255.0)
+            contexts = Variable(ptu.from_numpy(contexts), requires_grad=False)
+            # remember to divide the images by 255.0
+            contexts.mul_(1.0/255.0)
 
         # build the prediction batches
         # determine the indices you want to take per traj per task for prediction
@@ -337,6 +427,7 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         pred_Xs = np.array(pred_Xs)
         true_Us = np.array(true_Us)
 
+        pred_imgs = pred_imgs.transpose((0, 1, 3, 2, 4, 5))
         pred_imgs = Variable(ptu.from_numpy(pred_imgs), requires_grad=False)
         pred_imgs.mul_(1.0/255.0)
 
@@ -358,6 +449,7 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
             Train the discriminator
         '''
         self.policy.train()
+        self.encoder.train()
 
         self.encoder_optimizer.zero_grad()
         self.policy_optimizer.zero_grad()
@@ -366,6 +458,8 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
 
         if self.last_image_is_context:
             z = context
+        elif self.using_all_context:
+            film_feats, extra_latent = self.encoder(context)
         else:
             z = self.encoder(context)
         # repeat the z
@@ -378,13 +472,22 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         #     z.size(4)
         # )
         if self.last_image_is_context:
-            repeated_z = z.repeat(1, total_per_task, 1, 1).view(z.size(0)*total_per_task, z.size(1), z.size(2), z.size(3))
+            assert False, 'Check it!'
+            repeated_z = z.repeat(1, total_per_task, 1, 1)
+            repeated_z = repeated_z.view(z.size(0)*total_per_task, z.size(1), z.size(2), z.size(3))
+        elif self.using_all_context:
+            repeated_film_feats = [
+                ff.repeat(1, total_per_task).view(ff.size(0)*total_per_task, ff.size(1))
+                for ff in film_feats
+            ]
+            repeated_extra_latent = extra_latent.repeat(1, total_per_task).view(extra_latent.size(0)*total_per_task, extra_latent.size(1))
         else:
-            repeated_z = z.repeat(1, total_per_task).view(z.size(0)*total_per_task, z.size(1))
+            repeated_z = z.repeat(1, total_per_task)
+            repeated_z = repeated_z.view(z.size(0)*total_per_task, z.size(1))
 
         # reshape the pred batches
         # pred_imgs: N_tasks x N_trajs x N_samples x C x H x W
-        N_tasks, N_trajs_per_task, C, N_samples_per_traj, H, W = pred_imgs.size(0), pred_imgs.size(1), pred_imgs.size(2), pred_imgs.size(3), pred_imgs.size(4), pred_imgs.size(5)
+        N_tasks, N_trajs_per_task, N_samples_per_traj, C, H, W = pred_imgs.size(0), pred_imgs.size(1), pred_imgs.size(2), pred_imgs.size(3), pred_imgs.size(4), pred_imgs.size(5)
         pred_imgs = pred_imgs.view(
             N_tasks * N_trajs_per_task * N_samples_per_traj,
             C,
@@ -404,6 +507,8 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
         # print(true_Us.size())
         
         if self.use_mse_objective:
+            if self.using_all_context: assert False
+
             # print('\n\n\n\nUsing MSE objective')
             pred_Us = self.policy(
                 {
@@ -411,15 +516,24 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
                     'z': repeated_z,
                     'X': pred_Xs,
                 }
-            )
+            )[1]
             loss = self.mse_loss(pred_Us, true_Us) * self.mse_loss_multiplier
         else:
-            loss = -1.0 * self.policy.get_log_prob(
-                {
+            if self.using_all_context:
+                inuput_dict = {
+                    'image': pred_imgs,
+                    'X': pred_Xs,
+                    'film_feats': repeated_film_feats,
+                    'extra_latents': repeated_extra_latent
+                }
+            else:
+                inuput_dict = {
                     'image': pred_imgs,
                     'z': repeated_z,
                     'X': pred_Xs,
-                },
+                }
+            loss = -1.0 * self.policy.get_log_prob(
+                inuput_dict,
                 true_Us
             ).mean()
         
@@ -431,6 +545,13 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
 
         # print(self.policy.conv_part[0].bias.grad)
         # 1/0
+
+        # print(self.encoder)
+        # print(self.encoder.convs_list[0].bias)
+        # print(self.encoder.convs_list[0].bias.grad)
+
+        # print(self.policy)
+        # print(self.policy.image_processor.initial_conv[0].bias.grad)
 
         self.policy_optimizer.step()
         self.encoder_optimizer.step()
@@ -545,6 +666,9 @@ class PusherSpecificNeuralProcessBC(TorchMetaIRLAlgorithm):
                                 # write_gif(gif_frames, osp.join(self.log_dir, mode+'_%d.gif'%eval_task_num) , fps=20)
                                 if self.easy_context or self.last_image_is_context:
                                     context_img = ptu.get_numpy(context)[0].transpose(1,2,0)
+                                    imsave(osp.join(self.log_dir, mode+'task_%d_context_%d.png'%(eval_task_num, eval_task_num)), context_img)
+                                if self.using_all_context:
+                                    context_img = ptu.get_numpy(context['image'][0,-1]).transpose(1,2,0)
                                     imsave(osp.join(self.log_dir, mode+'task_%d_context_%d.png'%(eval_task_num, eval_task_num)), context_img)
                                 print('Saved the gifs')
             all_eval_tasks_paths.extend(cur_eval_task_paths)

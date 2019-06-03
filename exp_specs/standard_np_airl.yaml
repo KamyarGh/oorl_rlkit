@@ -2,10 +2,11 @@ meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/np_airl_exp_script.py
   # exp_name: hc_rand_vel_np_airl_16_demos_rew_search_with_saving_more_rew_search
   # exp_name: hc_rand_vel_np_airl_4_demos_sub_20_state_only_rew_search_normalized_correct
-  exp_name: hc_rand_vel_np_airl_4_demos_rew_search_with_saving_more_rew_search
+  # exp_name: hc_rand_vel_np_airl_4_demos_rew_search_with_saving_more_rew_search
+  exp_name: ant_lin_classifier_simple_encoder_first_run_no_best_save_correct
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 4
+  num_workers: 10
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
@@ -20,7 +21,7 @@ variables:
 
   algo_params:
     # !!!!!!!! IF YOU WANT TO SAVE BEST YOU SHOULD FIX IT IN TORCH_META_IRL
-    save_best: [true] # READ THE COMMENT ABOVE!!!!!
+    save_best: [false] # READ THE COMMENT ABOVE!!!!!
     # !!!!!!!! SERIOUSLY, READ THE COMMENT ABOVE!!!!!
     save_best_after_epoch: [0]
     
@@ -34,24 +35,24 @@ variables:
     transfer_version: [false]
 
     few_shot_version: [true]
-    max_context_size: [4]
+    max_context_size: [8]
     min_context_size: [1]
 
     # results in training batch size of 1024 for disc model
     num_tasks_used_per_update: [8]
-    num_context_trajs_for_training: [4] # doesn't do anything if we're in few-shot mode
-    num_test_trajs_for_training: [4]
+    num_context_trajs_for_training: [8] # doesn't do anything if we're in few-shot mode
+    num_test_trajs_for_training: [8]
     disc_samples_per_traj: [16]
 
     num_context_trajs_for_exploration: [4] # doesn't do anything if we're in few-shot mode
 
-    num_tasks_per_eval: [5]
-    num_diff_context_per_eval_task: [2]
-    num_eval_trajs_per_post_sample: [3]
+    num_tasks_per_eval: [8]
+    num_diff_context_per_eval_task: [4]
+    num_eval_trajs_per_post_sample: [16]
     num_context_trajs_for_eval: [3] # doesn't do anything if we're in few-shot mode
 
     policy_optim_batch_mode_random: [true]
-    policy_optim_batch_size_per_task: [128] # results in batch size 1024
+    policy_optim_batch_size_per_task: [256] # results in batch size 2048
     policy_optim_batch_size_per_task_from_expert: [0]
 
     encoder_lr: [0.0003]
@@ -63,7 +64,7 @@ variables:
     # encoder_lr: [0.00005]
     # disc_lr: [0.00005]
 
-    num_update_loops_per_train_call: [100]
+    num_update_loops_per_train_call: [50]
     num_disc_updates_per_loop_iter: [1]
     num_policy_updates_per_loop_iter: [1]
 
@@ -113,7 +114,8 @@ variables:
     # reward_scale: [8.0, 12.0, 16.0]
     # reward_scale: [20.0, 24.0, 40.0]
     # reward_scale: [12.0, 20.0, 24.0]
-    reward_scale: [24.0]
+    reward_scale: [4.0, 8.0, 12.0, 16.0, 24.0]
+    # reward_scale: [24.0]
     use_policy_as_ema_policy: [false]
     soft_ema_policy_exp: [0.005]
 
@@ -124,16 +126,17 @@ variables:
     normalized: [false]
     train_test_env: [false]
   
-  # seed: [9783, 5914]
+  seed: [9783, 5914]
   # seed: [1553, 7972, 9361, 1901]
   # seed: [7972, 9361]
-  seed: [7723, 4969, 3082, 2290]
+  # seed: [7723, 4969, 3082, 2290]
   # seed: [7972]
 
 # -----------------------------------------------------------------------------
 constants:
+  expert_name: norm_ant_lin_class_64_tasks_16_demos_each_sub_1
   # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
-  expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
+  # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
   # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
   # expert_name: norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
   # expert_name: hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20
@@ -144,15 +147,18 @@ constants:
     eval_deterministic: false
     
     num_epochs: 2001
-    num_rollouts_per_epoch: 125 # num rollouts between updates * 25
-    num_rollouts_between_updates: 5
-    num_initial_rollouts_for_all_train_tasks: 1
+    # num_rollouts_per_epoch: 120 # num rollouts between updates * 25
+    num_rollouts_per_epoch: 1200 # num rollouts between updates * 25
+    num_rollouts_between_updates: 8
+    num_initial_rollouts_for_all_train_tasks: 16
     min_rollouts_before_training: 0
-    max_path_length: 1000
+    # max_path_length: 1000
+    max_path_length: 50
 
     policy_uses_pixels: false
 
-    replay_buffer_size_per_task: 50000
+    # replay_buffer_size_per_task: 50000
+    replay_buffer_size_per_task: 25000
 
     # save_replay_buffer: false
     save_algorithm: true
@@ -181,7 +187,9 @@ constants:
     
   env_specs:
     # base_env_name: 'halfcheetah_rand_vel_25_meta_train_25_meta_test'
-    base_env_name: 'halfcheetah_rand_vel_0p1_separated'
+    # base_env_name: 'halfcheetah_rand_vel_0p1_separated'
+    
+    base_env_name: 'ant_linear_classifier'
     normalized: false
     train_test_env: false
     need_pixels: false

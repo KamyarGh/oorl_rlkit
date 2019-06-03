@@ -65,33 +65,92 @@ s_irl_results = {
         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-np-airl-4-demos-sub-20-state-only-rew-search-normalized-correct/hc_rand_vel_np_airl_4_demos_sub_20_state_only_rew_search_normalized_correct_2019_04_20_13_21_26_0003--s-0',
     ]
 }
+# MLE version
+# bc_results = {
+#     'name': 'Meta-BC',
+#     (64,1): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0003--s-0',
+#     ],
+#     (64,20): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_10_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_11_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_11_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_11_0003--s-0',
+#     ],
+#     (16,20): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_40_0003--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_41_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_41_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_41_0002--s-0',
+#     ],
+#     (4,20): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_41_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_41_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_41_0003--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_43_0000--s-0',
+#     ]
+# }
+
+# MSE version
 bc_results = {
     'name': 'Meta-BC',
     (64,1): [
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0000--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0001--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0002--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-1-no-norm-with-saving/hc_rand_vel_64_demos_sub_1_no_norm_with_saving_2019_04_19_21_36_41_0003--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-1-paper-version/hc_rand_vel_mse_64_demos_sub_1_paper_version_2019_05_25_15_00_00_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-1-paper-version/hc_rand_vel_mse_64_demos_sub_1_paper_version_2019_05_25_15_00_01_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-1-paper-version/hc_rand_vel_mse_64_demos_sub_1_paper_version_2019_05_25_15_00_01_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-1-paper-version/hc_rand_vel_mse_64_demos_sub_1_paper_version_2019_05_25_15_00_02_0003--s-0',
     ],
     (64,20): [
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_10_0002--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_11_0000--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_11_0001--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-64-demos-sub-20-no-norm-with-saving/hc_rand_vel_64_demos_sub_20_no_norm_with_saving_2019_04_19_21_41_11_0003--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-20-paper-version/hc_rand_vel_mse_64_demos_sub_20_paper_version_2019_05_25_14_59_10_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-20-paper-version/hc_rand_vel_mse_64_demos_sub_20_paper_version_2019_05_25_14_59_12_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-20-paper-version/hc_rand_vel_mse_64_demos_sub_20_paper_version_2019_05_25_14_59_12_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-64-demos-sub-20-paper-version/hc_rand_vel_mse_64_demos_sub_20_paper_version_2019_05_25_14_59_13_0003--s-0',
     ],
     (16,20): [
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_40_0003--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_41_0000--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_41_0001--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-16-demos-sub-20-no-norm-with-saving/hc_rand_vel_16_demos_sub_20_no_norm_with_saving_2019_04_19_21_38_41_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-16-demos-sub-20-paper-version/hc_rand_vel_mse_16_demos_sub_20_paper_version_2019_05_25_14_58_30_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-16-demos-sub-20-paper-version/hc_rand_vel_mse_16_demos_sub_20_paper_version_2019_05_25_14_58_31_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-16-demos-sub-20-paper-version/hc_rand_vel_mse_16_demos_sub_20_paper_version_2019_05_25_14_58_31_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-16-demos-sub-20-paper-version/hc_rand_vel_mse_16_demos_sub_20_paper_version_2019_05_25_14_58_33_0003--s-0',
     ],
     (4,20): [
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_41_0001--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_41_0002--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_41_0003--s-0',
-        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-4-demos-sub-20-no-norm-with-saving/hc_rand_vel_4_demos_sub_20_no_norm_with_saving_2019_04_19_22_22_43_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-4-demos-sub-20-paper-version/hc_rand_vel_mse_4_demos_sub_20_paper_version_2019_05_25_14_57_46_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-4-demos-sub-20-paper-version/hc_rand_vel_mse_4_demos_sub_20_paper_version_2019_05_25_14_57_46_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-4-demos-sub-20-paper-version/hc_rand_vel_mse_4_demos_sub_20_paper_version_2019_05_25_14_57_47_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/hc-rand-vel-mse-4-demos-sub-20-paper-version/hc_rand_vel_mse_4_demos_sub_20_paper_version_2019_05_25_14_57_47_0003--s-0',
     ]
 }
+
+# MLE version
+# bc_results = {
+#     'name': 'Meta-BC',
+#     (64,1): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-1-paper-version/hc_rand_vel_MLE_64_demos_sub_1_paper_version_2019_05_25_16_47_11_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-1-paper-version/hc_rand_vel_MLE_64_demos_sub_1_paper_version_2019_05_25_16_47_11_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-1-paper-version/hc_rand_vel_MLE_64_demos_sub_1_paper_version_2019_05_25_16_47_11_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-1-paper-version/hc_rand_vel_MLE_64_demos_sub_1_paper_version_2019_05_25_16_47_12_0003--s-0',
+#     ],
+#     (64,20): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-20-paper-version/hc_rand_vel_MLE_64_demos_sub_20_paper_version_2019_05_25_16_47_49_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-20-paper-version/hc_rand_vel_MLE_64_demos_sub_20_paper_version_2019_05_25_16_47_50_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-20-paper-version/hc_rand_vel_MLE_64_demos_sub_20_paper_version_2019_05_25_16_47_50_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-64-demos-sub-20-paper-version/hc_rand_vel_MLE_64_demos_sub_20_paper_version_2019_05_25_16_47_51_0003--s-0',
+#     ],
+#     (16,20): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-16-demos-sub-20-paper-version/hc_rand_vel_MLE_16_demos_sub_20_paper_version_2019_05_25_16_48_27_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-16-demos-sub-20-paper-version/hc_rand_vel_MLE_16_demos_sub_20_paper_version_2019_05_25_16_48_28_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-16-demos-sub-20-paper-version/hc_rand_vel_MLE_16_demos_sub_20_paper_version_2019_05_25_16_48_28_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-16-demos-sub-20-paper-version/hc_rand_vel_MLE_16_demos_sub_20_paper_version_2019_05_25_16_48_29_0003--s-0',
+#     ],
+#     (4,20): [
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-4-demos-sub-20-paper-version/hc_rand_vel_MLE_4_demos_sub_20_paper_version_2019_05_25_16_48_59_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-4-demos-sub-20-paper-version/hc_rand_vel_MLE_4_demos_sub_20_paper_version_2019_05_25_16_49_00_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-4-demos-sub-20-paper-version/hc_rand_vel_MLE_4_demos_sub_20_paper_version_2019_05_25_16_49_00_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/hc-rand-vel-MLE-4-demos-sub-20-paper-version/hc_rand_vel_MLE_4_demos_sub_20_paper_version_2019_05_25_16_49_01_0003--s-0',
+#     ]
+# }
 
 # for method in [sa_irl_results, s_irl_results, bc_results]:
 #     print('\n{}'.format(method['name']))
@@ -127,12 +186,16 @@ def gather_results(method_paths):
 # IF YOU WANT TO REGATHER RESULTS RUN THIS
 # save_dict = {}
 # for method in [sa_irl_results, s_irl_results, bc_results]:
+# # for method in [bc_results]:
 #     print(method['name'])
 #     save_dict[method['name']] = gather_results(method)
-# joblib.dump(save_dict, 'hc_rand_vel_save_dict.pkl', compress=3)
+# joblib.dump(save_dict, 'hc_rand_vel_save_dict_with_mse_bc.pkl', compress=3)
 
 # ELSE
-save_dict = joblib.load('hc_rand_vel_save_dict.pkl')
+# save_dict = joblib.load('hc_rand_vel_save_dict.pkl')
+# print(save_dict.keys())
+# save_dict.update(joblib.load('hc_rand_vel_save_dict_mse_bc.pkl'))
+save_dict = joblib.load('hc_rand_vel_save_dict_with_mse_bc.pkl')
 for name, method_d in save_dict.items():
     print('\n')
     print(name)
@@ -154,6 +217,8 @@ data_amount_to_plot = (64,1)
 context_means = defaultdict(list)
 context_stds = defaultdict(list)
 for name, method_d in save_dict.items():
+    # print(name)
+    # print(method_d)
     for context_size in context_sizes:
         context_means[name].append(
             np.mean(
@@ -165,24 +230,28 @@ for name, method_d in save_dict.items():
                 method_d[data_amount_to_plot][context_size]
             ) / 1000.0
         )
-print(context_means)
-print(context_stds)
+# print(context_means)
+# print(context_stds)
 
 fig, ax = plt.subplots(1)
 ax.set_xlabel('Number of Context Trajectories')
 ax.set_ylabel('Delta from Target Velocity')
-ax.set_ylim([0.0, 1.6])
+# ax.set_ylim([0.0, 1.6])
+ax.set_ylim([0.0, 0.75])
+
+print(context_means.keys())
+print(len(context_means['bc']))
 
 ax.errorbar(
-    np.array(list(range(1,5))), context_means['bc'], context_stds['bc'],
+    np.array(list(range(1,5))), context_means['Meta-BC'], context_stds['Meta-BC'],
     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-BC'
 )
 ax.errorbar(
-    np.array(list(range(1,5))) + 0.03, context_means['state-action'], context_stds['state-action'],
+    np.array(list(range(1,5))) + 0.03, context_means['Meta-IRL (state-action)'], context_stds['Meta-IRL (state-action)'],
     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-IRL (state-action)'
 )
 ax.errorbar(
-    np.array(list(range(1,5))) + 0.06, context_means['state-only'], context_stds['state-only'],
+    np.array(list(range(1,5))) + 0.06, context_means['Meta-IRL (state-action)'], context_stds['Meta-IRL (state-action)'],
     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-IRL (state-only)'
 )
 

@@ -50,12 +50,30 @@ if __name__ == '__main__':
 
     # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search-32-det-demos-per-task-grad-pen-search/'
 
-    exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search-32-det-demos-per-task-even-lower-grad-pen-search/'
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search-32-det-demos-per-task-even-lower-grad-pen-search/'
     # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-airl-rew-search-32-det-demos-per-task-even-lower-grad-pen-search/'
+
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-32-det-demos-per-task-low-grad-pen-and-high-rew-scale-hype-search-0'
+
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-4-directions-fairl-32-det-demos-per-task-hype-search-0-rb-size-3200-correct-final'
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-4-directions-fairl-32-det-demos-per-task-hype-search-1-rb-size-3200-correct-final'
+
+    # 4 distance
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-4-directions-4-distance-fairl-32-det-demos-per-task-hype-search-1-rb-size-3200-correct-final'
+
+    # 4 distance rel pos
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-rel-pos-4-directions-4-distance-fairl-32-det-demos-per-task-hype-search-1-rb-size-3200-correct-final-disc-512-3-relu'
+    
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-rel-pos-4-directions-4-distance-fairl-32-det-demos-per-task-hype-search-1-rb-size-3200-correct-final-disc-512-3-relu-high-rew-search'
+
+    # tiny models
+    exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-rel-pos-with-termination-small-models-airl-correct-disc-only-sees-rel-pos'
+    
+    # env = AntMultiTargetEnv(use_rel_pos_obs=True)
+    env = AntMultiTargetEnv(use_rel_pos_obs=True, terminate_near_target=True)
 
     all_eval_dicts = {}
     last_time = time.time()
-    env = AntMultiTargetEnv()
     for sub_exp in os.listdir(exp_path):
         print(sub_exp)
         try:

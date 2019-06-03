@@ -128,7 +128,17 @@ for i, expert in enumerate([
     # 'ant_32_points_16_demos_sub_1'
     # 'ant_32_points_4_demos_sub_1'
     # 'ant_32_points_64_demos_sub_1'
-    'ant_test_tasks_for_32_points'
+    # 'ant_test_tasks_for_32_points'
+
+    # 'ant_lin_class_64_tasks_16_demos_each_sub_1'
+    # 'rel_pos_ant_lin_class_64_tasks_16_demos_each_sub_1'
+
+    # 'fetch_linear_classification_demos_64_tasks_16_demos_per_task_no_sub'
+
+    # 'walker_meta_dyn_32_det_demos_per_task_20_sub'
+    # 'test_tasks_walker_meta_dyn_32_det_demos_per_task_20_sub'
+
+    'hc_rand_vel_bc_debugging_2_to_3'
   ]):
   data_path = osp.join(listings[expert]['exp_dir'], listings[expert]['seed_runs'][0], 'extra_data.pkl')
   save_dir = '/scratch/hdd001/home/kamyar/expert_demos/norm_'+expert

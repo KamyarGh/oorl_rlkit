@@ -51,5 +51,14 @@ and you get the env for that task. This will be very useful when you need differ
 per task.
 - NEED TO MAKE REPLAY BUFFER MORE GENERAL
 - Need to merge pusher_specific_* with meta_irl_algorhthm etc.
+- clean up pusher policies
+- gen meta irl trajs
+- clean up hc rand vel task params samplers and any others that might need cleaning
+- NEED A BETTER SAVING METHOD so that for example we don't save the expert data and the gradient buffers in the model checkpoint
+- Consider the hack in walker_random_dynamics for single task setting
+- custom_walker_dynamics hack run script for walker experts
+- rename anything with irl to lfd
+- introduce a variable for save best that says don't save best if last save best was within K timesteps
+- remove new ant multi stats from torch irl alg
 
 - need to remove the copy of wrapped_goal.....

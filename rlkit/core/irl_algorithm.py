@@ -171,6 +171,7 @@ class IRLAlgorithm(metaclass=abc.ABCMeta):
             self._start_epoch(epoch)
             steps_this_epoch = 0
             while steps_this_epoch < self.num_env_steps_per_epoch:
+                # print(steps_this_epoch)
                 for _ in range(self.num_steps_between_updates):
                     if isinstance(self.obs_space, Dict):
                         if self.policy_uses_pixels:

@@ -119,7 +119,7 @@ def gather_eval_data(alg, sample_from_prior=False, num_rollouts_per_task=8, cont
                 z = post_dist.sample()
                 z = z.cpu().data.numpy()[0]
                 # post_cond_policy = PostCondMLPPolicyWrapper(alg.main_policy, z)
-                post_cond_policy = PostCondMLPPolicyWrapper(alg.main_policy, z)
+                post_cond_policy = PostCondMLPPolicyWrapper(alg.policy, z)
                 post_cond_policy.policy.eval()
                 post_cond_policy.deterministic = deterministic
                 for _ in range(num_rollouts_per_task):

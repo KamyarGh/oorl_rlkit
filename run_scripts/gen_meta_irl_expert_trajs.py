@@ -18,6 +18,9 @@ from rlkit.scripted_experts import get_scripted_policy
 from rlkit.data_management.env_replay_buffer import MetaEnvReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
 
+from rlkit.envs.ant_linear_classification import AntLinearClassifierEnv
+from rlkit.envs.walker_random_dynamics import Walker2DRandomDynamicsEnv
+
 import yaml
 import argparse
 import importlib
@@ -55,10 +58,10 @@ def fill_buffer(
 
     # this is something for debugging few shot fetch demos
     # first_complete_list = []
-    debug_stats = []
 
     for task_params, obs_task_params in task_params_sampler:
-        print('Doing Task {}...'.format(task_params))
+        # print('Doing Task {}...'.format(task_params))
+        debug_stats = []
         meta_env.reset(task_params=task_params, obs_task_params=obs_task_params)
         task_id = meta_env.task_identifier
 
@@ -73,8 +76,19 @@ def fill_buffer(
                 policy = expert
                 policy.reset(meta_env)
             else:
-                policy = expert.get_exploration_policy(obs_task_params)
-                if deterministic: policy.deterministic = True
+                if isinstance(meta_env, AntLinearClassifierEnv):
+                    policy = expert.get_exploration_policy(meta_env.targets[meta_env.true_label])
+                    # print(meta_env.true_label)
+                    if deterministic: policy.deterministic = True
+                elif isinstance(meta_env, Walker2DRandomDynamicsEnv):
+                    # print('WalkerEnv')
+                    policy = expert.get_exploration_policy(obs_task_params)
+                    if deterministic:
+                        # print('deterministic')
+                        policy = MakeDeterministic(policy)
+                else:
+                    policy = expert.get_exploration_policy(obs_task_params)
+                    if deterministic: policy.deterministic = True
             terminal = False
 
             subsample_mod = randint(0, subsample_factor-1)
@@ -88,6 +102,11 @@ def fill_buffer(
                         agent_obs = observation['pixels']
                     else:
                         agent_obs = observation['obs']
+                        if isinstance(meta_env, AntLinearClassifierEnv):
+                            if meta_env.use_relative_pos:
+                                agent_obs = np.concatenate([agent_obs[:-12], meta_env.get_body_com("torso").flat]).copy()
+                            else:
+                                agent_obs = agent_obs[:-12]
                 else:
                     agent_obs = observation
                 if expert_uses_task_params:
@@ -107,7 +126,7 @@ def fill_buffer(
                 cur_rollout_rewards += raw_reward
                 # if step_num < 200: cur_rollout_rewards += raw_reward
 
-                rollout_debug.append(env_info['l2_dist'])
+                # rollout_debug.append(env_info['l2_dist'])
 
                 if no_terminal: terminal = False
                 if wrap_absorbing:
@@ -190,17 +209,16 @@ def fill_buffer(
                     )
                 buffer.terminate_episode(task_id)                
                 num_rollouts_completed += 1
-                print('Return: %.2f' % (cur_rollout_rewards))
+                print('\t\tReturn: %.2f' % (cur_rollout_rewards))
                 debug_stats.append(cur_rollout_rewards)
 
-                print('Min L2: %.3f' % np.min(rollout_debug))
+                # print('Min L2: %.3f' % np.min(rollout_debug))
             
             # print(policy.first_time_all_complete)
             # first_complete_list.append(expert_policy.first_time_all_complete)
     # print(np.histogram(first_complete_list, bins=100))
-    print('\n\n')
-    print(np.mean(debug_stats))
-    print(np.std(debug_stats))
+        print('%.1f +/- %.1f' % (np.mean(debug_stats), np.std(debug_stats)))
+        print('\n\n')
 
 
 def experiment(specs):
@@ -247,6 +265,9 @@ def experiment(specs):
         _max_buffer_size = (max_path_length+2) * specs['num_rollouts_per_task']        
     else:
         _max_buffer_size = max_path_length * specs['num_rollouts_per_task']
+    _max_buffer_size = int(np.ceil(_max_buffer_size / float(specs['subsample_factor']))) + 10
+    # + 10 is just in case somewhere someone uses ._size of replay buffers incorrectly
+    
     buffer_constructor = lambda env_for_buffer: MetaEnvReplayBuffer(
         _max_buffer_size,
         env_for_buffer,

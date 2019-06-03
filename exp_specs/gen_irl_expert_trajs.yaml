@@ -2,8 +2,10 @@ meta_data:
   script_path: run_scripts/gen_irl_expert_trajs.py
   # exp_name: ant_multi_valid_target_demos_8_target_8_each_no_sub
   # exp_name: ant_multi_valid_target_demos_8_target_8_each_no_sub_deterministic_rollouts_correct
-  exp_name: ant_multi_valid_target_demos_8_target_32_each_no_sub_deterministic_rollouts_correct_path_len_50_actually_ugh
-  # exp_name: test
+  # exp_name: ant_multi_valid_target_demos_8_target_32_each_no_sub_deterministic_rollouts_correct_path_len_50_actually_ugh
+  # exp_name: ant_multi_4_directions_32_det_demos_per_task_no_sub_path_len_50
+  # exp_name: rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target
+  exp_name: test
   description: generating expert demos
   use_gpu: true
   num_workers: 1
@@ -13,9 +15,10 @@ meta_data:
 variables:
   use_scripted_policy: [false]
   wrap_absorbing: [false]
+  no_terminal: [false]
   render: [false]
   student_policy_uses_pixels: [false]
-  num_rollouts: [256]
+  num_rollouts: [128]
   subsample_factor: [1]
   seed: [99381]
 
@@ -24,10 +27,16 @@ constants:
   # expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/correct-new-sac-halfcheetah/correct_new_sac_halfcheetah_2019_02_03_17_22_06_0001--s-0
   # expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/normalized-ant-new-sac/normalized_ant_new_sac_2019_03_12_18_52_02_0002--s-0/
   # expert_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/final-humanoid-new-sac/final_humanoid_new_sac_2019_03_18_22_51_04_0000--s-0/
-  expert_dir: /scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert
+  # expert_dir: /scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert
+  # expert_dir: /scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert_4_directions
+
+  # 4 distance
+  expert_dir: /scratch/hdd001/home/kamyar/expert_demos/ant_multi_target_experiment_expert_4_directions_4_distance
 
   env_specs:
-    base_env_name: 'ant_multi_target'
+    # base_env_name: 'ant_multi_target'
+    # base_env_name: 'ant_multi_target_with_rel_pos_obs'
+    base_env_name: 'ant_multi_target_with_rel_pos_obs_terminate_at_0p5_dist'
     normalized: false
     need_pixels: false
     train_test_env: false

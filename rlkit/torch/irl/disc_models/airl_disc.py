@@ -89,6 +89,8 @@ class StandardAIRLDisc(nn.Module):
 
 
     def forward(self, obs_batch, act_batch, z_batch=None):
+        # obs_batch = obs_batch[:,-8:]
+
         if act_batch is not None:
             to_concat = [obs_batch, act_batch]
             if z_batch is not None: to_concat.append(z_batch)
@@ -101,6 +103,100 @@ class StandardAIRLDisc(nn.Module):
         output = self.model(input_batch)
         output = torch.clamp(output, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
         return output
+
+
+class AntLinClassDisc(nn.Module):
+    def __init__(
+        self,
+        input_dim,
+        num_layer_blocks=2,
+        hid_dim=100,
+        hid_act='relu',
+        use_bn=True,
+        clamp_magnitude=10.0,
+        z_dim=None
+    ):
+        super().__init__()
+
+        if hid_act == 'relu':
+            hid_act_class = nn.ReLU
+        elif hid_act == 'tanh':
+            hid_act_class = nn.Tanh
+        else:
+            raise NotImplementedError()
+
+        self.clamp_magnitude = clamp_magnitude
+
+        self.mod_list = nn.ModuleList([nn.Linear(input_dim, hid_dim)])
+        if use_bn: self.mod_list.append(nn.BatchNorm1d(hid_dim))
+        self.mod_list.append(hid_act_class())
+
+        for i in range(num_layer_blocks - 1):
+            self.mod_list.append(nn.Linear(hid_dim, hid_dim))
+            if use_bn: self.mod_list.append(nn.BatchNorm1d(hid_dim))
+            self.mod_list.append(hid_act_class())
+        
+        self.mod_list.append(nn.Linear(hid_dim, 1))
+        self.model = nn.Sequential(*self.mod_list)
+
+        self.obs_processor = AntLinClassObsGating(z_dim=z_dim)
+
+
+    def forward(self, obs_batch, act_batch, z_batch=None):
+        obs_batch = self.obs_processor(obs_batch, False, z_batch)
+
+        if act_batch is not None:
+            to_concat = [obs_batch, act_batch]
+            input_batch = torch.cat(to_concat, dim=1)
+        else:
+            raise NotImplementedError()
+        output = self.model(input_batch)
+        output = torch.clamp(output, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
+        return output
+
+
+class AntLinClassObsGating(PyTorchModule):
+    def __init__(self, clamp_magnitude=10.0, z_dim=0):
+        self.save_init_params(locals())
+        super().__init__()
+
+        self.z_dim = z_dim
+        self.clamp_magnitude = clamp_magnitude
+        assert clamp_magnitude > 0.0
+
+        C_EMB_HID = 128
+        self.mlp = nn.Sequential(
+            nn.Linear(8 + z_dim, C_EMB_HID),
+            nn.BatchNorm1d(C_EMB_HID),
+            nn.ReLU(),
+            nn.Linear(C_EMB_HID, C_EMB_HID),
+            nn.BatchNorm1d(C_EMB_HID),
+            nn.ReLU(),
+            nn.Linear(C_EMB_HID, 1)
+        )
+    
+
+    def forward(self, obs_batch, wrap_absorbing, z_batch=None):
+        assert z_batch is not None
+        assert not wrap_absorbing
+
+        ant_obs = obs_batch[:,:-12]
+        target_0 = obs_batch[:,-12:-10]
+        target_1 = obs_batch[:,-10:-8]
+        classification_batch = obs_batch[:,-8:]
+
+        logits = self.mlp(torch.cat([classification_batch, z_batch], dim=-1))
+        logits = torch.clamp(logits, min=-1.0*self.clamp_magnitude, max=self.clamp_magnitude)
+        gate = F.sigmoid(logits)
+
+        obs_batch = torch.cat(
+            [
+                ant_obs,
+                gate * target_0 + (1.0 - gate) * target_1
+            ],
+            dim=-1
+        )
+        return obs_batch
 
 
 class MlpGAILDisc(Mlp):

@@ -4,11 +4,15 @@ from rlkit.scripted_experts.linear_few_shot_fetch_env_expert import ScriptedLine
 
 from rlkit.scripted_experts.linear_few_shot_reach_env_expert import ScriptedLinearFewShotReachPolicy
 
+from rlkit.scripted_experts.fetch_linear_classifier_expert import ScriptedFetchLinearClassificationPolicy
+
 _pantry = {
     'few_shot_fetch_scripted_policy': lambda: ScriptedFewShotFetchPolicy(),
     'cont_few_shot_fetch_scripted_policy': lambda: ScriptedContFewShotFetchPolicy(),
     'linear_few_shot_fetch_scripted_policy': lambda: ScriptedLinearFewShotFetchPolicy(),
     'linear_few_shot_reach_scripted_policy': lambda: ScriptedLinearFewShotReachPolicy(),
+
+    'fetch_linear_classification_scripted_policy': lambda: ScriptedFetchLinearClassificationPolicy()
 }
 
 def get_scripted_policy(scripted_policy_name):

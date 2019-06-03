@@ -57,6 +57,9 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
         if hasattr(self.env, "log_statistics"):
             env_log_stats = self.env.log_statistics(test_paths)
             statistics.update(env_log_stats)
+        if hasattr(self.env, "log_new_ant_multi_statistics"):
+            env_log_stats = self.env.log_new_ant_multi_statistics(test_paths, epoch, logger.get_snapshot_dir())
+            statistics.update(env_log_stats)
 
         average_returns = rlkit.core.eval_util.get_average_returns(test_paths)
         statistics['AverageReturn'] = average_returns
@@ -75,7 +78,11 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
                 data_to_save = {
                     'algorithm': self,
                     'epoch': epoch,
-                    'average_returns': average_returns
+                    'average_returns': average_returns,
+                    'test_returns_mean': statistics['Test Returns Mean'],
+                    'test_returns_std': statistics['Test Returns Std'],
+                    'exp_returns_mean': statistics['Exploration Returns Mean'],
+                    'exp_returns_std': statistics['Exploration Returns Std']
                 }
                 logger.save_extra_data(data_to_save, 'best_test.pkl')
                 print('\n\nSAVED BEST\n\n')

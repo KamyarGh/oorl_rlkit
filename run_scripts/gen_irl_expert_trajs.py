@@ -93,6 +93,9 @@ def fill_buffer(
                     agent_obs = observation['obs']
             else:
                 agent_obs = observation
+                if isinstance(env, AntMultiTargetEnv) and env.use_rel_pos_obs:
+                    agent_obs = np.concatenate([agent_obs[:-2*env.valid_targets.shape[2]], env.get_body_com("torso").flat])
+                    agent_obs = agent_obs.copy()
 
             if policy_is_scripted:
                 action, agent_info = expert_policy.get_action(agent_obs, env, len(cur_path_builder))
@@ -101,7 +104,8 @@ def fill_buffer(
 
             next_ob, raw_reward, terminal, env_info = (env.step(action))
 
-            if no_terminal: terminal = False
+            if no_terminal:
+                terminal = False
             if wrap_absorbing:
                 terminal_array = np.array([False])
             else:
@@ -112,9 +116,13 @@ def fill_buffer(
             rewards_for_rollout += raw_reward
 
             if isinstance(env, AntMultiTargetEnv):
-                if np.linalg.norm(env_info['xy_pos'] - cur_target) < 0.2:
+                if np.linalg.norm(env_info['xy_pos'] - cur_target) < 0.5:
+                    # terminal = True
                     if not printed_target_dist:
                         print(step_num)
+                        print(env_info['xy_pos'])
+                        # print(observation[-8:])
+                        print(next_ob[-8:])
                         printed_target_dist = True
 
             if step_num % subsample_factor == subsample_mod:
@@ -130,8 +138,12 @@ def fill_buffer(
                 )
             observation = next_ob
             step_num += 1
-        print(env_info['xy_pos'])
-        print(step_num)
+
+            if terminal:
+                print('Terminal')
+                print(step_num)
+        # print(env_info['xy_pos'])
+        # print(step_num)
 
         if terminal and wrap_absorbing:
             '''
@@ -201,12 +213,13 @@ def experiment(specs):
     # the specific experiment run (with a particular seed etc.) of the expert policy
     # to use for generating trajectories
     if not specs['use_scripted_policy']:
-        if specs['env_specs']['base_env_name'] == 'ant_multi_target':
+        if 'ant_multi_target' in specs['env_specs']['base_env_name']:
             # this one is a very weird case so we are handling it on an individual basis
             policy = joblib.load(path.join(specs['expert_dir'], 'extra_data.pkl'))['algorithm']
             policy_is_scripted = False
             # max_path_length = 100
-            max_path_length = 50
+            max_path_length = 75
+            # max_path_length = 50
             expert_policy_specs = {
                 'max_path_length': max_path_length,
                 'policy_uses_pixels': False,
@@ -276,7 +289,7 @@ def experiment(specs):
     fill_buffer(
         train_buffer, env, policy, expert_policy_specs,
         specs['num_rollouts'], max_path_length,
-        no_terminal=expert_policy_specs['no_terminal'], wrap_absorbing=specs['wrap_absorbing'],
+        no_terminal=specs['no_terminal'], wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success,
         subsample_factor=specs['subsample_factor']
@@ -286,7 +299,7 @@ def experiment(specs):
     fill_buffer(
         test_buffer, env, policy, expert_policy_specs,
         specs['num_rollouts'], max_path_length,
-        no_terminal=expert_policy_specs['no_terminal'], wrap_absorbing=specs['wrap_absorbing'],
+        no_terminal=specs['no_terminal'], wrap_absorbing=specs['wrap_absorbing'],
         policy_is_scripted=policy_is_scripted, render=render,
         check_for_success=check_for_success,
         subsample_factor=specs['subsample_factor']

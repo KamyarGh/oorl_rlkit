@@ -21,7 +21,9 @@ expert_path = '/scratch/hdd001/home/kamyar/output/test-meta-gen-2-stochastic/tes
 
 rb = joblib.load(osp.join(expert_path, 'extra_data.pkl'))['meta_train']['context']
 X, means, stds = [], [], []
+exp_dist = []
 for t in sorted(list(rb.task_replay_buffers.keys())):
+    print(t)
     s = rb.task_replay_buffers[t]
     # -----------
     splits = np.split(s._rewards[:s._size], 4)
@@ -32,6 +34,7 @@ for t in sorted(list(rb.task_replay_buffers.keys())):
     # -----------
     ret_means = np.mean(s._rewards[:s._size])
     ret_stds = np.std(s._rewards[:s._size])
+    exp_dist.append(np.abs(s._rewards[:s._size] - t))
     # -----------
     X.append(t)
     means.append(ret_means)
@@ -39,6 +42,11 @@ for t in sorted(list(rb.task_replay_buffers.keys())):
 X = np.array(X)
 means = np.array(means)
 stds = np.array(stds)
+
+print(np.mean(np.abs(means - X)))
+exp_dist = np.concatenate(exp_dist)
+print(np.mean(exp_dist))
+print(np.std(exp_dist))
 
 fig, ax = plt.subplots(1)
 ax.plot(X, means)

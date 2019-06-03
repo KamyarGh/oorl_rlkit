@@ -47,6 +47,7 @@ from rlkit.envs.halfcheetah_rand_vel import _MetaTrainParamsSampler as HalfCheet
 from rlkit.envs.halfcheetah_rand_vel import _MetaTestParamsSampler as HalfCheetahRandVelMetaTestSampler
 from rlkit.envs.halfcheetah_rand_vel import _DebugMetaTrainSampler as HalfCheetahRandVelDebugMetaTrainSampler
 from rlkit.envs.halfcheetah_rand_vel import _DebugMetaTestSampler as HalfCheetahRandVelDebugMetaTestSampler
+from rlkit.envs.halfcheetah_rand_vel import _BCDeubggingParamsSampler as HalfCheetahRandVelBCDebuggingParamsSampler
 
 # Ant goal pos imports
 from rlkit.envs.ant_rand_goal import AntRandGoalEnv
@@ -75,8 +76,30 @@ from rlkit.envs.ant_rand_direc_2d import AntRandDirec2DEnv
 from rlkit.envs.ant_rand_direc_2d import _Expert180DegreesParamsSampler as AntRandDirec180DegSampler
 from rlkit.envs.ant_rand_direc_2d import _DebugParamsSamplerV1 as AntRandDirecDebugSamplerV1
 
+# Ant Linear Classification
+from rlkit.envs.ant_linear_classification import AntLinearClassifierEnv
+from rlkit.envs.ant_linear_classification import _ExpertTrainParamsSampler as AntLinClassTrainSampler
+from rlkit.envs.ant_linear_classification import _ExpertTestParamsSampler as AntLinClassTestSampler
+
+# Fetch Linear Classification
+from rlkit.envs.fetch_linear_classification import FetchLinearClassificationEnv
+from rlkit.envs.fetch_linear_classification import _ExpertTrainParamsSampler as FetchLinClassTrainSampler
+from rlkit.envs.fetch_linear_classification import _ExpertTestParamsSampler as FetchLinClassTestSampler
+
 # Ant multiple valid targets
 from rlkit.envs.ant_multi_target import AntMultiTargetEnv
+from rlkit.envs.state_matching_ant_env import StateMatchingAntEnv
+from rlkit.envs.state_matching_point_mass_env import StateMatchingPointMassEnv
+
+# Meta-Dynamics Envs
+from rlkit.envs.walker_random_dynamics import Walker2DRandomDynamicsEnv
+from rlkit.envs.walker_random_dynamics import _MetaExpertTrainParamsSampler as Walker2DRandomDynamicsMetaTrainParamsSampler
+from rlkit.envs.walker_random_dynamics import _MetaExpertTestParamsSampler as Walker2DRandomDynamicsMetaTestParamsSampler
+
+from rlkit.envs.hopper_random_dynamics import HopperRandomDynamicsEnv
+from rlkit.envs.hopper_random_dynamics import _MetaExpertTrainParamsSampler as HopperRandomDynamicsMetaTrainParamsSampler
+from rlkit.envs.hopper_random_dynamics import _MetaExpertTestParamsSampler as HopperRandomDynamicsMetaTestParamsSampler
+from rlkit.envs.walker_random_dynamics import BaseDynamicsWalkerEnv
 
 # for meta simple meta reacher
 # from rlkit.envs.dmcs_envs.meta_simple_meta_reacher import build_meta_simple_meta_reacher
@@ -85,6 +108,8 @@ from rlkit.envs.ant_multi_target import AntMultiTargetEnv
 from gym.envs.mujoco.half_cheetah import HalfCheetahEnv
 from gym.envs.mujoco.ant import AntEnv
 from gym.envs.mujoco.humanoid import HumanoidEnv
+from gym.envs.mujoco.hopper import HopperEnv
+from gym.envs.mujoco.walker2d import Walker2dEnv
 
 # from dm_control.suite.wrappers import pixels
 # from rlkit.envs.dmcs_envs import pixels
@@ -112,7 +137,14 @@ all_envs = {
 }
 
 fixed_envs = {
+    'state_matching_point_mass_env': lambda: StateMatchingPointMassEnv(),
+    'state_matching_ant_env': lambda: StateMatchingAntEnv(),
+    'base_dynamics_walker': lambda: BaseDynamicsWalkerEnv(),
     'ant_multi_target': lambda: AntMultiTargetEnv(),
+    'ant_multi_target_with_rel_pos_obs': lambda: AntMultiTargetEnv(use_rel_pos_obs=True),
+    'ant_multi_target_with_rel_pos_obs_terminate_at_0p5_dist': lambda: AntMultiTargetEnv(use_rel_pos_obs=True, terminate_near_target=True),
+    'walker_v2': lambda: Walker2dEnv(),
+    'hopper_v2': lambda: HopperEnv(),
     'humanoid_v2': lambda: HumanoidEnv(),
     'ant_v2': lambda: AntEnv(),
     'swimmer_v2': lambda: gym.envs.make('Swimmer-v2'),
@@ -407,6 +439,13 @@ meta_envs = {
             'is_dmcs_env': False
         }
     },
+    'halfcheetah_rand_vel_bc_debugging': {
+        'meta_train': lambda: HalfCheetahRandVelEnv(),
+        'meta_test': lambda: HalfCheetahRandVelEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
     'halfcheetah_rand_vel_25_meta_train_25_meta_test': {
         'meta_train': lambda: HalfCheetahRandVelEnv(),
         'meta_test': lambda: HalfCheetahRandVelEnv(),
@@ -550,6 +589,48 @@ meta_envs = {
     'ant_rand_direc_2d_debug_v1': {
         'meta_train': lambda: AntRandDirec2DEnv(),
         'meta_test': lambda: AntRandDirec2DEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_linear_classifier': {
+        'meta_train': lambda: AntLinearClassifierEnv(),
+        'meta_test': lambda: AntLinearClassifierEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'rel_pos_ant_linear_classifier': {
+        'meta_train': lambda: AntLinearClassifierEnv(use_relative_pos=True),
+        'meta_test': lambda: AntLinearClassifierEnv(use_relative_pos=True),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'fetch_linear_classifier': {
+        'meta_train': lambda: FetchLinearClassificationEnv(),
+        'meta_test': lambda: FetchLinearClassificationEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'walker_random_dynamics_train': {
+        'meta_train': lambda: Walker2DRandomDynamicsEnv(),
+        'meta_test': lambda: Walker2DRandomDynamicsEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'walker_random_dynamics_test': {
+        'meta_train': lambda: Walker2DRandomDynamicsEnv(),
+        'meta_test': lambda: Walker2DRandomDynamicsEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'hopper_random_dynamics': {
+        'meta_train': lambda: HopperRandomDynamicsEnv(),
+        'meta_test': lambda: HopperRandomDynamicsEnv(),
         'info': {
             'is_dmcs_env': False
         }
@@ -652,6 +733,10 @@ meta_env_task_params_iterators = {
         'meta_train': lambda: HalfCheetahRandVelTrainSampler(num_samples=100),
         'meta_test': lambda: HalfCheetahRandVelTestSampler(num_samples=25),
     },
+    'halfcheetah_rand_vel_bc_debugging': {
+        'meta_train': lambda: HalfCheetahRandVelBCDebuggingParamsSampler(),
+        'meta_test': lambda: HalfCheetahRandVelBCDebuggingParamsSampler(),
+    },
     'halfcheetah_rand_vel_25_meta_train_25_meta_test': {
         'meta_train': lambda: HalfCheetahRandVelMetaTrainSampler(),
         'meta_test': lambda: HalfCheetahRandVelMetaTestSampler(),
@@ -739,6 +824,26 @@ meta_env_task_params_iterators = {
     'ant_rand_direc_2d_debug_v1': {
         'meta_train': lambda: AntRandDirecDebugSamplerV1(),
         'meta_test': lambda: AntRandDirecDebugSamplerV1()
+    },
+    'rel_pos_ant_linear_classifier': {
+        'meta_train': lambda: AntLinClassTrainSampler(),
+        'meta_test': lambda: AntLinClassTestSampler()
+    },
+    'fetch_linear_classifier': {
+        'meta_train': lambda: FetchLinClassTrainSampler(),
+        'meta_test': lambda: FetchLinClassTestSampler()
+    },
+    'walker_random_dynamics_train': {
+        'meta_train': lambda: Walker2DRandomDynamicsMetaTrainParamsSampler(),
+        'meta_test': lambda: Walker2DRandomDynamicsMetaTrainParamsSampler()
+    },
+    'walker_random_dynamics_test': {
+        'meta_train': lambda: Walker2DRandomDynamicsMetaTestParamsSampler(),
+        'meta_test': lambda: Walker2DRandomDynamicsMetaTestParamsSampler()
+    },
+    'hopper_random_dynamics': {
+        'meta_train': lambda: HopperRandomDynamicsMetaTrainParamsSampler(),
+        'meta_test': lambda: HopperRandomDynamicsMetaTestParamsSampler()
     },
     # 'zero_unscaled_basic_few_shot_reach_env': {
     #     'meta_train': lambda: zero_few_shot_reach_env_get_task_params_iterator(train_env=True),

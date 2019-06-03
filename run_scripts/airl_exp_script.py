@@ -108,6 +108,7 @@ def experiment(variant):
     # set up the discriminator models
     disc_model = StandardAIRLDisc(
         obs_dim + action_dim if not variant['algo_params']['state_only'] else obs_dim,
+        # 8,
         num_layer_blocks=variant['disc_num_blocks'],
         hid_dim=variant['disc_hid_dim'],
         hid_act=variant['disc_hid_act'],

@@ -506,6 +506,48 @@ norm_ant_4_demos_20_subsampling:
     norm_ant_4_demos_20_subsampling
   ]
 
+norm_hopper_4_demos_20_subsampling:
+  description: "norm 4 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos/
+  seed_runs: [
+    norm_hopper_4_demos_20_subsampling
+  ]
+
+norm_hopper_16_demos_20_subsampling:
+  description: "norm 16 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos/
+  seed_runs: [
+    norm_hopper_16_demos_20_subsampling
+  ]
+
+norm_hopper_32_demos_20_subsampling:
+  description: "norm 32 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos/
+  seed_runs: [
+    norm_hopper_32_demos_20_subsampling
+  ]
+
+norm_walker_4_demos_20_subsampling:
+  description: "norm 4 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos/
+  seed_runs: [
+    norm_walker_4_demos_20_subsampling
+  ]
+
+norm_walker_16_demos_20_subsampling:
+  description: "norm 16 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos/
+  seed_runs: [
+    norm_walker_16_demos_20_subsampling
+  ]
+
+norm_walker_32_demos_20_subsampling:
+  description: "norm 32 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos/
+  seed_runs: [
+    norm_walker_32_demos_20_subsampling
+  ]
+
 humanoid_64_demos_20_subsampling:
   description: "64 demos, sub 20"
   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/output/very-final-humanoid-demos-64-20-subsampling
@@ -534,6 +576,41 @@ humanoid_256_demos_20_subsampling:
     very_final_humanoid_demos_256_20_subsampling_2019_03_22_13_25_44_0000--s-0
   ]
 
+norm_new_humanoid_128_demos_20_subsampling:
+  description: "new run, 128 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_new_humanoid_128_demos_20_subsampling
+  ]
+
+norm_new_humanoid_64_demos_20_subsampling:
+  description: "new run, 64 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_new_humanoid_64_demos_20_subsampling
+  ]
+
+norm_new_humanoid_32_demos_20_subsampling:
+  description: "new run, 32 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_new_humanoid_32_demos_20_subsampling
+  ]
+
+norm_new_humanoid_16_demos_20_subsampling:
+  description: "new run, 16 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_new_humanoid_16_demos_20_subsampling
+  ]
+
+norm_new_humanoid_4_demos_20_subsampling:
+  description: "new run, 4 demos, sub 20"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_new_humanoid_4_demos_20_subsampling
+  ]
+
 norm_humanoid_64_demos_20_subsampling:
   description: "norm 64 demos, sub 20"
   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
@@ -560,6 +637,20 @@ norm_humanoid_256_demos_20_subsampling:
   exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos
   seed_runs: [
     norm_humanoid_256_demos_20_subsampling
+  ]
+
+ant_multi_4_directions_32_det_demos_per_task_no_sub_path_len_50:
+  description: "ant multi-valid target, 4 directions"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-multi-4-directions-32-det-demos-per-task-no-sub-path-len-50
+  seed_runs: [
+    ant_multi_4_directions_32_det_demos_per_task_no_sub_path_len_50_2019_05_15_01_10_13_0000--s-0
+  ]
+
+norm_ant_multi_4_directions_32_det_demos_per_task_no_sub_path_len_50:
+  description: "ant multi-valid target, 4 directions"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_multi_4_directions_32_det_demos_per_task_no_sub_path_len_50
   ]
 
 ant_multi_valid_target_demos_8_target_8_each_no_sub:
@@ -623,6 +714,48 @@ norm_deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len
   exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len_50
+  ]
+
+ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75:
+  description: "deterministic, ant multi-valid target"
+  exp_dir:  /scratch/hdd001/home/kamyar/output/ant-multi-4-directions-4-distance-32-det-demos-per-task-no-sub-path-len-75
+  seed_runs: [
+    ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75_2019_05_16_01_18_02_0000--s-0
+  ]
+
+norm_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75:
+  description: "normalized, deterministic, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75
+  ]
+
+rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75:
+  description: "deterministic, rel pos obs, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/rel-pos-obs-ant-multi-4-directions-4-distance-32-det-demos-per-task-no-sub-path-len-75
+  seed_runs: [
+    rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75_2019_05_16_13_52_30_0000--s-0
+  ]
+
+norm_rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75:
+  description: "norm, deterministic, rel pos obs, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75
+  ]
+
+rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target:
+  description: "deterministic, rel pos obs, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/output/rel-pos-obs-ant-multi-4-directions-4-distance-32-det-demos-per-task-no-sub-path-terminates-within-0p5-of-target
+  seed_runs: [
+    rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target_2019_05_17_17_58_51_0000--s-0
+  ]
+
+norm_rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target:
+  description: "deterministic, rel pos obs, ant multi-valid target"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target
   ]
 
 # META-EXPERTS ----------------------------------------------------------------
@@ -764,6 +897,20 @@ norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20:
   exp_dir: /scratch/hdd001/home/kamyar/expert_demos
   seed_runs: [
     norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
+  ]
+
+hc_rand_vel_bc_debugging_2_to_3:
+  description: "128 per task, sub 1, task 2, 2.25, 2.5, 2.75, 3"
+  exp_dir: /scratch/hdd001/home/kamyar/output/correct-hc-rand-vel-bc-debugging-128-per-task-sub-1
+  seed_runs: [
+    correct_hc_rand_vel_bc_debugging_128_per_task_sub_1_2019_05_25_14_10_40_0000--s-0
+  ]
+
+norm_hc_rand_vel_bc_debugging_2_to_3:
+  description: "norm, 128 per task, sub 1, task 2, 2.25, 2.5, 2.75, 3"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_hc_rand_vel_bc_debugging_2_to_3
   ]
 
 hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20:
@@ -1184,4 +1331,74 @@ fixed_colors_0p5_32_16_1:
   # exp_dir: /scratch/gobi2/kamyar/oorl_rlkit/expert_demos/
   seed_runs: [
     fixed_colors_0p5_32_16_1
+  ]
+
+ant_lin_class_64_tasks_16_demos_each_sub_1:
+  description: "episode length 50"
+  exp_dir: /scratch/hdd001/home/kamyar/output/ant-lin-class-64-tasks-16-demos-per-task-no-sub
+  seed_runs: [
+    ant_lin_class_64_tasks_16_demos_per_task_no_sub_2019_05_14_23_06_58_0000--s-0
+  ]
+
+norm_ant_lin_class_64_tasks_16_demos_each_sub_1:
+  description: "norm, episode length 50"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_ant_lin_class_64_tasks_16_demos_each_sub_1
+  ]
+
+rel_pos_ant_lin_class_64_tasks_16_demos_each_sub_1:
+  description: "uses rel pos to targets episode length 50"
+  exp_dir: /scratch/hdd001/home/kamyar/output/rel-pos-ant-lin-class-64-tasks-16-demos-per-task-no-sub
+  seed_runs: [
+    rel_pos_ant_lin_class_64_tasks_16_demos_per_task_no_sub_2019_05_16_16_26_10_0000--s-0
+  ]
+
+norm_rel_pos_ant_lin_class_64_tasks_16_demos_each_sub_1:
+  description: "norm, uses rel pos to targets episode length 50"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_rel_pos_ant_lin_class_64_tasks_16_demos_each_sub_1
+  ]
+
+fetch_linear_classification_demos_64_tasks_16_demos_per_task_no_sub:
+  description: "fetch linear classification demos, path length 65"
+  exp_dir: /scratch/hdd001/home/kamyar/output/fetch-linear-classification-demos-64-tasks-16-demos-per-task-no-sub-correct
+  seed_runs: [
+    fetch_linear_classification_demos_64_tasks_16_demos_per_task_no_sub_correct_2019_05_17_23_32_57_0000--s-0
+  ]
+
+norm_fetch_linear_classification_demos_64_tasks_16_demos_per_task_no_sub:
+  description: "norm, fetch linear classification demos, path length 65"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_fetch_linear_classification_demos_64_tasks_16_demos_per_task_no_sub
+  ]
+
+walker_meta_dyn_32_det_demos_per_task_20_sub:
+  description: "walker meta dynamics, path length 1000"
+  exp_dir: /scratch/hdd001/home/kamyar/output/walker-meta-dyn-32-det-demos-per-task-20-sub-fixed-save-problem/
+  seed_runs: [
+    walker_meta_dyn_32_det_demos_per_task_20_sub_fixed_save_problem_2019_05_19_16_12_43_0000--s-0/
+  ]
+
+norm_walker_meta_dyn_32_det_demos_per_task_20_sub:
+  description: "norm, walker meta dynamics, path length 1000"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_walker_meta_dyn_32_det_demos_per_task_20_sub
+  ]
+
+test_tasks_walker_meta_dyn_32_det_demos_per_task_20_sub:
+  description: "test_tasks_walker meta dynamics, path length 1000"
+  exp_dir: /scratch/hdd001/home/kamyar/output/walker-meta-dyn-32-det-demos-per-task-20-sub-fixed-save-problem-test-tasks
+  seed_runs: [
+    walker_meta_dyn_32_det_demos_per_task_20_sub_fixed_save_problem_test_tasks_2019_05_20_14_55_25_0000--s-0
+  ]
+
+norm_test_tasks_walker_meta_dyn_32_det_demos_per_task_20_sub:
+  description: "norm, test_tasks_walker meta dynamics, path length 1000"
+  exp_dir: /scratch/hdd001/home/kamyar/expert_demos
+  seed_runs: [
+    norm_test_tasks_walker_meta_dyn_32_det_demos_per_task_20_sub
   ]

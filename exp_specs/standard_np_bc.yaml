@@ -3,18 +3,19 @@ meta_data:
   # exp_name: hc_rand_vel_unnorm_16_demos_sub_20
   # exp_name: hc_rand_vel_64_per_task_no_sub_unnorm_debug_1_to_2_values_beta_1_0p9_norm
   # exp_name: hc_rand_vel_64_demos_sub_1_no_norm_with_saving
-  exp_name: hc_rand_vel_64_demos_sub_1_no_saving_new_version_hype_search_with_lr_0p02
+  # exp_name: hc_rand_vel_64_demos_sub_1_no_saving_new_version_hype_search_with_lr_0p02
+  exp_name: hc_rand_vel_MLE_4_demos_sub_20_paper_version
   description: searching over the SAC hyperparameters
   use_gpu: true
-  num_workers: 8
+  num_workers: 4
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  scale_env_with_given_demo_stats: [false]
+  scale_env_with_given_demo_stats: [true]
 
   algo_params:
-    save_best: [false]
+    save_best: [true]
     save_best_after_epoch: [0]
 
     # objective: ['mse']
@@ -39,6 +40,12 @@ variables:
     num_test_trajs_for_training: [4]
     train_samples_per_traj: [16]
     policy_optim_batch_size_per_task: [128]
+    # ----------------------------
+    # num_tasks_used_per_update: [5]
+    # num_context_trajs_for_training: [4] # does not matter
+    # num_test_trajs_for_training: [4]
+    # train_samples_per_traj: [40]
+    # policy_optim_batch_size_per_task: [200]
 
     num_context_trajs_for_exploration: [4]
 
@@ -52,13 +59,13 @@ variables:
     num_eval_trajs_per_post_sample: [3]
     num_context_trajs_for_eval: [3]
 
-    # encoder_lr: [0.0003]
-    # policy_lr: [0.0003]
-    encoder_lr: [0.02]
-    policy_lr: [0.02]
+    encoder_lr: [0.0003]
+    policy_lr: [0.0003]
+    # encoder_lr: [0.02]
+    # policy_lr: [0.02]
     # beta_1: [0.25]
-    beta_1: [0.25, 0.9]
-    # beta_1: [0.25]
+    # beta_1: [0.25, 0.9]
+    beta_1: [0.9]
 
     num_update_loops_per_train_call: [1000]
 
@@ -92,14 +99,22 @@ variables:
   policy_net_size: [256]
   num_hidden_layers: [3]
 
-  # seed: [7723, 4969, 3082, 2290]
+  seed: [7723, 4969, 3082, 2290]
   # seed: [7723]
-  seed: [7723, 4969]
+  # seed: [7723, 4969]
   expert_name: [
-    hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1,
-    norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1,
+    # norm_hc_rand_vel_bc_debugging_2_to_3
+
+    # hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1,
+    # norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1,
+
     # hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
     # hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
+
+    norm_hc_rand_vel_expert_demos_0p1_separated_4_demos_sub_20
+    # norm_hc_rand_vel_expert_demos_0p1_separated_16_demos_sub_20
+    # norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_20
+    # norm_hc_rand_vel_expert_demos_0p1_separated_64_demos_sub_1
   ]
 
 # -----------------------------------------------------------------------------
@@ -137,7 +152,7 @@ constants:
     save_algorithm: false
     render: false
 
-    freq_saving: 5
+    freq_saving: 10
 
     np_params:
       traj_enc_params: {}
@@ -147,6 +162,7 @@ constants:
   env_specs:
     # base_env_name: 'halfcheetah_rand_vel_0p1_separated'
     base_env_name: 'halfcheetah_rand_vel_0p1_separated'
+    # base_env_name: 'halfcheetah_rand_vel_bc_debugging'
     normalized: false
     train_test_env: false
     need_pixels: false

@@ -120,6 +120,8 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
             assert isinstance(env, WrappedAbsorbingEnv), 'Env is not wrapped!'
         self.freq_saving = freq_saving
         self.no_terminal = no_terminal
+        if self.no_terminal:
+            print('\n\nDOING NO TERMINAL!\n\n')
 
         self.train_task_params_sampler = train_task_params_sampler
         self.test_task_params_sampler = test_task_params_sampler
@@ -135,7 +137,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
         self.pretrain()
         if start_epoch == 0:
             params = self.get_epoch_snapshot(-1)
-            # logger.save_itr_params(-1, params)
+            logger.save_itr_params(-1, params)
         self.training_mode(False)
         # self._n_env_steps_total = start_epoch * self.num_env_steps_per_epoch
         gt.reset()
@@ -296,7 +298,7 @@ class MetaIRLAlgorithm(metaclass=abc.ABCMeta):
 
             if epoch % self.freq_saving == 0:
                 params = self.get_epoch_snapshot(epoch)
-                # logger.save_itr_params(epoch, params)
+                logger.save_itr_params(epoch, params)
             table_keys = logger.get_table_key_set()
 
             # logger.record_tabular(

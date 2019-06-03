@@ -86,7 +86,6 @@ class PusherVideoEncoder(PyTorchModule):
 class PusherLastTimestepEncoder(PyTorchModule):
     def __init__(
         self,
-        # z_dims, # z will take the form of a conv kernel
     ):
         self.save_init_params(locals())
         super().__init__()
@@ -97,24 +96,25 @@ class PusherLastTimestepEncoder(PyTorchModule):
         p = 2
         self.conv_part = nn.Sequential(
             nn.Conv2d(3, CH, k, stride=s, padding=p),
-            nn.BatchNorm2d(CH),
+            # nn.BatchNorm2d(CH),
             nn.ReLU(),
             nn.Conv2d(CH, CH, k, stride=s, padding=p),
-            nn.BatchNorm2d(CH),
+            # nn.BatchNorm2d(CH),
             nn.ReLU(),
             nn.Conv2d(CH, CH, k, stride=s, padding=p),
-            nn.BatchNorm2d(CH),
+            # nn.BatchNorm2d(CH),
             nn.ReLU(),
         )
         flat_dim = CH * 6 * 6
         self.fc_part = nn.Sequential(
             nn.Linear(flat_dim, 512),
-            nn.BatchNorm1d(512),
+            # nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
+            # nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Linear(256, 64)
+            # nn.Linear(256, 64)
+            nn.Linear(256, 3*32)
         )
 
     
@@ -124,6 +124,146 @@ class PusherLastTimestepEncoder(PyTorchModule):
         fc_output = self.fc_part(conv_output)
 
         return fc_output
+
+
+
+class PusherAggTimestepEncoder(PyTorchModule):
+    def __init__(
+        self,
+        state_dim,
+        action_dim
+    ):
+        self.save_init_params(locals())
+        super().__init__()
+
+        # make the coordinate maps of different resolutions
+        self.all_xy_maps = []
+        x_map_2d, y_map_2d = np.meshgrid(
+            np.arange(-62.0, 63.0),
+            np.arange(-62.0, 63.0),
+        )
+        x_map_2d = x_map_2d[None,None] / 62.0
+        y_map_2d = y_map_2d[None,None] / 62.0
+        xy_map_2d = np.concatenate((x_map_2d, y_map_2d), axis=1)
+        self.all_xy_maps.append(Variable(ptu.from_numpy(xy_map_2d), requires_grad=False))
+
+        x_map_2d, y_map_2d = np.meshgrid(
+            np.arange(-31, 32),
+            np.arange(-31, 32),
+        )
+        x_map_2d = x_map_2d[None,None] / 31.0
+        y_map_2d = y_map_2d[None,None] / 31.0
+        xy_map_2d = np.concatenate((x_map_2d, y_map_2d), axis=1)
+        self.all_xy_maps.append(Variable(ptu.from_numpy(xy_map_2d), requires_grad=False))
+        for d in [32.0, 16.0]:
+            x_map_2d, y_map_2d = np.meshgrid(
+                np.arange(-d/2, d/2),
+                np.arange(-d/2, d/2),
+            )
+            x_map_2d = (x_map_2d[None,None] + 0.5) / (d/2)
+            y_map_2d = (y_map_2d[None,None] + 0.5) / (d/2)
+            xy_map_2d = np.concatenate((x_map_2d, y_map_2d), axis=1)
+            self.all_xy_maps.append(Variable(ptu.from_numpy(xy_map_2d), requires_grad=False))
+        
+        CH = 32
+        k = 5
+        s = 2
+        p = 2
+        self.convs_list = nn.ModuleList(
+            [
+                nn.Conv2d(3+2, CH, k, stride=s, padding=p),
+                nn.Conv2d(CH+2, CH, k, stride=s, padding=p),
+                nn.Conv2d(CH+2, CH, k, stride=s, padding=p),
+            ]
+        )
+        self.conv_bns = nn.ModuleList(
+            [
+                nn.BatchNorm2d(CH),
+                nn.BatchNorm2d(CH),
+                nn.BatchNorm2d(CH),
+            ]
+        )
+        self.last_conv = nn.Conv2d(CH+2, 128, 1, stride=1, padding=0)
+
+        self.just_img_fc_part = nn.Sequential(
+            nn.Linear(128, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Linear(128, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+        )
+        self.film_last_fcs = nn.ModuleList(
+            [
+                nn.Linear(128, 32),
+                nn.Linear(128, 32),
+                nn.Linear(128, 32),
+            ]
+        )
+
+        flat_dim = 128 + state_dim + action_dim
+        
+        self.extra_latent_fc_part = nn.Sequential(
+            nn.Linear(flat_dim, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Linear(128, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Linear(128, 128)
+        )
+
+        self.extra_latent_post_agg_fc_part = nn.Sequential(
+            nn.Linear(128, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+        )
+
+    
+    def forward(self, demo_batch):
+        # N_tasks x N_samples x 3 x H x W
+        images = demo_batch['image']
+        # N_tasks x N_samples x dim
+        states = demo_batch['X']
+        # N_tasks x N_samples x dim
+        actions = demo_batch['U']
+
+        N_tasks, N_samples = images.size(0), images.size(1)
+        total_per_task = N_tasks * N_samples
+        images = images.view(total_per_task, images.size(2), images.size(3), images.size(4))
+        states = states.view(total_per_task, -1)
+        actions = actions.view(total_per_task, -1)
+
+        # process the images
+        h = images
+        for i in range(len(self.convs_list)):
+            coords = self.all_xy_maps[i]
+            coords = coords.repeat(h.size(0), 1, 1, 1)
+            h = torch.cat([h, coords], dim=1)
+            h = self.convs_list[i](h)
+            h = self.conv_bns[i](h)
+            h = F.relu(h)
+        coords = self.all_xy_maps[-1]
+        coords = coords.repeat(h.size(0), 1, 1, 1)
+        h = torch.cat([h, coords], dim=1)
+        h = self.last_conv(h)
+        h = F.avg_pool2d(h, 16)
+        h = h.view(h.size(0), -1)
+
+        # get the extra latent
+        extra_latent_input = torch.cat([h, states, actions], dim=-1)
+        extra_latent_pre_agg = self.extra_latent_fc_part(extra_latent_input)
+        extra_latent_pre_agg = extra_latent_pre_agg.view(N_tasks, N_samples, extra_latent_pre_agg.size(1))
+        extra_latent_agg = torch.sum(extra_latent_pre_agg, dim=1)
+        extra_latent_filters = self.extra_latent_post_agg_fc_part(extra_latent_agg)
+
+        # get film feature
+        agg_h = torch.sum(h.view(N_tasks, N_samples, h.size(1)), dim=1)
+        post_fc_agg_img_feats = self.just_img_fc_part(agg_h)
+        film_feats = [last_fc(post_fc_agg_img_feats) for last_fc in self.film_last_fcs]
+
+        return film_feats, extra_latent_filters
 
 
 if __name__ == '__main__':

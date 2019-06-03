@@ -18,9 +18,11 @@ from rlkit.envs.mil_pusher_env import build_pusher_getter
 
 from rlkit.data_management.pusher_mil_pytorch_data_loader import build_train_val_datasets
 
-from rlkit.torch.sac.policies import PusherTaskReparamTanhMultivariateGaussianPolicy, BaselineContextualPolicy
+# from rlkit.torch.sac.policies import PusherTaskReparamTanhMultivariateGaussianPolicy, BaselineContextualPolicy
+from rlkit.torch.sac.policies import PusherTaskReparamMultivariateGaussianPolicy, BaselineContextualPolicy
+from rlkit.torch.sac.policies import YetAnotherPusherTaskReparamMultivariateGaussianPolicy
 # from rlkit.torch.networks import PusherTaskQFunc, PusherTaskVFunc
-from rlkit.torch.irl.encoders.pusher_video_encoder import PusherVideoEncoder, PusherLastTimestepEncoder
+from rlkit.torch.irl.encoders.pusher_video_encoder import PusherVideoEncoder, PusherLastTimestepEncoder, PusherAggTimestepEncoder
 from rlkit.torch.irl.pusher_mil_np_bc import PusherSpecificNeuralProcessBC
 from rlkit.torch.irl.disc_models.pusher_disc import ImageProcessor
 
@@ -47,6 +49,7 @@ def experiment(variant, log_dir):
     val_idx = [ind for ind in val_idx if ind not in [765,766]]
 
     # for debugging
+    print('\n\n\n\n\nNOT DEBUG RUN\n\n\n\n\n')
     # print('\n\n\n\n\nDEBUG RUN!!!!!!!!\n\n\n\n\n')
     # train_idx = train_idx[:16]
     # val_idx = val_idx[:16]
@@ -68,6 +71,8 @@ def experiment(variant, log_dir):
     # encoder = PusherVideoEncoder(z_dims)
     if variant['algo_params']['easy_context']:
         encoder = PusherLastTimestepEncoder()
+    elif variant['algo_params']['using_all_context']:
+        encoder = PusherAggTimestepEncoder(state_dim, action_dim)
     else:
         encoder = PusherVideoEncoder()
     # image processor
@@ -78,13 +83,30 @@ def experiment(variant, log_dir):
     hidden_sizes = [policy_net_size] * variant['num_hidden_layers']
     if variant['algo_params']['use_basic_contextual_policy']:
         policy = BaselineContextualPolicy(action_dim)
-    else:
-        policy = PusherTaskReparamTanhMultivariateGaussianPolicy(
+    elif variant['algo_params']['using_all_context']:
+        policy = YetAnotherPusherTaskReparamMultivariateGaussianPolicy(
             image_processor=image_processor,
-            image_only=False,
+            image_only=variant['algo_params']['image_only'],
             train_img_processor=True,
             hidden_sizes=hidden_sizes,
-            obs_dim=state_dim + image_processor.output_dim,
+            obs_dim=state_dim + image_processor.output_dim + 64, # 64 for extra latents
+            action_dim=action_dim,
+        )
+    else:
+        # policy = PusherTaskReparamTanhMultivariateGaussianPolicy(
+        #     image_processor=image_processor,
+        #     image_only=variant['algo_params']['image_only'],
+        #     train_img_processor=True,
+        #     hidden_sizes=hidden_sizes,
+        #     obs_dim=state_dim + image_processor.output_dim,
+        #     action_dim=action_dim,
+        # )
+        policy = PusherTaskReparamMultivariateGaussianPolicy(
+            image_processor=image_processor,
+            image_only=variant['algo_params']['image_only'],
+            train_img_processor=True,
+            hidden_sizes=hidden_sizes,
+            obs_dim=image_processor.output_dim if variant['algo_params']['image_only'] else state_dim + image_processor.output_dim,
             action_dim=action_dim,
         )
 

@@ -1,3 +1,217 @@
+money
+convocation tickets
+write-up
+
+
+
+- (done) run walker np_bc
+- (done) run 4 reward walker on gpu with narrower (scale 0.5, 0.25) demos
+- (done) same with also smaller buffer
+- run with stronger discriminator
+
+- implement ant evaluation script
+- run ant evaluation
+- put ant results in the paper
+- run some state-marginal stuff
+- put irl vs. bc evaluations in the table
+SLEEP
+- implement mixture policy training
+
+
+
+
+
+
+
+- (done) generate an artificial plus sign density
+- (done) make a separate script for airl_exp_script for this experiment
+- make a separate script for airl for this experiment
+    - don't forget normalization, gradient penalty, etc.
+- make a low gear ant env just for this experiment
+    - observations are standard things plus xyz
+- run these experiments with a wide range of hyperparameters, disc/policy model, traning settings, etc.
+
+
+
+
+
+
+- (done) plot walker dyn
+- (done) generate walker dyn test replay buffer
+- (done) train a single walker expert with no dynamics variation
+- (done) implement walker rand dyn evaluation script
+- (done) evaluate walker rand dyn current models
+- (done) evaluate single expert walker rand dyn current models
+- (no need) run more walker rand dyn experiments
+    - disc
+    - pol (512 better than 256)
+    - rew (close to 20 seems to be good)
+    - gp
+    - (running larger enc) enc
+
+
+- (done) run eval for super_ants with the first seed
+- (done) make the hyperparameters heatmap plot
+
+
+
+
+- plot ant lin class
+- run more seeds ant lin class
+- run ant lin class state-only
+- plot walker dyn
+- run more walker dyn seeds
+- run walker dyn state-only
+
+
+
+
+- evaluate current ant lin class models
+- evaluate bc version
+- needed run new stuff
+
+- state-only experiments for ant lin classifier
+- state-only experiments for walker
+
+- run multi-ant experiment
+
+- eval all the "basic bc" models (I think I already have run all of them)
+
+- put results in the paper
+
+- train bc variants of all things and put results in the table
+
+
+
+
+- run last super
+
+
+- (done) check what a standard walker expert does on multi-dynamics
+    - /scratch/gobi2/kamyar/oorl_rlkit/output/train-final-walker-expert/train_final_walker_expert_2019_05_10_21_00_41_0000--s-0/
+- (done) make aggregate walker expert
+- (done) generate demos using aggregate walker expert
+- run walker experiments
+- check ant linear classifier results
+- run new ant linear classifier experiments
+- check bc results
+- run new bc exps
+- plan experiments
+- writing
+
+
+
+- (done) implement fetch lin class env
+- (done) implement fetch lin class demo script
+- (done) get fetch lin class demos
+- (done) check ant lin class experiments
+- (done) implement multi-dynamics walker
+- (done) implement multi-dynamics hopper
+- (running) train expert for multi-dynamics hopper
+- (done) run final versions of fairl and airl basic experiments
+- (done) if room on cluster run more super hype searches
+- (running) train expert for multi-dynamics walker
+- rerun ant lin class using the new r2z dim
+- something's wrong check and rerun run fetch lin class experiments
+
+
+- evaluate the walker for the default setting on all other settings
+- 
+
+FEW-SHOT FETCH:
+    - implement the env
+    - generate demos
+    - run initial models
+
+
+ANT MULTI PLAN:
+    At the current hyperparams run:
+        - (done) 512-3-relu disc
+        - (running) 512-3-tanh disc
+        - (done) 128-2-tanh disc
+        - (running) Replacing ant xy-position information with relative position to each of the targets
+
+        ------------
+        - generate a data density plot
+        - put them even farther (16 distance)
+        - make it state-only
+        - indicator variable for in target region
+        ------------
+
+        - Augment with additional variable indicating within target region or not
+            - 512-3-relu
+
+
+ANT LIN CLASS PLAN:
+    - Maybe the disc is not large enough and so it first just focuses on the position but then when it goes to
+        the right positions, is starts paying attention to the linear classification and ignores the position
+    - Need to run it also like the original with a large replay buffer size
+
+
+**) + sign multi-ant
+    - try using smaller disc simialr to the ones you used for single task
+        - maybe even the policy as well?
+    - try putting the targets farther, like 4 distance away
+    FAIRL:
+        Small rb size regime:
+            - (done) high reward low gp
+            - (running) low rew low gp
+            - low rew high gp
+            - high rew high gp
+        Previous regime:
+            - high reward low gp
+            - low rew low gp
+            - low rew high gp
+            - high rew high gp
+3) Run the ant linear classification models with attention encoder
+    - (done) run it
+    - might need to fiddle with gradient penalty a little bit
+    - might need to change observations space to have distance relative to target instead of absolute
+
+*) (done) abstract submission
+*) (done) plot the results from last night for ant linear classification
+    - suprisingly it was ok/good. Need to figure out why it collapsed. Maybe the stuff mentioned above will fix things.
+*) (done) check the things we ran before
+*) (done) run new ones
+
+*) check ant multi
+*) check ant lin class
+*) run airl and maybe humanoid hype search
+*) maybe try "debugging" meta-bc
+*) writing
+
+
+
+
+
+
+
+
+
+
+
+
+1) (done) run some more basic irl vs. bc hype search
+    - (done) run humanoid fairl hype search
+    - (done) run airl ant hype search (4-8-12-16, 4-8-12-16)
+2) (done) Generatre demos for ant linear classification
+3) (done) Run the ant linear classification models with basic encoder
+3) Run the ant linear classification models with convolutional encoder
+
+*) run new humanoid airl hype search
+fairl_final_humanoid_hype_search_no_save_correct_final
+
+
+*) check results from the stuff you ran last night
+Need to check correctness of MLE
+
+4) Generate demos for fetch linear classification
+5) Run fetch models
+6)
+
+SOME TOY TASKS MATCHING STATE-MARGINAL
+
+
 - (done) implement the obtain eval samples
 - (done) check success checker in log statistics (remember normalization of the state)
 - (done) make sure the architecture is reasonable

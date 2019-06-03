@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # exp_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-ant-BC-model-256'
 
     # exp_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-BC-model-256'
-    exp_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-forw-KL-with-128-disc-50-rew'
+    # exp_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-forw-KL-with-128-disc-50-rew'
     # exp_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/what-matters-halfcheetah-forw-KL-with-128-disc'
 
 

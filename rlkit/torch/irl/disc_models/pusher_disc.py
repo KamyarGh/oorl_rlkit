@@ -11,8 +11,8 @@ from rlkit.torch import pytorch_util as ptu
 
 from copy import deepcopy
 
+# Film v3, a little different
 
-# Attention version v1, no spatial softmax
 class ImageProcessor(PyTorchModule):
     def __init__(
         self,
@@ -20,38 +20,55 @@ class ImageProcessor(PyTorchModule):
         self.save_init_params(locals())
         super().__init__()
 
-        CH = 64
-        self.output_dim = 2*CH
-        k = 5
-        s = 2
-        p = 2
-        self.conv_part_1 = nn.Sequential(
-            nn.Conv2d(3, CH, k, stride=s, padding=p),
-            # nn.BatchNorm2d(CH),
+        self.output_dim = 128
+        self.initial_conv = nn.Sequential(
+            nn.Conv2d(3, 32, 5, stride=2, padding=2),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.Conv2d(CH, CH, k, stride=s, padding=p),
-            # nn.BatchNorm2d(CH),
+            nn.Conv2d(32, 32, 5, stride=2, padding=2),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.Conv2d(CH, CH, k, stride=s, padding=p),
+            nn.Conv2d(32, 32, 5, stride=2, padding=2),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.Conv2d(CH, CH, 1, stride=1, padding=0),
-        )
-        self.conv_part_2 = nn.Sequential(
-            nn.Conv2d(2*CH, CH, k, stride=1, padding=p),
-            nn.ReLU(),
-            nn.Conv2d(CH, CH, k, stride=1, padding=p),
-            nn.ReLU(),
-            nn.Conv2d(CH, CH, 1, stride=1, padding=0),
         )
 
-        x_map, y_map = np.meshgrid(
+        self.one_by_one_convs = nn.ModuleList(
+            [
+                # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+                # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+                # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+
+                # when concatenating xy-maps
+                nn.Conv2d(34, 32, 1, stride=1, padding=0),
+                nn.Conv2d(34, 32, 1, stride=1, padding=0),
+                nn.Conv2d(34, 32, 1, stride=1, padding=0),
+            ]
+        )
+        self.residual_convs = nn.ModuleList(
+            [
+                nn.Conv2d(32, 32, 3, stride=1, padding=1),
+                nn.Conv2d(32, 32, 3, stride=1, padding=1),
+                nn.Conv2d(32, 32, 3, stride=1, padding=1),
+            ]
+        )
+        self.residual_conv_bns = nn.ModuleList(
+            [
+                nn.BatchNorm2d(32, affine=False),
+                nn.BatchNorm2d(32, affine=False),
+                nn.BatchNorm2d(32, affine=False)
+            ]
+        )
+        self.last_conv = nn.Conv2d(34, 128, 1, stride=1, padding=0)
+
+        x_map_2d, y_map_2d = np.meshgrid(
             np.arange(-8, 8),
             np.arange(-8, 8),
         )
-        x_map = (x_map.flatten()[None][None] + 0.5) / 8.0
-        y_map = (y_map.flatten()[None][None] + 0.5) / 8.0
-        self.x_map = Variable(ptu.from_numpy(x_map))
-        self.y_map = Variable(ptu.from_numpy(y_map))
+        x_map_2d = (x_map_2d[None,None] + 0.5) / 8.0
+        y_map_2d = (y_map_2d[None,None] + 0.5) / 8.0
+        xy_map_2d = np.concatenate((x_map_2d, y_map_2d), axis=1)
+        self.xy_map_2d = Variable(ptu.from_numpy(xy_map_2d), requires_grad=False)
 
 
     def cuda(self):
@@ -66,27 +83,364 @@ class ImageProcessor(PyTorchModule):
         super().cpu()
 
 
-    def forward(self, z, image, return_softmax_output=False):
-        # reshape z into CHx1x1
-        z = z.view(z.size(0), z.size(1), 1, 1)
+    def forward(self, film_feats, image, return_softmax_output=False):
+        film_feats = [ff.view(ff.size(0), ff.size(1), 1, 1) for ff in film_feats]
+        assert len(film_feats) == len(self.one_by_one_convs)
 
-        conv_part_1_output = self.conv_part_1(image)
+        h = self.initial_conv(image)
+        repeated_xy_map_2d = self.xy_map_2d.repeat(h.size(0), 1, 1, 1)
+        for i in range(len(self.one_by_one_convs)):
+            # optionally concatenate the xy-maps
+            h = torch.cat(
+                [
+                    h,
+                    repeated_xy_map_2d
+                ],
+                dim=1
+            )
 
-        # multiplicative interaction and concatenate to self
-        # kinda like FiLM layers
-        mult_feats = z * conv_part_1_output
-        concat_output = torch.cat([conv_part_1_output, mult_feats], dim=1)
+            # base of the block
+            h = self.one_by_one_convs[i](h)
+            h = F.relu(h)
 
-        output = self.conv_part_2(concat_output)
-        output = output.view(output.size(0), output.size(1), output.size(2)*output.size(3))
-        softmax_output = F.softmax(output, dim=-1)
-        x_pos = torch.sum(softmax_output * self.x_map, dim=-1)
-        y_pos = torch.sum(softmax_output * self.y_map, dim=-1)
-        feature_positions = torch.cat([x_pos, y_pos], dim=-1)
+            residual = self.residual_convs[i](h)
+            # optional batch norm with no affine parameters
+            residual = self.residual_conv_bns[i](h)
+            # something like a "film"
+            residual = film_feats[i] * residual
+            residual = F.relu(residual)
 
-        if return_softmax_output:
-            return feature_positions, softmax_output
-        return feature_positions
+            # add them
+            h = h + residual
+        
+        h = torch.cat(
+            [
+                h,
+                repeated_xy_map_2d
+            ],
+            dim=1
+        )
+        h = self.last_conv(h)
+
+        # -----
+        # h = F.max_pool2d(h, 16)
+        # -----
+        h = F.avg_pool2d(h, 16)
+        # -----
+        # print('Sum Pooling')
+        # h = h.view(h.size(0), h.size(1), -1)
+        # h = torch.sum(h, dim=-1)
+
+        # print(h.size())
+        h = h.view(h.size(0), -1)
+        # print(h.size())
+        return h
+
+
+
+# Film v3
+# class ImageProcessor(PyTorchModule):
+#     def __init__(
+#         self,
+#     ):
+#         self.save_init_params(locals())
+#         super().__init__()
+
+#         self.output_dim = 128
+#         self.initial_conv = nn.Sequential(
+#             nn.Conv2d(3, 32, 5, stride=2, padding=2),
+#             # nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#             nn.Conv2d(32, 32, 5, stride=2, padding=2),
+#             # nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#             nn.Conv2d(32, 32, 5, stride=2, padding=2),
+#             # nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#         )
+
+#         self.one_by_one_convs = nn.ModuleList(
+#             [
+#                 # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+#                 # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+#                 # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+
+#                 # when concatenating xy-maps
+#                 nn.Conv2d(34, 32, 1, stride=1, padding=0),
+#                 nn.Conv2d(34, 32, 1, stride=1, padding=0),
+#                 nn.Conv2d(34, 32, 1, stride=1, padding=0),
+#             ]
+#         )
+#         self.residual_convs = nn.ModuleList(
+#             [
+#                 nn.Conv2d(32, 32, 3, stride=1, padding=1),
+#                 nn.Conv2d(32, 32, 3, stride=1, padding=1),
+#                 nn.Conv2d(32, 32, 3, stride=1, padding=1),
+#             ]
+#         )
+#         self.residual_conv_bns = nn.ModuleList(
+#             [
+#                 nn.BatchNorm2d(32, affine=False),
+#                 nn.BatchNorm2d(32, affine=False),
+#                 nn.BatchNorm2d(32, affine=False)
+#             ]
+#         )
+#         self.last_conv = nn.Conv2d(34, 128, 1, stride=1, padding=0)
+
+#         x_map_2d, y_map_2d = np.meshgrid(
+#             np.arange(-8, 8),
+#             np.arange(-8, 8),
+#         )
+#         x_map_2d = (x_map_2d[None,None] + 0.5) / 8.0
+#         y_map_2d = (y_map_2d[None,None] + 0.5) / 8.0
+#         xy_map_2d = np.concatenate((x_map_2d, y_map_2d), axis=1)
+#         self.xy_map_2d = Variable(ptu.from_numpy(xy_map_2d), requires_grad=False)
+
+
+#     def cuda(self):
+#         self.x_map = self.x_map.cuda()
+#         self.y_map = self.y_map.cuda()
+#         super().cuda()
+    
+
+#     def cpu(self):
+#         self.x_map = self.x_map.cpu()
+#         self.y_map = self.y_map.cpu()
+#         super().cpu()
+
+
+#     def forward(self, z, image, return_softmax_output=False):
+#         split_z = torch.split(z, 32, dim=-1)
+#         split_z = [x.contiguous().view(x.size(0), x.size(1), 1, 1) for x in split_z]
+#         assert len(split_z) == len(self.one_by_one_convs)
+
+#         h = self.initial_conv(image)
+#         repeated_xy_map_2d = self.xy_map_2d.repeat(h.size(0), 1, 1, 1)
+#         for i in range(len(self.one_by_one_convs)):
+#             # optionally concatenate the xy-maps
+#             h = torch.cat(
+#                 [
+#                     h,
+#                     repeated_xy_map_2d
+#                 ],
+#                 dim=1
+#             )
+
+#             # base of the block
+#             h = self.one_by_one_convs[i](h)
+#             h = F.relu(h)
+
+#             residual = self.residual_convs[i](h)
+#             # optional batch norm with no affine parameters
+#             # residual = self.residual_conv_bns[i](h)
+#             # something like a "film"
+#             residual = split_z[i] * residual
+#             residual = F.relu(residual)
+
+#             # add them
+#             h = h + residual
+        
+#         h = torch.cat(
+#             [
+#                 h,
+#                 repeated_xy_map_2d
+#             ],
+#             dim=1
+#         )
+#         h = self.last_conv(h)
+#         h = F.max_pool2d(h, 16)
+#         # h = F.avg_pool2d(h, 16)
+#         h = h.view(h.size(0), -1)
+#         return h
+
+
+# Film v2
+# class ImageProcessor(PyTorchModule):
+#     def __init__(
+#         self,
+#     ):
+#         self.save_init_params(locals())
+#         super().__init__()
+
+#         self.output_dim = 2*32
+#         self.initial_conv = nn.Sequential(
+#             nn.Conv2d(3, 32, 5, stride=2, padding=2),
+#             nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#             nn.Conv2d(32, 32, 5, stride=2, padding=2),
+#             nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#             nn.Conv2d(32, 32, 5, stride=2, padding=2),
+#             nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#         )
+
+#         self.one_by_one_convs = nn.ModuleList(
+#             [
+#                 # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+#                 # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+#                 # nn.Conv2d(32, 32, 1, stride=1, padding=0),
+
+#                 # when concatenating xy-maps
+#                 nn.Conv2d(34, 32, 1, stride=1, padding=0),
+#                 nn.Conv2d(34, 32, 1, stride=1, padding=0),
+#                 nn.Conv2d(34, 32, 1, stride=1, padding=0),
+#             ]
+#         )
+#         self.residual_convs = nn.ModuleList(
+#             [
+#                 nn.Conv2d(32, 32, 3, stride=1, padding=1),
+#                 nn.Conv2d(32, 32, 3, stride=1, padding=1),
+#                 nn.Conv2d(32, 32, 3, stride=1, padding=1),
+#             ]
+#         )
+        
+#         x_map, y_map = np.meshgrid(
+#             np.arange(-8, 8),
+#             np.arange(-8, 8),
+#         )
+#         x_map = (x_map.flatten()[None][None] + 0.5) / 8.0
+#         y_map = (y_map.flatten()[None][None] + 0.5) / 8.0
+#         self.x_map = Variable(ptu.from_numpy(x_map), requires_grad=False)
+#         self.y_map = Variable(ptu.from_numpy(y_map), requires_grad=False)
+
+#         x_map_2d, y_map_2d = np.meshgrid(
+#             np.arange(-8, 8),
+#             np.arange(-8, 8),
+#         )
+#         x_map_2d = (x_map_2d[None,None] + 0.5) / 8.0
+#         y_map_2d = (y_map_2d[None,None] + 0.5) / 8.0
+#         xy_map_2d = np.concatenate((x_map_2d, y_map_2d), axis=1)
+#         self.xy_map_2d = Variable(ptu.from_numpy(xy_map_2d), requires_grad=False)
+
+
+#     def cuda(self):
+#         self.x_map = self.x_map.cuda()
+#         self.y_map = self.y_map.cuda()
+#         super().cuda()
+    
+
+#     def cpu(self):
+#         self.x_map = self.x_map.cpu()
+#         self.y_map = self.y_map.cpu()
+#         super().cpu()
+
+
+#     def forward(self, z, image, return_softmax_output=False):
+#         split_z = torch.split(z, 32, dim=-1)
+#         split_z = [x.contiguous().view(x.size(0), x.size(1), 1, 1) for x in split_z]
+#         assert len(split_z) == len(self.one_by_one_convs)
+
+#         h = self.initial_conv(image)
+#         repeated_xy_map_2d = self.xy_map_2d.repeat(h.size(0), 1, 1, 1)
+#         for i in range(len(self.one_by_one_convs)):
+#             # optionally concatenate the xy-maps
+#             h = torch.cat(
+#                 [
+#                     h,
+#                     repeated_xy_map_2d
+#                 ],
+#                 dim=1
+#             )
+
+#             # base of the block
+#             h = self.one_by_one_convs[i](h)
+#             h = F.relu(h)
+
+#             residual = self.residual_convs[i](h)
+#             # something like a "film"
+#             residual = split_z[i] * residual
+#             residual = F.relu(residual)
+
+#             # add them
+#             h = h + residual
+
+#         h = h.view(h.size(0), h.size(1), h.size(2)*h.size(3))
+#         softmax_output = F.softmax(h, dim=-1)
+#         x_pos = torch.sum(softmax_output * self.x_map, dim=-1)
+#         y_pos = torch.sum(softmax_output * self.y_map, dim=-1)
+#         feature_positions = torch.cat([x_pos, y_pos], dim=-1)
+
+#         if return_softmax_output:
+#             return feature_positions, softmax_output
+#         return feature_positions
+
+
+# Film v1
+# class ImageProcessor(PyTorchModule):
+#     def __init__(
+#         self,
+#     ):
+#         self.save_init_params(locals())
+#         super().__init__()
+
+#         CH = 64
+#         self.output_dim = 2*CH
+#         k = 5
+#         s = 2
+#         p = 2
+#         self.conv_part_1 = nn.Sequential(
+#             nn.Conv2d(3, CH, k, stride=s, padding=p),
+#             # nn.BatchNorm2d(CH),
+#             nn.ReLU(),
+#             nn.Conv2d(CH, CH, k, stride=s, padding=p),
+#             # nn.BatchNorm2d(CH),
+#             nn.ReLU(),
+#             nn.Conv2d(CH, CH, k, stride=s, padding=p),
+#             nn.ReLU(),
+#             nn.Conv2d(CH, CH, 1, stride=1, padding=0),
+#         )
+#         self.conv_part_2 = nn.Sequential(
+#             nn.Conv2d(2*CH, CH, k, stride=1, padding=p),
+#             nn.ReLU(),
+#             nn.Conv2d(CH, CH, k, stride=1, padding=p),
+#             nn.ReLU(),
+#             nn.Conv2d(CH, CH, 1, stride=1, padding=0),
+#         )
+
+#         x_map, y_map = np.meshgrid(
+#             np.arange(-8, 8),
+#             np.arange(-8, 8),
+#         )
+#         x_map = (x_map.flatten()[None][None] + 0.5) / 8.0
+#         y_map = (y_map.flatten()[None][None] + 0.5) / 8.0
+#         self.x_map = Variable(ptu.from_numpy(x_map))
+#         self.y_map = Variable(ptu.from_numpy(y_map))
+
+
+#     def cuda(self):
+#         self.x_map = self.x_map.cuda()
+#         self.y_map = self.y_map.cuda()
+#         super().cuda()
+    
+
+#     def cpu(self):
+#         self.x_map = self.x_map.cpu()
+#         self.y_map = self.y_map.cpu()
+#         super().cpu()
+
+
+#     def forward(self, z, image, return_softmax_output=False):
+#         # reshape z into CHx1x1
+#         z = z.view(z.size(0), z.size(1), 1, 1)
+
+#         conv_part_1_output = self.conv_part_1(image)
+
+#         # multiplicative interaction and concatenate to self
+#         # kinda like FiLM layers
+#         mult_feats = z * conv_part_1_output
+#         concat_output = torch.cat([conv_part_1_output, mult_feats], dim=1)
+
+#         output = self.conv_part_2(concat_output)
+#         output = output.view(output.size(0), output.size(1), output.size(2)*output.size(3))
+#         softmax_output = F.softmax(output, dim=-1)
+#         x_pos = torch.sum(softmax_output * self.x_map, dim=-1)
+#         y_pos = torch.sum(softmax_output * self.y_map, dim=-1)
+#         feature_positions = torch.cat([x_pos, y_pos], dim=-1)
+
+#         if return_softmax_output:
+#             return feature_positions, softmax_output
+#         return feature_positions
 
 
 # Version where z's are the kernels for the convolutions

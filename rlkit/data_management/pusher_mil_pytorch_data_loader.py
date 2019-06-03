@@ -167,6 +167,7 @@ def extract_supervised_data(
         demo_file = tmp
 
     demos = extract_demo_dict(demo_file)
+    # print(demos.keys())
     # We don't need the whole dataset of simulated pushing.
     for key in demos.keys():
         demos[key]['demoX'] = demos[key]['demoX'][6:-6, :, :].copy()
@@ -241,9 +242,23 @@ def extract_supervised_data(
             # demos[key]['demoX'] = demos[key]['demoX'].dot(scale) + bias
             # demos[key]['demoX'] = demos[key]['demoX'].reshape(-1, T, len(state_idx))
             # mine ------------
+            # print(demos[key]['demoX'].shape)
+            # print(len(state_idx))
+            # prev = demos[key]['demoX'][0][:10]
+            # print(prev)
             demos[key]['demoX'] = demos[key]['demoX'].reshape(-1, len(state_idx))
+            # print(demos[key]['demoX'][:10])
+            # print(demos[key]['demoX'].shape)
             demos[key]['demoX'] = (demos[key]['demoX'] - mean) / std
+            # print(demos[key]['demoX'][:10])
+            # print(demos[key]['demoX'].shape)
             demos[key]['demoX'] = demos[key]['demoX'].reshape(-1, T, len(state_idx))
+            # print(demos[key]['demoX'].shape)
+            # post_prev = demos[key]['demoX'][0]*std + mean
+            # print(post_prev.shape)
+            # print(post_prev == prev)
+            # print(demos[key]['demoX'][0][:10])
+            # print(prev.shape)
 
     train_demos = {'train_%d' % i: demos[i] for i in train_idx}
     val_demos = {'val_%d' % i: demos[i] for i in val_idx}

@@ -32,6 +32,14 @@ class TrivialR2ZMap(PyTorchModule):
             nn.BatchNorm1d(hid_dim),
             nn.ReLU()
         )
+        # self.trunk = nn.Sequential(
+        #     nn.Linear(r_dim, hid_dim),
+        #     nn.BatchNorm1d(hid_dim),
+        #     nn.ReLU(),
+        #     nn.Linear(hid_dim, hid_dim),
+        #     nn.BatchNorm1d(hid_dim),
+        #     nn.ReLU()
+        # )
         self.mean_fc = nn.Linear(hid_dim, z_dim)
         self.log_sig_fc = nn.Linear(hid_dim, z_dim)
 
@@ -101,16 +109,32 @@ class TimestepBasedEncoder(PyTorchModule):
 
     def forward(self, context=None, mask=None, r=None):
         if r is None:
-            obs = np.array([[d['observations'] for d in task_trajs] for task_trajs in context])
-            next_obs = np.array([[d['next_observations'] for d in task_trajs] for task_trajs in context])
+            # hack for now to make things efficient
+            min_context_len = min([d['observations'].shape[0] for task_trajs in context for d in task_trajs])
+
+            obs = np.array([[d['observations'][:min_context_len] for d in task_trajs] for task_trajs in context])
+            next_obs = np.array([[d['next_observations'][:min_context_len] for d in task_trajs] for task_trajs in context])
             if not self.state_only:
-                acts = np.array([[d['actions'] for d in task_trajs] for task_trajs in context])
+                acts = np.array([[d['actions'][:min_context_len] for d in task_trajs] for task_trajs in context])
                 all_timesteps = np.concatenate([obs, acts, next_obs], axis=-1)
             else:
                 all_timesteps = np.concatenate([obs, next_obs], axis=-1)
             
             # FOR DEBUGGING THE ENCODER
             # all_timesteps = all_timesteps[:,:,-1:,:]
+
+            # print(all_timesteps)
+            # print(all_timesteps.shape)
+            # print(all_timesteps.dtype)
+            # print('----')
+            # print(acts.shape)
+            # print(obs.shape)
+            # print(next_obs.shape)
+            # if acts.shape[0] == 10:
+            #     print(acts)
+            #     print(obs)
+            #     print(next_obs)
+            # if acts.shape[0]
 
             all_timesteps = Variable(ptu.from_numpy(all_timesteps), requires_grad=False)
 

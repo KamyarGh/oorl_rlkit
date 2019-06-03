@@ -53,27 +53,54 @@ s_paths = {
     ]
 }
 
+# bc_paths = {
+#     # 4 demos
+#     4: [
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_12_59_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_13_00_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_13_00_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_13_01_0003--s-0',
+#     ],
+#     # 16 demos
+#     16: [
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_25_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_26_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_26_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_27_0003--s-0',
+#     ],
+#     # 64 demos
+#     64: [
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_37_0000--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_37_0001--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_38_0002--s-0',
+#         '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_38_0003--s-0'
+#     ]
+# }
+
+# MSE version
 bc_paths = {
     # 4 demos
     4: [
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_12_59_0000--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_13_00_0001--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_13_00_0002--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_2019_04_29_13_13_01_0003--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_24_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_25_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_25_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-4-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_4_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_26_0003--s-0',
     ],
+
     # 16 demos
     16: [
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_25_0000--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_26_0001--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_26_0002--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_2019_04_29_13_12_27_0003--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_56_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_57_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_57_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-16-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_16_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_07_58_0003--s-0',
     ],
+
     # 64 demos
     64: [
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_37_0000--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_37_0001--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_38_0002--s-0',
-        '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_2019_04_29_13_13_38_0003--s-0'
+    '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_08_17_0000--s-0',
+    '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_08_17_0001--s-0',
+    '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_08_18_0002--s-0',
+    '/scratch/hdd001/home/kamyar/output/paper-version-ant-rand-goal-np-bc-64-demos-each-1-context-only-with-saving-mse-version-correct/paper_version_ant_rand_goal_np_bc_64_demos_each_1_context_only_with_saving_mse_version_correct_2019_05_25_15_08_18_0003--s-0',
     ]
 }
 
@@ -134,6 +161,7 @@ joblib.dump(
 )
 
 plt.rcParams["figure.figsize"] = [6,1]
+# plt.rcParams["figure.figsize"] = [6,2]
 for d_size in [4, 16, 64]:
     # state-action plot
     fig, ax = plt.subplots(1)

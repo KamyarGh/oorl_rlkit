@@ -223,9 +223,10 @@ class NeuralProcessBC(TorchMetaIRLAlgorithm):
         else:
             rb = self.test_context_expert_replay_buffer
         
+        eval_context_size = np.random.randint(self.min_context_size, self.max_context_size+1)
         list_of_trajs = rb.sample_trajs_from_task(
             task_identifier,
-            np.random.randint(self.min_context_size, self.max_context_size+1) \
+            eval_context_size\
                 if self.few_shot_version else self.num_context_trajs_for_eval,
         )
         # list_of_trajs = rb.sample_trajs_from_task(

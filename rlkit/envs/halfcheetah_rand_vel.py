@@ -65,6 +65,13 @@ class _MetaTestParamsSampler(_TrainParamsSampler):
         self.vels = np.linspace(0.05, 2.95, num=30, endpoint=True)
 
 
+class _BCDeubggingParamsSampler(_TrainParamsSampler):
+    def __init__(self, random=5382):
+        super().__init__(random, num_samples=1)
+        # self.vels = np.linspace(0.05, 2.95, num=30, endpoint=True)
+        self.vels = [2.0, 2.25, 2.5, 2.75, 3.0]
+
+
 class _DebugMetaTrainSampler(_TrainParamsSampler):
     def __init__(self, random=9827):
         super().__init__(random, num_samples=1)
