@@ -42,7 +42,8 @@ def plot_scatter(x, y, num_bins, title, save_path, ax_lims=None):
     plt.close()
 
 def plot_seaborn_grid(grid, vmin, vmax, title, save_path):
-    ax = sns.heatmap(grid, vmin=vmin, vmax=vmax, cmap="YlGnBu")
+    # ax = sns.heatmap(grid, vmin=vmin, vmax=vmax, cmap="YlGnBu")
+    ax = sns.heatmap(grid, vmin=vmin, vmax=vmax, cmap="RdBu")
     ax.set(title=title)
     ax.figure.savefig(save_path)
     plt.close()
@@ -141,6 +142,20 @@ def plot_forward_reverse_KL_rews():
     plt.axhline(0, color='grey')
     plt.axvline(0, color='grey')
     plt.savefig('plots/junk_vis/rev_KL_rew.png', bbox_inches='tight', dpi=150)
+    plt.close()
+
+    # GAIL
+    fig, ax = plt.subplots(1)
+    x = np.arange(-10,10,0.05)
+    y = -np.log(1 + np.exp(-x))
+    ax.plot(x, y, color='cyan')
+    ax.set_xlim([-10,10])
+    ax.set_ylim([-12,12])
+    ax.set_xlabel(r'log$\frac{\rho^{exp}(s,a)}{\rho^\pi(s,a)}$', fontsize='xx-large')
+    ax.set_ylabel('$r(s,a)$', fontsize='xx-large')
+    plt.axhline(0, color='grey')
+    plt.axvline(0, color='grey')
+    plt.savefig('plots/junk_vis/JS_rew.png', bbox_inches='tight', dpi=150)
     plt.close()
 
     # forward KL

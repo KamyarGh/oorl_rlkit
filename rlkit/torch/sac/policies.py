@@ -420,8 +420,9 @@ class ReparamMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
             self.last_fc_log_std.weight.data.uniform_(-init_w, init_w)
             self.last_fc_log_std.bias.data.uniform_(-init_w, init_w)
         else:
-            self.log_std = np.log(std)
-            assert LOG_SIG_MIN <= self.log_std <= LOG_SIG_MAX
+            assert LOG_SIG_MIN <= np.log(std) <= LOG_SIG_MAX
+            std = std*np.ones((1,action_dim))
+            self.log_std = Variable(ptu.from_numpy(np.log(std)), requires_grad=False)
 
     def get_action(self, obs_np, deterministic=False):
         actions = self.get_actions(obs_np[None], deterministic=deterministic)
@@ -450,11 +451,18 @@ class ReparamMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
         # print('fuck')
         # print(h)
         mean = self.last_fc(h)
+
+        mean = torch.clamp(mean, min=-1.0, max=1.0)
+
         # print(mean)
         if self.std is None:
             log_std = self.last_fc_log_std(h)
-            log_std = torch.clamp(log_std, LOG_SIG_MIN, LOG_SIG_MAX)
+            
+            # log_std = torch.clamp(log_std, LOG_SIG_MIN, LOG_SIG_MAX)
+            log_std = torch.clamp(log_std, LOG_SIG_MIN, np.log(0.2))
+            
             std = torch.exp(log_std)
+
         else:
             std = self.std
             log_std = self.log_std
