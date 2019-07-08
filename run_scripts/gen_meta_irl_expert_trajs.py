@@ -61,6 +61,7 @@ def fill_buffer(
 
     for task_params, obs_task_params in task_params_sampler:
         # print('Doing Task {}...'.format(task_params))
+        
         debug_stats = []
         meta_env.reset(task_params=task_params, obs_task_params=obs_task_params)
         task_id = meta_env.task_identifier

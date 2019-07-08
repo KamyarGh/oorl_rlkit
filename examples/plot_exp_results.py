@@ -4281,7 +4281,7 @@ for exp_name in [
     # 'walker_rand_dyn_np_airl_first_run_higher_rews_disc_512_no_terminal_no_save_larger_policy_another_seed', #0000
     # 'walker_rand_dyn_np_airl_first_run_higher_rews_disc_512_no_terminal_no_save_larger_policy_state_only',
 
-    'correct_saving_paper_version_walker_np_bc_policy_same_as_np_airl'
+    # 'correct_saving_paper_version_walker_np_bc_policy_same_as_np_airl'
 ]:
     # for rew in [2.0, 5.0, 8.0, 12.0, 16.0, 20.0, 24.0]:
     for seed in [9783, 5914, 4969]:
@@ -4336,8 +4336,8 @@ for exp_name in [
     # 'reproduce_best_ant_lin_class_eval_det_another_seed',
 
 
-    'reproduce_best_ant_lin_class_eval_det_with_small_encoder_and_small_disc',
-    'reproduce_best_ant_lin_class_eval_det_with_small_encoder',
+    # 'reproduce_best_ant_lin_class_eval_det_with_small_encoder_and_small_disc',
+    # 'reproduce_best_ant_lin_class_eval_det_with_small_encoder',
 
 
 ]:
@@ -4718,10 +4718,10 @@ for exp_name in [
 
     # 'correct_debug_hc_rand_vel_on_2_to_3_tasks_mse'
 
-    'hc_rand_vel_mse_4_demos_sub_20_paper_version',
-    'hc_rand_vel_mse_16_demos_sub_20_paper_version',
-    'hc_rand_vel_mse_64_demos_sub_20_paper_version',
-    'hc_rand_vel_mse_64_demos_sub_1_paper_version',
+    # 'hc_rand_vel_mse_4_demos_sub_20_paper_version',
+    # 'hc_rand_vel_mse_16_demos_sub_20_paper_version',
+    # 'hc_rand_vel_mse_64_demos_sub_20_paper_version',
+    # 'hc_rand_vel_mse_64_demos_sub_1_paper_version',
 
 
     ]:
@@ -5005,7 +5005,7 @@ for exp_name in [
 
 for exp_name in [
     # 'fetch_np_bc_another_hype_search'
-    'fetch_np_bc_no_KL_DIM_24_1_to_6'
+    # 'fetch_np_bc_no_KL_DIM_24_1_to_6'
 ]:
     # for KL in [0.01, 0.001]:
     for KL in [0.0]:
@@ -8017,3 +8017,135 @@ for exp_name in [
 #     except Exception as e:
 #         raise(e)
 #         print('failed ')
+
+
+# exp_name = 'ant_8_star_rerun'
+# for rew in [0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0]:
+#     constraints = {
+#         'algo_params.reward_scale': rew
+#     }
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'avg_dist_rew_%.2f.png' % (rew)),
+#         x_axis_lims=[0,200],
+#         # y_axis_lims=[0, 1],
+#         plot_mean=False,
+#         column_name=[
+#             'L2AverageClosest_meta_test'
+#         ],
+#         constraints=constraints
+#     )
+
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'min_dist_rew_%.2f.png' % (rew)),
+#         x_axis_lims=[0,200],
+#         # y_axis_lims=[0, 1],
+#         plot_mean=False,
+#         column_name=[
+#             'L2MinClosest_meta_test'
+#         ],
+#         constraints=constraints
+#     )
+
+
+# exp_name = 'ant_random_direction_running_better_reward_function'
+# exp_name = 'ant_rand_goal_r_20_45_to_90'
+# exp_name = 'ant_rand_goal_r_20_90_to_135'
+# for rew in [1.0, 2.5, 5.0, 10.0, 15.0]:
+#     constraints = {
+#         'algo_params.reward_scale': rew
+#     }
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'avg_travel_rew_%.2f.png' % (rew)),
+#         x_axis_lims=[0,250],
+#         # y_axis_lims=[0, 1],
+#         plot_mean=False,
+#         column_name=[
+#             # 'AverageTravel_meta_test'
+#             'L2AverageClosest_meta_test'
+#         ],
+#         constraints=constraints
+#     )
+
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'max_min_rew_%.2f.png' % (rew)),
+#         x_axis_lims=[0,250],
+#         # y_axis_lims=[0, 1],
+#         plot_mean=False,
+#         column_name=[
+#             # 'MaxTravel_meta_test',
+#             # 'MinTravel_meta_test'
+#             'L2MaxClosest_meta_test',
+#             'L2MinClosest_meta_test'
+#         ],
+#         constraints=constraints
+#     )
+
+# exp_name = 'pusher_task_smm_len_100'
+# exp_name = 'pusher_task_smm_len_250_gp_0p5'
+# exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween'
+# exp_name = 'pusher_task_using_SAC_0'
+# exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween_with_ctrl_cost'
+# exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween_no_ctrl_cost_more_hype_search_with_saving'
+# exp_name = 'pusher_task_smm_len_200_target_has_no_inbetween_no_ctrl_cost_more_hype_search_with_saving'
+exp_name = 'pusher_task_smm_len_100_with_gaussian_line_demo'
+# for rew in [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]:
+# for rew in [0.1, 0.25, 0.5, 1.0, 2.0, 4.0]:
+# for rew in [1.0, 2.5, 5.0, 10.0]:
+for rew in [0.25, 0.5, 1.0]:
+    # for ctrl in [1.0, 5.0, 10.0]:
+    # for gp in [0.1, 0.5]:
+    for gp in [0.25, 0.5, 1.0]:
+        constraints = {
+            # 'reward_scale': rew,
+            'policy_params.reward_scale': rew,
+            # 'algo_params.reward_scale': rew,
+            # 'algo_params.ctrl_cost_weight': ctrl,
+            'algo_params.grad_pen_weight': gp
+        }
+        name = 'rew_{}_gp_{}'.format(rew, gp)
+        # name = 'rew_{}'.format(rew)
+        # name = 'rew_{}_ctrl_{}'.format(rew, ctrl)
+        plot_experiment_returns(
+            os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+            exp_name,
+            os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'AvgClosestArm2Obj_{}.png'.format(name)),
+            x_axis_lims=[0,200],
+            y_axis_lims=[0, 1.0],
+            plot_mean=False,
+            column_name=[
+                'AvgClosestArm2Obj'
+            ],
+            constraints=constraints
+        )
+        plot_experiment_returns(
+            os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+            exp_name,
+            os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'AvgClosestObj2Goal_{}.png'.format(name)),
+            x_axis_lims=[0,200],
+            y_axis_lims=[0, 1.0],
+            plot_mean=False,
+            column_name=[
+                'AvgClosestObj2Goal'
+            ],
+            constraints=constraints
+        )
+        plot_experiment_returns(
+            os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+            exp_name,
+            os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'Success_Rate_{}.png'.format(name)),
+            x_axis_lims=[0,200],
+            y_axis_lims=[0, 1.0],
+            plot_mean=False,
+            column_name=[
+                'Success_Rate'
+            ],
+            constraints=constraints
+        )

@@ -25,14 +25,15 @@ def plot_2dhistogram(x, y, num_bins, title, save_path, ax_lims=None):
 
 def plot_seaborn_heatmap(x, y, num_bins, title, save_path, ax_lims=None):
     g = sns.kdeplot(x, y, cbar=True, cmap='RdBu')
-    g.set(title=title, xlim=tuple(ax_lims[0]), ylim=tuple(ax_lims[1]))
+    # g.set(title=title, xlim=tuple(ax_lims[0]), ylim=tuple(ax_lims[1]))
+    g.set(xlim=tuple(ax_lims[0]), ylim=tuple(ax_lims[1]))
     g.figure.savefig(save_path)
     # g.figure.close()
     plt.close()
 
 def plot_scatter(x, y, num_bins, title, save_path, ax_lims=None):
     fig, ax = plt.subplots(1)
-    ax.set_title(title)
+    # ax.set_title(title)
     plt.scatter(x, y, s=0.5)
     if ax_lims is not None:
         ax.set_xlim(ax_lims[0])
@@ -44,7 +45,7 @@ def plot_scatter(x, y, num_bins, title, save_path, ax_lims=None):
 def plot_seaborn_grid(grid, vmin, vmax, title, save_path):
     # ax = sns.heatmap(grid, vmin=vmin, vmax=vmax, cmap="YlGnBu")
     ax = sns.heatmap(grid, vmin=vmin, vmax=vmax, cmap="RdBu")
-    ax.set(title=title)
+    # ax.set(title=title)
     ax.figure.savefig(save_path)
     plt.close()
 
@@ -132,9 +133,14 @@ def save_plot(x, y, title, save_path, color='cyan', x_axis_lims=None, y_axis_lim
 
 
 def plot_forward_reverse_KL_rews():
+    plt.rcParams.update({'font.size': 16})
+    # plt.rcParams.update({'lines.linewidth': 4})
+    plot_line_width = 4
+    line_color = 'deepskyblue'
+
     # reverse KL
     fig, ax = plt.subplots(1)
-    ax.plot(np.arange(-10,10,0.05), np.arange(-10,10,0.05), color='cyan')
+    ax.plot(np.arange(-10,10,0.05), np.arange(-10,10,0.05), color=line_color, linewidth=plot_line_width)
     ax.set_xlim([-10,10])
     ax.set_ylim([-12,12])
     ax.set_xlabel(r'log$\frac{\rho^{exp}(s,a)}{\rho^\pi(s,a)}$', fontsize='xx-large')
@@ -148,7 +154,7 @@ def plot_forward_reverse_KL_rews():
     fig, ax = plt.subplots(1)
     x = np.arange(-10,10,0.05)
     y = -np.log(1 + np.exp(-x))
-    ax.plot(x, y, color='cyan')
+    ax.plot(x, y, color=line_color, linewidth=plot_line_width)
     ax.set_xlim([-10,10])
     ax.set_ylim([-12,12])
     ax.set_xlabel(r'log$\frac{\rho^{exp}(s,a)}{\rho^\pi(s,a)}$', fontsize='xx-large')
@@ -162,7 +168,7 @@ def plot_forward_reverse_KL_rews():
     fig, ax = plt.subplots(1)
     x = np.arange(-10,10,0.05)
     y = np.exp(x) * (-x)
-    ax.plot(x, y, color='cyan')
+    ax.plot(x, y, color=line_color, linewidth=plot_line_width)
     ax.set_xlim([-10,10])
     ax.set_ylim([-2,0.5])
     ax.set_xlabel(r'log$\frac{\rho^{exp}(s,a)}{\rho^\pi(s,a)}$', fontsize='xx-large')
@@ -362,6 +368,8 @@ def plot_fetch_pedagogical_example():
     # plt.show()
 
 if __name__ == '__main__':
+    plot_forward_reverse_KL_rews()
+
     # csv_full_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-airl-rew-search/multi_target_ant_airl_rew_search_2019_05_04_14_07_14_0009--s-0/progress.csv'
     # csv_full_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search/multi_target_ant_fairl_rew_search_2019_05_04_14_08_18_0009--s-0/progress.csv'
     # csv_full_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search/multi_target_ant_fairl_rew_search_2019_05_04_14_28_51_0010--s-0/progress.csv'
@@ -370,8 +378,8 @@ if __name__ == '__main__':
     # csv_full_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search/multi_target_ant_fairl_rew_search_2019_05_04_14_08_17_0005--s-0/progress.csv'
     # csv_full_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search/multi_target_ant_fairl_rew_search_2019_05_04_14_28_51_0011--s-0/progress.csv'
 
-    import os
-    import json
+    # import os
+    # import json
     # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-fairl-rew-search/'
     # save_path = 'plots/junk_vis/fairl_multi_plot'
     # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-airl-rew-search/'
@@ -436,26 +444,26 @@ if __name__ == '__main__':
 
 
     # tiny models hype search ---------------------------
-    exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-rel-pos-with-termination-small-models-fairl-correct-disc-only-sees-rel-pos'
-    save_path = 'plots/junk_vis/multi_ant_tiny_fairl_disc_only_sees_rel_pos'
+    # exp_path = '/scratch/hdd001/home/kamyar/output/multi-target-ant-rel-pos-with-termination-small-models-fairl-correct-disc-only-sees-rel-pos'
+    # save_path = 'plots/junk_vis/multi_ant_tiny_fairl_disc_only_sees_rel_pos'
 
-    os.makedirs(save_path, exist_ok=True)
+    # os.makedirs(save_path, exist_ok=True)
 
-    for sub_name in os.listdir(exp_path):
-        if os.path.isdir(os.path.join(exp_path, sub_name)):
-            csv_full_path = os.path.join(exp_path, sub_name, 'progress.csv')
-            progress_csv = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)
+    # for sub_name in os.listdir(exp_path):
+    #     if os.path.isdir(os.path.join(exp_path, sub_name)):
+    #         csv_full_path = os.path.join(exp_path, sub_name, 'progress.csv')
+    #         progress_csv = np.genfromtxt(csv_full_path, skip_header=0, delimiter=',', names=True)
 
-            with open(os.path.join(exp_path, sub_name, 'variant.json')) as f:
-                variant = json.loads(f.read())
-            rew = variant['policy_params']['reward_scale']
-            gp = variant['algo_params']['grad_pen_weight']
-            title = 'rew_%d_grad_pen_%.2f' % (rew, gp)
-            # visualize_multi_ant_target_percentages(progress_csv, 8, title=title, save_path=os.path.join(save_path, sub_name+'.png'))
-            # visualize_multi_ant_target_percentages(progress_csv, 4, title=title, save_path=os.path.join(save_path, sub_name+'.png'))
-            visualize_multi_ant_target_percentages_v2(progress_csv, 4, title=title, save_path=os.path.join(save_path, sub_name+'.png'))
+    #         with open(os.path.join(exp_path, sub_name, 'variant.json')) as f:
+    #             variant = json.loads(f.read())
+    #         rew = variant['policy_params']['reward_scale']
+    #         gp = variant['algo_params']['grad_pen_weight']
+    #         title = 'rew_%d_grad_pen_%.2f' % (rew, gp)
+    #         # visualize_multi_ant_target_percentages(progress_csv, 8, title=title, save_path=os.path.join(save_path, sub_name+'.png'))
+    #         # visualize_multi_ant_target_percentages(progress_csv, 4, title=title, save_path=os.path.join(save_path, sub_name+'.png'))
+    #         visualize_multi_ant_target_percentages_v2(progress_csv, 4, title=title, save_path=os.path.join(save_path, sub_name+'.png'))
 
-            # visualize_multi_ant_target_percentages(progress_csv, 8, title=sub_name, save_path=os.path.join(save_path, sub_name+'.png'))
+    #         # visualize_multi_ant_target_percentages(progress_csv, 8, title=sub_name, save_path=os.path.join(save_path, sub_name+'.png'))
 
     # np.random.set_state(
     #     ('MT19937', np.array([4195284069, 4260559355, 3974968103, 2502666189,  383612239,

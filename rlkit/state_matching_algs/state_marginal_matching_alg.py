@@ -50,6 +50,10 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
         num_disc_updates_per_loop_iter=1,
         num_policy_updates_per_loop_iter=1,
 
+        # initial_only_disc_train_epochs=0,
+        pretrain_disc=False,
+        num_disc_pretrain_iters=1000,
+
         disc_lr=1e-3,
         disc_momentum=0.0,
         disc_optimizer_class=optim.Adam,
@@ -59,9 +63,16 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
 
         plotter=None,
         render_eval_paths=False,
-        eval_deterministic=True,
+        eval_deterministic=False,
 
         train_objective='airl',
+
+        num_disc_input_dims=2,
+        plot_reward_surface=True,
+
+        use_survival_reward=False,
+        use_ctrl_cost=False,
+        ctrl_cost_weight=0.0,
 
         **kwargs
     ):
@@ -117,15 +128,41 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
         self.num_disc_updates_per_loop_iter = num_disc_updates_per_loop_iter
         self.num_policy_updates_per_loop_iter = num_policy_updates_per_loop_iter
 
-        d = 5.0
-        self._d = d
-        self._d_len = np.arange(-d,d+0.25,0.25).shape[0]
-        self.xy_var = []
-        for i in np.arange(d,-d-0.25,-0.25):
-            for j in np.arange(-d,d+0.25,0.25):
-                self.xy_var.append([float(j),float(i)])
-        self.xy_var = np.array(self.xy_var)
-        self.xy_var = Variable(ptu.from_numpy(self.xy_var), requires_grad=False)
+        # self.initial_only_disc_train_epochs = initial_only_disc_train_epochs
+        self.pretrain_disc = pretrain_disc
+        self.did_disc_pretraining = False
+        self.num_disc_pretrain_iters = num_disc_pretrain_iters
+        self.cur_epoch = -1
+
+        self.plot_reward_surface = plot_reward_surface
+        if plot_reward_surface:
+            d = 6
+            self._d = d
+            self._d_len = np.arange(-d,d+0.25,0.25).shape[0]
+            self.xy_var = []
+            for i in np.arange(d,-d-0.25,-0.25):
+                for j in np.arange(-d,d+0.25,0.25):
+                    self.xy_var.append([float(j),float(i)])
+            self.xy_var = np.array(self.xy_var)
+            self.xy_var = Variable(ptu.from_numpy(self.xy_var), requires_grad=False)
+
+            # d = 20
+            # self._d = d
+            # # self._d_len = np.arange(0.98697072 - 0.3, 0.98697072 + 0.175, 0.02).shape[0]
+            # self._d_len_rows = np.arange(0.74914774 - 0.35, 0.74914774 + 0.45, 0.01).shape[0]
+            # self._d_len_cols = np.arange(0.98697072 - 0.3, 0.98697072 + 0.175, 0.01).shape[0]
+            # self.xy_var = []
+            # for i in np.arange(0.74914774 + 0.45, 0.74914774 - 0.35, -0.01):
+            #     for j in np.arange(0.98697072 - 0.3, 0.98697072 + 0.175, 0.01):
+            #         self.xy_var.append([float(j), float(i)])
+            # self.xy_var = np.array(self.xy_var)
+            # self.xy_var = Variable(ptu.from_numpy(self.xy_var), requires_grad=False)
+
+        self.num_disc_input_dims = num_disc_input_dims
+
+        self.use_survival_reward = use_survival_reward
+        self.use_ctrl_cost = use_ctrl_cost
+        self.ctrl_cost_weight = ctrl_cost_weight
 
 
     def get_disc_training_batch(self, batch_size, from_expert):
@@ -138,7 +175,8 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
         else:
             buffer = self.replay_buffer
             batch = buffer.random_batch(batch_size)
-            batch['observations'] = batch['observations'][:,-2:]
+            # batch['observations'] = batch['observations'][:,-2:]
+            batch['observations'] = batch['observations'][:,:self.num_disc_input_dims]
         batch = np_to_pytorch_batch(batch)
         return batch
     
@@ -151,26 +189,42 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
 
 
     def _do_training(self, epoch):
+        if not self.did_disc_pretraining:
+            for i in range(self.num_disc_pretrain_iters):
+                self._do_reward_training(epoch)
+                # print('pretrain iter %d' % i)
+            self.did_disc_pretraining = True
+
         for t in range(self.num_update_loops_per_train_call):
             for _ in range(self.num_disc_updates_per_loop_iter):
                 self._do_reward_training(epoch)
             for _ in range(self.num_policy_updates_per_loop_iter):
                 self._do_policy_training(epoch)
+            
+            # if self.initial_only_disc_train_epochs < epoch:
+            #     for _ in range(self.num_policy_updates_per_loop_iter):
+            #         self._do_policy_training(epoch)
         
-        self.discriminator.eval()
-        logits = self.discriminator(self.xy_var, None)
-        rewards = self._convert_logits_to_reward(logits)
-        self.discriminator.train()
+        # this is some weirdness I'll fix in refactoring but for now
+        if self.plot_reward_surface:
+            if self.cur_epoch != epoch:
+                self.discriminator.eval()
+                logits = self.discriminator(self.xy_var, None)
+                rewards = self._convert_logits_to_reward(logits)
+                self.discriminator.train()
 
-        # plot the logits of the discriminator
-        # logits = ptu.get_numpy(logits)
-        # logits = np.reshape(logits, (int(self._d_len), int(self._d_len)))
-        # plot_seaborn_grid(logits, -10, 10, 'Disc Logits Epoch %d'%epoch, osp.join(logger.get_snapshot_dir(), 'disc_logits_epoch_%d.png'%epoch))
+                # plot the logits of the discriminator
+                # logits = ptu.get_numpy(logits)
+                # logits = np.reshape(logits, (int(self._d_len), int(self._d_len)))
+                # plot_seaborn_grid(logits, -10, 10, 'Disc Logits Epoch %d'%epoch, osp.join(logger.get_snapshot_dir(), 'disc_logits_epoch_%d.png'%epoch))
 
-        # plot the rewards given by the discriminator
-        rewards = ptu.get_numpy(rewards)
-        rewards = np.reshape(rewards, (int(self._d_len), int(self._d_len)))
-        plot_seaborn_grid(rewards, -10, 10, 'Disc Rewards Epoch %d'%epoch, osp.join(logger.get_snapshot_dir(), 'disc_rewards_epoch_%d.png'%epoch))
+                # plot the rewards given by the discriminator
+                rewards = ptu.get_numpy(rewards)
+                rewards = np.reshape(rewards, (int(self._d_len), int(self._d_len)))
+                # rewards = np.reshape(rewards, (int(self._d_len_rows), int(self._d_len_cols)))
+                plot_seaborn_grid(rewards, -10, 10, 'Disc Rewards Epoch %d'%epoch, osp.join(logger.get_snapshot_dir(), 'disc_rewards_epoch_%d.png'%epoch))
+
+                self.cur_epoch = epoch
 
 
     def _do_reward_training(self, epoch):
@@ -215,7 +269,13 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
             total_grad = gradients[0]
 
             # GP from Gulrajani et al.
-            gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
+            # gradient_penalty = ((total_grad.norm(2, dim=1) - 1) ** 2).mean()
+            # disc_grad_pen_loss = gradient_penalty * self.grad_pen_weight
+
+            # DIFFERENT FROM GP from Gulrajani et al.
+            gradient_penalty = total_grad.norm(2, dim=1) - 1
+            gradient_penalty = F.relu(gradient_penalty)
+            gradient_penalty = (gradient_penalty**2).mean()
             disc_grad_pen_loss = gradient_penalty * self.grad_pen_weight
 
             # # GP from Mescheder et al.
@@ -245,14 +305,18 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
 
 
     def _convert_logits_to_reward(self, logits):
+        extra_reward = 0.0
+        if self.use_survival_reward:
+            extra_reward += 12.0
+        
         if self.train_objective == 'airl':
-            return logits
+            return logits + extra_reward
         elif self.train_objective == 'fairl':
-            return torch.exp(policy_batch['rewards'])*(-1.0*policy_batch['rewards'])
+            return torch.exp(policy_batch['rewards'])*(-1.0*policy_batch['rewards']) + extra_reward
         elif self.train_objective == 'gail':
-            return F.softplus(policy_batch['rewards'], beta=-1)
+            return F.softplus(policy_batch['rewards'], beta=-1) + extra_reward
         elif self.train_objective == 'w1':
-            return -logits
+            return -logits + extra_reward
         else:
             raise Exception()
 
@@ -263,10 +327,13 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
         acts = policy_batch['actions']
         
         self.discriminator.eval()
-        policy_batch['rewards'] = self.discriminator(obs[:,-2:], None).detach()
+        policy_batch['rewards'] = self.discriminator(obs[:,:self.num_disc_input_dims], None).detach()
         self.discriminator.train()
 
         policy_batch['rewards'] = self._convert_logits_to_reward(policy_batch['rewards'])
+        if self.use_ctrl_cost:
+            ctrl_cost = torch.sum(acts**2, dim=1, keepdim=True)
+            policy_batch['rewards'] = policy_batch['rewards'] - ctrl_cost * self.ctrl_cost_weight
 
         self.policy_optimizer.train_step(policy_batch)
 
@@ -277,12 +344,12 @@ class StateMarginalMatchingAlg(TorchIRLAlgorithm):
     
 
     def cuda(self):
-        self.xy_var = self.xy_var.cuda()
+        if self.plot_reward_surface: self.xy_var = self.xy_var.cuda()
         super().cuda()
     
 
     def cpu(self):
-        self.xy_var = self.xy_var.cpu()
+        if self.plot_reward_surface: self.xy_var = self.xy_var.cpu()
         super().cpu()
 
 

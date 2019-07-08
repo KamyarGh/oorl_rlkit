@@ -104,12 +104,15 @@ with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
     listings = yaml.load(f.read())
 
 for i, expert in enumerate([
+    # 'multi_dir_point_mass_301_demos_ep_len_50'
+    'star_8_point_mass_128_demos_ep_len_25'
+
     # 'ant_multi_valid_target_demos_8_target_8_each_no_sub'
     # 'deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len_50'
     # 'ant_multi_4_directions_32_det_demos_per_task_no_sub_path_len_50'
     # 'ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75'
     # 'rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75'
-    'rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target'
+    # 'rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target'
 
     # 'halfcheetah_256_demos_20_subsampling',
     # 'halfcheetah_128_demos_20_subsampling',

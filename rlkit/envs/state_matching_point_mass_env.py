@@ -11,45 +11,69 @@ from rlkit.core.vistools import plot_seaborn_heatmap, plot_scatter
 
 
 class StateMatchingPointMassEnv():
-    def __init__(self):
+    def __init__(self, env_bound=7.0, init_pos=np.array([0.0, 0.0]), episode_len=479):
         # 1 x 1 x 8 x 2
-        self.valid_targets = np.array(
-            [[[
-                [3.0, 0.0],
-                [0.0, 3.0],
-                [-3.0, 0.0],
-                [0.0, -3.0],
-            ]]]
-        )
+        # self.valid_targets = np.array(
+        #     [[[
+        #         [3.0, 0.0],
+        #         [0.0, 3.0],
+        #         [-3.0, 0.0],
+        #         [0.0, -3.0],
+        #     ]]]
+        # )
         self.cur_pos = np.zeros([2])
+        self.init_pos = init_pos.copy()
 
-        self.max_action_magnitude = 0.2
+        self.max_action_magnitude = 1.0
         self.action_space = spaces.Box(-1.0, 1.0, shape=(2,), dtype='float32')
-        self.observation_space = spaces.Box(-1.0, 1.0, shape=(2,), dtype='float32')
+        # self.observation_space = spaces.Box(-env_bound, env_bound, shape=(2,), dtype='float32')
+        self.observation_space = spaces.Box(-env_bound, env_bound, shape=(3,), dtype='float32')
+        self.env_bound = env_bound
+
+        self.episode_len = float(episode_len)
 
     def seed(self, num):
         pass
 
     def step(self, a):
-        # a = np.clip(a, -1.0, 1.0)
-        # a will be between -1.0 to 1.0
+        a = np.clip(a, self.action_space.low, self.action_space.high)
 
         reward = 0.0 # we don't need a reward for what we want to do with this env
 
-        self.cur_pos += self.max_action_magnitude * a
+        self.cur_pos += a
+
+        # if we want noisy dynamics
+        # self.cur_pos += np.random.normal(loc=0.0, scale=0.2, size=2)
+
+        # clipping to env bound
+        # self.cur_pos = np.clip(self.cur_pos, -self.env_bound, self.env_bound)
+
+        self.timestep += 1.0
+
+        if self.timestep == self.episode_len:
+            done = True
+        else:
+            done = False
         
-        return self.cur_pos.copy(), reward, False, dict(
-            xy_pos=self.cur_pos.copy()
+        obs_with_time = np.array([self.cur_pos[0], self.cur_pos[1], self.timestep/self.episode_len])
+        # return self.cur_pos.copy() , reward, done, dict(
+        #     xy_pos=self.cur_pos.copy(),
+        #     timestep=self.timestep
+        # )
+        return obs_with_time.copy() , reward, done, dict(
+            xy_pos=self.cur_pos.copy(),
+            timestep=self.timestep
         )
 
     def reset(self):
-        # self.cur_pos = np.random.normal(loc=0.0, scale=0.1, size=2)
-        # self.cur_pos = np.array([0.0, -3.0]) + np.random.normal(loc=0.0, scale=0.1, size=2)
-        # self.cur_pos = np.array([0.0, 3.0]) + np.random.normal(loc=0.0, scale=0.1, size=2)
-        self.cur_pos = np.array([0.0, 0.0]) + np.random.normal(loc=0.0, scale=0.1, size=2)
+        self.timestep = 0.0
 
-        return self.cur_pos.copy()
-
+        self.cur_pos = self.init_pos + np.random.normal(loc=0.0, scale=0.1, size=2)
+        # return np.array([self.cur_pos[0], self.cur_pos[1], 0.0])
+        
+        # return self.cur_pos.copy()
+        obs_with_time = np.array([self.cur_pos[0], self.cur_pos[1], self.timestep/self.episode_len])
+        return obs_with_time
 
     def log_new_ant_multi_statistics(self, paths, epoch, log_dir):
         # turn the xy pos into arrays you can work with
@@ -60,13 +84,15 @@ class StateMatchingPointMassEnv():
         xy_pos = [np.array([d['xy_pos'] for d in path["env_infos"]]) for path in paths]
         xy_pos = np.array([d['xy_pos'] for path in paths for d in path['env_infos']])
         
+        PLOT_BOUND = 20
+
         plot_seaborn_heatmap(
             xy_pos[:,0],
             xy_pos[:,1],
             30,
             'Point-Mass Heatmap Epoch %d'%epoch,
             os.path.join(log_dir, 'heatmap_epoch_%d.png'%epoch),
-            [[-5,5], [-5,5]]
+            [[-PLOT_BOUND,PLOT_BOUND], [-PLOT_BOUND,PLOT_BOUND]]
         )
         plot_scatter(
             xy_pos[:,0],
@@ -74,7 +100,7 @@ class StateMatchingPointMassEnv():
             30,
             'Point-Mass Scatter Epoch %d'%epoch,
             os.path.join(log_dir, 'scatter_epoch_%d.png'%epoch),
-            [[-5,5], [-5,5]]
+            [[-PLOT_BOUND,PLOT_BOUND], [-PLOT_BOUND,PLOT_BOUND]]
         )
 
         return {}

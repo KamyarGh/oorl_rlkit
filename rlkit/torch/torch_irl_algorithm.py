@@ -20,6 +20,7 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
         self.render_eval_paths = render_eval_paths
         self.plotter = plotter
         self.max_returns = np.float('-inf')
+        self.best_success_rate = 0.0
 
     @property
     @abc.abstractmethod
@@ -71,6 +72,12 @@ class TorchIRLAlgorithm(IRLAlgorithm, metaclass=abc.ABCMeta):
 
         if self.plotter:
             self.plotter.draw()
+        
+        # if self.best_success_rate < statistics['Success Rate']:
+        #     self.best_success_rate = statistics['Success Rate']
+        #     params = self.get_epoch_snapshot(-1)
+        #     params['epoch'] = epoch
+        #     logger.save_extra_data(params, 'best_params.pkl')
         
         if average_returns > self.max_returns:
             self.max_returns = average_returns

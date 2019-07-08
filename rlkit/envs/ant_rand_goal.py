@@ -418,6 +418,28 @@ class _ExpertTwoPointsParamsSampler(_BaseParamsSampler):
         super().__init__(goals, random=random)
 
 
+class r_20_45to90_ParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        a = np.linspace(np.pi/4.0, np.pi/2.0, num=10, endpoint=True)
+        goals = np.stack([np.cos(a), np.sin(a)], axis=1)
+        goals *= 20.0
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
+class r_20_90to135_ParamsSampler(_BaseParamsSampler):
+    def __init__(self, random=2837, num_samples=1):
+        a = np.linspace(np.pi/2.0, 3*np.pi/4.0, num=10, endpoint=True)
+        goals = np.stack([np.cos(a), np.sin(a)], axis=1)
+        goals *= 20.0
+        print('\n\n')
+        print(goals)
+        print('\n\n')
+        super().__init__(goals, random=random)
+
+
 class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
     def __init__(self):
         self.goal_pos = np.array([1.41, 1.41])
@@ -470,9 +492,17 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
         obs = np.concatenate([
             self.sim.data.qpos.flat,
             self.sim.data.qvel.flat,
-            # np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
-            self.get_body_com("torso").flat
+            self.get_body_com("torso")[:2].flat
         ])
+
+        # version used in SMILe experiments
+        # obs = np.concatenate([
+        #     self.sim.data.qpos.flat,
+        #     self.sim.data.qvel.flat,
+        #     # np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
+        #     self.get_body_com("torso").flat
+        # ])
+
         # print('---')
         # print(self.get_body_com("torso"))
         # print(np.array(self.get_body_com("torso").flat))

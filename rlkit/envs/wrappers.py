@@ -102,6 +102,12 @@ class ScaledEnv(ProxyEnv, Serializable):
         else:
             return {}
     
+    def log_new_ant_multi_statistics(self, paths, epoch, log_dir):
+        if hasattr(self._wrapped_env, "log_new_ant_multi_statistics"):
+            return self._wrapped_env.log_new_ant_multi_statistics(paths, epoch, log_dir)
+        else:
+            return {}
+    
 
 class ScaledMetaEnv(ProxyEnv, Serializable):
     '''

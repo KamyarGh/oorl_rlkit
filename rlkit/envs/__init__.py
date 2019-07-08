@@ -71,10 +71,17 @@ from rlkit.envs.ant_rand_goal import _Expert16PointsTestParamsSampler as AntRand
 from rlkit.envs.ant_rand_goal import _Expert32PointsParamsSampler as AntRandGoal32Points
 from rlkit.envs.ant_rand_goal import _ExpertTestTasksFor32PointsParamsSampler as AntRandGoalTestTasksFor32Points
 
+from rlkit.envs.ant_rand_goal import r_20_45to90_ParamsSampler as AntRandGoal_r_20_45_to_90
+from rlkit.envs.ant_rand_goal import r_20_90to135_ParamsSampler as AntRandGoal_r_20_90_to_135
+
 # Ant rand direc 2D imports
 from rlkit.envs.ant_rand_direc_2d import AntRandDirec2DEnv
 from rlkit.envs.ant_rand_direc_2d import _Expert180DegreesParamsSampler as AntRandDirec180DegSampler
 from rlkit.envs.ant_rand_direc_2d import _DebugParamsSamplerV1 as AntRandDirecDebugSamplerV1
+
+# Ant rand direc 2D imports
+from rlkit.envs.ant_rand_direction import AntRandDirectionEnv as AntRandDirectionRunningEnv
+from rlkit.envs.ant_rand_direction import ParamsSampler45to135 as AntRandDirection45to135ParamsSampler
 
 # Ant Linear Classification
 from rlkit.envs.ant_linear_classification import AntLinearClassifierEnv
@@ -88,8 +95,16 @@ from rlkit.envs.fetch_linear_classification import _ExpertTestParamsSampler as F
 
 # Ant multiple valid targets
 from rlkit.envs.ant_multi_target import AntMultiTargetEnv
+
+# State Marginal Matching
 from rlkit.envs.state_matching_ant_env import StateMatchingAntEnv
 from rlkit.envs.state_matching_point_mass_env import StateMatchingPointMassEnv
+
+from rlkit.envs.pickup_task_point_mass_env import PickupTaskPointMassEnv
+
+# Ant Star Env
+from rlkit.envs.ant_rand_goal_in_8_star_env import AntRandGoalIn8StarEnv
+from rlkit.envs.ant_rand_goal_in_8_star_env import ParamsSampler as Ant8StarSampler
 
 # Meta-Dynamics Envs
 from rlkit.envs.walker_random_dynamics import Walker2DRandomDynamicsEnv
@@ -110,6 +125,18 @@ from gym.envs.mujoco.ant import AntEnv
 from gym.envs.mujoco.humanoid import HumanoidEnv
 from gym.envs.mujoco.hopper import HopperEnv
 from gym.envs.mujoco.walker2d import Walker2dEnv
+
+from rlkit.envs.vanilla_point_mass_env import VanillaPointMassEnv
+
+# Slide Env
+from rlkit.envs.state_matching_slide_env import StateMatchingFetchSlideEnv
+
+# Push Env
+from rlkit.envs.state_matching_pickup_env import StateMatchingPickupEnv
+
+# Pusher Envs
+from rlkit.envs.state_matching_pusher_env_no_obj import StateMatchingPusherNoObjEnv
+from rlkit.envs.state_matching_pusher_env import StateMatchingPusherEnv
 
 # from dm_control.suite.wrappers import pixels
 # from rlkit.envs.dmcs_envs import pixels
@@ -137,6 +164,12 @@ all_envs = {
 }
 
 fixed_envs = {
+    'state_matching_pickup_env': lambda: StateMatchingPickupEnv(),
+    'state_matching_pusher_env': lambda: StateMatchingPusherEnv(),
+    'state_matching_pusher_no_obj_env': lambda: StateMatchingPusherNoObjEnv(),
+    'vanilla_point_mass_env': lambda: VanillaPointMassEnv(),
+    'state_matching_slide_env': lambda: StateMatchingFetchSlideEnv(),
+    'pickup_point_mass_env': lambda: PickupTaskPointMassEnv(),
     'state_matching_point_mass_env': lambda: StateMatchingPointMassEnv(),
     'state_matching_ant_env': lambda: StateMatchingAntEnv(),
     'base_dynamics_walker': lambda: BaseDynamicsWalkerEnv(),
@@ -467,6 +500,27 @@ meta_envs = {
             'is_dmcs_env': False
         }
     },
+    'ant_8_star_env': {
+        'meta_train': lambda: AntRandGoalIn8StarEnv(),
+        'meta_test': lambda: AntRandGoalIn8StarEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_r_20_45_to_90': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_goal_r_20_90_to_135': {
+        'meta_train': lambda: AntRandGoalEnv(),
+        'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
     'ant_rand_goal_200_points': {
         'meta_train': lambda: AntRandGoalEnv(),
         'meta_test': lambda: AntRandGoalEnv(),
@@ -575,6 +629,13 @@ meta_envs = {
     'ant_rand_goal_test_tasks_for_32_points': {
         'meta_train': lambda: AntRandGoalEnv(),
         'meta_test': lambda: AntRandGoalEnv(),
+        'info': {
+            'is_dmcs_env': False
+        }
+    },
+    'ant_rand_direc_running_45_to_135': {
+        'meta_train': lambda: AntRandDirectionRunningEnv(),
+        'meta_test': lambda: AntRandDirectionRunningEnv(),
         'info': {
             'is_dmcs_env': False
         }
@@ -748,6 +809,22 @@ meta_env_task_params_iterators = {
     'halfcheetah_rand_vel_debug_meta_sampelr': {
         'meta_train': lambda: HalfCheetahRandVelDebugMetaTrainSampler(),
         'meta_test': lambda: HalfCheetahRandVelDebugMetaTestSampler(),
+    },
+    'ant_8_star_env': {
+        'meta_train': lambda: Ant8StarSampler(),
+        'meta_test': lambda: Ant8StarSampler(),
+    },
+    'ant_rand_direc_running_45_to_135': {
+        'meta_train': lambda: AntRandDirection45to135ParamsSampler(),
+        'meta_test': lambda: AntRandDirection45to135ParamsSampler(),
+    },
+    'ant_rand_goal_r_20_45_to_90': {
+        'meta_train': lambda: AntRandGoal_r_20_45_to_90(),
+        'meta_test': lambda: AntRandGoal_r_20_45_to_90(),
+    },
+    'ant_rand_goal_r_20_90_to_135': {
+        'meta_train': lambda: AntRandGoal_r_20_90_to_135(),
+        'meta_test': lambda: AntRandGoal_r_20_90_to_135(),
     },
     'ant_rand_goal_200_points': {
         'meta_train': lambda: AntRandGoalExpertTrainSampler(),

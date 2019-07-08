@@ -131,7 +131,7 @@ if __name__ == '__main__':
             # command = 'srun --gres=gpu:1 -c 8 --mem 32gb -x gpu050,gpu057 -p p100 python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 8 --mem 32gb -x gpu050,gpu057 -p max12hours python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012 -p p100,max12hours python {script} -e {specs}'
-            command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012 -p p100 python {script} -e {specs}'
+            command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012,gpu038,gpu035,gpu036,gpu052,gpu048 -p p100,max12hours python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012 -p max12hours python {script} -e {specs}'
             # command = 'srun --gres=gpu:0 -c 1 --mem 5gb -p cpu python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 12 --mem 15gb -p wsgpu python {script} -e {specs}'

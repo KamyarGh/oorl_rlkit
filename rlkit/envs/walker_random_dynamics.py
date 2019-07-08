@@ -110,7 +110,8 @@ class Walker2DRandomDynamicsEnv(MetaMujocoEnv, utils.EzPickle):
             'dof_damping_multiplier': np.ones(9),
             'geom_friction_multiplier': np.ones((8,3))
         }
-        MetaMujocoEnv.__init__(self, 'walker2d.xml', 5)
+        # MetaMujocoEnv.__init__(self, 'walker2d.xml', 5)
+        MetaMujocoEnv.__init__(self, 'walker_2d_with_camera.xml', 5)
         utils.EzPickle.__init__(self)
 
         self.original_params = {

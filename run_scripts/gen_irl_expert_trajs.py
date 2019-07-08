@@ -251,8 +251,8 @@ def experiment(specs):
             'policy_uses_task_params': specs['policy_uses_task_params'],
             'concat_task_params_to_policy_obs': specs['concat_task_params_to_policy_obs']
         }
-        if 'no_terminal' in variant['algo_params']:
-            no_terminal = variant['algo_params']['no_terminal']
+        if 'no_terminal' in specs:
+            no_terminal = specs['no_terminal']
         else:
             no_terminal = False
 

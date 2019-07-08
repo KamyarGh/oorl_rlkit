@@ -5,8 +5,12 @@ meta_data:
   # exp_name: ant_original_model_large_rew_200_plus_survival_rew
   # exp_name: ant_original_model_large_squared_rew_plus_survival_rew_scale_150
   # exp_name: ant_original_model_large_squared_rew_plus_survival_middle_60_deg_rew_scale_200
-  exp_name: ant_large_expert_one_direction_pi_over_32_16_points_test_15_no_survive
+  # exp_name: ant_large_expert_one_direction_pi_over_32_16_points_test_15_no_survive
   # exp_name: ant_expert_24_points_pol_512_3_roll_between_8_rew_scale_50
+  # exp_name: ant_8_star_obs_uses_ant_cfrc_only
+  # exp_name: ant_8_star_obs_uses_no_cfrc
+  # exp_name: ant_random_direction_running_better_reward_function
+  exp_name: ant_rand_goal_r_20_90_to_135
   description: searching over the SAC hyperparameters
   use_gpu: true
   num_workers: 2
@@ -22,13 +26,18 @@ variables:
     # reward_scale: [1.0, 2.0, 5.0, 8.0, 10.0, 20.0, 40.0, 80.0]
     # reward_scale: [5.0, 10.0, 25.0, 50.0, 75.0, 100.0, 150.0, 200.0]
     # reward_scale: [50.0, 100.0, 150.0, 200.0]
-    reward_scale: [200.0]
+    # reward_scale: [200.0]
+    # reward_scale: [2.0, 4.0, 8.0, 12.0, 16.0, 20.0]
+    # reward_scale: [0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0]
+    # reward_scale: [1.0, 2.5, 5.0, 10.0, 15.0]
+    # reward_scale: [15.0, 10.0, 5.0, 2.5, 1.0]
+    reward_scale: [2.5, 5.0]
     policy_uses_task_params: [true]
     policy_uses_pixels: [false]
   # seed: [1553]
   # seed: [1553, 7972, 9361, 1901]
-  seed: [8734, 4082]
-  # seed: [8734]
+  # seed: [8734, 4082]
+  seed: [8734]
 
 # -----------------------------------------------------------------------------
 constants:
@@ -37,28 +46,33 @@ constants:
     do_running_obs_norm: false
 
     num_epochs: 2001
-    num_rollouts_per_epoch: 100
-    num_rollouts_between_updates: 1
-    num_initial_rollouts_for_all_train_tasks: 5
-    num_tasks_per_eval: 1
-    num_eval_trajs_per_task: 10
-    num_updates_per_train_call: 100
+    num_rollouts_per_epoch: 160
+    num_rollouts_between_updates: 10
+    # num_initial_rollouts_for_all_train_tasks: 32
+    num_initial_rollouts_for_all_train_tasks: 10
+    num_tasks_per_eval: 10
+    num_eval_trajs_per_task: 4
+    # num_updates_per_train_call: 500
+    num_updates_per_train_call: 250
     # max_path_length: 1000
     # max_path_length: 400
-    max_path_length: 100
+    # max_path_length: 500
+    max_path_length: 250
     # max_path_length: 100
     # max_path_length: 500
     discount: 0.99
     # replay_buffer_size_per_task: 80000
-    replay_buffer_size_per_task: 500000
+    # replay_buffer_size_per_task: 500000
+    # replay_buffer_size_per_task: 100000
+    replay_buffer_size_per_task: 25000
     # replay_buffer_size_per_task: 1000000
     # replay_buffer_size_per_task: 30000
     # replay_buffer_size_per_task: 250000
     # replay_buffer_size_per_task: 10000
     # replay_buffer_size_per_task: 25000
 
-    num_tasks_per_batch: 1
-    num_samples_per_task_per_batch: 256
+    num_tasks_per_batch: 10
+    num_samples_per_task_per_batch: 100
     soft_target_tau: 0.005
 
     policy_lr: 0.0003
@@ -68,17 +82,24 @@ constants:
     policy_std_reg_weight: 0.001
 
     render: false
-    save_algorithm: true
+    save_algorithm: True
     freq_saving: 10
 
-  net_size: 512
+  # net_size: 512
+  net_size: 256
   num_hidden_layers: 3
   # net_size: 100
   # num_hidden_layers: 2
 
   env_specs:
+    # base_env_name: 'ant_8_star_env'
+    # base_env_name: 'ant_rand_direc_running_45_to_135'
+
+    # base_env_name: 'ant_rand_goal_r_20_45_to_90'
+    base_env_name: 'ant_rand_goal_r_20_90_to_135'
+
     # base_env_name: 'ant_rand_goal_24_points'
-    base_env_name: 'ant_rand_goal_one_direction'
+    # base_env_name: 'ant_rand_goal_one_direction'
     # base_env_name: 'ant_rand_goal_45_deg_farther'
     # base_env_name: 'ant_rand_goal_opposite_2_directions'
 

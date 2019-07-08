@@ -513,7 +513,7 @@ class MetaNewSoftActorCritic(TorchMetaRLAlgorithm):
                 obs_mean=ptu.get_numpy(self.obs_mean)[0],
                 obs_std=ptu.get_numpy(self.obs_std)[0]
             )
-        print(obs_task_params)
+        # print(obs_task_params)
         return PostCondMLPPolicyWrapper(self.main_policy, obs_task_params)
     
 

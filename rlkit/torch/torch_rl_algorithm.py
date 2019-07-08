@@ -61,6 +61,9 @@ class TorchRLAlgorithm(RLAlgorithm, metaclass=abc.ABCMeta):
             self.env.log_diagnostics(test_paths)
         if hasattr(self.env, "log_statistics"):
             statistics.update(self.env.log_statistics(test_paths))
+        if hasattr(self.env, "log_new_ant_multi_statistics"):
+            env_log_stats = self.env.log_new_ant_multi_statistics(test_paths, epoch, logger.get_snapshot_dir())
+            statistics.update(env_log_stats)
         
         average_returns = rlkit.core.eval_util.get_average_returns(test_paths)
         statistics['AverageReturn'] = average_returns

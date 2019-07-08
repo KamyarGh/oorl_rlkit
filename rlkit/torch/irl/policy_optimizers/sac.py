@@ -42,11 +42,6 @@ class NewSoftActorCritic():
 
             wrap_absorbing=False
     ):
-        if eval_deterministic:
-            eval_policy = MakeDeterministic(policy)
-        else:
-            eval_policy = policy
-    
         self.use_policy_as_ema_policy = use_policy_as_ema_policy
         self.soft_ema_policy_exp = soft_ema_policy_exp
         self.policy = policy

@@ -31,10 +31,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+from scipy.misc import imsave
 
 EVAL_SEED = 89205
 
-def rollout_path(env, task_params, obs_task_params, post_cond_policy, max_path_length):
+def rollout_path(env, task_params, obs_task_params, post_cond_policy, max_path_length, task_idx):
     cur_eval_path_builder = PathBuilder()
     
     # reset the env using the params
@@ -47,6 +48,16 @@ def rollout_path(env, task_params, obs_task_params, post_cond_policy, max_path_l
         action, agent_info = post_cond_policy.get_action(agent_obs)
         
         next_ob, raw_reward, terminal, env_info = (env.step(action))
+        # img = env.render(mode='rgb_array', width=200, height=200)
+        if len(cur_eval_path_builder) % 10 == 0:
+            # img = env.render(mode='rgb_array')
+
+            env._wrapped_env._get_viewer('rgb_array').render(200, 200, camera_id=0)
+            # window size used for old mujoco-py:
+            data = env._wrapped_env._get_viewer('rgb_array').read_pixels(200, 200, depth=False)
+            # original image is upside-down, so flip it
+            img = data[::-1, :, :]
+            imsave('plots/walker_irl_frames/walker_task_%02d_step_%03d.png' % (task_idx, len(cur_eval_path_builder)), img)
         terminal = False
 
         # print(env_info['l2_dist'])
@@ -127,7 +138,8 @@ def gather_eval_data(
                     task_params,
                     obs_task_params,
                     post_cond_policy,
-                    max_path_length
+                    max_path_length,
+                    task_num
                 )
                 task_rets.append(np.sum(stacked_path['rewards']))
 

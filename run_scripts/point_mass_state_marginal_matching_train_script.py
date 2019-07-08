@@ -15,7 +15,10 @@ from rlkit.envs import get_env
 import rlkit.torch.pytorch_util as ptu
 from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy, ReparamMultivariateGaussianPolicy
-from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
+
+from rlkit.torch.irl.policy_optimizers.multiple_q_update_sac import NewSoftActorCritic
+# from rlkit.torch.irl.policy_optimizers.sac import NewSoftActorCritic
+
 from rlkit.torch.networks import FlattenMlp, Mlp
 # from rlkit.torch.irl.disc_models.airl_disc import StandardAIRLDisc
 from rlkit.torch.irl.disc_models.airl_disc import ThreeWayResNetAIRLDisc, ResNetAIRLDisc
@@ -74,44 +77,53 @@ def experiment(variant):
     
     sleep(3)
 
-    # set up the policy models
-    policy_net_size = variant['policy_net_size']
-    hidden_sizes = [policy_net_size] * variant['policy_num_hidden_layers']
-    qf1 = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    qf2 = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim + action_dim,
-        output_size=1,
-    )
-    vf = FlattenMlp(
-        hidden_sizes=hidden_sizes,
-        input_size=obs_dim,
-        output_size=1,
-    )
-    policy = ReparamTanhMultivariateGaussianPolicy(
-    # policy = ReparamMultivariateGaussianPolicy(
-        hidden_sizes=hidden_sizes,
-        obs_dim=obs_dim,
-        action_dim=action_dim,
-        # std=0.1
-    )
+    if 'reload_params' in variant and variant['reload_params'] != '':
+        params = joblib.load(variant['reload_params'])
+        qf1 = params['qf1']
+        qf2 = params['qf2']
+        vf = params['vf']
+        policy = params['policy']
+        disc_model = params['disc']
+    else:
+        # set up the policy models
+        policy_net_size = variant['policy_net_size']
+        hidden_sizes = [policy_net_size] * variant['policy_num_hidden_layers']
+        qf1 = FlattenMlp(
+            hidden_sizes=hidden_sizes,
+            input_size=obs_dim + action_dim,
+            output_size=1,
+        )
+        qf2 = FlattenMlp(
+            hidden_sizes=hidden_sizes,
+            input_size=obs_dim + action_dim,
+            output_size=1,
+        )
+        vf = FlattenMlp(
+            hidden_sizes=hidden_sizes,
+            input_size=obs_dim,
+            output_size=1,
+        )
+        policy = ReparamTanhMultivariateGaussianPolicy(
+        # policy = ReparamMultivariateGaussianPolicy(
+            hidden_sizes=hidden_sizes,
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+            # std=0.1
+        )
 
-    # set up the discriminator models
-    disc_model_class = ThreeWayResNetAIRLDisc if variant['threeway'] else ResNetAIRLDisc
-    disc_model = disc_model_class(
-        2, # obs is just x-y pos
-        num_layer_blocks=variant['disc_num_blocks'],
-        hid_dim=variant['disc_hid_dim'],
-        hid_act=variant['disc_hid_act'],
-        use_bn=variant['disc_use_bn'],
-        clamp_magnitude=variant['disc_clamp_magnitude']
-    )
-    print(disc_model)
-    print(disc_model.clamp_magnitude)
+        # set up the discriminator models
+        disc_model_class = ThreeWayResNetAIRLDisc if variant['threeway'] else ResNetAIRLDisc
+        disc_model = disc_model_class(
+            # 2, # obs is just x-y pos
+            variant['algo_params']['num_disc_input_dims'],
+            num_layer_blocks=variant['disc_num_blocks'],
+            hid_dim=variant['disc_hid_dim'],
+            hid_act=variant['disc_hid_act'],
+            use_bn=variant['disc_use_bn'],
+            clamp_magnitude=variant['disc_clamp_magnitude']
+        )
+        print(disc_model)
+        print(disc_model.clamp_magnitude)
 
     # set up the RL algorithm used to train the policy
     policy_optimizer = NewSoftActorCritic(

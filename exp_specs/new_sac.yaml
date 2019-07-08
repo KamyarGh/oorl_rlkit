@@ -1,37 +1,37 @@
 meta_data:
   script_path: run_scripts/sac.py
-  exp_name: test_time_train_final_walker_expert
+  exp_name: pusher_task_using_SAC_0
   description: searching over the SAC hyperparameters
-  use_gpu: false
-  num_workers: 6
+  use_gpu: true
+  num_workers: 8
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
 variables:
-  seed: [1553, 7972, 9361, 1901, 23702, 249]
-  # seed: [1553, 7972]
+  # seed: [1553, 7972, 9361, 1901, 23702, 249]
+  reward_scale: [1.0, 2.5, 5.0, 10.0]
+  seed: [1553, 7972]
   # seed: [1553]
 
 # -----------------------------------------------------------------------------
 constants:
   use_custom_ant_models: false
   algo_params:
-    save_best: true
-    save_best_starting_from_epoch: 90
+    save_best: false
+    save_best_starting_from_epoch: 100000
     
     meta: false
-    num_epochs: 201
+    num_epochs: 1001
     num_steps_per_epoch: 10000
-    num_steps_per_eval: 20000
+    num_steps_per_eval: 5000
     replay_buffer_size: 1000000
 
     num_updates_per_env_step: 1
     batch_size: 256
     # reward_scale: 20
-    reward_scale: 5
     soft_target_tau: 0.005
 
-    max_path_length: 1000
+    max_path_length: 100
     discount: 0.99
 
     policy_lr: 0.0003
@@ -44,12 +44,13 @@ constants:
     save_algorithm: true
     freq_saving: 10
 
-  net_size: 256
-  num_hidden_layers: 2
+  net_size: 128
+  num_hidden_layers: 3
 
   env_specs:
+    base_env_name: 'state_matching_pusher_env'
     # base_env_name: 'humanoid_v2'
     # base_env_name: 'hopper_v2'
-    base_env_name: 'walker_v2'
+    # base_env_name: 'walker_v2'
     normalized: false
     train_test_env: false

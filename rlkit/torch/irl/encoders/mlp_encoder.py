@@ -27,19 +27,19 @@ class TrivialR2ZMap(PyTorchModule):
         self.save_init_params(locals())
         super().__init__()
 
-        self.trunk = nn.Sequential(
-            nn.Linear(r_dim, hid_dim),
-            nn.BatchNorm1d(hid_dim),
-            nn.ReLU()
-        )
         # self.trunk = nn.Sequential(
         #     nn.Linear(r_dim, hid_dim),
         #     nn.BatchNorm1d(hid_dim),
-        #     nn.ReLU(),
-        #     nn.Linear(hid_dim, hid_dim),
-        #     nn.BatchNorm1d(hid_dim),
         #     nn.ReLU()
         # )
+        self.trunk = nn.Sequential(
+            nn.Linear(r_dim, hid_dim),
+            nn.BatchNorm1d(hid_dim),
+            nn.ReLU(),
+            nn.Linear(hid_dim, hid_dim),
+            nn.BatchNorm1d(hid_dim),
+            nn.ReLU()
+        )
         self.mean_fc = nn.Linear(hid_dim, z_dim)
         self.log_sig_fc = nn.Linear(hid_dim, z_dim)
 

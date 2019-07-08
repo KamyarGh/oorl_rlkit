@@ -412,12 +412,14 @@ class AIRL(TorchIRLAlgorithm):
             
             self.rewardf_eval_statistics['Disc CE Loss'] = np.mean(ptu.get_numpy(disc_ce_loss))
             self.rewardf_eval_statistics['Disc Acc'] = np.mean(ptu.get_numpy(accuracy))
-            self.rewardf_eval_statistics['Grad Pen'] = np.mean(ptu.get_numpy(gradient_penalty))
-            self.rewardf_eval_statistics['Grad Pen W'] = np.mean(self.grad_pen_weight)
+            if self.use_grad_pen:
+                self.rewardf_eval_statistics['Grad Pen'] = np.mean(ptu.get_numpy(gradient_penalty))
+                self.rewardf_eval_statistics['Grad Pen W'] = np.mean(self.grad_pen_weight)
             self.rewardf_eval_statistics['Disc Avg CE Grad Norm this epoch'] = np.mean(self.disc_ce_grad_norm / self.disc_ce_grad_norm_counter)
             self.rewardf_eval_statistics['Disc Max CE Grad Norm this epoch'] = np.mean(self.max_disc_ce_grad)
-            self.rewardf_eval_statistics['Disc Avg GP Grad Norm this epoch'] = np.mean(self.disc_gp_grad_norm / self.disc_gp_grad_norm_counter)
-            self.rewardf_eval_statistics['Disc Max GP Grad Norm this epoch'] = np.mean(self.max_disc_gp_grad)
+            if self.use_grad_pen:
+                self.rewardf_eval_statistics['Disc Avg GP Grad Norm this epoch'] = np.mean(self.disc_gp_grad_norm / self.disc_gp_grad_norm_counter)
+                self.rewardf_eval_statistics['Disc Max GP Grad Norm this epoch'] = np.mean(self.max_disc_gp_grad)
             if self.use_disc_input_noise:
                 self.rewardf_eval_statistics['Disc Input Noise Scale'] = noise_scale
 

@@ -1,9 +1,9 @@
 meta_data:
   script_path: /h/kamyar/oorl_rlkit/run_scripts/bc_train_script.py
-  exp_name: paper_version_hopper_bc_rerun
+  exp_name: paper_version_walker_4_demos_bc_rerun_1
   description: searching over the SAC hyperparameters
-  use_gpu: false
-  num_workers: 9
+  use_gpu: true
+  num_workers: 3
   cpu_range: [0,159]
   num_cpu_per_worker: 1
 # -----------------------------------------------------------------------------
@@ -64,11 +64,11 @@ variables:
 
     # norm_walker_32_demos_20_subsampling,
     # norm_walker_16_demos_20_subsampling,
-    # norm_walker_4_demos_20_subsampling,
+    norm_walker_4_demos_20_subsampling,
 
-    norm_hopper_32_demos_20_subsampling,
-    norm_hopper_16_demos_20_subsampling,
-    norm_hopper_4_demos_20_subsampling,
+    # norm_hopper_32_demos_20_subsampling,
+    # norm_hopper_16_demos_20_subsampling,
+    # norm_hopper_4_demos_20_subsampling,
   ]
 
 # -----------------------------------------------------------------------------
@@ -98,8 +98,8 @@ constants:
     freq_saving: 20
     
   env_specs:
-    base_env_name: 'hopper_v2'
-    # base_env_name: 'walker_v2'
+    # base_env_name: 'hopper_v2'
+    base_env_name: 'walker_v2'
     # base_env_name: 'ant_v2'
     # base_env_name: 'halfcheetah_v2'
     train_test_env: false

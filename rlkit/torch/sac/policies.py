@@ -316,7 +316,7 @@ class ReparamTanhMultivariateGaussianPolicy(Mlp, ExplorationPolicy):
         :param return_log_prob: If True, return a sample and its log probability
         """
         # print('forward')
-        # print(obs)
+        # print(obs.shape)
         h = obs
         for i, fc in enumerate(self.fcs):
             h = self.hidden_activation(fc(h))
