@@ -8088,64 +8088,157 @@ for exp_name in [
 #         constraints=constraints
 #     )
 
-# exp_name = 'pusher_task_smm_len_100'
-# exp_name = 'pusher_task_smm_len_250_gp_0p5'
-# exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween'
-# exp_name = 'pusher_task_using_SAC_0'
-# exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween_with_ctrl_cost'
-# exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween_no_ctrl_cost_more_hype_search_with_saving'
-# exp_name = 'pusher_task_smm_len_200_target_has_no_inbetween_no_ctrl_cost_more_hype_search_with_saving'
-exp_name = 'pusher_task_smm_len_100_with_gaussian_line_demo'
-# for rew in [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]:
-# for rew in [0.1, 0.25, 0.5, 1.0, 2.0, 4.0]:
-# for rew in [1.0, 2.5, 5.0, 10.0]:
-for rew in [0.25, 0.5, 1.0]:
-    # for ctrl in [1.0, 5.0, 10.0]:
-    # for gp in [0.1, 0.5]:
-    for gp in [0.25, 0.5, 1.0]:
-        constraints = {
-            # 'reward_scale': rew,
-            'policy_params.reward_scale': rew,
-            # 'algo_params.reward_scale': rew,
-            # 'algo_params.ctrl_cost_weight': ctrl,
-            'algo_params.grad_pen_weight': gp
-        }
-        name = 'rew_{}_gp_{}'.format(rew, gp)
-        # name = 'rew_{}'.format(rew)
-        # name = 'rew_{}_ctrl_{}'.format(rew, ctrl)
-        plot_experiment_returns(
-            os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
-            exp_name,
-            os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'AvgClosestArm2Obj_{}.png'.format(name)),
-            x_axis_lims=[0,200],
-            y_axis_lims=[0, 1.0],
-            plot_mean=False,
-            column_name=[
-                'AvgClosestArm2Obj'
-            ],
-            constraints=constraints
-        )
-        plot_experiment_returns(
-            os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
-            exp_name,
-            os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'AvgClosestObj2Goal_{}.png'.format(name)),
-            x_axis_lims=[0,200],
-            y_axis_lims=[0, 1.0],
-            plot_mean=False,
-            column_name=[
-                'AvgClosestObj2Goal'
-            ],
-            constraints=constraints
-        )
-        plot_experiment_returns(
-            os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
-            exp_name,
-            os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'Success_Rate_{}.png'.format(name)),
-            x_axis_lims=[0,200],
-            y_axis_lims=[0, 1.0],
-            plot_mean=False,
-            column_name=[
-                'Success_Rate'
-            ],
-            constraints=constraints
-        )
+# # exp_name = 'pusher_task_smm_len_100'
+# # exp_name = 'pusher_task_smm_len_250_gp_0p5'
+# # exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween'
+# # exp_name = 'pusher_task_using_SAC_0'
+# # exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween_with_ctrl_cost'
+# # exp_name = 'pusher_task_smm_len_100_target_has_no_inbetween_no_ctrl_cost_more_hype_search_with_saving'
+# # exp_name = 'pusher_task_smm_len_200_target_has_no_inbetween_no_ctrl_cost_more_hype_search_with_saving'
+# exp_name = 'pusher_task_smm_len_100_with_gaussian_line_demo'
+# # for rew in [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]:
+# # for rew in [0.1, 0.25, 0.5, 1.0, 2.0, 4.0]:
+# # for rew in [1.0, 2.5, 5.0, 10.0]:
+# for rew in [0.25, 0.5, 1.0]:
+#     # for ctrl in [1.0, 5.0, 10.0]:
+#     # for gp in [0.1, 0.5]:
+#     for gp in [0.25, 0.5, 1.0]:
+#         constraints = {
+#             # 'reward_scale': rew,
+#             'policy_params.reward_scale': rew,
+#             # 'algo_params.reward_scale': rew,
+#             # 'algo_params.ctrl_cost_weight': ctrl,
+#             'algo_params.grad_pen_weight': gp
+#         }
+#         name = 'rew_{}_gp_{}'.format(rew, gp)
+#         # name = 'rew_{}'.format(rew)
+#         # name = 'rew_{}_ctrl_{}'.format(rew, ctrl)
+#         plot_experiment_returns(
+#             os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#             exp_name,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'AvgClosestArm2Obj_{}.png'.format(name)),
+#             x_axis_lims=[0,200],
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name=[
+#                 'AvgClosestArm2Obj'
+#             ],
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#             exp_name,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'AvgClosestObj2Goal_{}.png'.format(name)),
+#             x_axis_lims=[0,200],
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name=[
+#                 'AvgClosestObj2Goal'
+#             ],
+#             constraints=constraints
+#         )
+#         plot_experiment_returns(
+#             os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#             exp_name,
+#             os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'Success_Rate_{}.png'.format(name)),
+#             x_axis_lims=[0,200],
+#             y_axis_lims=[0, 1.0],
+#             plot_mean=False,
+#             column_name=[
+#                 'Success_Rate'
+#             ],
+#             constraints=constraints
+#         )
+
+
+# # exp_name = 'first_try_hc_rand_vel_meta_dagger_MSE_64_demos_sub_1_100_updates_per_call'
+# # exp_name = 'first_try_hc_rand_vel_meta_dagger_MSE_64_demos_sub_1'
+# for exp_name in [
+#     # 'correct_use_z_sample_det_expert_hc_rand_vel_meta_dagger_MSE_64_demos_sub_1_100_updates_per_call',
+#     # 'correct_use_z_sample_stoch_expert_hc_rand_vel_meta_dagger_MSE_64_demos_sub_1_100_updates_per_call',
+#     # 'correct_use_z_mean_stoch_expert_hc_rand_vel_meta_dagger_MSE_64_demos_sub_1_100_updates_per_call',
+#     # 'correct_use_z_mean_det_expert_hc_rand_vel_meta_dagger_MSE_64_demos_sub_1_100_updates_per_call'
+
+#     'correct_hc_rand_vel_meta_dagger_use_z_sample_det_expert_MSE_64_demos_sub_1_100_updates_per_call'
+# ]:
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_train.png'),
+#         x_axis_lims=[0,120],
+#         y_axis_lims=[-250, 0],
+#         plot_mean=False,
+#         column_name=[
+#             'Avg_Run_Rew_meta_train'
+#         ],
+#     )
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_test.png'),
+#         x_axis_lims=[0,120],
+#         y_axis_lims=[-250, 0],
+#         plot_mean=False,
+#         column_name=[
+#             'Avg_Run_Rew_meta_test'
+#         ],
+#     )
+
+
+# for exp_name in [
+#     'correct_ant_rand_goal_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call'
+# ]:
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_train.png'),
+#         x_axis_lims=[0,120],
+#         y_axis_lims=[0, 1],
+#         plot_mean=False,
+#         column_name=[
+#             'L2AverageClosest_meta_train',
+#             'L2AverageClosest_meta_train+L2StdClosest_meta_train',
+#             'L2AverageClosest_meta_train-L2StdClosest_meta_train',
+#         ],
+#     )
+#     plot_experiment_returns(
+#         os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+#         exp_name,
+#         os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_test.png'),
+#         x_axis_lims=[0,120],
+#         y_axis_lims=[0, 1],
+#         plot_mean=False,
+#         column_name=[
+#             'L2AverageClosest_meta_test',
+#             'L2AverageClosest_meta_test+L2StdClosest_meta_test',
+#             'L2AverageClosest_meta_test-L2StdClosest_meta_test',
+#         ],
+#     )
+
+
+for exp_name in [
+    # 'correct_walker_rand_dyn_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call'
+    'longer_run_correct_walker_rand_dyn_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call'
+]:
+    plot_experiment_returns(
+        os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+        exp_name,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_train.png'),
+        x_axis_lims=[0,550],
+        y_axis_lims=[0, 4000],
+        plot_mean=False,
+        column_name=[
+            'AverageReturn_meta_train'
+        ],
+    )
+    plot_experiment_returns(
+        os.path.join('/scratch/hdd001/home/kamyar/output', exp_name.replace('_', '-')),
+        exp_name,
+        os.path.join('/h/kamyar/oorl_rlkit/plots', exp_name, 'meta_test.png'),
+        x_axis_lims=[0,550],
+        y_axis_lims=[0, 4000],
+        plot_mean=False,
+        column_name=[
+            'AverageReturn_meta_test'
+        ],
+    )

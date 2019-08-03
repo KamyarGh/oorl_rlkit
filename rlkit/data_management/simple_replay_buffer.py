@@ -133,6 +133,37 @@ class SimpleReplayBuffer(ReplayBuffer):
             # MAX EPISODE LENGTH
             self._traj_endpoints[self._cur_start] = self._top
             self._cur_start = self._top
+    
+
+    def add_path(self, path):
+        # print(path)
+        for (
+            ob,
+            action,
+            reward,
+            next_ob,
+            terminal,
+            agent_info,
+            env_info
+        ) in zip(
+            path["observations"],
+            path["actions"],
+            path["rewards"],
+            path["next_observations"],
+            path["terminals"],
+            path["agent_infos"],
+            path["env_infos"],
+        ):
+            self.add_sample(
+                observation=ob,
+                action=action,
+                reward=reward,
+                terminal=terminal,
+                next_observation=next_ob,
+                agent_info=agent_info,
+                env_info=env_info,
+            )
+        self.terminate_episode()
 
 
     def _advance(self):
@@ -450,6 +481,8 @@ class MetaSimpleReplayBuffer():
     def sample_trajs_from_task(self, task_identifier, num_trajs, samples_per_traj=None):
         return self.task_replay_buffers[task_identifier].sample_trajs(num_trajs, samples_per_traj=samples_per_traj)
     
+    def sample_random_batch_from_task(self, task_identifier, num_samples):
+        return self.task_replay_buffers[task_identifier].random_batch(num_samples)  
 
     def random_batch(self, *args, **kwargs):
         return self.sample_random_batch(*args, **kwargs)

@@ -692,6 +692,12 @@ class PostCondMLPPolicyWrapper(ExplorationPolicy):
             obs_np = (obs_np - self.obs_mean) / self.obs_std
         obs = np.concatenate((obs_np, self.np_z), axis=0)
         return self.policy.get_action(obs, deterministic=self.deterministic)
+    
+    def cuda(self):
+        self.policy.cuda()
+    
+    def cpu(self):
+        self.policy.cpu()
 
 
 class ObsPreprocessedReparamTanhMultivariateGaussianPolicy(ReparamTanhMultivariateGaussianPolicy):

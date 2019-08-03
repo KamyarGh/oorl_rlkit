@@ -73,8 +73,8 @@ class TorchMetaIRLAlgorithm(MetaIRLAlgorithm, metaclass=abc.ABCMeta):
         
         # meta_test_this_epoch = statistics['Percent_Solved meta_test']
         # meta_test_this_epoch = statistics['Avg Run Rew meta_test']
-        meta_test_this_epoch = statistics['L2AverageClosest meta_test']
-        # meta_test_this_epoch = statistics['Perc Success meta_test']
+        # meta_test_this_epoch = statistics['L2AverageClosest meta_test']
+        meta_test_this_epoch = statistics['Perc Success meta_test']
         # meta_test_this_epoch = 100.0
         # meta_test_this_epoch = statistics['AverageReturn meta_test']
         if meta_test_this_epoch > self.best_meta_test:
@@ -83,7 +83,10 @@ class TorchMetaIRLAlgorithm(MetaIRLAlgorithm, metaclass=abc.ABCMeta):
             self.save_algorithm = True
             if self.save_best:
                 if epoch > self.save_best_after_epoch:
+                    temp_rb = self.replay_buffer
+                    self.replay_buffer = None
                     logger.save_extra_data(self.get_extra_data_to_save(epoch), 'best_meta_test.pkl')
+                    self.replay_buffer = temp_rb
                     self.best_meta_test = meta_test_this_epoch
                     print('\n\nSAVED ALG AT EPOCH %d\n\n' % epoch)
             self.save_algorithm = prev_save_alg

@@ -9,7 +9,8 @@ from collections import defaultdict
 import os.path as osp
 
 context_sizes = [1,2,3,4]
-amounts = [(64,1), (64,20), (16,20), (4,20)]
+# amounts = [(64,1), (64,20), (16,20), (4,20)]
+amounts = [(64,1)]
 
 sa_irl_results = {
     'name': 'Meta-IRL (state-action)',
@@ -123,6 +124,16 @@ bc_results = {
     ]
 }
 
+# Dagger MSE version
+dagger_results = {
+    'name': 'Meta-Dagger',
+    (64,1): [
+        '/scratch/hdd001/home/kamyar/output/correct-hc-rand-vel-meta-dagger-use-z-sample-det-expert-MSE-64-demos-sub-1-100-updates-per-call/correct_hc_rand_vel_meta_dagger_use_z_sample_det_expert_MSE_64_demos_sub_1_100_updates_per_call_2019_07_28_16_29_06_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/correct-hc-rand-vel-meta-dagger-use-z-sample-det-expert-MSE-64-demos-sub-1-100-updates-per-call/correct_hc_rand_vel_meta_dagger_use_z_sample_det_expert_MSE_64_demos_sub_1_100_updates_per_call_2019_07_28_16_29_07_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/correct-hc-rand-vel-meta-dagger-use-z-sample-det-expert-MSE-64-demos-sub-1-100-updates-per-call/correct_hc_rand_vel_meta_dagger_use_z_sample_det_expert_MSE_64_demos_sub_1_100_updates_per_call_2019_07_28_16_29_09_0002--s-0',
+    ]
+}
+
 # MLE version
 # bc_results = {
 #     'name': 'Meta-BC',
@@ -183,19 +194,21 @@ def gather_results(method_paths):
         new_dict[data_amount] = amount_dict
     return new_dict
 
-# IF YOU WANT TO REGATHER RESULTS RUN THIS
+# # IF YOU WANT TO REGATHER RESULTS RUN THIS
 # save_dict = {}
-# for method in [sa_irl_results, s_irl_results, bc_results]:
+# # for method in [sa_irl_results, s_irl_results, bc_results]:
 # # for method in [bc_results]:
+# for method in [dagger_results]:
 #     print(method['name'])
 #     save_dict[method['name']] = gather_results(method)
-# joblib.dump(save_dict, 'hc_rand_vel_save_dict_with_mse_bc.pkl', compress=3)
+# joblib.dump(save_dict, 'hc_rand_vel_save_dict_with_mse_dagger.pkl', compress=3)
 
 # ELSE
 # save_dict = joblib.load('hc_rand_vel_save_dict.pkl')
-# print(save_dict.keys())
+save_dict = joblib.load('hc_rand_vel_save_dict_with_mse_dagger.pkl')
+print(save_dict.keys())
 # save_dict.update(joblib.load('hc_rand_vel_save_dict_mse_bc.pkl'))
-save_dict = joblib.load('hc_rand_vel_save_dict_with_mse_bc.pkl')
+# save_dict = joblib.load('hc_rand_vel_save_dict_with_mse_bc.pkl')
 for name, method_d in save_dict.items():
     print('\n')
     print(name)
@@ -240,22 +253,27 @@ ax.set_ylabel('Delta from Target Velocity')
 ax.set_ylim([0.0, 0.75])
 
 print(context_means.keys())
-print(len(context_means['bc']))
+# print(len(context_means['bc']))
 
+# ax.errorbar(
+#     np.array(list(range(1,5))), context_means['Meta-BC'], context_stds['Meta-BC'],
+#     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-BC'
+# )
+# ax.errorbar(
+#     np.array(list(range(1,5))) + 0.03, context_means['Meta-IRL (state-action)'], context_stds['Meta-IRL (state-action)'],
+#     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-IRL (state-action)'
+# )
+# ax.errorbar(
+#     np.array(list(range(1,5))) + 0.06, context_means['Meta-IRL (state-action)'], context_stds['Meta-IRL (state-action)'],
+#     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-IRL (state-only)'
+# )
 ax.errorbar(
-    np.array(list(range(1,5))), context_means['Meta-BC'], context_stds['Meta-BC'],
-    elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-BC'
-)
-ax.errorbar(
-    np.array(list(range(1,5))) + 0.03, context_means['Meta-IRL (state-action)'], context_stds['Meta-IRL (state-action)'],
-    elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-IRL (state-action)'
-)
-ax.errorbar(
-    np.array(list(range(1,5))) + 0.06, context_means['Meta-IRL (state-action)'], context_stds['Meta-IRL (state-action)'],
-    elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-IRL (state-only)'
+    np.array(list(range(1,5))) + 0.06, context_means['Meta-Dagger'], context_stds['Meta-Dagger'],
+    elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-Dagger'
 )
 
 # lgd = ax.legend(loc='upper center', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
 lgd = ax.legend(loc='upper right', shadow=False, ncol=1)
-plt.savefig('hc_context_size_plot.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+# plt.savefig('hc_context_size_plot.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+plt.savefig('hc_rand_vel_dagger_context_size_plot.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
 plt.close()

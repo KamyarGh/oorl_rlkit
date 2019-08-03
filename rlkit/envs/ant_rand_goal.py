@@ -474,7 +474,13 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
         # survive_reward = 1.0
         survive_reward = 0.0
         # survive_reward = 4.0
+
         reward = goal_reward - ctrl_cost - contact_cost + survive_reward
+        # if l2_dist < 0.5:
+        #     reward = 1.0
+        # else:
+        #     reward = 0.0
+        
         state = self.state_vector()
         # notdone = np.isfinite(state).all() and 1.0 >= state[2] >= 0.
         # done = not notdone
@@ -489,19 +495,19 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
             reward_survive=survive_reward)
 
     def _get_obs(self):
-        obs = np.concatenate([
-            self.sim.data.qpos.flat,
-            self.sim.data.qvel.flat,
-            self.get_body_com("torso")[:2].flat
-        ])
-
-        # version used in SMILe experiments
         # obs = np.concatenate([
         #     self.sim.data.qpos.flat,
         #     self.sim.data.qvel.flat,
-        #     # np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
-        #     self.get_body_com("torso").flat
+        #     self.get_body_com("torso")[:2].flat
         # ])
+
+        # version used in SMILe experiments
+        obs = np.concatenate([
+            self.sim.data.qpos.flat,
+            self.sim.data.qvel.flat,
+            # np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
+            self.get_body_com("torso").flat
+        ])
 
         # print('---')
         # print(self.get_body_com("torso"))
@@ -536,6 +542,9 @@ class AntRandGoalEnv(MetaMujocoEnv, utils.EzPickle):
 
     def task_id_to_obs_task_params(self, task_id):
         return np.array(task_id)
+    
+    def task_id_to_task_params(self, task_id):
+        return {'goal_pos': np.array(task_id)}
 
     def log_statistics(self, paths):
         # this is run so rarely that it doesn't matter if it's a little inefficient

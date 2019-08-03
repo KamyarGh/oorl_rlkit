@@ -39,8 +39,8 @@ while True:
     for i in range(100):
         env.render()
 
-        # action = env.action_space.sample()
-        action, *_ = p.get_action(obs)
+        action = env.action_space.sample()
+        # action, *_ = p.get_action(obs)
         # print(action)
         # action = np.zeros(7)
 

@@ -1417,6 +1417,13 @@ norm_walker_meta_dyn_32_det_demos_per_task_20_sub:
     norm_walker_meta_dyn_32_det_demos_per_task_20_sub
   ]
 
+walker_meta_dyn_32_det_demos_per_task_1_sub:
+  description: "walker meta dynamics, path length 1000"
+  exp_dir: /scratch/hdd001/home/kamyar/output/walker-meta-dyn-32-det-demos-per-task-1-sub-fixed-save-problem-test-tasks
+  seed_runs: [
+    walker_meta_dyn_32_det_demos_per_task_1_sub_fixed_save_problem_test_tasks_2019_07_28_17_32_47_0000--s-0
+  ]
+
 test_tasks_walker_meta_dyn_32_det_demos_per_task_20_sub:
   description: "test_tasks_walker meta dynamics, path length 1000"
   exp_dir: /scratch/hdd001/home/kamyar/output/walker-meta-dyn-32-det-demos-per-task-20-sub-fixed-save-problem-test-tasks

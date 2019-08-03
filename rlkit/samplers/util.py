@@ -59,17 +59,19 @@ def rollout(env, agent, max_path_length=np.inf, animated=False,
                 raise NotImplementedError()
             return obs['pixels']
         elif isinstance(obs, dict):
-            if policy_uses_task_params:
-                if concat_task_params_to_policy_obs:
-                    return np.concatenate((obs['obs'], obs['obs_task_params']), -1)
-                else:
-                    raise NotImplementedError()
-            return obs['obs']
+            # if policy_uses_task_params:
+            #     if concat_task_params_to_policy_obs:
+            #         return np.concatenate((obs['obs'], obs['obs_task_params']), -1)
+            #     else:
+            #         raise NotImplementedError()
+            # return obs['obs']
+            return obs
         return obs
     
     o = process_obs(o)
     while path_length < max_path_length:
-        a, agent_info = agent.get_action(o)
+        # a, agent_info = agent.get_action(o)
+        a, agent_info = agent.get_action(o['obs'])
         next_o, r, d, env_info = env.step(a)
         next_o = process_obs(next_o)
         if neural_process is not None:
@@ -114,6 +116,10 @@ def rollout(env, agent, max_path_length=np.inf, animated=False,
                 np.expand_dims(next_o, 0)
             )
         )
+    else:
+        l = len(observations)
+        next_observations = observations[1:l]
+        observations = observations[0:l-1]
     return dict(
         observations=observations,
         actions=actions,

@@ -17,7 +17,7 @@ from rlkit.envs.wrappers import ScaledMetaEnv
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.networks import FlattenMlp
 
-from rlkit.torch.irl.np_bc import NeuralProcessBC
+from rlkit.torch.irl.meta_dagger import MetaDagger
 from rlkit.torch.irl.encoders.mlp_encoder import TimestepBasedEncoder, WeightShareTimestepBasedEncoder
 from rlkit.torch.irl.encoders.conv_seq_encoder import ConvTrajEncoder, R2ZMap, Dc2RMap, NPEncoder
 
@@ -46,6 +46,10 @@ def experiment(variant):
     # this script is for the non-meta-learning airl
     train_context_buffer, train_test_buffer = extra_data['meta_train']['context'], extra_data['meta_train']['test']
     test_context_buffer, test_test_buffer = extra_data['meta_test']['context'], extra_data['meta_test']['test']
+
+    # load the expert
+    expert_policy = joblib.load(variant['expert_policy'])['algorithm']
+    expert_policy.replay_buffer = None
 
     # set up the envs
     env_specs = variant['env_specs']
@@ -109,52 +113,14 @@ def experiment(variant):
         use_bn=True,
         within_traj_agg=variant['algo_params']['within_traj_agg']
     )
-    # ---------------
-    # encoder = WeightShareTimestepBasedEncoder(
-    #     obs_dim,
-    #     action_dim,
-    #     64,
-    #     variant['algo_params']['r_dim'],
-    #     variant['algo_params']['z_dim'],
-    #     variant['algo_params']['enc_hid_dim'],
-    #     variant['algo_params']['r2z_hid_dim'],
-    #     variant['algo_params']['num_enc_layer_blocks'],
-    #     hid_act='relu',
-    #     use_bn=True,
-    #     within_traj_agg=variant['algo_params']['within_traj_agg']
-    # )
-    # ---------------
-    # traj_enc = ConvTrajEncoder(
-    #     variant['algo_params']['np_params']['traj_enc_params']['num_conv_layers'],
-    #     # obs_dim + action_dim,
-    #     obs_dim + action_dim + obs_dim,
-    #     variant['algo_params']['np_params']['traj_enc_params']['channels'],
-    #     variant['algo_params']['np_params']['traj_enc_params']['kernel'],
-    #     variant['algo_params']['np_params']['traj_enc_params']['stride'],
-    # )
-    # Dc2R_map = Dc2RMap(
-    #     variant['algo_params']['np_params']['Dc2r_params']['agg_type'],
-    #     traj_enc,
-    #     state_only=False
-    # )
-    # r2z_map = R2ZMap(
-    #     variant['algo_params']['np_params']['r2z_params']['num_layers'],
-    #     variant['algo_params']['np_params']['traj_enc_params']['channels'],
-    #     variant['algo_params']['np_params']['r2z_params']['hid_dim'],
-    #     variant['algo_params']['z_dim']
-    # )
-    # encoder = NPEncoder(
-    #     Dc2R_map,
-    #     r2z_map,
-    # )
-
     
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
 
-    algorithm = NeuralProcessBC(
+    algorithm = MetaDagger(
         meta_test_env, # env is the test env, training_env is the training env (following rlkit original setup)
         
         policy,
+        expert_policy,
 
         train_context_buffer,
         train_test_buffer,
@@ -170,7 +136,30 @@ def experiment(variant):
         **variant['algo_params']
     )
 
+    for task_id in train_context_buffer.task_replay_buffers:
+        erb = train_context_buffer.task_replay_buffers[task_id]
+        rb = algorithm.replay_buffer.task_replay_buffers[task_id]
+        erb_size = erb._size
+        print(erb_size)
+        for k in erb._observations:
+            rb._observations[k][:erb_size] = erb._observations[k][:erb_size]
+            rb._next_obs[k][:erb_size] = erb._next_obs[k][:erb_size]
+        rb._actions[:erb_size] = erb._actions[:erb_size]
+        rb._rewards[:erb_size] = erb._rewards[:erb_size]
+        rb._terminals[:erb_size] = erb._terminals[:erb_size]
+        rb._absorbing[:erb_size] = erb._absorbing[:erb_size]
+        rb._size = erb_size
+        rb._top = erb_size
+    
+    # print('\n\n')
+    # for task_id in algorithm.replay_buffer.task_replay_buffers:
+    #     rb = algorithm.replay_buffer.task_replay_buffers[task_id]
+    #     print(rb._size)
+    #     print(rb._top)
+    #     print(rb._max_replay_buffer_size)
+
     if ptu.gpu_enabled():
+        expert_policy.cuda()
         algorithm.cuda()
     algorithm.train()
 
@@ -193,6 +182,7 @@ if __name__ == '__main__':
     exp_prefix = exp_specs['exp_name']
     seed = exp_specs['seed']
     set_seed(seed)
+    print('\n\nSET SEED TO {}\n\n'.format(seed))
     setup_logger(exp_prefix=exp_prefix, exp_id=exp_id, variant=exp_specs)
 
     experiment(exp_specs)

@@ -23,11 +23,18 @@ sa_paths = [
     '/scratch/hdd001/home/kamyar/output/reproduce-best-ant-lin-class-eval-det-another-seed/reproduce_best_ant_lin_class_eval_det_another_seed_2019_05_21_01_59_28_0000--s-0',
 ]
 
+dagger_paths = [
+    '/scratch/hdd001/home/kamyar/output/correct-3-ant-lin-class-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/correct_3_ant_lin_class_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_31_07_59_01_0000--s-0',
+    '/scratch/hdd001/home/kamyar/output/correct-3-ant-lin-class-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/correct_3_ant_lin_class_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_31_07_59_02_0001--s-0',
+    '/scratch/hdd001/home/kamyar/output/correct-3-ant-lin-class-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/correct_3_ant_lin_class_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_31_07_59_02_0002--s-0',
+]
+
 def load_stats(p):
     a = joblib.load(osp.join(p, 'all_eval_stats.pkl'))['all_eval_stats'][0]
     return a
 
 def compute_success_and_no_op(stats):
+    print(stats)
     all_succ = stats['all_success_transitions']
     all_no_op = stats['all_no_op_transitions']
 
@@ -55,7 +62,7 @@ def compute_cool(stats):
     all_succ = stats['all_success_transitions']
     all_succ = np.array(all_succ)
     first = all_succ[:,0:1]
-    # all_succ = all_succ - first
+    all_succ = all_succ - first
 
     mean = np.mean(all_succ, axis=0)
     return mean
@@ -72,7 +79,8 @@ def compute_method_cool(method_paths):
     print(np.std(np.array(all_cools), axis=0))
 
 
-compute_method_cool(s_paths)
+# compute_method_cool(s_paths)
+# compute_method_cool(sa_paths)
 
 
 # print('BC')
@@ -83,3 +91,6 @@ compute_method_cool(s_paths)
 
 # print('SA')
 # compute_method_results(sa_paths)
+
+# dagger
+compute_method_results(dagger_paths)

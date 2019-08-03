@@ -119,10 +119,10 @@ class Classifier(PyTorchModule):
 class FetchLinClassTaskDesign():
     def __init__(
             self,
-            num_tasks_used_per_update=5,
+            num_tasks_used_per_update=16,
             min_context_size=1,
-            max_context_size=5,
-            classification_batch_size_per_task=32,
+            max_context_size=8,
+            classification_batch_size_per_task=64,
 
             encoder_lr=1e-3,
             encoder_optimizer_class=optim.Adam,

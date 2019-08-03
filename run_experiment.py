@@ -13,18 +13,6 @@ import dateutil
 from rlkit.launchers import config
 from rlkit.launchers.launcher_util import setup_logger, build_nested_variant_generator
 
-# from exp_pool_fns.neural_process_v1 import exp_fn
-
-
-def get_pool_function(exp_fn_name):
-    if exp_fn_name == 'neural_processes_v1':
-        from exp_pool_fns.neural_process_v1 import exp_fn
-    elif exp_fn_name == 'sac':
-        from exp_pool_fns.sac import exp_fn
-    
-    return exp_fn
-
-
 def get_legal_cpus(cpu_range, num_cpu_per_worker):
     num_available_cpus = cpu_range[1] - cpu_range[0] + 1
     affinities = []
@@ -131,7 +119,7 @@ if __name__ == '__main__':
             # command = 'srun --gres=gpu:1 -c 8 --mem 32gb -x gpu050,gpu057 -p p100 python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 8 --mem 32gb -x gpu050,gpu057 -p max12hours python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012 -p p100,max12hours python {script} -e {specs}'
-            command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012,gpu038,gpu035,gpu036,gpu052,gpu048 -p p100,max12hours python {script} -e {specs}'
+            command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012,gpu038,gpu035,gpu036,gpu052,gpu048,gpu027 -p p100 python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 8 --mem 16gb -x gpu050,gpu057,gpu012 -p max12hours python {script} -e {specs}'
             # command = 'srun --gres=gpu:0 -c 1 --mem 5gb -p cpu python {script} -e {specs}'
             # command = 'srun --gres=gpu:1 -c 12 --mem 15gb -p wsgpu python {script} -e {specs}'

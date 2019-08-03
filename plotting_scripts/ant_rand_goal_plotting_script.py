@@ -104,6 +104,26 @@ bc_paths = {
     ]
 }
 
+# Dagger MSE version
+dagger_paths = {
+    64: [
+        '/scratch/hdd001/home/kamyar/output/correct-ant-rand-goal-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/correct_ant_rand_goal_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_28_17_03_34_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/correct-ant-rand-goal-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/correct_ant_rand_goal_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_28_17_03_49_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/correct-ant-rand-goal-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/correct_ant_rand_goal_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_28_17_03_49_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/correct-ant-rand-goal-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/correct_ant_rand_goal_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_28_17_03_49_0003--s-0',
+    ]
+}
+
+sparse_rew_rl_paths = {
+    64: [
+        '/scratch/hdd001/home/kamyar/output/ant-rand-goal-sparse-rewards/ant_rand_goal_sparse_rewards_2019_07_31_02_42_25_0000--s-0',
+        '/scratch/hdd001/home/kamyar/output/ant-rand-goal-sparse-rewards/ant_rand_goal_sparse_rewards_2019_07_31_02_49_30_0001--s-0',
+        '/scratch/hdd001/home/kamyar/output/ant-rand-goal-sparse-rewards/ant_rand_goal_sparse_rewards_2019_07_31_02_49_30_0002--s-0',
+        '/scratch/hdd001/home/kamyar/output/ant-rand-goal-sparse-rewards/ant_rand_goal_sparse_rewards_2019_07_31_02_50_29_0003--s-0',    
+    ]
+}
+
+
 tasks = [
     [ 1.99,  0.2 ],
     [ 1.76,  0.94],
@@ -123,7 +143,8 @@ tasks = [
     [ 1.91, -0.58]
 ]
 X = np.linspace(np.pi/32, 2*np.pi + np.pi/32, num=16, endpoint=False)
-demo_sizes = [4, 16, 64]
+# demo_sizes = [4, 16, 64]
+demo_sizes = [64]
 
 def gather_method_results(method_dict):
     results = {}
@@ -146,67 +167,108 @@ def gather_method_results(method_dict):
         results[d_size] = d_size_result
     return results
 
-s_a_results = gather_method_results(s_a_paths)
-s_results = gather_method_results(s_paths)
-bc_results = gather_method_results(bc_paths)
+# s_a_results = gather_method_results(s_a_paths)
+# s_results = gather_method_results(s_paths)
+# bc_results = gather_method_results(bc_paths)
+# dagger_results = gather_method_results(dagger_paths)
+sparse_rew_rl_results = gather_method_results(sparse_rew_rl_paths)
 
 joblib.dump(
     {
-        's_a_results': s_a_results,
-        's_results': s_results,
-        'bc_results': bc_results
+        # 's_a_results': s_a_results,
+        # 's_results': s_results,
+        # 'bc_results': bc_results,
+        # 'dagger_results': dagger_results,
+        'sparese_rew_rl_results': sparse_rew_rl_results,
     },
-    'plots/ant_results_save.pkl',
+    'plots/ant_rand_goal_sparse_rew_rl_results_save.pkl',
     compress=3
 )
 
 plt.rcParams["figure.figsize"] = [6,1]
 # plt.rcParams["figure.figsize"] = [6,2]
-for d_size in [4, 16, 64]:
+# for d_size in [4, 16, 64]:
+for d_size in [64]:
     # state-action plot
-    fig, ax = plt.subplots(1)
-    ax.errorbar(
-        X,
-        s_a_results[d_size]['means'],
-        s_a_results[d_size]['stds'],
-        elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-AIRL (state-action)',
-        color='royalblue'
-    )
-    ax.set_ylim([0.0, 2.25])
-    ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
-    ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
-    ax.set_yticks([0.0, 1.0, 2.0])
-    # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
-    # plt.savefig('plots/paper_results/ant_rand_goal/s_a_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
-    plt.savefig('plots/paper_results/ant_rand_goal/s_a_demo_%d.png'%d_size, bbox_inches='tight')
-    plt.close()
+    # fig, ax = plt.subplots(1)
+    # ax.errorbar(
+    #     X,
+    #     s_a_results[d_size]['means'],
+    #     s_a_results[d_size]['stds'],
+    #     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-AIRL (state-action)',
+    #     color='royalblue'
+    # )
+    # ax.set_ylim([0.0, 2.25])
+    # ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
+    # ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
+    # ax.set_yticks([0.0, 1.0, 2.0])
+    # # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
+    # # plt.savefig('plots/paper_results/ant_rand_goal/s_a_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    # plt.savefig('plots/paper_results/ant_rand_goal/s_a_demo_%d.png'%d_size, bbox_inches='tight')
+    # plt.close()
 
     # state plot
-    fig, ax = plt.subplots(1)
-    ax.errorbar(
-        X,
-        s_results[d_size]['means'],
-        s_results[d_size]['stds'],
-        elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-AIRL (state-only)',
-        color='forestgreen'
-    )
-    ax.set_ylim([0.0, 2.25])
-    ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
-    ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
-    ax.set_yticks([0.0, 1.0, 2.0])
-    # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
-    # plt.savefig('plots/paper_results/ant_rand_goal/s_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
-    plt.savefig('plots/paper_results/ant_rand_goal/s_demo_%d.png'%d_size, bbox_inches='tight')
-    plt.close()
+    # fig, ax = plt.subplots(1)
+    # ax.errorbar(
+    #     X,
+    #     s_results[d_size]['means'],
+    #     s_results[d_size]['stds'],
+    #     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-AIRL (state-only)',
+    #     color='forestgreen'
+    # )
+    # ax.set_ylim([0.0, 2.25])
+    # ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
+    # ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
+    # ax.set_yticks([0.0, 1.0, 2.0])
+    # # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
+    # # plt.savefig('plots/paper_results/ant_rand_goal/s_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    # plt.savefig('plots/paper_results/ant_rand_goal/s_demo_%d.png'%d_size, bbox_inches='tight')
+    # plt.close()
 
     # bc plot
+    # fig, ax = plt.subplots(1)
+    # ax.errorbar(
+    #     X,
+    #     bc_results[d_size]['means'],
+    #     bc_results[d_size]['stds'],
+    #     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-BC',
+    #     color='tomato'
+    # )
+    # ax.set_ylim([0.0, 2.25])
+    # ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
+    # ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
+    # ax.set_yticks([0.0, 1.0, 2.0])
+    # # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
+    # # plt.savefig('plots/paper_results/ant_rand_goal/bc_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    # plt.savefig('plots/paper_results/ant_rand_goal/bc_demo_%d.png'%d_size, bbox_inches='tight')
+    # plt.close()
+
+    # dagger plot
+    # fig, ax = plt.subplots(1)
+    # ax.errorbar(
+    #     X,
+    #     dagger_results[d_size]['means'],
+    #     dagger_results[d_size]['stds'],
+    #     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-Dagger',
+    #     color='purple'
+    # )
+    # ax.set_ylim([0.0, 2.25])
+    # ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
+    # ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
+    # ax.set_yticks([0.0, 1.0, 2.0])
+    # # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
+    # # plt.savefig('plots/paper_results/ant_rand_goal/bc_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    # plt.savefig('plots/paper_results/ant_rand_goal/dagger_demo_%d.png'%d_size, bbox_inches='tight')
+    # plt.close()
+
+    # sparse reward rl
     fig, ax = plt.subplots(1)
     ax.errorbar(
         X,
-        bc_results[d_size]['means'],
-        bc_results[d_size]['stds'],
-        elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Meta-BC',
-        color='tomato'
+        sparse_rew_rl_results[d_size]['means'],
+        sparse_rew_rl_results[d_size]['stds'],
+        elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Sparse-Rew-RL',
+        color='red'
     )
     ax.set_ylim([0.0, 2.25])
     ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
@@ -214,5 +276,5 @@ for d_size in [4, 16, 64]:
     ax.set_yticks([0.0, 1.0, 2.0])
     # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
     # plt.savefig('plots/paper_results/ant_rand_goal/bc_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
-    plt.savefig('plots/paper_results/ant_rand_goal/bc_demo_%d.png'%d_size, bbox_inches='tight')
+    plt.savefig('plots/paper_results/ant_rand_goal/sparse_rew_rl.png', bbox_inches='tight')
     plt.close()

@@ -159,6 +159,7 @@ def plot_experiment_returns(
                         returns = progress_csv[c_name]
                     arr_list.append(returns)
                     names.append(c_name + '_' + sub_exp_dir)
+                # print(csv_full_path)
             except:
                 pass
         except:
@@ -180,6 +181,7 @@ def plot_experiment_returns(
             arr_list += [np.ones(max_len)*y_val for y_val in plot_horizontal_lines_at]
             names += horizontal_lines_names
         try:
+            # print(len(arr_list))
             plot_returns_on_same_plot(arr_list, names, title, save_path, x_axis_lims=x_axis_lims, y_axis_lims=y_axis_lims)
         except Exception as e:
             print('Failed to plot:')

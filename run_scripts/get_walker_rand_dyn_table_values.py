@@ -62,20 +62,31 @@ bc_paths = [
     '/scratch/hdd001/home/kamyar/output/correct-saving-paper-version-walker-np-bc-policy-same-as-np-airl/correct_saving_paper_version_walker_np_bc_policy_same_as_np_airl_2019_05_22_06_31_49_0002--s-0',
 ]
 
+dagger_paths = [
+    '/scratch/hdd001/home/kamyar/output/longer-run-correct-walker-rand-dyn-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/longer_run_correct_walker_rand_dyn_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_29_04_17_45_0000--s-0',
+    '/scratch/hdd001/home/kamyar/output/longer-run-correct-walker-rand-dyn-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/longer_run_correct_walker_rand_dyn_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_29_04_17_47_0001--s-0',
+    '/scratch/hdd001/home/kamyar/output/longer-run-correct-walker-rand-dyn-meta-dagger-use-z-sample-det-expert-MSE-64-demos-100-updates-per-call/longer_run_correct_walker_rand_dyn_meta_dagger_use_z_sample_det_expert_MSE_64_demos_100_updates_per_call_2019_07_29_04_17_47_0002--s-0',
+]
+
 base_stats = load_stats(base_path)
 expert_stats = load_stats(expert_path)
 
-print('\nSA RESULTS:')
-r_mean, r_std, c_mean, c_std = compute_model_type_results(sa_paths, base_stats, expert_stats)
-print('Raw Perf: {} +/- {}'.format(r_mean, r_std))
-print('Custom: {} +/- {}'.format(c_mean, c_std))
+# print('\nSA RESULTS:')
+# r_mean, r_std, c_mean, c_std = compute_model_type_results(sa_paths, base_stats, expert_stats)
+# print('Raw Perf: {} +/- {}'.format(r_mean, r_std))
+# print('Custom: {} +/- {}'.format(c_mean, c_std))
 
-print('\nS RESULTS:')
-r_mean, r_std, c_mean, c_std = compute_model_type_results(s_paths, base_stats, expert_stats)
-print('Raw Perf: {} +/- {}'.format(r_mean, r_std))
-print('Custom: {} +/- {}'.format(c_mean, c_std))
+# print('\nS RESULTS:')
+# r_mean, r_std, c_mean, c_std = compute_model_type_results(s_paths, base_stats, expert_stats)
+# print('Raw Perf: {} +/- {}'.format(r_mean, r_std))
+# print('Custom: {} +/- {}'.format(c_mean, c_std))
 
-print('\nBC RESULTS:')
-r_mean, r_std, c_mean, c_std = compute_model_type_results(bc_paths, base_stats, expert_stats)
+# print('\nBC RESULTS:')
+# r_mean, r_std, c_mean, c_std = compute_model_type_results(bc_paths, base_stats, expert_stats)
+# print('Raw Perf: {} +/- {}'.format(r_mean, r_std))
+# print('Custom: {} +/- {}'.format(c_mean, c_std))
+
+print('\nDagger RESULTS:')
+r_mean, r_std, c_mean, c_std = compute_model_type_results(dagger_paths, base_stats, expert_stats)
 print('Raw Perf: {} +/- {}'.format(r_mean, r_std))
 print('Custom: {} +/- {}'.format(c_mean, c_std))

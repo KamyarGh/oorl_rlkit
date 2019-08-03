@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from torch import nn
 from torch.autograd import Variable
-from copy import deepcopy
 
 from gym.spaces import Dict
 
@@ -17,8 +16,8 @@ from rlkit.envs.wrappers import ScaledMetaEnv
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.networks import FlattenMlp
 
-from rlkit.torch.irl.np_bc import NeuralProcessBC
-from rlkit.torch.irl.encoders.mlp_encoder import TimestepBasedEncoder, WeightShareTimestepBasedEncoder
+from rlkit.torch.irl.pearl import PEARL
+from rlkit.torch.irl.encoders.mlp_encoder import TimestepBasedEncoder
 from rlkit.torch.irl.encoders.conv_seq_encoder import ConvTrajEncoder, R2ZMap, Dc2RMap, NPEncoder
 
 import yaml
@@ -36,41 +35,11 @@ EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
 
 
 def experiment(variant):
-    with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
-        listings = yaml.load(f.read())
-    expert_dir = listings[variant['expert_name']]['exp_dir']
-    specific_run = listings[variant['expert_name']]['seed_runs'][variant['expert_seed_run_idx']]
-    file_to_load = path.join(expert_dir, specific_run, 'extra_data.pkl')
-    extra_data = joblib.load(file_to_load)
-
-    # this script is for the non-meta-learning airl
-    train_context_buffer, train_test_buffer = extra_data['meta_train']['context'], extra_data['meta_train']['test']
-    test_context_buffer, test_test_buffer = extra_data['meta_test']['context'], extra_data['meta_test']['test']
-
     # set up the envs
     env_specs = variant['env_specs']
     meta_train_env, meta_test_env = get_meta_env(env_specs)
     meta_train_env.seed(variant['seed'])
     meta_test_env.seed(variant['seed'])
-
-    if variant['scale_env_with_given_demo_stats']:
-        assert not env_specs['normalized']
-        meta_train_env = ScaledMetaEnv(
-            meta_train_env,
-            obs_mean=extra_data['obs_mean'],
-            obs_std=extra_data['obs_std'],
-            acts_mean=extra_data['acts_mean'],
-            acts_std=extra_data['acts_std'],
-        )
-        meta_test_env = ScaledMetaEnv(
-            meta_test_env,
-            obs_mean=extra_data['obs_mean'],
-            obs_std=extra_data['obs_std'],
-            acts_mean=extra_data['acts_mean'],
-            acts_std=extra_data['acts_std'],
-        )
-    print(meta_train_env)
-    print(meta_test_env)
 
     # set up the policy and training algorithm
     if isinstance(meta_train_env.observation_space, Dict):
@@ -86,18 +55,31 @@ def experiment(variant):
     print('act dim: %d' % action_dim)
     sleep(3)
 
-    # make the disc model
     z_dim = variant['algo_params']['z_dim']
     policy_net_size = variant['policy_net_size']
     hidden_sizes = [policy_net_size] * variant['num_hidden_layers']
-
+    qf1 = FlattenMlp(
+        hidden_sizes=hidden_sizes,
+        input_size=obs_dim + action_dim + z_dim,
+        output_size=1,
+    )
+    qf2 = FlattenMlp(
+        hidden_sizes=hidden_sizes,
+        input_size=obs_dim + action_dim + z_dim,
+        output_size=1,
+    )
+    vf = FlattenMlp(
+        hidden_sizes=hidden_sizes,
+        input_size=obs_dim + z_dim,
+        output_size=1,
+    )
     policy = ReparamTanhMultivariateGaussianPolicy(
         hidden_sizes=hidden_sizes,
         obs_dim=obs_dim + z_dim,
         action_dim=action_dim,
     )
 
-    # Make the encoder
+    # make the encoder
     encoder = TimestepBasedEncoder(
         2*obs_dim + action_dim, #(s,a,s')
         variant['algo_params']['r_dim'],
@@ -107,61 +89,22 @@ def experiment(variant):
         variant['algo_params']['num_enc_layer_blocks'],
         hid_act='relu',
         use_bn=True,
-        within_traj_agg=variant['algo_params']['within_traj_agg']
+        within_traj_agg=variant['algo_params']['within_traj_agg'],
+        state_only=False
     )
-    # ---------------
-    # encoder = WeightShareTimestepBasedEncoder(
-    #     obs_dim,
-    #     action_dim,
-    #     64,
-    #     variant['algo_params']['r_dim'],
-    #     variant['algo_params']['z_dim'],
-    #     variant['algo_params']['enc_hid_dim'],
-    #     variant['algo_params']['r2z_hid_dim'],
-    #     variant['algo_params']['num_enc_layer_blocks'],
-    #     hid_act='relu',
-    #     use_bn=True,
-    #     within_traj_agg=variant['algo_params']['within_traj_agg']
-    # )
-    # ---------------
-    # traj_enc = ConvTrajEncoder(
-    #     variant['algo_params']['np_params']['traj_enc_params']['num_conv_layers'],
-    #     # obs_dim + action_dim,
-    #     obs_dim + action_dim + obs_dim,
-    #     variant['algo_params']['np_params']['traj_enc_params']['channels'],
-    #     variant['algo_params']['np_params']['traj_enc_params']['kernel'],
-    #     variant['algo_params']['np_params']['traj_enc_params']['stride'],
-    # )
-    # Dc2R_map = Dc2RMap(
-    #     variant['algo_params']['np_params']['Dc2r_params']['agg_type'],
-    #     traj_enc,
-    #     state_only=False
-    # )
-    # r2z_map = R2ZMap(
-    #     variant['algo_params']['np_params']['r2z_params']['num_layers'],
-    #     variant['algo_params']['np_params']['traj_enc_params']['channels'],
-    #     variant['algo_params']['np_params']['r2z_params']['hid_dim'],
-    #     variant['algo_params']['z_dim']
-    # )
-    # encoder = NPEncoder(
-    #     Dc2R_map,
-    #     r2z_map,
-    # )
 
-    
     train_task_params_sampler, test_task_params_sampler = get_meta_env_params_iters(env_specs)
 
-    algorithm = NeuralProcessBC(
+    algorithm = PEARL(
         meta_test_env, # env is the test env, training_env is the training env (following rlkit original setup)
         
         policy,
-
-        train_context_buffer,
-        train_test_buffer,
-        test_context_buffer,
-        test_test_buffer,
+        qf1,
+        qf2,
+        vf,
 
         encoder,
+        # z_dim,
 
         training_env=meta_train_env, # the env used for generating trajectories
         train_task_params_sampler=train_task_params_sampler,

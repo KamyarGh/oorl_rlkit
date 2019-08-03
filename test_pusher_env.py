@@ -18,7 +18,7 @@ env.reset()
 #     env.step(action)
 
 # p = joblib.load('pusher_policy.pkl')['policy']
-p = joblib.load('sin_trace_pusher.pkl')['policy']
+# p = joblib.load('sin_trace_pusher.pkl')['policy']
 # p = MakeDeterministic(p)
 
 while True:
@@ -26,8 +26,8 @@ while True:
     for i in range(500):
         env.render()
 
-        # action = env.action_space.sample()
-        action, *_ = p.get_action(obs)
+        action = env.action_space.sample()
+        # action, *_ = p.get_action(obs)
         # print(action)
 
         obs, *_ = env.step(action)

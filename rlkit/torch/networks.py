@@ -576,6 +576,14 @@ class AntAggregateExpert():
     
     def get_exploration_policy(self, obs_task_params):
         return self.e_dict[tuple(obs_task_params)]
+    
+    def cuda(self):
+        for p in self.e_dict.values():
+            p.cuda()
+    
+    def cpu(self):
+        for p in self.e_dict.values():
+            p.cpu()
 
 
 class WalkerDynamicsAggregateExpert():
@@ -588,6 +596,14 @@ class WalkerDynamicsAggregateExpert():
     
     def get_exploration_policy(self, obs_task_params):
         return self.e_dict[tuple(obs_task_params)]
+    
+    def cuda(self):
+        for p in self.e_dict.values():
+            p.cuda()
+    
+    def cpu(self):
+        for p in self.e_dict.values():
+            p.cpu()
 
 
 class PusherTaskQFunc(FlattenMlp):

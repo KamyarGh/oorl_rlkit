@@ -33,9 +33,9 @@ while True:
         # action[1] = 0.3
         # action[0] = 0.3
 
-        # action = env.action_space.sample()
+        action = env.action_space.sample()
         
-        action, *_ = p.get_action(obs)
+        # action, *_ = p.get_action(obs)
 
         obs, rew, done, info = env.step(action)
         # print('----')
