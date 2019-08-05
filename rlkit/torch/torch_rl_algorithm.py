@@ -7,6 +7,7 @@ from torch import nn as nn
 from rlkit.core.batch_rl_algorithm import BatchRLAlgorithm
 from rlkit.core.online_rl_algorithm import OnlineRLAlgorithm
 from rlkit.core.trainer import Trainer
+from rlkit.core.single_task_algorithm import SingleTaskBatchAlgorithm
 from rlkit.torch.core import np_to_pytorch_batch
 
 
@@ -52,3 +53,13 @@ class TorchTrainer(Trainer, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def networks(self) -> Iterable[nn.Module]:
         pass
+
+
+class TorchSingleTaskBatchAlgorithm(SingleTaskBatchAlgorithm):
+    def to(self, device):
+        for net in self.trainer.networks:
+            net.to(device)
+
+    def training_mode(self, mode):
+        for net in self.trainer.networks:
+            net.train(mode)
