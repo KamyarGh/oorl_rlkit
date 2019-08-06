@@ -44,6 +44,7 @@ class PathBuilder(dict):
         self._path_length += 1
 
     def get_all_stacked(self):
+        raise NotImplementedError('Does not handle dict obs')
         output_dict = dict()
         for k, v in self.items():
             output_dict[k] = stack_list(v)

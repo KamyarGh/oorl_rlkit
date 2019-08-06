@@ -27,16 +27,16 @@ def get_generic_path_information(paths, stat_prefix=''):
                                                 stat_prefix=stat_prefix,
                                                 always_show_all_stats=True))
     actions = [path["actions"] for path in paths]
-    if len(actions[0].shape) == 1:
-        actions = np.hstack([path["actions"] for path in paths])
-    else:
+    if isinstance(actions[0][0], np.ndarray):
         actions = np.vstack([path["actions"] for path in paths])
+    else:
+        actions = np.hstack([path["actions"] for path in paths])
     statistics.update(create_stats_ordered_dict(
         'Actions', actions, stat_prefix=stat_prefix,
         always_show_all_stats=True
     ))
     statistics.update(create_stats_ordered_dict(
-        'Ep. Len.', np.array([path["terminals"].shape[0] for path in paths]), stat_prefix=stat_prefix,
+        'Ep. Len.', np.array([len(path["terminals"]) for path in paths]), stat_prefix=stat_prefix,
         always_show_all_stats=True
     ))
     statistics['Num Paths'] = len(paths)

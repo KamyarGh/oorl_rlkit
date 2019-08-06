@@ -10,7 +10,7 @@ from rlkit.core import logger
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
-from rlkit.samplers.in_place import InPlacePathSampler
+from rlkit.samplers import PathSampler
 from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
 
 from gym.spaces import Dict
@@ -52,6 +52,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             wrap_absorbing=False,
 
             render=False,
+            render_kwargs={}
         ):
         self.env = env
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
@@ -78,11 +79,14 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         if eval_sampler is None:
             if eval_policy is None:
                 eval_policy = exploration_policy
-            eval_sampler = InPlacePathSampler(
-                env=env,
-                policy=eval_policy,
-                max_samples=self.num_steps_per_eval + self.max_path_length,
-                max_path_length=self.max_path_length,
+            eval_sampler = PathSampler(
+                env,
+                eval_policy,
+                num_steps_per_eval,
+                max_path_length,
+                no_terminal=no_terminal,
+                render=render,
+                render_kwargs=render_kwargs
             )
         self.eval_policy = eval_policy
         self.eval_sampler = eval_sampler
@@ -403,7 +407,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         self._n_rollouts_total += 1
         if len(self._current_path_builder) > 0:
             self._exploration_paths.append(
-                self._current_path_builder.get_all_stacked()
+                self._current_path_builder
             )
             self._current_path_builder = PathBuilder()
 
