@@ -70,8 +70,8 @@ def rollout(env, agent, max_path_length=np.inf, animated=False,
     
     o = process_obs(o)
     while path_length < max_path_length:
-        # a, agent_info = agent.get_action(o)
-        a, agent_info = agent.get_action(o['obs'])
+        a, agent_info = agent.get_action(o)
+        # a, agent_info = agent.get_action(o['obs'])
         next_o, r, d, env_info = env.step(a)
         next_o = process_obs(next_o)
         if neural_process is not None:
