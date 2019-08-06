@@ -16,11 +16,11 @@ from rlkit.torch.torch_rl_algorithm import TorchRLAlgorithm
 
 def experiment(variant):
     env_specs = variant['env_specs']
-    env, _ = get_env(env_specs)
-    training_env, _ = get_env(env_specs)
+    env = get_env(env_specs)
+    training_env = get_env(env_specs)
 
-    print('\n\nEnv:')
-    print(env_specs)
+    print('\n\nEnv: {}'.format(env_specs['env_name']))
+    print('kwargs: {}'.format(env_specs['env_kwargs']))
     print('Obs Space: {}'.format(env.observation_space))
     print('Act Space: {}\n\n'.format(env.action_space))
 

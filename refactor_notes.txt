@@ -20,9 +20,9 @@
 - (done) update policies to new torch
 - (done) update networks to new torch
 - (done) update ptu to new version of torch
-- add SAC train script
-- debug sac
-- fix up environment registrations (and add env_kwargs argument for the envs)
+- (done) add SAC train script
+- (done) debug sac
+- (done) fix up environment registrations (and add env_kwargs argument for the envs)
 - remove env replay buffer
 - fix rollout generators
 - evaluate should be moved into base_algorithm
