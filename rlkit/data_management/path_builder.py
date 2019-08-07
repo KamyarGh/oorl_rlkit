@@ -49,6 +49,12 @@ class PathBuilder(dict):
         for k, v in self.items():
             output_dict[k] = stack_list(v)
         return output_dict
+    
+    def get_stacked(self, key):
+        v = self.__getitem__(key)
+        if isinstance(v[0], dict):
+            raise NotImplementedError()
+        return np.array(v)
 
     def __len__(self):
         return self._path_length

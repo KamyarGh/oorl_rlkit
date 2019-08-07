@@ -22,9 +22,9 @@ def rollout(
         path_builder.add_all(
             observations=observation,
             actions=action,
-            rewards=reward,
+            rewards=np.array([reward]),
             next_observations=next_ob,
-            terminals=terminal,
+            terminals=np.array([terminal]),
             absorbing=np.array([0., 0.]),
             agent_info=agent_info,
             env_info=env_info,

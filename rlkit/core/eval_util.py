@@ -27,10 +27,10 @@ def get_generic_path_information(paths, stat_prefix=''):
                                                 stat_prefix=stat_prefix,
                                                 always_show_all_stats=True))
     actions = [path["actions"] for path in paths]
-    if isinstance(actions[0][0], np.ndarray):
-        actions = np.vstack([path["actions"] for path in paths])
-    else:
-        actions = np.hstack([path["actions"] for path in paths])
+    # if isinstance(actions[0][0], np.ndarray):
+    #     actions = np.vstack([path["actions"] for path in paths])
+    # else:
+    #     actions = np.hstack([path["actions"] for path in paths])
     statistics.update(create_stats_ordered_dict(
         'Actions', actions, stat_prefix=stat_prefix,
         always_show_all_stats=True
@@ -50,11 +50,11 @@ def get_average_returns(paths):
 
 
 def create_stats_ordered_dict(
-        name,
-        data,
-        stat_prefix=None,
-        always_show_all_stats=False,
-        exclude_max_min=False,
+    name,
+    data,
+    stat_prefix=None,
+    always_show_all_stats=False,
+    exclude_max_min=False,
 ):
     # print('\n<<<< STAT FOR {} {} >>>>'.format(stat_prefix, name))
     if stat_prefix is not None:
@@ -78,6 +78,7 @@ def create_stats_ordered_dict(
         return ordered_dict
 
     if isinstance(data, list):
+        # print('was a list')
         try:
             iter(data[0])
         except TypeError:
