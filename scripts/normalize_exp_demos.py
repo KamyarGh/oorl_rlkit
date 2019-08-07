@@ -8,8 +8,10 @@ import os
 from os import path as osp
 
 from rlkit.core.vistools import plot_histogram
+from rlkit.launchers import config
 
-EXPERT_LISTING_YAML_PATH = '/h/kamyar/oorl_rlkit/rlkit/torch/irl/experts.yaml'
+
+EXPERT_LISTING_YAML_PATH = 'expert_demos_listing.yaml'
 
 NORMALIZE_OBS = True
 NORMALIZE_ACTS = False
@@ -98,45 +100,18 @@ def do_the_thing(data_path, save_path, plot_obs_histogram=False):
     joblib.dump(d, osp.join(save_path), compress=3)
 
 
-# data_path = '/scratch/gobi2/kamyar/oorl_rlkit/output/correct-halfcheetah-demos-250-no-subsampling/correct_halfcheetah_demos_250_no_subsampling_2019_02_16_18_01_27_0000--s-0/extra_data.pkl'
-# save_path = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/norm_HC_250_demos_no_subsampling'
 with open(EXPERT_LISTING_YAML_PATH, 'r') as f:
     listings = yaml.load(f.read())
 
-for i, expert in enumerate([
-    # 'multi_dir_point_mass_301_demos_ep_len_50'
-    'star_8_point_mass_128_demos_ep_len_25'
-
-    # 'ant_multi_valid_target_demos_8_target_8_each_no_sub'
-    # 'deterministic_ant_multi_valid_target_demos_8_target_32_each_no_sub_path_len_50'
-    # 'ant_multi_4_directions_32_det_demos_per_task_no_sub_path_len_50'
-    # 'ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75'
-    # 'rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_len_75'
-    # 'rel_pos_obs_ant_multi_4_directions_4_distance_32_det_demos_per_task_no_sub_path_terminates_within_0p5_of_target'
-
-    # 'halfcheetah_256_demos_20_subsampling',
-    # 'halfcheetah_128_demos_20_subsampling',
-    # 'halfcheetah_64_demos_20_subsampling',
-    # 'halfcheetah_32_demos_20_subsampling',
-    # 'halfcheetah_16_demos_20_subsampling',
-    # 'halfcheetah_8_demos_20_subsampling',
-    # 'halfcheetah_4_demos_20_subsampling',
-
-    # 'ant_256_demos_20_subsampling',
-    # 'ant_128_demos_20_subsampling',
-    # 'ant_64_demos_20_subsampling',
-    # 'ant_32_demos_20_subsampling',
-    # 'ant_16_demos_20_subsampling',
-    # 'ant_8_demos_20_subsampling',
-    # 'ant_4_demos_20_subsampling',
-    # 'humanoid_64_demos_20_subsampling',
-    # 'humanoid_128_demos_20_subsampling',
-    # 'humanoid_192_demos_20_subsampling',
-    # 'humanoid_256_demos_20_subsampling'
-  ]):
-  data_path = osp.join(listings[expert]['exp_dir'], listings[expert]['seed_runs'][0], 'extra_data.pkl')
-  # save_dir = '/scratch/gobi2/kamyar/oorl_rlkit/expert_demos/norm_'+expert
-  save_dir = '/scratch/hdd001/home/kamyar/expert_demos/norm_'+expert
+for i, expert in enumerate(
+    [
+        'halfcheetah_16_demos_sub_20'
+    ]
+):
+  data_path = osp.join(listings[expert]['file_paths'][0])
+  save_dir = osp.join(config.LOCAL_LOG_DIR, 'norm_'+expert)
   os.makedirs(save_dir, exist_ok=True)
-  save_path = osp.join(save_dir, 'extra_data.pkl')
-  do_the_thing(data_path, save_path, i == 0)
+  save_path = osp.join(save_dir, 'expert_demos.pkl')
+  do_the_thing(data_path, save_path)
+
+print('\n\nRemember to add the new normalized demos to your expert listings!\n\n')

@@ -38,6 +38,7 @@ class SoftActorCritic(Trainer):
             policy_std_reg_weight=1e-3,
 
             optimizer_class=optim.Adam,
+            beta_1=0.9,
     ):
         self.policy = policy
         self.qf1 = qf1
@@ -55,18 +56,22 @@ class SoftActorCritic(Trainer):
         self.policy_optimizer = optimizer_class(
             self.policy.parameters(),
             lr=policy_lr,
+            betas=(beta_1, 0.999)
         )
         self.qf1_optimizer = optimizer_class(
             self.qf1.parameters(),
             lr=qf_lr,
+            betas=(beta_1, 0.999)
         )
         self.qf2_optimizer = optimizer_class(
             self.qf2.parameters(),
             lr=qf_lr,
+            betas=(beta_1, 0.999)
         )
         self.vf_optimizer = optimizer_class(
             self.vf.parameters(),
             lr=vf_lr,
+            betas=(beta_1, 0.999)
         )
 
 

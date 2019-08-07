@@ -1,5 +1,6 @@
 import yaml
 import argparse
+import joblib
 import numpy as np
 
 from gym.spaces import Dict
@@ -11,10 +12,18 @@ from rlkit.launchers.launcher_util import setup_logger, set_seed
 from rlkit.torch.networks import FlattenMlp
 from rlkit.torch.sac.policies import ReparamTanhMultivariateGaussianPolicy
 from rlkit.torch.sac.sac import SoftActorCritic
-from rlkit.torch.torch_rl_algorithm import TorchRLAlgorithm
+from rlkit.torch.irl.disc_models.simple_disc_models import MLPDisc
+from rlkit.torch.irl.adv_irl import AdvIRL
+from rlkit.envs.wrappers import ScaledEnv
 
 
 def experiment(variant):
+    with open('expert_demos_listing.yaml', 'r') as f:
+        listings = yaml.load(f.read())
+    expert_demos_path = listings[variant['expert_name']]['file_paths'][variant['expert_idx']]
+    buffer_save_dict = joblib.load(expert_demos_path)
+    expert_replay_buffer = buffer_save_dict['train']
+
     env_specs = variant['env_specs']
     env = get_env(env_specs)
     env.seed(env_specs['eval_env_seed'])
@@ -25,6 +34,22 @@ def experiment(variant):
     print('kwargs: {}'.format(env_specs['env_kwargs']))
     print('Obs Space: {}'.format(env.observation_space))
     print('Act Space: {}\n\n'.format(env.action_space))
+    
+    if variant['scale_env_with_demo_stats']:
+        env = ScaledEnv(
+            env,
+            obs_mean=buffer_save_dict['obs_mean'],
+            obs_std=buffer_save_dict['obs_std'],
+            acts_mean=buffer_save_dict['acts_mean'],
+            acts_std=buffer_save_dict['acts_std'],
+        )
+        training_env = ScaledEnv(
+            training_env,
+            obs_mean=buffer_save_dict['obs_mean'],
+            obs_std=buffer_save_dict['obs_std'],
+            acts_mean=buffer_save_dict['acts_mean'],
+            acts_std=buffer_save_dict['acts_std'],
+        )
 
     obs_space = env.observation_space
     act_space = env.action_space
@@ -35,8 +60,9 @@ def experiment(variant):
     obs_dim = obs_space.shape[0]
     action_dim = act_space.shape[0]
 
-    net_size = variant['net_size']
-    num_hidden = variant['num_hidden_layers']
+    # build the policy models
+    net_size = variant['policy_net_size']
+    num_hidden = variant['policy_num_hidden_layers']
     qf1 = FlattenMlp(
         hidden_sizes=num_hidden * [net_size],
         input_size=obs_dim + action_dim,
@@ -57,7 +83,18 @@ def experiment(variant):
         obs_dim=obs_dim,
         action_dim=action_dim,
     )
+
+    # build the discriminator model
+    disc_model = MLPDisc(
+        obs_dim + action_dim if not variant['adv_irl_params']['state_only'] else 2*obs_dim,
+        num_layer_blocks=variant['disc_num_blocks'],
+        hid_dim=variant['disc_hid_dim'],
+        hid_act=variant['disc_hid_act'],
+        use_bn=variant['disc_use_bn'],
+        clamp_magnitude=variant['disc_clamp_magnitude']
+    )
     
+    # set up the algorithm
     trainer = SoftActorCritic(
         policy=policy,
         qf1=qf1,
@@ -65,12 +102,15 @@ def experiment(variant):
         vf=vf,
         **variant['sac_params']
     )
-    algorithm = TorchRLAlgorithm(
-        trainer=trainer,
+    algorithm = AdvIRL(
         env=env,
         training_env=training_env,
         exploration_policy=policy,
-        **variant['rl_alg_params']
+
+        discriminator=disc_model,
+        policy_trainer=trainer,
+        expert_replay_buffer=expert_replay_buffer,
+        **variant['adv_irl_params']
     )
 
     if ptu.gpu_enabled():

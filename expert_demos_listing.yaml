@@ -1,0 +1,11 @@
+halfcheetah_16_demos_sub_20:
+  description: "HalfCheetah, 16 demo trajectories, subsampling factor 20"
+  file_paths: [
+    /scratch/hdd001/home/kamyar/output/gen-halfcheetah-demos/gen_halfcheetah_demos_2019_08_07_15_48_30_0000--s-0/expert_demos.pkl
+  ]
+
+norm_halfcheetah_16_demos_sub_20:
+  description: "norm, HalfCheetah, 16 demo trajectories, subsampling factor 20"
+  file_paths: [
+    /scratch/hdd001/home/kamyar/output/norm_halfcheetah_16_demos_sub_20/expert_demos.pkl
+  ]

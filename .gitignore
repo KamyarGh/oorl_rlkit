@@ -112,3 +112,6 @@ rlkit/launchers/config.py
 running.txt
 exp_specs/*
 old_env_init.py
+rlkit/torch/irl/old_airl.py
+run_scripts/old_airl_exp_script.py
+rlkit/torch/irl/old_experts.yaml

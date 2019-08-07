@@ -164,9 +164,9 @@ class SimpleReplayBuffer(ReplayBuffer):
             self._size += 1
 
 
-    def random_batch(self, batch_size):
+    def random_batch(self, batch_size, keys=None):
         indices = self._np_randint(0, self._size, batch_size)
-        return self._get_batch_using_indices(indices)
+        return self._get_batch_using_indices(indices, keys=keys)
     
     
     def _get_batch_using_indices(self, indices, keys=None):

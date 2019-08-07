@@ -11,6 +11,7 @@ from rlkit.core import logger, eval_util
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
+from rlkit.torch.sac.policies import MakeDeterministic
 from rlkit.samplers import PathSampler
 from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
 
@@ -53,7 +54,9 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             wrap_absorbing=False,
 
             render=False,
-            render_kwargs={}
+            render_kwargs={},
+
+            eval_deterministic=False
         ):
         self.env = env
         self.training_env = training_env or pickle.loads(pickle.dumps(env))
@@ -80,6 +83,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         if eval_sampler is None:
             if eval_policy is None:
                 eval_policy = exploration_policy
+            eval_policy = MakeDeterministic(eval_policy)
             eval_sampler = PathSampler(
                 env,
                 eval_policy,
@@ -320,6 +324,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         logger.push_prefix('Iteration #%d | ' % epoch)
 
     def _end_epoch(self):
+        self.eval_statistics = None
         logger.log("Epoch Duration: {0}".format(
             time.time() - self._epoch_start_time
         ))

@@ -26,10 +26,14 @@
 - (done) fix rollout generators
 - (done) evaluate should be moved into base_algorithm
 - (done) debug sac again
-- data generation scripts
-- scripted policies
-- bc
+- (done) data generation scripts
 - airl
+    - disc model
+    - algorithm
+- bc
+- train an airl and tell them about code release
+
+- scripted policies
 
 - sac with only Q functions
 
