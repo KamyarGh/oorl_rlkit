@@ -17,7 +17,9 @@ from rlkit.torch.torch_rl_algorithm import TorchRLAlgorithm
 def experiment(variant):
     env_specs = variant['env_specs']
     env = get_env(env_specs)
+    env.seed(env_specs['eval_env_seed'])
     training_env = get_env(env_specs)
+    training_env.seed(env_specs['training_env_seed'])
 
     print('\n\nEnv: {}'.format(env_specs['env_name']))
     print('kwargs: {}'.format(env_specs['env_kwargs']))
@@ -32,7 +34,6 @@ def experiment(variant):
     
     obs_dim = obs_space.shape[0]
     action_dim = act_space.shape[0]
-
 
     net_size = variant['net_size']
     qf1 = FlattenMlp(

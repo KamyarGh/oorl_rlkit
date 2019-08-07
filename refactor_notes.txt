@@ -23,11 +23,11 @@
 - (done) add SAC train script
 - (done) debug sac
 - (done) fix up environment registrations (and add env_kwargs argument for the envs)
-- remove env replay buffer
-- fix rollout generators
-- evaluate should be moved into base_algorithm
-- debug sac again
+- (done) fix rollout generators
+- (done) evaluate should be moved into base_algorithm
+- (done) debug sac again
 - data generation scripts
+- scripted policies
 - bc
 - airl
 

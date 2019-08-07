@@ -22,9 +22,6 @@ class SimpleReplayBuffer(ReplayBuffer):
         max_replay_buffer_size,
         observation_dim,
         action_dim,
-        policy_uses_pixels=False,
-        policy_uses_task_params=False,
-        concat_task_params_to_policy_obs=False,
         random_seed=1995
     ):
         self._np_rand_state = np.random.RandomState(random_seed)
@@ -32,9 +29,6 @@ class SimpleReplayBuffer(ReplayBuffer):
         self._observation_dim = observation_dim
         self._action_dim = action_dim
         self._max_replay_buffer_size = max_replay_buffer_size
-        self.policy_uses_pixels = policy_uses_pixels
-        self.policy_uses_task_params = policy_uses_task_params
-        self.concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
 
         if isinstance(observation_dim, tuple):
             dims = [d for d in observation_dim]

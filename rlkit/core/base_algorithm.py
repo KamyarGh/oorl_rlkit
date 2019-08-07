@@ -1,12 +1,13 @@
 import abc
 import pickle
 import time
+from collections import OrderedDict
 from copy import deepcopy
 
 import gtimer as gt
 import numpy as np
 
-from rlkit.core import logger
+from rlkit.core import logger, eval_util
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
@@ -99,9 +100,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             replay_buffer = EnvReplayBuffer(
                 self.replay_buffer_size,
                 self.env,
-                policy_uses_pixels=False,
-                policy_uses_task_params=False,
-                concat_task_params_to_policy_obs=False
+                random_seed=np.random.randint(10000)
             )
         else:
             assert max_path_length < replay_buffer._max_replay_buffer_size
@@ -123,6 +122,8 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         self.wrap_absorbing = wrap_absorbing
         self.freq_saving = freq_saving
         self.no_terminal = no_terminal
+
+        self.eval_statistics = None
 
 
     def train(self, start_epoch=0):
@@ -461,14 +462,6 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractmethod
-    def evaluate(self, epoch):
-        """
-        Evaluate the policy, e.g. save/print progress.
-        :param epoch:
-        :return:
-        """
-        pass
 
     @abc.abstractmethod
     def _do_training(self):
@@ -477,3 +470,52 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         :return:
         """
         pass
+
+
+    def evaluate(self, epoch):
+        """
+        Evaluate the policy, e.g. save/print progress.
+        :param epoch:
+        :return:
+        """
+        statistics = OrderedDict()
+        try:
+            statistics.update(self.eval_statistics)
+            self.eval_statistics = None
+        except:
+            print('No Stats to Eval')
+
+        logger.log("Collecting samples for evaluation")
+        test_paths = self.eval_sampler.obtain_samples()
+
+        statistics.update(eval_util.get_generic_path_information(
+            test_paths, stat_prefix="Test",
+        ))
+        statistics.update(eval_util.get_generic_path_information(
+            self._exploration_paths, stat_prefix="Exploration",
+        ))
+
+        if hasattr(self.env, "log_diagnostics"):
+            self.env.log_diagnostics(test_paths)
+        if hasattr(self.env, "log_statistics"):
+            statistics.update(self.env.log_statistics(test_paths))
+        if hasattr(self.env, "log_new_ant_multi_statistics"):
+            env_log_stats = self.env.log_new_ant_multi_statistics(test_paths, epoch, logger.get_snapshot_dir())
+            statistics.update(env_log_stats)
+        
+        average_returns = eval_util.get_average_returns(test_paths)
+        statistics['AverageReturn'] = average_returns
+        for key, value in statistics.items():
+            logger.record_tabular(key, value)
+        
+        best_statistic = statistics[self.best_key]
+        if best_statistic > self.best_statistic_so_far:
+            self.best_statistic_so_far = best_statistic
+            if self.save_best and epoch >= self.save_best_starting_from_epoch:
+                data_to_save = {
+                    'epoch': epoch,
+                    'statistics': statistics
+                }
+                data_to_save.update(self.get_epoch_snapshot(epoch))
+                logger.save_extra_data(data_to_save, 'best.pkl')
+                print('\n\nSAVED BEST\n\n')
