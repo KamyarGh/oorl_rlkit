@@ -35,7 +35,10 @@ class MakeDeterministic(Policy):
 
     def set_num_steps_total(self, num):
         pass
+    
 
+    def to(self, device):
+        self.stochastic_policy.to(device)
 
 
 class DiscretePolicy(Mlp, ExplorationPolicy):

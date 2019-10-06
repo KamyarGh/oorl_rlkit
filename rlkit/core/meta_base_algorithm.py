@@ -8,104 +8,95 @@ import gtimer as gt
 import numpy as np
 
 from rlkit.core import logger, eval_util
-from rlkit.data_management.env_replay_buffer import EnvReplayBuffer
+from rlkit.data_management.simple_replay_buffer import MetaSimpleReplayBuffer
 from rlkit.data_management.path_builder import PathBuilder
 from rlkit.policies.base import ExplorationPolicy
-from rlkit.torch.sac.policies import MakeDeterministic
-from rlkit.samplers import PathSampler
+from rlkit.samplers import rollout
 from rlkit.envs.wrapped_absorbing_env import WrappedAbsorbingEnv
 
 from gym.spaces import Dict
 
 
-class BaseAlgorithm(metaclass=abc.ABCMeta):
+class MetaBaseAlgorithm(metaclass=abc.ABCMeta):
     """
-    base algorithm for single task setting
-    can be used for RL or Learning from Demonstrations
+    Base meta algorithm for doing meta-rl or meta learning from demonstrations
     """
     def __init__(
-            self,
-            env,
-            exploration_policy: ExplorationPolicy,
-            training_env=None,
-            eval_policy=None,
-            eval_sampler=None,
+        self,
+        
+        # assumption is all envs will have the same act and obs space
+        env_factory,
 
-            num_epochs=100,
-            num_steps_per_epoch=10000,
-            num_steps_between_train_calls=1000,
-            num_steps_per_eval=1000,
-            max_path_length=1000,
-            min_steps_before_training=0,
+        train_task_params_sampler,
+        test_task_params_sampler,
 
-            replay_buffer=None,
-            replay_buffer_size=10000,
+        num_epochs=100,
+        # generate min number of rollouts such that at least
+        # this many steps have been taken
+        min_steps_per_epoch=10000,
+        min_steps_between_train_calls=1000,
+        max_path_length=1000,
+        min_initial_steps_per_task=0,
 
-            freq_saving=1,
-            save_replay_buffer=False,
-            save_environment=False,
-            save_algorithm=False,
+        eval_deterministic=False,
+        num_tasks_per_eval=8,
+        num_rollouts_per_task_per_eval=4,
 
-            save_best=False,
-            save_best_starting_from_epoch=0,
-            best_key='AverageReturn', # higher is better
-            
-            no_terminal=False,
-            wrap_absorbing=False,
+        replay_buffer=None,
+        replay_buffer_size_per_task=10000,
 
-            render=False,
-            render_kwargs={},
+        freq_saving=1,
+        save_replay_buffer=False,
+        save_environment=False,
+        save_algorithm=False,
 
-            freq_log_visuals=1,
+        save_best=False,
+        save_best_starting_from_epoch=0,
+        best_key='AverageReturn', # higher is better
+        
+        no_terminal=False, # means ignore terminal variable from environment
 
-            eval_deterministic=False
-        ):
-        self.env = env
-        self.training_env = training_env or pickle.loads(pickle.dumps(env))
-        self.exploration_policy = exploration_policy
+        render=False,
+        render_kwargs={},
+        freq_log_visuals=1
+    ):
+        self.env_factory = env_factory
+        self.train_task_params_sampler = train_task_params_sampler
+        self.test_task_params_sampler = test_task_params_sampler
 
         self.num_epochs = num_epochs
-        self.num_env_steps_per_epoch = num_steps_per_epoch
-        self.num_steps_between_train_calls = num_steps_between_train_calls
-        self.num_steps_per_eval = num_steps_per_eval
+        self.num_env_steps_per_epoch = min_steps_per_epoch
+        self.min_steps_between_train_calls = min_steps_between_train_calls
         self.max_path_length = max_path_length
-        self.min_steps_before_training = min_steps_before_training
+        self.min_initial_steps_per_task = min_initial_steps_per_task
 
+        self.eval_deterministic = eval_deterministic
+        self.num_tasks_per_eval = num_tasks_per_eval
+        self.num_rollouts_per_task_per_eval = num_rollouts_per_task_per_eval
 
         self.render = render
+        self.render_kwargs = render_kwargs
 
+        self.freq_saving = freq_saving
         self.save_replay_buffer = save_replay_buffer
         self.save_algorithm = save_algorithm
         self.save_environment = save_environment
+
         self.save_best = save_best
         self.save_best_starting_from_epoch = save_best_starting_from_epoch
         self.best_key = best_key
         self.best_statistic_so_far = float('-Inf')
-        
-        if eval_sampler is None:
-            if eval_policy is None:
-                eval_policy = exploration_policy
-            eval_policy = MakeDeterministic(eval_policy)
-            eval_sampler = PathSampler(
-                env,
-                eval_policy,
-                num_steps_per_eval,
-                max_path_length,
-                no_terminal=no_terminal,
-                render=render,
-                render_kwargs=render_kwargs
-            )
-        self.eval_policy = eval_policy
-        self.eval_sampler = eval_sampler
 
+        # Set up the replay buffer
+        env = env_factory(train_task_params_sampler.sample())
         self.action_space = env.action_space
         self.obs_space = env.observation_space
-        self.replay_buffer_size = replay_buffer_size
+        assert max_path_length < replay_buffer_size_per_task
+        self.replay_buffer_size_per_task = replay_buffer_size_per_task
         if replay_buffer is None:
-            assert max_path_length < replay_buffer_size
-            replay_buffer = EnvReplayBuffer(
-                self.replay_buffer_size,
-                self.env,
+            replay_buffer = MetaEnvReplayBuffer(
+                replay_buffer_size_per_task,
+                env,
                 random_seed=np.random.randint(10000)
             )
         else:
@@ -122,11 +113,6 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         self._current_path_builder = PathBuilder()
         self._exploration_paths = []
 
-        if wrap_absorbing:
-            # needs to be properly handled both here and in replay buffer
-            raise NotImplementedError()
-        self.wrap_absorbing = wrap_absorbing
-        self.freq_saving = freq_saving
         self.no_terminal = no_terminal
 
         self.eval_statistics = None
@@ -135,11 +121,8 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
 
     def train(self, start_epoch=0):
         self.pretrain()
-        if start_epoch == 0:
-            params = self.get_epoch_snapshot(-1)
-            logger.save_itr_params(-1, params)
-        self.training_mode(False)
-        self._n_env_steps_total = start_epoch * self.num_env_steps_per_epoch
+        self.training_mode(True)
+        self._n_env_steps_total = start_epoch * self.min_steps_per_epoch
         gt.reset()
         gt.set_def_unique(False)
         self.start_training(start_epoch=start_epoch)
@@ -149,88 +132,71 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         """
         Do anything before the main training phase.
         """
-        pass
+        if self.min_initial_steps_per_task > 0:
+            for task_params in self.train_task_params_sampler:
+                n_steps_this_task = 0
+                while n_steps_this_task < self.min_initial_steps_per_task:
+                    rollout_len = self.do_task_rollout(
+                        task_params, self.min_initial_steps_per_task)
+                    n_steps_this_task += rollout_len
+    
+
+    def do_task_rollout(self, task_params, num_steps):
+        self.exploration_policy = self.get_exploration_policy(task_params)
+        obs, task_id = self._start_new_rollout(task_params)
+
+        self._current_path_builder = PathBuilder()
+        while len(self._current_path_builder) < self.max_path_length:
+            action, agent_info = self._get_action_and_info(obs)
+            if self.render: self.training_env.render(self.render_kwargs)
+
+            next_obs, raw_reward, terminal, env_info = (
+                self.training_env.step(action)
+            )
+            if self.no_terminal: terminal = False
+            self._n_env_steps_total += 1
+
+            reward = np.array([raw_reward])
+            terminal = np.array([terminal])
+            self._handle_step(
+                obs,
+                action,
+                reward,
+                next_obs,
+                np.array([False]) if self.no_terminal else terminal,
+                task_identifier=task_id,
+                absorbing=np.array([0., 0.]), # not implemented wrap absorbing
+                agent_info=agent_info,
+                env_info=env_info,
+            )
+
+            if terminal[0]:
+                break
+            else:
+                obs = next_ob
+
+        rollout_len = len(self._current_path_builder)
+        self._handle_rollout_ending()
+        return rollout_len
 
 
     def start_training(self, start_epoch=0):
-        self._current_path_builder = PathBuilder()
-        observation = self._start_new_rollout()
-
         for epoch in gt.timed_for(
             range(start_epoch, self.num_epochs),
             save_itrs=True,
         ):
             self._start_epoch(epoch)
-            for steps_this_epoch in range(self.num_env_steps_per_epoch):
-                action, agent_info = self._get_action_and_info(observation)
-                if self.render: self.training_env.render()
+            steps_this_epoch = 0
+            steps_since_train_call = 0
+            while steps_this_epoch < self.min_steps_per_epoch:
+                task_params = self.train_task_params_sampler.sample()
+                rollout_len = self.do_task_rollout(task_params)
 
-                next_ob, raw_reward, terminal, env_info = (
-                    self.training_env.step(action)
-                )
-                if self.no_terminal: terminal = False
-                self._n_env_steps_total += 1
+                steps_this_epoch += rollout_len
+                steps_since_train_call += rollout_len
 
-                reward = np.array([raw_reward])
-                terminal = np.array([terminal])
-                self._handle_step(
-                    observation,
-                    action,
-                    reward,
-                    next_ob,
-                    np.array([False]) if self.no_terminal else terminal,
-                    absorbing=np.array([0., 0.]),
-                    agent_info=agent_info,
-                    env_info=env_info,
-                )
-                if terminal[0]:
-                    if self.wrap_absorbing:
-                        raise NotImplementedError()
-                        '''
-                        If we wrap absorbing states, two additional
-                        transitions must be added: (s_T, s_abs) and
-                        (s_abs, s_abs). In Disc Actor Critic paper
-                        they make s_abs be a vector of 0s with last
-                        dim set to 1. Here we are going to add the following:
-                        ([next_ob,0], random_action, [next_ob, 1]) and
-                        ([next_ob,1], random_action, [next_ob, 1])
-                        This way we can handle varying types of terminal states.
-                        '''
-                        # next_ob is the absorbing state
-                        # for now just taking the previous action
-                        self._handle_step(
-                            next_ob,
-                            action,
-                            # env.action_space.sample(),
-                            # the reward doesn't matter
-                            reward,
-                            next_ob,
-                            np.array([False]),
-                            absorbing=np.array([0.0, 1.0]),
-                            agent_info=agent_info,
-                            env_info=env_info
-                        )
-                        self._handle_step(
-                            next_ob,
-                            action,
-                            # env.action_space.sample(),
-                            # the reward doesn't matter
-                            reward,
-                            next_ob,
-                            np.array([False]),
-                            absorbing=np.array([1.0, 1.0]),
-                            agent_info=agent_info,
-                            env_info=env_info
-                        )
-                    self._handle_rollout_ending()
-                    observation = self._start_new_rollout()
-                elif len(self._current_path_builder) >= self.max_path_length:
-                    self._handle_rollout_ending()
-                    observation = self._start_new_rollout()
-                else:
-                    observation = next_ob
-
-                if self._n_env_steps_total % self.num_steps_between_train_calls == 0:
+                if steps_since_train_call > self.min_steps_between_train_calls:
+                    steps_since_train_call = 0
                     gt.stamp('sample')
                     self._try_to_train(epoch)
                     gt.stamp('train')
@@ -240,6 +206,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             gt.stamp('eval')
             self._end_epoch()
 
+
     def _try_to_train(self, epoch):
         if self._can_train():
             self.training_mode(True)
@@ -247,8 +214,8 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             self._n_train_steps_total += 1
             self.training_mode(False)
 
-    def _try_to_eval(self, epoch):
 
+    def _try_to_eval(self, epoch):
         if self._can_evaluate():
             # save if it's time to save
             if epoch % self.freq_saving == 0:
@@ -289,6 +256,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         else:
             logger.log("Skipping eval for now.")
 
+
     def _can_evaluate(self):
         """
         One annoying thing about the logger table is that the keys at each
@@ -306,8 +274,10 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             and self.replay_buffer.num_steps_can_sample() >= self.min_steps_before_training
         )
 
+
     def _can_train(self):
         return self.replay_buffer.num_steps_can_sample() >= self.min_steps_before_training
+
 
     def _get_action_and_info(self, observation):
         """
@@ -320,11 +290,13 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             observation,
         )
 
+
     def _start_epoch(self, epoch):
         self._epoch_start_time = time.time()
         self._exploration_paths = []
         self._do_train_time = 0
         logger.push_prefix('Iteration #%d | ' % epoch)
+
 
     def _end_epoch(self):
         self.eval_statistics = None
@@ -334,9 +306,16 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         logger.log("Started Training: {0}".format(self._can_train()))
         logger.pop_prefix()
 
-    def _start_new_rollout(self):
+
+    def _start_new_rollout(self, task_params):
+        self.training_env = self.env_factory(task_params)
+        obs = self.training_env.reset()
+        task_id = self.env_factory.get_task_identifier(task_params)
+
+        self.exploration_policy = self.get_exploration_policy(task_params)
         self.exploration_policy.reset()
-        return self.training_env.reset()
+        return obs, task_id
+
 
     def _handle_path(self, path):
         """
@@ -367,21 +346,24 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
                 reward,
                 next_ob,
                 terminal,
+                task_identifier=task_id,
                 agent_info=agent_info,
                 env_info=env_info,
             )
         self._handle_rollout_ending()
 
+
     def _handle_step(
-        self,
-        observation,
-        action,
-        reward,
-        next_observation,
-        terminal,
-        absorbing,
-        agent_info,
-        env_info,
+            self,
+            observation,
+            action,
+            reward,
+            next_observation,
+            terminal,
+            task_identifier,
+            absorbing,
+            agent_info,
+            env_info,
     ):
         """
         Implement anything that needs to happen after every step
@@ -393,6 +375,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             rewards=reward,
             next_observations=next_observation,
             terminals=terminal,
+            task_identifier=task_id,
             absorbing=absorbing,
             agent_infos=agent_info,
             env_infos=env_info,
@@ -403,22 +386,25 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             reward=reward,
             terminal=terminal,
             next_observation=next_observation,
+            task_identifier=task_id,
             absorbing=absorbing,
             agent_info=agent_info,
             env_info=env_info,
         )
 
-    def _handle_rollout_ending(self):
+
+    def _handle_rollout_ending(self, task_id):
         """
         Implement anything that needs to happen after every rollout.
         """
-        self.replay_buffer.terminate_episode()
+        self.replay_buffer.terminate_episode(task_id)
         self._n_rollouts_total += 1
         if len(self._current_path_builder) > 0:
             self._exploration_paths.append(
                 self._current_path_builder
             )
             self._current_path_builder = PathBuilder()
+
 
     def get_epoch_snapshot(self, epoch):
         """
@@ -432,6 +418,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             data_to_save['env'] = self.training_env
         return data_to_save
     
+    
     # @abc.abstractmethod
     # def load_snapshot(self, snapshot):
     #     """
@@ -440,6 +427,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
     #     get_epoch_snapshot implementation for the algorithm
     #     """
     #     pass
+
 
     def get_extra_data_to_save(self, epoch):
         """
@@ -461,6 +449,7 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             data_to_save['algorithm'] = self
         return data_to_save
 
+
     @abc.abstractmethod
     def training_mode(self, mode):
         """
@@ -476,6 +465,24 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
         """
         Perform some update, e.g. perform one gradient step.
         :return:
+        """
+        pass
+    
+
+    @abc.abstractmethod
+    def get_exploration_policy(self, task_params):
+        """
+        Meta-Learning methods may need complex processes to obtain a policy for
+        a given task e.g. MAML needs to perform a number of update steps.
+        """
+        pass
+    
+
+    @abc.abstractmethod
+    def get_eval_policy(self, task_params):
+        """
+        Meta-Learning methods may need complex processes to obtain a policy for
+        a given task e.g. MAML needs to perform a number of update steps.
         """
         pass
 
@@ -494,7 +501,22 @@ class BaseAlgorithm(metaclass=abc.ABCMeta):
             print('No Stats to Eval')
 
         logger.log("Collecting samples for evaluation")
-        test_paths = self.eval_sampler.obtain_samples()
+        
+        test_paths = []
+        sampled_task_params = self.test_task_params_sampler.sample_unique(self.num_eval_tasks)
+        for i in range(self.num_eval_tasks):
+            env = self.env_factory(sampled_task_params[i])
+            for _ in range(self.num_rollouts_per_task_per_eval):
+                test_paths.append(
+                    rollout(
+                        self.env,
+                        self.get_eval_policy(sampled_task_params[i]),
+                        self.max_path_length,
+                        no_terminal=self.no_terminal,
+                        render=self.render,
+                        render_kwargs=self.render_kwargs,
+                    )
+                )
 
         statistics.update(eval_util.get_generic_path_information(
             test_paths, stat_prefix="Test",

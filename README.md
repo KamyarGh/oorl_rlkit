@@ -2,7 +2,7 @@
 
 **Important Notes**
 
-This repository (rlswiss) has been extended from the August 2018 version of [rlkit](https://github.com/vitchyr/rlkit). Since then the design approaches of rlswiss and rlkit have deviate quite a bit, and it is for this reason that we are releasing rlswiss as a separate repository. *If you find this repository useful for your research/projects, please cite this repository as well as [rlkit](https://github.com/vitchyr/rlkit).*
+This repository (rlswiss) has been extended from the August 2018 version of [rlkit](https://github.com/vitchyr/rlkit). Since then the design approaches of rlswiss and rlkit have deviated quite a bit, and it is for this reason that we are releasing rlswiss as a separate repository. *If you find this repository useful for your research/projects, please cite this repository as well as [rlkit](https://github.com/vitchyr/rlkit).*
 
 # rlswiss
 **Reinforcement Learning (RL) and Learning from Demonstrations (LfD) framework for the single task as well as meta-learning settings.**

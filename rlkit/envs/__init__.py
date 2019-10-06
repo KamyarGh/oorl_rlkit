@@ -1,4 +1,5 @@
 # Inspired by OpenAI gym registration.py
+import abc
 import importlib
 
 from rlkit.envs.envs_dict import envs_dict
@@ -42,3 +43,30 @@ def get_task_params_samplers(task_specs):
             task_class = load(task_specs[k])
             d[k] = task_class(**task_specs[k+'_kwargs'])
     return d
+
+
+class EnvFactory(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def __get__(self, task_params):
+        """
+        Implements returning and environment corresponding to given task params
+        """
+        pass
+    
+    
+    @abc.abstractmethod
+    def get_task_identifier(self, task_params):
+        """
+        Returns a hashable description of task params so it can be used
+        as dictionary keys etc.
+        """
+        pass
+
+
+    def task_params_to_obs_task_params(self, task_params):
+        """
+        Sometimes this may be needed. For example if we are training a
+        multitask RL algorithm and want to give it the task params as
+        part of the state.
+        """
+        raise NotImplementedError()

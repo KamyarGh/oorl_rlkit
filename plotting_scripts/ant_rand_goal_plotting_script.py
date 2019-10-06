@@ -167,28 +167,51 @@ def gather_method_results(method_dict):
         results[d_size] = d_size_result
     return results
 
+def get_aggregate_result(method_dict):
+    results = {}
+    for d_size in demo_sizes:
+        paths = method_dict[d_size]
+        seed_dicts = [joblib.load(osp.join(path, 'all_eval_stats.pkl')) for path in paths]
+        task_results = []
+        for task in tasks:
+            min_dists = []
+            for s_dict in seed_dicts:
+                min_dists.append(
+                    np.mean(s_dict['all_eval_stats'][0][tuple(task)][1]['min_dists'])
+                )
+            task_results.append(min_dists)
+        task_results = np.array(task_results)
+        task_results = np.mean(task_results, axis=0)
+        print('%.2f +/- %.2f' % (np.mean(task_results), np.std(task_results)))
+    return results
+
+s_a_results = get_aggregate_result(s_a_paths)
+s_results = get_aggregate_result(s_paths)
+bc_results = get_aggregate_result(bc_paths)
+dagger_results = get_aggregate_result(dagger_paths)
+
 # s_a_results = gather_method_results(s_a_paths)
 # s_results = gather_method_results(s_paths)
 # bc_results = gather_method_results(bc_paths)
 # dagger_results = gather_method_results(dagger_paths)
-sparse_rew_rl_results = gather_method_results(sparse_rew_rl_paths)
+# sparse_rew_rl_results = gather_method_results(sparse_rew_rl_paths)
 
-joblib.dump(
-    {
-        # 's_a_results': s_a_results,
-        # 's_results': s_results,
-        # 'bc_results': bc_results,
-        # 'dagger_results': dagger_results,
-        'sparese_rew_rl_results': sparse_rew_rl_results,
-    },
-    'plots/ant_rand_goal_sparse_rew_rl_results_save.pkl',
-    compress=3
-)
+# joblib.dump(
+#     {
+#         # 's_a_results': s_a_results,
+#         # 's_results': s_results,
+#         # 'bc_results': bc_results,
+#         # 'dagger_results': dagger_results,
+#         'sparese_rew_rl_results': sparse_rew_rl_results,
+#     },
+#     'plots/ant_rand_goal_sparse_rew_rl_results_save.pkl',
+#     compress=3
+# )
 
 plt.rcParams["figure.figsize"] = [6,1]
 # plt.rcParams["figure.figsize"] = [6,2]
 # for d_size in [4, 16, 64]:
-for d_size in [64]:
+# for d_size in [64]:
     # state-action plot
     # fig, ax = plt.subplots(1)
     # ax.errorbar(
@@ -262,19 +285,19 @@ for d_size in [64]:
     # plt.close()
 
     # sparse reward rl
-    fig, ax = plt.subplots(1)
-    ax.errorbar(
-        X,
-        sparse_rew_rl_results[d_size]['means'],
-        sparse_rew_rl_results[d_size]['stds'],
-        elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Sparse-Rew-RL',
-        color='red'
-    )
-    ax.set_ylim([0.0, 2.25])
-    ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
-    ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
-    ax.set_yticks([0.0, 1.0, 2.0])
-    # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
-    # plt.savefig('plots/paper_results/ant_rand_goal/bc_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
-    plt.savefig('plots/paper_results/ant_rand_goal/sparse_rew_rl.png', bbox_inches='tight')
-    plt.close()
+    # fig, ax = plt.subplots(1)
+    # ax.errorbar(
+    #     X,
+    #     sparse_rew_rl_results[d_size]['means'],
+    #     sparse_rew_rl_results[d_size]['stds'],
+    #     elinewidth=2.0, capsize=4.0, barsabove=True, linewidth=2.0, label='Sparse-Rew-RL',
+    #     color='red'
+    # )
+    # ax.set_ylim([0.0, 2.25])
+    # ax.set_xticks([0.0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
+    # ax.set_xticklabels([r'$0$', r'$\frac{\pi}{2}$', r'$\pi$', r'$\frac{3\pi}{2}$', r'$2\pi$'])
+    # ax.set_yticks([0.0, 1.0, 2.0])
+    # # lgd = ax.legend(loc='upper right', bbox_to_anchor=(0.725, 0.1), shadow=False, ncol=3)
+    # # plt.savefig('plots/paper_results/ant_rand_goal/bc_demo_%d.png'%d_size, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    # plt.savefig('plots/paper_results/ant_rand_goal/sparse_rew_rl.png', bbox_inches='tight')
+    # plt.close()

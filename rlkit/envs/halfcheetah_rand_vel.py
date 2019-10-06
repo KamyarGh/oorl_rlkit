@@ -5,10 +5,13 @@ https://github.com/cbfinn/maml_rl/blob/master/rllab/envs/mujoco/half_cheetah_env
 '''
 import numpy as np
 from collections import OrderedDict
-from gym import utils
-from rlkit.envs.meta_mujoco_env import MetaMujocoEnv
 
+from gym import utils
+from gym.envs.mujoco import mujoco_env
+
+from rlkit.envs import EnvFactory
 from rlkit.envs.meta_task_params_sampler import MetaTaskParamsSampler
+
 
 class _TrainParamsSampler(MetaTaskParamsSampler):
     def __init__(self, random=8032, num_samples=91):
@@ -22,16 +25,11 @@ class _TrainParamsSampler(MetaTaskParamsSampler):
     def sample(self):
         v = self._random.choice(self.vels)
         v = np.array([v])
-        return {'target_velocity': v}, v
+        return v
 
     def sample_unique(self, num):
         vel_samples = self._random.choice(self.vels, size=num, replace=False)
-        return list(
-            map(
-                lambda vel: ({'target_velocity': np.array([vel])}, np.array([vel])),
-                vel_samples
-            )
-        )
+        return vel_samples
 
     def __iter__(self):
         # dangerous
@@ -42,9 +40,9 @@ class _TrainParamsSampler(MetaTaskParamsSampler):
         if self._ptr == len(self.vels):
             self._ptr = 0
             raise StopIteration
-        vel = np.array([self.vels[self._ptr]])
+        vel = self.vels[self._ptr]
         self._ptr += 1
-        return {'target_velocity': vel}, vel
+        return vel
 
 
 class _TestParamsSampler(_TrainParamsSampler):
@@ -53,48 +51,28 @@ class _TestParamsSampler(_TrainParamsSampler):
         self.vels = self._random.uniform(low=0.0, high=3.0, size=25)
 
 
-class _MetaTrainParamsSampler(_TrainParamsSampler):
-    def __init__(self, random=9827):
-        super().__init__(random, num_samples=1)
-        self.vels = np.linspace(0.0, 3.0, num=31, endpoint=True)
-
-
-class _MetaTestParamsSampler(_TrainParamsSampler):
-    def __init__(self, random=5382):
-        super().__init__(random, num_samples=1)
-        self.vels = np.linspace(0.05, 2.95, num=30, endpoint=True)
-
-
-class _BCDeubggingParamsSampler(_TrainParamsSampler):
-    def __init__(self, random=5382):
-        super().__init__(random, num_samples=1)
-        # self.vels = np.linspace(0.05, 2.95, num=30, endpoint=True)
-        self.vels = [2.0, 2.25, 2.5, 2.75, 3.0]
-
-
-class _DebugMetaTrainSampler(_TrainParamsSampler):
-    def __init__(self, random=9827):
-        super().__init__(random, num_samples=1)
-        # self.vels = np.linspace(0.0, 3.0, num=31, endpoint=True)
-        # self.vels = np.array([1.0])
-        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
-        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0])
-        self.vels = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
-
-class _DebugMetaTestSampler(_TrainParamsSampler):
-    def __init__(self, random=9827):
-        super().__init__(random, num_samples=1)
-        # self.vels = np.linspace(0.0, 3.0, num=31, endpoint=True)
-        # self.vels = np.array([1.05])
-        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
-        # self.vels = np.array([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0])
-        self.vels = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
-
-
-class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
+class HCRandVelFactory(EnvFactory):
     def __init__(self):
-        self.target_velocity = np.array([0.0])
-        MetaMujocoEnv.__init__(self, 'half_cheetah.xml', 5)
+        self._env = HalfCheetahRandVelEnv()
+    
+
+    def __get__(self, task_params):
+        self._env.set_vel(task_params)
+        return self._env
+
+    
+    def get_task_identifier(self, task_params):
+        return task_params
+
+    
+    def task_params_to_obs_task_params(self, task_params):
+        return np.array([task_params])
+
+
+class HalfCheetahRandVelEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+    def __init__(self):
+        self.target_velocity = 0.0
+        mujoco_env.MujocoEnv.__init__(self, 'half_cheetah.xml', 5)
         utils.EzPickle.__init__(self)
     
     def get_body_comvel(self, body_name):
@@ -108,25 +86,17 @@ class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
         cur_vel = (xposafter - xposbefore)/self.dt
         ob = self._get_obs()
         ctrl_cost = 0.1 * 0.5 * np.square(action).sum()
-        # run_cost = 1.*np.abs(self.get_body_comvel("torso")[0] - self.target_velocity)
-        run_cost = 1.*np.abs(cur_vel - self.target_velocity[0])
+        run_cost = 1.*np.abs(cur_vel - self.target_velocity)
         cost = ctrl_cost + run_cost
-        # cost = run_cost
         reward = -cost
         done = False
         return ob, reward, done, dict(ctrl_cost=ctrl_cost, run_cost=run_cost, vel=cur_vel)
-        # return ob, reward, done, dict(run_cost=run_cost, vel=cur_vel)
 
     def _get_obs(self):
-        obs = np.concatenate([
+        return np.concatenate([
             self.sim.data.qpos.flat[1:],
-            self.sim.data.qvel.flat,
-            self.get_body_com("torso").flat,
+            self.sim.data.qvel.flat
         ])
-        return {
-            'obs': obs.copy(),
-            'obs_task_params': self.target_velocity
-        }
 
     def reset_model(self):
         qpos = self.init_qpos + self.np_random.uniform(low=-.1, high=.1, size=self.model.nq)
@@ -134,23 +104,11 @@ class HalfCheetahRandVelEnv(MetaMujocoEnv, utils.EzPickle):
         self.set_state(qpos, qvel)
         return self._get_obs()
 
+    def set_vel(self, vel):
+        self.target_velocity = vel
+
     def viewer_setup(self):
         self.viewer.cam.distance = self.model.stat.extent * 0.5
-
-    def reset(self, task_params=None, obs_task_params=None):
-        if task_params is None:
-            self.target_velocity = np.array([self.np_random.uniform(0.0, 3.0)])
-        else:
-            self.target_velocity = task_params['target_velocity']
-        obs = super().reset()
-        return obs
-
-    @property
-    def task_identifier(self):
-        return self.target_velocity[0]
-
-    def task_id_to_obs_task_params(self, task_id):
-        return np.array([task_id])
 
     def log_statistics(self, paths):
         progs = [

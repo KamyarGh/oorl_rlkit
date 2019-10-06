@@ -55,7 +55,6 @@ class ResNetAIRLDisc(nn.Module):
         use_bn=True,
         clamp_magnitude=10.0
     ):
-        raise NotImplementedError('Not fixed for v2.0 yet!')
         super().__init__()
 
         if hid_act == 'relu':
@@ -80,20 +79,8 @@ class ResNetAIRLDisc(nn.Module):
         self.last_fc = nn.Linear(hid_dim, 1)
 
 
-    def forward(self, obs_batch, act_batch, z_batch=None):
-        # obs_batch = obs_batch[:,-8:]
-
-        if act_batch is not None:
-            to_concat = [obs_batch, act_batch]
-            if z_batch is not None: to_concat.append(z_batch)
-            input_batch = torch.cat(to_concat, dim=1)
-        else:
-            if z_batch is not None:
-                input_batch = torch.cat([obs_batch, z_batch], dim=1)
-            else:
-                input_batch = obs_batch
-        
-        x = self.first_fc(input_batch)
+    def forward(self, batch):
+        x = self.first_fc(batch)
         for block in self.blocks_list:
             x = x + block(x)
         output = self.last_fc(x)

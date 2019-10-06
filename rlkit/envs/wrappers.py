@@ -79,13 +79,41 @@ class ScaledEnv(ProxyEnv, Serializable):
         self.acts_mean = acts_mean
         self.acts_std = acts_std
 
+
+    def get_unscaled_obs(self, obs):
+        if self._scale_obs:
+            return obs*self.obs_std + self.obs_mean
+        else:
+            return obs
+    
+
+    def get_scaled_obs(self, obs):
+        if self._scale_obs:
+            return (obs - self.obs_mean) / self.obs_std
+        else:
+            return obs
+    
+
+    def get_unscaled_acts(self, acts):
+        if self._unscale_acts:
+            return acts * self.acts_std + self.acts_mean
+        else:
+            return acts
+    
+
+    def get_scaled_acts(self, acts):
+        if self._unscale_acts:
+            return (acts - self.acts_mean) / self.acts_std
+        else:
+            return acts
+
     
     def step(self, action):
         if self._unscale_acts:
             action = actions * self.acts_std + self.acts_mean
         obs, r, done, info = self._wrapped_env.step(action)
         if self._scale_obs:
-                obs = (obs - self.obs_mean) / self.obs_std
+            obs = (obs - self.obs_mean) / self.obs_std
         return obs, r, done, info
     
 

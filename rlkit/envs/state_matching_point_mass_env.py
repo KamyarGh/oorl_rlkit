@@ -11,25 +11,19 @@ from rlkit.core.vistools import plot_seaborn_heatmap, plot_scatter
 
 
 class StateMatchingPointMassEnv():
-    def __init__(self, env_bound=7.0, init_pos=np.array([0.0, 0.0]), episode_len=479):
-        # 1 x 1 x 8 x 2
-        # self.valid_targets = np.array(
-        #     [[[
-        #         [3.0, 0.0],
-        #         [0.0, 3.0],
-        #         [-3.0, 0.0],
-        #         [0.0, -3.0],
-        #     ]]]
-        # )
+    def __init__(self, env_bound=7.0, init_pos=np.array([0.0, 0.0]), episode_len=479, obs_with_time=True):
         self.cur_pos = np.zeros([2])
         self.init_pos = init_pos.copy()
 
         self.max_action_magnitude = 1.0
         self.action_space = spaces.Box(-1.0, 1.0, shape=(2,), dtype='float32')
-        # self.observation_space = spaces.Box(-env_bound, env_bound, shape=(2,), dtype='float32')
-        self.observation_space = spaces.Box(-env_bound, env_bound, shape=(3,), dtype='float32')
-        self.env_bound = env_bound
 
+        if obs_with_time:
+            self.observation_space = spaces.Box(-env_bound, env_bound, shape=(3,), dtype='float32')
+        else:
+            self.observation_space = spaces.Box(-env_bound, env_bound, shape=(2,), dtype='float32')
+        self.env_bound = env_bound
+        self.obs_with_time = obs_with_time
         self.episode_len = float(episode_len)
 
     def seed(self, num):
@@ -55,15 +49,24 @@ class StateMatchingPointMassEnv():
         else:
             done = False
         
-        obs_with_time = np.array([self.cur_pos[0], self.cur_pos[1], self.timestep/self.episode_len])
+        obs = self._get_obs()
         # return self.cur_pos.copy() , reward, done, dict(
         #     xy_pos=self.cur_pos.copy(),
         #     timestep=self.timestep
         # )
-        return obs_with_time.copy() , reward, done, dict(
+        return obs.copy() , reward, done, dict(
             xy_pos=self.cur_pos.copy(),
             timestep=self.timestep
         )
+    
+
+    def _get_obs(self):
+        if self.obs_with_time:
+            obs = np.array([self.cur_pos[0], self.cur_pos[1], self.timestep/self.episode_len])
+        else:
+            obs = np.array([self.cur_pos[0], self.cur_pos[1]])
+        return obs
+
 
     def reset(self):
         self.timestep = 0.0
@@ -71,20 +74,19 @@ class StateMatchingPointMassEnv():
         self.cur_pos = self.init_pos + np.random.normal(loc=0.0, scale=0.1, size=2)
         # return np.array([self.cur_pos[0], self.cur_pos[1], 0.0])
         
-        # return self.cur_pos.copy()
-        obs_with_time = np.array([self.cur_pos[0], self.cur_pos[1], self.timestep/self.episode_len])
-        return obs_with_time
+        return self._get_obs().copy()
 
-    def log_new_ant_multi_statistics(self, paths, epoch, log_dir):
+
+    def log_visuals(self, paths, epoch, log_dir):
         # turn the xy pos into arrays you can work with
         # N_paths x path_len x 2
-        # xy_pos = np.array([[d['xy_pos'] for d in path["env_infos"]] for path in paths])
+        # xy_pos = np.array([[d['xy_pos'] for d in path["env_info"]] for path in paths])
 
         # plot using seaborn heatmap
-        xy_pos = [np.array([d['xy_pos'] for d in path["env_infos"]]) for path in paths]
-        xy_pos = np.array([d['xy_pos'] for path in paths for d in path['env_infos']])
+        xy_pos = [np.array([d['xy_pos'] for d in path["env_info"]]) for path in paths]
+        xy_pos = np.array([d['xy_pos'] for path in paths for d in path['env_info']])
         
-        PLOT_BOUND = 20
+        PLOT_BOUND = int(self.env_bound * 1.25)
 
         plot_seaborn_heatmap(
             xy_pos[:,0],
@@ -105,7 +107,7 @@ class StateMatchingPointMassEnv():
 
         return {}
 
-        # xy_pos = [np.array([d['xy_pos'] for d in path["env_infos"]]) for path in paths]
+        # xy_pos = [np.array([d['xy_pos'] for d in path["env_info"]]) for path in paths]
         # max_len = max([a.shape[0] for a in xy_pos])
         # full_xy_pos = np.zeros((len(xy_pos), max_len, 2))
         # for i in range(len(xy_pos)):

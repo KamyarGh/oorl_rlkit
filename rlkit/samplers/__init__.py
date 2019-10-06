@@ -7,7 +7,7 @@ def rollout(
     max_path_length,
     no_terminal=False,
     render=False,
-    render_kwargs={}
+    render_kwargs={},
 ):
     path_builder = PathBuilder()
     observation = env.reset()
@@ -46,6 +46,11 @@ class PathSampler():
         render=False,
         render_kwargs={}
     ):
+        """
+        When obtain_samples is called, the path sampler will generates the
+        minimum number of rollouts such that at least num_steps timesteps
+        have been sampled
+        """
         self.env = env
         self.policy = policy
         self.num_steps = num_steps

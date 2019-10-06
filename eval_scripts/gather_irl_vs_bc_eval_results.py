@@ -48,11 +48,11 @@ for p in all_dict_paths:
         if k[-1]:
             continue
 
-            print('fuck you bitch')
+            print('shdskdh')
             model_dict = fairl_dict
         else:
             continue
-            print('assfuck')
+            print('kdshksdhkds')
             model_dict = airl_dict
 
         # model_dict = airl_dict

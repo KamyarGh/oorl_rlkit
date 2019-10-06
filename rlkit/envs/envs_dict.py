@@ -5,4 +5,10 @@ envs_dict = {
     'hopper': 'gym.envs.mujoco.hopper:HopperEnv',
     'walker': 'gym.envs.mujoco.walker2d:Walker2dEnv',
     'humanoid': 'gym.envs.mujoco.humanoid:HumanoidEnv',
+
+    # Envs we made for State-Marginal Matching
+    'simple_point_mass': 'rlkit.envs.state_matching_point_mass_env:StateMatchingPointMassEnv',
+
+    # Meta Environments
+    
 }

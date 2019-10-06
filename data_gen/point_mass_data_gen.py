@@ -359,8 +359,8 @@ if __name__ == '__main__':
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_X_path_noise_0p1.pkl'
     # X, Y = AntXpath(scale, 8000)
 
-    # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/infty_r_10_scale_0p3.pkl'
-    # X, Y = infty(12.0, 0.3, 4000)
+    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_pm_infinity.pkl'
+    X, Y = infty(12.0, 0.3, 4000)
 
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_line_noise_scale_0p1.pkl'
     # X, Y = ant_line(7.0, 0.1, 1000)
@@ -376,8 +376,8 @@ if __name__ == '__main__':
     # pusher_points, a = pusher_sin_trace(0.2, 8000)
 
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_spiral_3_0p1.pkl'
-    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_spiral_3_0p3.pkl'
-    X, Y = ant_spiral(3.0, 0.3, 16000)
+    # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_spiral_3_0p3.pkl'
+    # X, Y = ant_spiral(3.0, 0.3, 16000)
 
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_s_maze.pkl'
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_half_s_maze_noise_scale_0p6.pkl'
@@ -393,6 +393,7 @@ if __name__ == '__main__':
 
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/spiral_16.pkl'
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/final_spiral.pkl'
+    # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_pm_spiral_16.pkl'
     # X, Y = spiral(2.0, 16.0, 0.3, 16000)
 
 
@@ -401,8 +402,8 @@ if __name__ == '__main__':
 
 
     # bound = 18
-    bound = 6
-    # bound = 20
+    # bound = 6
+    bound = 20
     plot_2dhistogram(
         X, Y, 30, 'test', 'plots/data_gen/hist.png', [[-bound,bound], [-bound,bound]]
     )
@@ -419,7 +420,7 @@ if __name__ == '__main__':
     print(np.std(XY_DATA, axis=0).shape)
     joblib.dump(
         {
-            'xy_data': XY_DATA,
+            'data': XY_DATA,
             'xy_mean': np.mean(XY_DATA, axis=0),
             'xy_std': np.std(XY_DATA, axis=0)
         },

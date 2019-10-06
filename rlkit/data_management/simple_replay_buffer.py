@@ -236,142 +236,109 @@ class SimpleReplayBuffer(ReplayBuffer):
         return self._size
 
 
+class SimpleReplayBufferDict(dict):
+    def __init__(self, max_size, obs_dim, act_dim, seed):
+        super().__init__()
+        self.max_size = max_size
+        self.obs_dim = obs_dim
+        self.act_dim = act_dim
+        self._py_rand_state = python_random.Random(seed)
+
+
+    def __missing__(self, k):
+        rand_seed = self._py_rand_state.randint(0, 10000)
+        self[k] = SimpleReplayBuffer(
+            self.max_size,
+            self.obs_dim,
+            self.act_dim,
+            rand_seed
+        )
+        return self[k]
+
+
+
 class MetaSimpleReplayBuffer():
     def __init__(
-            self, max_rb_size_per_task, observation_dim, action_dim,
-            discrete_action_dim=False, policy_uses_pixels=False,
-            policy_uses_task_params=False, concat_task_params_to_policy_obs=False,
+            self,
+            max_rb_size_per_task,
+            observation_dim,
+            action_dim,
             random_seed=2001
         ):
-        prev_py_rand_state = python_random.getstate()
-        python_random.seed(random_seed)
-        self._py_rand_state = python_random.getstate()
-        python_random.setstate(prev_py_rand_state)
+        self._py_rand_state = python_random.Random(random_seed)
 
         self._obs_dim = observation_dim
         self._act_dim = action_dim
         self._max_rb_size_per_task = max_rb_size_per_task
-        self._disc_act_dim = discrete_action_dim
-        self._policy_uses_pixels = policy_uses_pixels
-        self._policy_uses_task_params = policy_uses_task_params
-        self._concat_task_params_to_policy_obs = concat_task_params_to_policy_obs
-        p = self._get_partial()
-        self.task_replay_buffers = defaultdict(p)
-
-
-    def _get_partial(self):
-        return partial(
-            SimpleReplayBuffer,
-            self._max_rb_size_per_task,
-            self._obs_dim,
-            self._act_dim,
-            discrete_action_dim=self._disc_act_dim,
-            policy_uses_pixels=self._policy_uses_pixels,
-            policy_uses_task_params=self._policy_uses_task_params,
-            concat_task_params_to_policy_obs=self._concat_task_params_to_policy_obs
+        self.task_replay_buffers = SimpleReplayBufferDict(
+            max_rb_size_per_task,
+            observation_dim,
+            action_dim,
+            self._py_rand_state.randint(0,10000)
         )
-    
-    
-    @property
-    def policy_uses_pixels(self):
-        return self._policy_uses_pixels
-    
-
-    @policy_uses_pixels.setter
-    def policy_uses_pixels(self, value):
-        if value == self._policy_uses_pixels: return
-        
-        for srb in self.task_replay_buffers.values():
-            srb.policy_uses_pixels = value
-
-        self._policy_uses_pixels = value
-        p = self._get_partial()
-        self.task_replay_buffers.default_factory = p
-    
-
-    @property
-    def policy_uses_task_params(self):
-        return self._policy_uses_task_params
-    
-
-    @policy_uses_pixels.setter
-    def policy_uses_task_params(self, value):
-        if value == self._policy_uses_task_params: return
-            
-        for srb in self.task_replay_buffers.values():
-            srb.policy_uses_task_params = value
-
-        self._policy_uses_task_params = value
-        p = self._get_partial()
-        self.task_replay_buffers.default_factory = p
-    
-
-    @property
-    def concat_task_params_to_policy_obs(self):
-        return self._concat_task_params_to_policy_obs
-    
-
-    @policy_uses_pixels.setter
-    def concat_task_params_to_policy_obs(self, value):
-        if value == self._concat_task_params_to_policy_obs: return
-        
-        for srb in self.task_replay_buffers.values():
-            srb.concat_task_params_to_policy_obs = value
-
-        self._concat_task_params_to_policy_obs = value
-        p = self._get_partial()
-        self.task_replay_buffers.default_factory = p
 
 
     def add_path(self, path, task_identifier):
-        '''
-            task_identifier must be hashable
-        '''
         self.task_replay_buffers[task_identifier].add_path(path)
     
 
-    def add_sample(self, observation, action, reward, terminal,
-                   next_observation, task_identifier, **kwargs):
+    def add_sample(
+        self,
+        observation,
+        action,
+        reward,
+        terminal,
+        next_observation,
+        task_identifier,
+        **kwargs
+    ):
         self.task_replay_buffers[task_identifier].add_sample(
-            observation, action, reward, terminal, next_observation,
-            **kwargs
+            observation, action, reward, terminal, next_observation, **kwargs
         )
-    
+
 
     def terminate_episode(self, task_identifier):
         self.task_replay_buffers[task_identifier].terminate_episode()
     
 
-    def sample_trajs(self, num_trajs_per_task, num_tasks=1, task_identifiers=None, keys=None, samples_per_traj=None):
-        if task_identifiers is None:
-            sample_params = list(sample(self.task_replay_buffers.keys(), num_tasks))
-        else:
-            sample_params = task_identifiers
+    def sample_trajs(
+        self,
+        task_identifiers,
+        num_trajs_per_task,
+        samples_per_traj=None,
+        keys=None,
+    ):
+        # if task_identifiers is None:
+            # sample_params = list(sample(self.task_replay_buffers.keys(), num_tasks))
         batch_list = [
-            self.task_replay_buffers[p].sample_trajs(num_trajs_per_task, keys=keys, samples_per_traj=samples_per_traj) \
-            for p in sample_params
+            self.task_replay_buffers[p].sample_trajs(
+                num_trajs_per_task, keys=keys, samples_per_traj=samples_per_traj
+            ) for p in task_identifiers
         ]
         return batch_list, sample_params
     
 
-    def sample_trajs_from_task(self, task_identifier, num_trajs, samples_per_traj=None):
-        return self.task_replay_buffers[task_identifier].sample_trajs(num_trajs, samples_per_traj=samples_per_traj)
-    
-    def sample_random_batch_from_task(self, task_identifier, num_samples):
-        return self.task_replay_buffers[task_identifier].random_batch(num_samples)  
+    def sample_trajs_from_task(self, task_identifier, num_trajs, keyes=None, samples_per_traj=None):
+        return self.task_replay_buffers[task_identifier].sample_trajs(
+            num_trajs, keys=keys, samples_per_traj=samples_per_traj
+        )
 
-    def random_batch(self, *args, **kwargs):
-        return self.sample_random_batch(*args, **kwargs)
-    def sample_random_batch(self, batch_size_per_task, num_task_params=1, task_identifiers_list=None):
-        if task_identifiers_list is None:
-            sample_params = list(sample(self.task_replay_buffers.keys(), num_task_params))
-        else:
-            sample_params = task_identifiers_list
+
+    def sample_random_batch_from_task(self, task_identifier, num_samples, keys=None):
+        return self.task_replay_buffers[task_identifier].random_batch(num_samples, keys=keys)
+
+
+    def random_batch(
+        self,
+        task_identifiers,
+        batch_size_per_task,
+        keys=None
+    ):
         batch_list = [
-            self.task_replay_buffers[p].random_batch(batch_size_per_task) \
-            for p in sample_params
+            self.task_replay_buffers[p].random_batch(batch_size_per_task, keys=keys) \
+            for p in task_identifiers
         ]
-        return batch_list, sample_params
+        return batch_list
 
 
     def num_steps_can_sample(self):
