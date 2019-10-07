@@ -9,8 +9,11 @@ import mujoco_py
 
 from rlkit.core.vistools import plot_seaborn_heatmap, plot_scatter
 
-class StateMatchingPusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    def __init__(self):
+class PusherSMMEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+    def __init__(self, obs_with_time=True, episode_len=200):
+        self.timestep = 0.0
+        self.episode_len = episode_len
+        self.obs_with_time = obs_with_time
         utils.EzPickle.__init__(self)
         mujoco_env.MujocoEnv.__init__(
             self,
@@ -19,6 +22,8 @@ class StateMatchingPusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         )
 
     def step(self, a):
+        self.timestep += 1.0
+
         vec_1 = self.get_body_com("object") - self.get_body_com("tips_arm")
         vec_2 = self.get_body_com("object") - self.get_body_com("goal")
 
@@ -36,6 +41,7 @@ class StateMatchingPusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         ob = self._get_obs()
         done = False
         return ob, reward, done, dict(
+            timestep=self.timestep,
             reward_near=reward_near,
             reward_dist=reward_dist,
             reward_ctrl=reward_ctrl,
@@ -47,6 +53,11 @@ class StateMatchingPusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = -1
         self.viewer.cam.distance = 4.0
+
+    def reset(self):
+        obs = super().reset()
+        self.timestep = 0.0
+        return obs
 
     def reset_model(self):
         qpos = self.init_qpos
@@ -68,22 +79,32 @@ class StateMatchingPusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return self._get_obs()
 
     def _get_obs(self):
-        return np.concatenate([
-            self.get_body_com("tips_arm"),
-            self.get_body_com("object"),
-            self.get_body_com("goal"),
-            self.sim.data.qpos.flat[:7],
-            self.sim.data.qvel.flat[:7],
-        ]).copy()
+        if self.obs_with_time:
+            return np.concatenate([
+                self.get_body_com("tips_arm"),
+                self.get_body_com("object"),
+                self.get_body_com("goal"),
+                self.sim.data.qpos.flat[:7],
+                self.sim.data.qvel.flat[:7],
+                np.array([self.timestep/self.episode_len])
+            ]).copy()
+        else:
+            return np.concatenate([
+                self.get_body_com("tips_arm"),
+                self.get_body_com("object"),
+                self.get_body_com("goal"),
+                self.sim.data.qpos.flat[:7],
+                self.sim.data.qvel.flat[:7],
+            ]).copy()
 
-    def log_new_ant_multi_statistics(self, paths, epoch, log_dir):
-        arm_xyz = np.array([d['arm_xyz'] for path in paths for d in path['env_infos']])
-        obj_xyz = np.array([d['obj_xyz'] for path in paths for d in path['env_infos']])
+    def log_visuals(self, paths, epoch, log_dir):
+        arm_xyz = np.array([d['arm_xyz'] for path in paths for d in path['env_info']])
+        obj_xyz = np.array([d['obj_xyz'] for path in paths for d in path['env_info']])
 
-        min_arm_to_obj = np.array([min(-d['reward_near'] for d in path['env_infos']) for path in paths])
-        min_obj_to_goal = np.array([min(-d['reward_dist'] for d in path['env_infos']) for path in paths])
+        min_arm_to_obj = np.array([min(-d['reward_near'] for d in path['env_info']) for path in paths])
+        min_obj_to_goal = np.array([min(-d['reward_dist'] for d in path['env_info']) for path in paths])
 
-        successes = [np.sum([d['success'] for d in path['env_infos']]) > 0 for path in paths]
+        successes = [np.sum([d['success'] for d in path['env_info']]) > 0 for path in paths]
         success_rate = float(np.sum(successes)) / float(len(successes))
         
         plot_scatter(
@@ -110,18 +131,20 @@ class StateMatchingPusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             os.path.join(log_dir, 'obj_x_y_epoch_%d.png'%epoch),
             [[-0.5,1], [-1,0.5]]
         )
+
+        return {}
         
-        return_dict = OrderedDict()
-        return_dict['Success Rate'] = success_rate
+        # return_dict = OrderedDict()
+        # return_dict['Success Rate'] = success_rate
 
-        return_dict['AvgClosestArm2Obj'] = np.mean(min_arm_to_obj)
-        return_dict['MaxClosestArm2Obj'] = np.max(min_arm_to_obj)
-        return_dict['MinClosestArm2Obj'] = np.min(min_arm_to_obj)
-        return_dict['StdClosestArm2Obj'] = np.std(min_arm_to_obj)
+        # return_dict['AvgClosestArm2Obj'] = np.mean(min_arm_to_obj)
+        # return_dict['MaxClosestArm2Obj'] = np.max(min_arm_to_obj)
+        # return_dict['MinClosestArm2Obj'] = np.min(min_arm_to_obj)
+        # return_dict['StdClosestArm2Obj'] = np.std(min_arm_to_obj)
 
-        return_dict['AvgClosestObj2Goal'] = np.mean(min_obj_to_goal)
-        return_dict['MaxClosestObj2Goal'] = np.max(min_obj_to_goal)
-        return_dict['MinClosestObj2Goal'] = np.min(min_obj_to_goal)
-        return_dict['StdClosestObj2Goal'] = np.std(min_obj_to_goal)
+        # return_dict['AvgClosestObj2Goal'] = np.mean(min_obj_to_goal)
+        # return_dict['MaxClosestObj2Goal'] = np.max(min_obj_to_goal)
+        # return_dict['MinClosestObj2Goal'] = np.min(min_obj_to_goal)
+        # return_dict['StdClosestObj2Goal'] = np.std(min_obj_to_goal)
 
-        return return_dict
+        # return return_dict

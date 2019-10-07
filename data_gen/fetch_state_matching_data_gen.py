@@ -120,7 +120,7 @@ if __name__ == '__main__':
     print(data.shape)
     joblib.dump(
         {
-            'xy_data': data,
+            'data': data,
         },
         save_path,
         compress=3

@@ -7,8 +7,11 @@ import mujoco_py
 
 from rlkit.core.vistools import plot_seaborn_heatmap, plot_scatter
 
-class StateMatchingPusherNoObjEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    def __init__(self):
+class PusherTraceEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+    def __init__(self, obs_with_time=True, episode_len=500):
+        self.timestep = 0.0
+        self.episode_len = episode_len
+        self.obs_with_time = obs_with_time
         utils.EzPickle.__init__(self)
         mujoco_env.MujocoEnv.__init__(
             self,
@@ -18,6 +21,7 @@ class StateMatchingPusherNoObjEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def step(self, a):
         reward = 0.0
+        self.timestep += 1.0
 
         self.do_simulation(a, self.frame_skip)
         ob = self._get_obs()
@@ -25,6 +29,7 @@ class StateMatchingPusherNoObjEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         xyz = self.get_body_com("tips_arm")
         return ob, reward, done, dict(
+            timestep=self.timestep,
             xyz=xyz.copy(),
             a=np.arctan2(xyz[1] + 0.6, xyz[0]) # the +0.6 is because the center is actually at (0,-0.6)
         )
@@ -32,6 +37,11 @@ class StateMatchingPusherNoObjEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = -1
         self.viewer.cam.distance = 4.0
+
+    def reset(self):
+        obs = super().reset()
+        self.timestep = 0.0
+        return obs
 
     def reset_model(self):
         qpos = self.init_qpos
@@ -44,15 +54,23 @@ class StateMatchingPusherNoObjEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return self._get_obs()
 
     def _get_obs(self):
-        return np.concatenate([
-            self.get_body_com("tips_arm"),
-            self.sim.data.qpos.flat[:7],
-            self.sim.data.qvel.flat[:7],
-        ])
+        if self.obs_with_time:
+            return np.concatenate([
+                self.get_body_com("tips_arm"),
+                self.sim.data.qpos.flat[:7],
+                self.sim.data.qvel.flat[:7],
+                np.array([self.timestep/self.episode_len])
+            ])
+        else:
+            return np.concatenate([
+                self.get_body_com("tips_arm"),
+                self.sim.data.qpos.flat[:7],
+                self.sim.data.qvel.flat[:7],
+            ])
 
-    def log_new_ant_multi_statistics(self, paths, epoch, log_dir):
-        xyz = np.array([d['xyz'] for path in paths for d in path['env_infos']])
-        a = np.array([d['a'] for path in paths for d in path['env_infos']])
+    def log_visuals(self, paths, epoch, log_dir):
+        xyz = np.array([d['xyz'] for path in paths for d in path['env_info']])
+        a = np.array([d['a'] for path in paths for d in path['env_info']])
         
         plot_scatter(
             xyz[:,0],

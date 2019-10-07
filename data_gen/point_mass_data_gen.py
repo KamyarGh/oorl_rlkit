@@ -443,7 +443,7 @@ if __name__ == '__main__':
 
     joblib.dump(
         {
-            'xy_data': pusher_points,
+            'data': pusher_points,
         },
         save_path,
         compress=3

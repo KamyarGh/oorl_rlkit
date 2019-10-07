@@ -12,7 +12,7 @@ def goal_distance(goal_a, goal_b):
     return np.linalg.norm(goal_a - goal_b, axis=-1)
 
 
-class StateMatchingFetchEnv(StateMatchingRobotEnv):
+class FetchSMMEnv(StateMatchingRobotEnv):
     """Superclass for all Fetch environments.
     """
 
@@ -20,6 +20,7 @@ class StateMatchingFetchEnv(StateMatchingRobotEnv):
         self, model_path, n_substeps, gripper_extra_height, block_gripper,
         has_object, target_in_the_air, target_offset, obj_range, target_range,
         distance_threshold, initial_qpos, reward_type,
+        obs_with_time=True, episode_len=200
     ):
         """Initializes a new Fetch environment.
 
@@ -47,7 +48,11 @@ class StateMatchingFetchEnv(StateMatchingRobotEnv):
         self.distance_threshold = distance_threshold
         self.reward_type = reward_type
 
-        super(StateMatchingFetchEnv, self).__init__(
+        self.timestep = 0.0
+        self.episode_len = episode_len
+        self.obs_with_time = obs_with_time
+
+        super(FetchSMMEnv, self).__init__(
             model_path=model_path, n_substeps=n_substeps, n_actions=4,
             initial_qpos=initial_qpos)
 
@@ -88,6 +93,12 @@ class StateMatchingFetchEnv(StateMatchingRobotEnv):
         utils.ctrl_set_action(self.sim, action)
         utils.mocap_set_action(self.sim, action)
 
+    def step(self, action):
+        self.timestep += 1.0
+        obs, reward, done, info = super().step(action)
+        info['timestep'] = self.timestep
+        return obs, reward, done, info
+
     def _get_obs(self):
         # positions
         grip_pos = self.sim.data.get_site_xpos('robot0:grip')
@@ -117,23 +128,44 @@ class StateMatchingFetchEnv(StateMatchingRobotEnv):
         #     grip_pos, object_pos.ravel(), object_rel_pos.ravel(), gripper_state, object_rot.ravel(),
         #     object_velp.ravel(), object_velr.ravel(), grip_velp, gripper_vel,
         # ])
-        obs = np.concatenate([
-            object_pos[:2],
-            grip_pos[:2],
+        if self.obs_with_time:
+            obs = np.concatenate([
+                object_pos[:2],
+                grip_pos[:2],
 
-            object_pos[2:3],
-            grip_pos[2:3],
+                object_pos[2:3],
+                grip_pos[2:3],
 
-            object_rel_pos.ravel(),
+                object_rel_pos.ravel(),
 
-            gripper_state,
+                gripper_state,
 
-            object_rot.ravel(),
-            object_velp.ravel(),
-            object_velr.ravel(),
-            grip_velp,
-            gripper_vel,
-        ])
+                object_rot.ravel(),
+                object_velp.ravel(),
+                object_velr.ravel(),
+                grip_velp,
+                gripper_vel,
+
+                np.array([self.timestep/self.episode_len])
+            ])
+        else:
+            obs = np.concatenate([
+                object_pos[:2],
+                grip_pos[:2],
+
+                object_pos[2:3],
+                grip_pos[2:3],
+
+                object_rel_pos.ravel(),
+
+                gripper_state,
+
+                object_rot.ravel(),
+                object_velp.ravel(),
+                object_velr.ravel(),
+                grip_velp,
+                gripper_vel,
+            ])
 
         return obs.copy()
 
@@ -152,6 +184,10 @@ class StateMatchingFetchEnv(StateMatchingRobotEnv):
         site_id = self.sim.model.site_name2id('target0')
         self.sim.model.site_pos[site_id] = self.goal - sites_offset[0]
         self.sim.forward()
+
+    def reset(self):
+        self.timestep = 0.0
+        return super().reset()
 
     def _reset_sim(self):
         self.sim.set_state(self.initial_state)
@@ -220,9 +256,9 @@ class StateMatchingFetchEnv(StateMatchingRobotEnv):
             self.height_offset = self.sim.data.get_site_xpos('object0')[2]
 
 
-    def log_new_ant_multi_statistics(self, paths, epoch, log_dir):
-        grip_pos = np.array([d['grip_pos'] for path in paths for d in path['env_infos']])
-        obj_pos = np.array([d['obj_pos'] for path in paths for d in path['env_infos']])
+    def log_visuals(self, paths, epoch, log_dir):
+        grip_pos = np.array([d['grip_pos'] for path in paths for d in path['env_info']])
+        obj_pos = np.array([d['obj_pos'] for path in paths for d in path['env_info']])
         
         # PLOT_BOUND = 2
         

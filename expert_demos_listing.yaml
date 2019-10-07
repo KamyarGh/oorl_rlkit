@@ -97,3 +97,21 @@ corl_pm_infinity:
   file_paths: [
     /scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_pm_infinity.pkl
   ]
+
+corl_pusher_sin_trace:
+  description: "pusher sin trace"
+  file_paths: [
+    /scratch/hdd001/home/kamyar/output/fmax_demos/corl_pusher_sin_trace.pkl
+  ]
+
+corl_pusher_push:
+  description: "pusher push"
+  file_paths: [
+    /scratch/hdd001/home/kamyar/output/fmax_demos/corl_pusher_push_states.pkl
+  ]
+
+corl_fetch_push:
+  description: "fetch push"
+  file_paths: [
+    /scratch/hdd001/home/kamyar/output/fmax_demos/corl_box_pushing_from_center.pkl
+  ]
