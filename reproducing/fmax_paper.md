@@ -1,11 +1,12 @@
 # Guide to reproducing the results from the fmax paper
+Notes:
 - First appropriately modify rlkit/launchers/config.py
 - run_experiment.py calls srun which is a SLURM command. You can use the `--nosrun` flag to not use SLURM and use your local machine instead.
-- The expert demonstrations and state marginal data used for imitation learning experiments can be found at << THIS LINK >>.
+- The expert demonstrations and state marginal data used for imitation learning experiments can be found at [THIS LINK](https://drive.google.com/drive/folders/1M8XvJrMU24Hq_OMGR_SylsBrsSjY4WFd?usp=sharing).
 - The yaml files describe the experiments to run and have three sections:
-..- meta_data: general experiment and resource settings
-..- variables: used to describe the hyperparameters to search over
-..- constants: hyperparameters that will not be searched over
+..* meta_data: general experiment and resource settings
+..* variables: used to describe the hyperparameters to search over
+..* constants: hyperparameters that will not be searched over
 
 
 ## Reproducing Imitation Learning Results
