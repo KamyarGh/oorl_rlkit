@@ -7,7 +7,9 @@ Notes:
 ..* meta_data: general experiment and resource settings
 ..* variables: used to describe the hyperparameters to search over
 ..* constants: hyperparameters that will not be searched over
-
+- The conda env specs are in rl_swiss_conda_env.yaml. You can refer to [THIS LINK](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-from-file) for notes on how to set up your conda environment using the rl_swiss_conda_env.yaml file.
+- You need to have Mujoco and mujoco-py installed.
+- Due to a minor dependency on rllab, you would have to also install rllab. I will try to remove this dependency in future versions. The dependency is that run_experiment.py calls build_nested_variant_generator which uses something from rllab.
 
 ## Reproducing Imitation Learning Results
 ### Training Expert Policies
