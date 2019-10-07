@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/slide_column.pkl'
     # data = column(8000)
 
-    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/box_pushing_from_center.pkl'
+    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_box_pushing_from_center.pkl'
     data = uniform_box(10000)
 
 

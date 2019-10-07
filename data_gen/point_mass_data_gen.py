@@ -359,8 +359,8 @@ if __name__ == '__main__':
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_X_path_noise_0p1.pkl'
     # X, Y = AntXpath(scale, 8000)
 
-    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_pm_infinity.pkl'
-    X, Y = infty(12.0, 0.3, 4000)
+    # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_pm_infinity.pkl'
+    # X, Y = infty(12.0, 0.3, 4000)
 
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_line_noise_scale_0p1.pkl'
     # X, Y = ant_line(7.0, 0.1, 1000)
@@ -371,9 +371,9 @@ if __name__ == '__main__':
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_disc_radius_4.pkl'
     # X, Y = ant_disc(4.0, 8000)
 
-    # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/pusher_sin_trace.pkl'
+    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_pusher_sin_trace.pkl'
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/test.pkl'
-    # pusher_points, a = pusher_sin_trace(0.2, 8000)
+    pusher_points, a = pusher_sin_trace(0.2, 8000)
 
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_spiral_3_0p1.pkl'
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/ant_spiral_3_0p3.pkl'
@@ -401,50 +401,50 @@ if __name__ == '__main__':
 
 
 
-    # bound = 18
-    # bound = 6
-    bound = 20
-    plot_2dhistogram(
-        X, Y, 30, 'test', 'plots/data_gen/hist.png', [[-bound,bound], [-bound,bound]]
-    )
-    plot_scatter(
-        X, Y, 30, 'test', 'plots/data_gen/scatter.png', [[-bound,bound], [-bound,bound]]
-    )
-    plot_seaborn_heatmap(
-        X, Y, 30, 'test', 'plots/data_gen/heatmap.png', [[-bound,bound], [-bound,bound]]
-    )
-
-    XY_DATA = np.array([X,Y]).T
-    print(XY_DATA.shape)
-    print(np.mean(XY_DATA, axis=0).shape)
-    print(np.std(XY_DATA, axis=0).shape)
-    joblib.dump(
-        {
-            'data': XY_DATA,
-            'xy_mean': np.mean(XY_DATA, axis=0),
-            'xy_std': np.std(XY_DATA, axis=0)
-        },
-        save_path,
-        compress=3
-    )
-
-
-
-    # bound = 2
-    # plot_scatter(
-    #     pusher_points[:,0], pusher_points[:,1], 30, 'test', 'plots/data_gen/pusher_top_down.png', [[-1,1], [-1.6,0.4]]
+    # # bound = 18
+    # # bound = 6
+    # bound = 20
+    # plot_2dhistogram(
+    #     X, Y, 30, 'test', 'plots/data_gen/hist.png', [[-bound,bound], [-bound,bound]]
     # )
     # plot_scatter(
-    #     a,
-    #     # np.arctan2(pusher_points[:,1], pusher_points[:,0]),
-    #     pusher_points[:,2], 30, 'test', 'plots/data_gen/pusher_a_z.png', [[-np.pi,np.pi], [-1,1]]
+    #     X, Y, 30, 'test', 'plots/data_gen/scatter.png', [[-bound,bound], [-bound,bound]]
     # )
-    # print(pusher_points.shape)
+    # plot_seaborn_heatmap(
+    #     X, Y, 30, 'test', 'plots/data_gen/heatmap.png', [[-bound,bound], [-bound,bound]]
+    # )
 
+    # XY_DATA = np.array([X,Y]).T
+    # print(XY_DATA.shape)
+    # print(np.mean(XY_DATA, axis=0).shape)
+    # print(np.std(XY_DATA, axis=0).shape)
     # joblib.dump(
     #     {
-    #         'xy_data': pusher_points,
+    #         'data': XY_DATA,
+    #         'xy_mean': np.mean(XY_DATA, axis=0),
+    #         'xy_std': np.std(XY_DATA, axis=0)
     #     },
     #     save_path,
     #     compress=3
     # )
+
+
+
+    bound = 2
+    plot_scatter(
+        pusher_points[:,0], pusher_points[:,1], 30, 'test', 'plots/data_gen/pusher_top_down.png', [[-1,1], [-1.6,0.4]]
+    )
+    plot_scatter(
+        a,
+        # np.arctan2(pusher_points[:,1], pusher_points[:,0]),
+        pusher_points[:,2], 30, 'test', 'plots/data_gen/pusher_a_z.png', [[-np.pi,np.pi], [-1,1]]
+    )
+    print(pusher_points.shape)
+
+    joblib.dump(
+        {
+            'xy_data': pusher_points,
+        },
+        save_path,
+        compress=3
+    )

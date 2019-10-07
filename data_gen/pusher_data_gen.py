@@ -187,10 +187,11 @@ if __name__ == '__main__':
     # pusher_points = pusher_to_obj_to_goal(200)
 
     # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/pusher_task_states_no_inbetween.pkl'
-    # pusher_points = pusher_to_obj_to_goal_gaussian_target(200)
+    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/corl_pusher_push_states.pkl'
+    pusher_points = pusher_to_obj_to_goal_gaussian_target(200)
 
-    save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/with_gaussian_line_pusher_task_states_no_inbetween.pkl'
-    pusher_points = pusher_to_obj_to_goal_gaussian_target_with_gaussian_line(200)
+    # save_path = '/scratch/hdd001/home/kamyar/expert_demos/data_gen/with_gaussian_line_pusher_task_states_no_inbetween.pkl'
+    # pusher_points = pusher_to_obj_to_goal_gaussian_target_with_gaussian_line(200)
 
 
     plot_scatter(

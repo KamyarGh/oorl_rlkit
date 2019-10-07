@@ -1,8 +1,8 @@
 meta_data:
   script_path: run_scripts/adv_smm_exp_script.py
-  exp_name: airl_smm_test_run
+  exp_name: check_airl_smm_implementation
   description: Train an adversarial SMM model
-  num_workers: 1
+  num_workers: 5
   num_gpu_per_worker: 1
   num_cpu_per_worker: 8
   mem_per_worker: 16gb
@@ -11,7 +11,7 @@ meta_data:
 # -----------------------------------------------------------------------------
 variables:
   sac_params:
-    reward_scale: [0.25]
+    reward_scale: [0.25, 0.5, 1.0, 2.0, 4.0]
   # seed: [723894, 23789]
   seed: [723894]
 
@@ -41,7 +41,7 @@ constants:
     max_path_length: 480
     min_steps_before_training: 2400
 
-    eval_deterministic: true
+    eval_deterministic: false
     num_steps_per_eval: 2400
     
     replay_buffer_size: 12000
