@@ -1,6 +1,6 @@
 meta_data:
   script_path: run_scripts/gen_expert_demos.py
-  exp_name: gen_halfcheetah_demos
+  exp_name: test_gen_halfcheetah_demos
   description: Generate demonstrations for imitation learning algorithms
   num_workers: 1
   num_gpu_per_worker: 1
